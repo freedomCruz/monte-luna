@@ -15,6 +15,7 @@ Do not use for routine local coding. Load `database-postgres` for migrations, `d
 
 ## Hard Rules
 
+- Deployment layout: production Docker Compose configuration and deploy/backup scripts reside under `deploy/` (e.g., `deploy/compose.yaml`, `deploy/deploy.sh`, `deploy/backup.sh`). Invoked directly or via root `task deploy`.
 - Deployment runner: project script run from developer machine; no GitHub Actions or paid CI required (free-tier PR checks pending). Script is authored when code exists.
 - Access and secrets: dedicated deployment SSH key. Secrets never in Git (management pending; ask user).
 - Artifacts: build in Linux containers on developer machine, never on VPS. Tag images with version (`vX.Y.Z`) and commit SHA. Stream images via `docker save | ssh <host> docker load` (no registry).
@@ -78,6 +79,7 @@ Report:
 - `docs/architecture/infrastructure.md` — Hardware and decisions.
 - `docs/architecture/system-architecture.md` — Tooling and architecture status.
 - `docs/architecture/data-modeling.md` — Section 12, Schema Evolution.
+- `.agents/skills/monorepo/SKILL.md` — Monorepo layout and root Taskfile tasks.
 - `.agents/skills/changelog-releases/SKILL.md` — Version tagging.
 - `.agents/skills/database-postgres/SKILL.md` — goose migrations.
 - Dokku registry-less deployment: https://dokku.com/tutorials/other/deploying-an-image-without-a-registry/

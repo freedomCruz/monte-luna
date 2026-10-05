@@ -11,13 +11,14 @@ metadata:
 
 Use when creating or changing anything under `frontend/`: storefront pages, `/admin` pages, components, or styles.
 
-Do not use for backend logic; the frontend displays and collects data, and the backend decides. Load `testing` when writing or updating tests, and load `dependency-audit` before proposing or adding dependencies.
+Do not use for backend logic; the frontend displays and collects data, and the backend decides. Load `monorepo` for repository-level changes or root configuration files. Load `testing` when writing or updating tests, and load `dependency-audit` before proposing or adding dependencies.
 
 ## Hard Rules
 
 - Read `docs/architecture/system-architecture.md` section 2 before structural changes.
-- One Astro app in `frontend/` serves the storefront and `/admin`. Use `npm` (npm 12) only.
+- One Astro app in `frontend/` serves the storefront and `/admin`. Pinned to Node 26 LTS via root `.node-version` (read by fnm). Use npm 12 only, enforced via `devEngines.packageManager` in `frontend/package.json` (`{ "name": "npm", "version": "<exact>", "onFail": "error" }`).
 - Build configuration: static output (`output: 'static'`). No Node.js process in production; static asset serving mechanism (reverse proxy vs. Go `embed`) is pending.
+- Environment variables: Astro static builds embed environment values at build time; expose only `PUBLIC_`-prefixed non-secret variables to client code. Never expose private secrets.
 - Dependency installation: never install dependencies autonomously; follow `dependency-audit`. npm 12 blocks install scripts by default (`allowScripts`); never set `ignore-scripts=true`. Never omit optional dependencies (`--omit=optional`) so `esbuild` and `sharp` run with platform binaries without scripts.
 - Never copy `node_modules` between operating systems; production builds occur in Linux containers. Playwright browsers are installed with `npx playwright install` (dev/test only; never on the VPS).
 - Default to `.astro` components rendered as static HTML. Use a React island only where interaction is required.
@@ -63,5 +64,6 @@ Report:
 Paths are relative to the repository root.
 
 - `docs/architecture/system-architecture.md` — section 2, frontend architecture.
+- `.agents/skills/monorepo/SKILL.md` — light monorepo layout, Taskfile tasks, and repository conventions.
 - `.agents/skills/testing/SKILL.md` — testing strategy, Vitest, Astro Container API, Playwright, axe-core.
 - `.agents/skills/dependency-audit/SKILL.md` — dependency evaluation, exact pinning, npm security audit.

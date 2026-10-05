@@ -9,7 +9,7 @@ metadata:
 
 ## Activation Contract
 
-Use before proposing, adding, or updating any external dependency: Go modules, npm packages, Go toolchains, GitHub Actions, or container images (pin by digest).
+Use before proposing, adding, or updating any external dependency: Go modules, npm packages, Go toolchains, Go developer tools, Node.js runtimes, root task runners, GitHub Actions, or container images (pin by digest).
 
 Do not install or update dependencies autonomously. Installing or updating dependencies requires explicit user authorization.
 
@@ -26,6 +26,8 @@ Do not install or update dependencies autonomously. Installing or updating depen
   - Produce an audit report; installation strictly requires explicit user approval.
 - Pinning, npm:
   - Exact versions only (no `^` or `~`).
+  - Node.js runtime: Node 26 LTS pinned to an exact version in root `.node-version` and read by fnm (`fnm env --use-on-cd --version-file-strategy=recursive`). The production build container consumes the same `.node-version`. Exact patch chosen under `dependency-audit` when `frontend/` is scaffolded.
+  - npm 12: exact version enforced in `frontend/package.json` with `devEngines.packageManager` (`{ "name": "npm", "version": "<exact>", "onFail": "error" }`). Installed once per fnm Node version with `npm install -g npm@<exact>`. Verify `devEngines.runtime` check for Node against npm docs at scaffold time; `.node-version` remains the single source of truth.
   - `frontend/.npmrc` sets `save-exact=true` and `min-release-age=7` (npm resolves versions published >7 days ago so compromised releases are caught before install). Scaffolded with `frontend/`.
   - npm 12 install-script policy: dependency install scripts are blocked by npm 12's default `allowScripts` policy; project target is an empty allowlist. Approve a package's scripts only after `dependency-audit`, using version-pinned approvals (`npm approve-scripts <pkg>` writes pinned approvals to `package.json`, committed).
   - Do NOT set `ignore-scripts=true`: it takes precedence over and silently defeats the npm 12 allowlist.
@@ -34,12 +36,14 @@ Do not install or update dependencies autonomously. Installing or updating depen
   - Never copy `node_modules` between operating systems; production builds install dependencies inside a Linux container.
   - Commit `package-lock.json`; install via `npm ci`.
   - Run `npm audit signatures` post-install to verify provenance.
-  - Pin npm 12 to an exact version chosen under `dependency-audit` when `frontend/` is scaffolded (supports Node `^22.22.2 || ^24.15.0 || >=26.0.0`; Node.js version pending).
 - Pinning, Go:
   - `go get module@vX.Y.Z` with explicit version (never `@latest`).
+  - Go developer tools (`goose`, `sqlc`): pin in `backend/go.mod` using the `tool` directive (`go get -tool <module>/cmd/<tool>@vX.Y.Z`). Run via `go tool <name>` from `backend/`; never install globally; audit per standard criteria.
   - Commit `go.mod` and `go.sum`; verify with `go mod verify`.
   - Build with `-mod=readonly`.
   - Pin the Go version with the `toolchain` line per Go toolchain policy in `docs/architecture/system-architecture.md`.
+- Task runner:
+  - Taskfile (go-task): install an exact version (e.g., `winget install Task.Task --version <exact>` on Windows) respecting the 7-day release-age quarantine before adoption.
 - Deliberate updates:
   - Repeat the full audit for each version update. Never run broad `npm update` or `go get -u ./...`.
 
@@ -52,6 +56,9 @@ Do not install or update dependencies autonomously. Installing or updating depen
 | Known vulnerabilities found | Reject or find patched version; cite advisory data |
 | Multiple viable alternatives | Compare options in a table (size, deps, health) |
 | Package requires install scripts | Blocked by npm 12 `allowScripts`; audit scripts, stop and ask user; if approved, record pinned approval with `npm approve-scripts <pkg>` in `package.json` |
+| Go developer tool needed (goose, sqlc) | Audit package; pin via `tool` directive in `backend/go.mod`; run with `go tool` |
+| Node runtime or npm version change | Audit release age and status; pin in `.node-version` or `devEngines.packageManager` |
+| Task runner update | Audit release age (>7 days); install exact pinned version |
 | Native platform binaries needed (esbuild, sharp) | Include optional dependencies; do not use `--omit=optional` |
 | Urgent security fix younger than 7 days | Ask the user; if approved, add `min-release-age-exclude[]=<pkg>` for that package only, record the reason in the commit body, and remove the exclusion once the version is 7 days old |
 | User approval pending | Present audit report; do not run install command |
@@ -93,3 +100,7 @@ Report:
 - NVD: https://nvd.nist.gov
 - GitHub Security (Shai-Hulud malware): https://github.blog/security/supply-chain-security/strengthening-supply-chain-security-preparing-for-the-next-malware-campaign/
 - `docs/architecture/system-architecture.md` — Section 6, Implementation Tooling.
+- `.agents/skills/monorepo/SKILL.md` — Light monorepo rules and root tooling.
+- Go modules tool directive: https://go.dev/doc/modules/gomod-ref
+- Node.js releases: https://github.com/nodejs/release/blob/main/README.md
+- npm devEngines: https://github.com/npm/cli/blob/latest/docs/lib/content/configuring-npm/package-json.md

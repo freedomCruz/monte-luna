@@ -1,2 +1,16 @@
 # Local Pi runtime state
 .atl/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Node / frontend dependencies and build output
+node_modules/
+frontend/dist/
+frontend/.astro/
+
+# Go build output
+backend/bin/
+

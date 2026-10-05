@@ -11,12 +11,14 @@ metadata:
 
 Use when creating or changing Go code under `backend/`.
 
-Do not use alone for: testing strategy or determinism rules (`testing`); dependency vetting (`dependency-audit`); SQL, migrations, or sqlc queries (`database-postgres`); cross-module side effects (`domain-events-outbox`); taxes or invoices (`invoicing-taxes`). Load those skills alongside when the change touches them.
+Do not use alone for: repository layout, root files, or Taskfile tasks (`monorepo`); testing strategy or determinism rules (`testing`); dependency vetting (`dependency-audit`); SQL, migrations, or sqlc queries (`database-postgres`); cross-module side effects (`domain-events-outbox`); taxes or invoices (`invoicing-taxes`). Load those skills alongside when the change touches them.
 
 ## Hard Rules
 
 - Read `docs/architecture/system-architecture.md` sections 3–6 before structural changes.
-- Layout: `backend/cmd/server/main.go` wires dependencies; business code lives in `backend/internal/<module>/{domain,app,adapters}`; shared infrastructure only in `backend/internal/platform`.
+- Layout: `go.mod` and `go.sum` reside in `backend/`, never at the repository root. `backend/cmd/server/main.go` wires dependencies; business code lives in `backend/internal/<module>/{domain,app,adapters}`; shared infrastructure only in `backend/internal/platform`.
+- Go developer tools: tools such as `goose` and `sqlc` are pinned via the `tool` directive in `backend/go.mod` and run with `go tool <name>` from `backend/`; never installed globally.
+- Configuration: read strictly from environment variables, validated at application startup, and fails fast on missing or invalid settings. Do not embed dotenv libraries in Go code (Taskfile handles dotenv for local development).
 - `domain`: pure Go entities, invariants, and port interfaces. Never import `net/http`, `pgx`, sqlc output, `platform`, or another module.
 - `app`: use cases that depend only on `domain` types and ports.
 - `adapters`: `net/http` handlers, sqlc/pgx repositories, cache and gateway implementations of domain ports.
@@ -28,6 +30,7 @@ Do not use alone for: testing strategy or determinism rules (`testing`); depende
 - Cache only through `CachePort`; invalidate affected keys after every successful write.
 - Go toolchain: latest stable minor of the newest major version, never below 1.25.1; keep the `go.mod` `go` and `toolchain` lines current. See section 6 of the architecture doc.
 - Admin authentication uses only the approved stack: SCS sessions stored in PostgreSQL through a schema-qualified store, Argon2id passwords, `http.CrossOriginProtection`, `HttpOnly` + `Secure` + `SameSite` cookies. Never JWTs in browser storage.
+- Load `monorepo` when changing repository structure, root files, or Taskfile tasks.
 - Load `dependency-audit` before proposing, adding, or updating any dependency; installation still requires explicit user approval.
 
 ## Decision Gates
@@ -63,5 +66,6 @@ Paths are relative to the repository root.
 
 - `docs/architecture/system-architecture.md` — modules, hexagonal layers, isolation rules, tooling.
 - `docs/architecture/data-modeling.md` — identifiers, money, module boundaries in the database.
+- `.agents/skills/monorepo/SKILL.md` — monorepo layout, Taskfile tasks, and repository conventions.
 - `.agents/skills/testing/SKILL.md` — testing strategy, TDD workflow, Testcontainers, determinism rules.
 - `.agents/skills/dependency-audit/SKILL.md` — dependency evaluation, pinning, and security audits.

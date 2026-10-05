@@ -43,6 +43,7 @@ Before working in an area, read every matching skill's `SKILL.md`. Skills define
 | `domain-events-outbox` | Cross-module side effects, events, consumers, or webhook deduplication | [.agents/skills/domain-events-outbox/SKILL.md](.agents/skills/domain-events-outbox/SKILL.md) |
 | `frontend-astro-islands` | Anything under `frontend/` (storefront or `/admin`) | [.agents/skills/frontend-astro-islands/SKILL.md](.agents/skills/frontend-astro-islands/SKILL.md) |
 | `invoicing-taxes` | Taxes, fiscal data, fiscal documents, or payment settlements with withholdings | [.agents/skills/invoicing-taxes/SKILL.md](.agents/skills/invoicing-taxes/SKILL.md) |
+| `monorepo` | Repository layout, root files, Taskfile tasks, Node.js or npm versions, environment variables, line endings, or editor settings | [.agents/skills/monorepo/SKILL.md](.agents/skills/monorepo/SKILL.md) |
 | `testing` | Writing or changing any test or verification step | [.agents/skills/testing/SKILL.md](.agents/skills/testing/SKILL.md) |
 
 Domain skills for individual modules (catalog, orders, payments) will be added after their data models are approved.
