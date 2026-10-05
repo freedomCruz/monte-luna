@@ -17,7 +17,7 @@ Do not use for backend logic; the frontend displays and collects data, and the b
 
 - Read `docs/architecture/system-architecture.md` section 2 before structural changes.
 - One Astro app in `frontend/` serves the storefront and `/admin`. Pinned to Node 26 LTS via root `.node-version` (read by fnm). Use npm 12 only, enforced via `devEngines.packageManager` in `frontend/package.json` (`{ "name": "npm", "version": "<exact>", "onFail": "error" }`).
-- Build configuration: static output (`output: 'static'`). No Node.js process in production; static asset serving mechanism (reverse proxy vs. Go `embed`) is pending.
+- Build configuration: static output (`output: 'static'`). No Node.js process in production; static build assets are served directly by Caddy from a versioned container image tagged with the release version and commit SHA (Go `embed` is rejected).
 - Environment variables: Astro static builds embed environment values at build time; expose only `PUBLIC_`-prefixed non-secret variables to client code. Never expose private secrets.
 - Dependency installation: never install dependencies autonomously; follow `dependency-audit`. npm 12 blocks install scripts by default (`allowScripts`); never set `ignore-scripts=true`. Never omit optional dependencies (`--omit=optional`) so `esbuild` and `sharp` run with platform binaries without scripts.
 - Never copy `node_modules` between operating systems; production builds occur in Linux containers. Playwright browsers are installed with `npx playwright install` (dev/test only; never on the VPS).

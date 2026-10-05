@@ -30,6 +30,7 @@ Do not use alone for: repository layout, root files, or Taskfile tasks (`monorep
 - Cache only through `CachePort`; invalidate affected keys after every successful write.
 - Go toolchain: latest stable minor of the newest major version, never below 1.25.1; keep the `go.mod` `go` and `toolchain` lines current. See section 6 of the architecture doc.
 - Admin authentication uses only the approved stack: SCS sessions stored in PostgreSQL through a schema-qualified store, Argon2id passwords, `http.CrossOriginProtection`, `HttpOnly` + `Secure` + `SameSite` cookies. Never JWTs in browser storage.
+- Rate limiting: implemented in the Go application (per account and per IP for admin login and other sensitive endpoints), not in the reverse proxy; any rate-limiting library must pass `dependency-audit` before user approval (none chosen yet).
 - Load `monorepo` when changing repository structure, root files, or Taskfile tasks.
 - Load `dependency-audit` before proposing, adding, or updating any dependency; installation still requires explicit user approval.
 
