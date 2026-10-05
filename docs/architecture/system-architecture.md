@@ -1,0 +1,201 @@
+# System Architecture Baseline: Modular Monolith (Go + Astro)
+
+This document establishes the canonical system architecture for the e-commerce platform, approved to operate efficiently within the baseline VPS infrastructure (Contabo: 4 shared vCPU, 8 GB RAM, 100 GB SSD) while maintaining a strict modular design that enables extraction of modules into independent services without rewriting their domain logic, if future scale demands it.
+
+---
+
+## 1. High-Level Architectural Topology
+
+The system is organized as a decoupled frontend and a single modular backend application sharing a private PostgreSQL database.
+
+```text
+                           Buyer / Admin Browser
+                                     │
+                                     ▼
+                ┌─────────────────────────────────────────┐
+                │          Frontend Layer (Astro)         │
+                │  - Content-rich pages (Static HTML/SEO) │
+                │  - Interactive React Islands            │
+                │    (Storefront UI + Tailwind CSS)       │
+                └────────────────────┬────────────────────┘
+                                     │ (JSON / REST API)
+                                     ▼
+                ┌─────────────────────────────────────────┐
+                │        Backend Layer (Go Monolith)      │
+                │  - In-process modular bounded contexts  │
+                │  - Pragmatic Hexagonal Architecture     │
+                │  - In-Memory Cache (RAM via CachePort)  │
+                └────────────────────┬────────────────────┘
+                                     │ (pgx/v5 connection pool)
+                                     ▼
+                ┌─────────────────────────────────────────┐
+                │        Database Layer (PostgreSQL 18)   │
+                │  - Isolated schemas per domain module   │
+                │  - Zero cross-schema Foreign Keys       │
+                │  - Immutable historical order snapshots │
+                └─────────────────────────────────────────┘
+```
+
+---
+
+## 2. Frontend Architecture: Astro + React Islands
+
+- **Core Framework:** **Astro** configured for high-performance static rendering by default, serving lightweight HTML and CSS with zero client-side JavaScript for marketing, catalog browsing, and SEO-critical content.
+- **Interactive Islands:** **React** (`@astrojs/react`) components used exclusively where client interactivity is mandatory:
+  - Product variant selectors and purchase controls (`client:load`).
+  - Slide-over shopping cart and checkout interaction (`client:load` / `client:idle`).
+  - Search auto-complete and catalog filters (`client:visible`).
+- **Component Design System:** **Storefront UI** (`@storefront-ui/react`) and **Tailwind CSS**, providing accessible e-commerce component primitives.
+- **Island Props:** Props passed to hydrated islands must be serializable data; functions cannot cross the server-to-client boundary.
+- **Cross-Island State:** Independent React islands do not share a global React Context tree. Cross-island synchronization (e.g., header cart counter reacting to an "Add to Cart" event) uses lightweight reactive stores (e.g., Nano Stores) or grouped composite islands.
+- **Merchant Admin Panel:** A compact, custom administrative interface located under `/admin`, built using the same Astro + React + Storefront UI stack and consuming Go REST endpoints.
+- **Output Mode and Production Runtime:** Astro static output (`output: 'static'`). No Node.js process runs in production; all storefront pages and the `/admin` shell are pre-rendered to static assets. The `/admin` area remains a static shell that authenticates through the backend session cookie and loads private data client-side. The mechanism for serving static assets in production (directly by the reverse proxy or embedded within the Go binary via `embed`) is pending user decision.
+
+---
+
+## 3. Backend Architecture: Go Modular Monolith
+
+- **Runtime & Language:** **Go (Golang)** running as a single compiled binary, providing predictable low-latency execution, native multi-core utilization, and a small memory footprint (baseline to be measured once implemented).
+- **HTTP Routing & Middleware:** Standard library `net/http` router (Go 1.22+ method and wildcard patterns) with standard `http.Handler` middleware. No third-party router.
+- **Database Access:** **`pgx/v5`** connection pool with **`sqlc`**. No heavy Object-Relational Mappers (ORMs). Database interactions use compiled, strongly typed Go queries generated directly from verified raw SQL definitions.
+- **Caching Strategy:** In-memory caching within the Go process (e.g., `otter` or `golang-lru`), protected behind an abstract `CachePort` interface. Redis is intentionally omitted for single-VPS deployment to eliminate unnecessary network socket overhead and memory overhead.
+- **Domain Events:** Transactional outbox in PostgreSQL, relayed by a goroutine inside the same binary. No message broker is required. Details in [data-modeling.md](data-modeling.md#11-domain-events-transactional-outbox).
+
+---
+
+## 4. Module Decomposition & Hexagonal Design
+
+Application business logic is strictly partitioned into domain-specific packages under `internal/`. Each module is structured following a **Pragmatic Hexagonal Architecture** with three clear layers:
+
+```text
+internal/<module>/
+  ├── domain/         # Pure business entities, state invariants, and Ports (interfaces)
+  │     ├── model.go  # Structs and validation rules (e.g., Product.Archive(), Order.Cancel())
+  │     └── ports.go  # Outbound interfaces: Repository, CachePort, ExternalGateway
+  │
+  ├── app/            # Application use cases and business workflow orchestration
+  │     └── service.go# CreateProduct, ArchiveProduct, PlaceOrder, ProcessPayment
+  │
+  └── adapters/       # Technical inbound and outbound implementations
+        ├── http.go   # REST API HTTP handlers and JSON serialization
+        ├── pg_repo.go# sqlc/pgx database repository implementation
+        └── memory.go # In-memory cache adapter implementing CachePort
+```
+
+### Core Bounded Contexts:
+1. **`internal/catalog`:** Products, variants, categories, images, active offers, pricing, and lifecycle states (`published`, `draft`, `archived`). The first version sells **physical products only**; merchant-defined product types and variant options allow any kind of physical product without schema changes.
+2. **`internal/cart`:** Ephemeral shopping carts, item staging, and pre-checkout total calculations.
+3. **`internal/orders`:** Checkout finalization, order state machines, fulfillment, and customer purchase history.
+4. **`internal/payments`:** Payment provider gateway integrations (e.g., Wompi, Stripe), transactions, incoming webhook reconciliation, and settlement records (provider fees, withholdings, and net payouts).
+5. **`internal/promotions`:** Discount coupons, percentage/fixed offers, and automatic promotional campaigns.
+6. **`internal/identity`:** Admin users, password credentials, and sessions for the `/admin` panel. Designed so customer accounts can be added later without mixing authentication into other modules.
+7. **`internal/invoicing`:** Extension point for country-specific tax policies and fiscal documents (e.g., Colombian electronic invoicing). Country rules are implemented as adapters behind Go ports, so new countries or providers are added without changing other modules. Design in [invoicing-and-taxes.md](invoicing-and-taxes.md).
+8. **`internal/platform`:** Shared infrastructure primitives (database connection pools, configuration loader, structured logging, outbox relay).
+
+---
+
+## 5. Inter-Module Isolation & Microservices Readiness
+
+To guarantee that any module can be extracted into an independent microservice in the future without rewriting core domain logic:
+
+1. **Strict Package Boundaries:** Modules must not import the private packages or database models of other modules. For example, `internal/orders` is strictly forbidden from importing `internal/catalog/adapters`.
+2. **Module Public Contract:** Each module exposes its public contract (facade interfaces and data transfer types) only in its root package `backend/internal/<module>`. Other modules may import that root package, never its `domain`, `app`, or `adapters` packages; `depguard` enforces this.
+3. **Inter-Module Communication via Interfaces:** When a module requires data from another (e.g., `orders` validating product price during checkout), it accesses it exclusively through an exported Go interface (`CatalogGateway`). In the monolith, this is satisfied by an in-memory adapter; in a future distributed topology, it can be swapped for a gRPC/HTTP client adapter.
+4. **Domain Events:** Side-effects across modules (e.g., notifying customer after payment capture) are triggered by domain events written to the owning module's outbox table in the same transaction as the business change, then delivered at least once to idempotent consumers. An event is never lost if the process stops after committing.
+5. **PostgreSQL Schema Isolation:**
+   - Each module owns an isolated schema: `catalog.*`, `orders.*`, `payments.*`.
+   - Foreign keys are allowed within a module's schema.
+   - **Cross-schema Foreign Keys and joins are strictly prohibited.** Cross-module reads use API composition or event-fed read models.
+   - Orders store an **immutable historical snapshot** (`product_id`, `product_name`, `unit_price_at_purchase`, `sku`) rather than joining live catalog tables, preserving accounting history even if products are edited or archived.
+
+---
+
+## 6. Implementation Tooling
+
+| Concern | Decision |
+|---|---|
+| **Repository layout** | Monorepo: `backend/` (Go module), `frontend/` (Astro app containing the storefront and `/admin`), `docs/`, and project skills in `.agents/skills/` |
+| **HTTP router** | Standard library `net/http` |
+| **Database migrations** | `goose`, versioned SQL files that `sqlc` also reads as schema input |
+| **Backend testing** | Test-driven development for `domain` and `app` layers; integration tests for adapters against a real PostgreSQL 18 instance started with Testcontainers (Docker required on development machines) |
+| **Module boundary enforcement** | `golangci-lint` with `depguard` rules that forbid importing another module's internal packages |
+| **Frontend package manager** | `npm` |
+| **Go toolchain** | Latest stable minor release of the newest Go major version (1.27.1 as of 2026-09-01), updated promptly when security minor releases ship; never older than Go 1.25.1 (required by `http.CrossOriginProtection`). `govulncheck ./...` runs in every backend verification |
+| **Frontend testing** | Vitest (configured with Astro's `getViteConfig`); Astro Container API for `.astro` components; React Testing Library for islands; Playwright for end-to-end flows; axe-core in Playwright for accessibility |
+| **Dependency policy** | Pre-proposal audit (maintenance, license, vulnerabilities via OSV, GitHub Advisories, NVD, `govulncheck`, `npm audit`). Exact version pinning (no `^` or `~`), committed lockfiles (`package-lock.json`, `go.sum`). npm 12 default-deny install-script policy (`allowScripts`) with an empty allowlist target; package scripts approved only after `dependency-audit`, with version-pinned approvals (`npm approve-scripts <pkg>` written to `package.json`, committed). Never set `ignore-scripts=true` (it defeats npm 12's allowlist). Never omit optional dependencies (`--omit=optional`) because esbuild and sharp rely on platform optional dependencies to run without scripts. Playwright browsers installed via `npx playwright install` (dev/test only, never on VPS). Never copy `node_modules` between OSes (Linux container builds for production). `save-exact=true` and `min-release-age=7` (7-day quarantine for new versions; per-package exclusion only for user-approved urgent security fixes) in frontend `.npmrc`. npm 12 pinned to exact version chosen under `dependency-audit` when `frontend/` is scaffolded (supports Node `^22.22.2 || ^24.15.0 || >=26.0.0`; Node.js version pending). `-mod=readonly` and `toolchain` pinning in Go. Verification via `npm audit signatures` and `go mod verify`. Deliberate single-dependency updates with repeated audit; see the `dependency-audit` skill |
+| **Deployment** | Project script run from developer machine; no GitHub Actions or paid CI required (GitHub Actions free-tier PR checks pending). Flow: (1) preflight (clean git tree, deploy only an existing `vX.Y.Z` tag, local CI verification gates across backend, frontend, testing); (2) build artifacts in Linux containers tagged with version and commit SHA; (3) transfer via `docker save | ssh <host> docker load` (no registry); (4) pre-deploy `pg_dump -Fc` on the VPS; (5) run `goose` migrations (expand -> migrate -> contract); (6) start release with Docker Compose; (7) health check against backend endpoint (automatic rollback to previous image tag on failure); (8) record active release (version, SHA, timestamp). Never build on VPS; dedicated SSH key; secrets outside git (management details pending). Script written when code exists to deploy. See `deployment` skill |
+| **Backups** | Independent of deploys: daily `pg_dump -Fc` on VPS scheduled via systemd timer plus restic to off-site S3-compatible object storage with client-side encryption and deduplication. Includes disk media if stored on disk (media location pending). Monthly restore drill into a separate database. Backup provider and retention pending (7 daily, 4 weekly, 6 monthly proposed). Point-in-time recovery (pgBackRest) deferred until sales scale |
+| **Local development** | Docker used for PostgreSQL and Testcontainers; Go and Astro run natively on host. Docker Desktop license: free for personal use and small businesses |
+| **Commits and releases** | Conventional Commits 1.0.0; Keep a Changelog 1.1.0; SemVer 2.0.0; single product version and unified `vX.Y.Z` repository tags; no commit or changelog tooling (maintained via agent discipline) |
+
+### Admin Authentication
+
+| Concern | Decision |
+|---|---|
+| Sessions | Server-side sessions with `alexedwards/scs`. Session data stored in PostgreSQL through a small custom SCS store that uses schema-qualified tables, because `pgxstore` uses an unqualified `sessions` table. Owning module: `internal/identity` (tables in the `identity` schema) |
+| Passwords | Argon2id via `golang.org/x/crypto/argon2`, at least OWASP minimums (19 MiB memory, 2 iterations, parallelism 1) |
+| CSRF | `http.CrossOriginProtection` from the Go standard library; `GET`, `HEAD`, and `OPTIONS` never change state |
+| Cookies | `HttpOnly`, `Secure`, and `SameSite`; session token regenerated at login |
+| Excluded | JWTs stored in the browser; self-hosted identity providers (resource cost on the VPS) |
+
+---
+
+## 7. Architecture Status Summary
+
+| Area | Decision | Status |
+|---|---|---|
+| **Frontend** | Astro + React Islands + Storefront UI + Tailwind CSS | Approved |
+| **Backend** | Go Modular Monolith (Pragmatic Hexagonal Architecture) | Approved |
+| **Database Engine** | PostgreSQL 18 (Isolated domain schemas; native `uuidv7()`) | Approved |
+| **Primary Keys** | UUIDv7 (time-ordered, B-tree friendly). Not a security token: public links (e.g., guest order tracking, password reset) use separate random tokens, and authorization is always enforced | Approved |
+| **Database Access** | `pgx/v5` + `sqlc` (Type-safe SQL, zero heavy ORM) | Approved |
+| **Cache Strategy** | In-Memory Go Cache via `CachePort` (No Redis required on single VPS) | Approved |
+| **Admin Panel** | Custom compact dashboard (`/admin`) using Astro + React | Approved |
+| **Domain Events** | Transactional outbox per module schema + in-process relay; idempotent consumers | Approved |
+| **Product Scope (v1)** | Physical products only, with merchant-defined product types and variants. Digital products and services are out of scope | Approved |
+| **Invoicing** | Dedicated module with `TaxCalculator` and `InvoiceIssuer` ports and per-country adapters; see [invoicing-and-taxes.md](invoicing-and-taxes.md). Provider: Factus, sandbox only | Approved (production issuance pending) |
+| **Currency** | Single currency: COP | Approved |
+| **Fiscal Profile (demo default)** | Scenario A: natural person not responsible for VAT; no VAT charged | Approved |
+| **Data Modeling Conventions** | Normalization, types, JSONB, indexing, inventory, and schema evolution rules in [data-modeling.md](data-modeling.md) | Approved |
+| **Implementation Tooling** | Monorepo, `net/http`, `goose`, TDD + Testcontainers, `golangci-lint` + `depguard`, `npm`, Go toolchain policy with `govulncheck`, frontend testing stack (section 6) | Approved |
+| **Admin Authentication** | SCS sessions in PostgreSQL, Argon2id, `CrossOriginProtection`, secure cookies (section 6) | Approved |
+| **Astro Output Mode** | Static output (`output: 'static'`, no Node.js in production; static file server pending: reverse proxy vs. Go `embed`) | Approved (file server pending) |
+| **Containers** | Single VPS running Docker Compose with per-service memory limits (Go backend, PostgreSQL 18, reverse proxy pending); local Docker for PostgreSQL and Testcontainers | Approved (memory limits and proxy pending) |
+| **Deployment** | Script-based deployment from developer machine, no registry, pre-deploy dump, expand-migrate-contract migrations, Docker Compose restart, health check, auto-rollback | Approved (script creation and secrets pending) |
+| **Backups** | Daily `pg_dump -Fc` on VPS + restic to off-site S3-compatible storage with encryption/deduplication, monthly restore drill; PITR deferred | Approved (provider and retention pending) |
+| **Dependency Policy** | Pre-install audit, exact pinning, script lockdown, signature verification, no broad updates | Approved |
+| **Commits and Releases** | Conventional Commits 1.0.0, Keep a Changelog 1.1.0, SemVer 2.0.0, unified `vX.Y.Z` tags, manual discipline | Approved |
+| **Microservices Path** | Bounded contexts with zero cross-module SQL joins | Architectural Invariant |
+
+---
+
+## 8. Sources
+
+- Go release history and support policy: https://go.dev/doc/devel/release
+- Go vulnerability management and `govulncheck`: https://go.dev/doc/security/vuln/
+- `http.CrossOriginProtection` (Go 1.25): https://go.dev/doc/go1.25
+- SCS session manager: https://github.com/alexedwards/scs
+- SCS `pgxstore` (unqualified `sessions` table): https://pkg.go.dev/github.com/alexedwards/scs/pgxstore
+- OWASP Password Storage Cheat Sheet: https://cheatsheetseries.owasp.org/cheatsheets/Password_Storage_Cheat_Sheet.html
+- Astro testing guide: https://docs.astro.build/en/guides/testing/
+- Conventional Commits 1.0.0: https://www.conventionalcommits.org/en/v1.0.0/
+- Keep a Changelog 1.1.0: https://keepachangelog.com/en/1.1.0/
+- Semantic Versioning 2.0.0: https://semver.org/spec/v2.0.0/
+- npm registry signatures: https://docs.npmjs.com/verifying-registry-signatures/
+- npm configuration (`save-exact`, `ignore-scripts`): https://docs.npmjs.com/cli/v11/using-npm/config/
+- Go modules reference: https://go.dev/ref/mod
+- OSV vulnerability database: https://osv.dev
+- GitHub Advisory Database: https://github.com/advisories
+- National Vulnerability Database (NVD): https://nvd.nist.gov
+- GitHub Security on lifecycle scripts (Shai-Hulud npm worm): https://github.blog/security/supply-chain-security/strengthening-supply-chain-security-preparing-for-the-next-malware-campaign/
+- npm 12 upcoming breaking changes: https://github.blog/changelog/2026-06-09-upcoming-breaking-changes-for-npm-v12/
+- npm 12 release notes: https://github.com/npm/cli/releases/tag/v12.0.0
+- npm `approve-scripts`: https://docs.npmjs.com/cli/v11/commands/npm-approve-scripts
+- esbuild installation (platform optional dependencies): https://esbuild.github.io/getting-started/
+- sharp installation (platform optional dependencies): https://sharp.pixelplumbing.com/install/
+- Playwright browsers: https://playwright.dev/docs/browsers
+- GitHub Actions billing concepts: https://docs.github.com/en/billing/concepts/product-billing/github-actions
+- Dokku registry-less deployment (`docker save | ssh docker load`): https://dokku.com/tutorials/other/deploying-an-image-without-a-registry/
+- restic repository preparation: https://restic.readthedocs.io/en/latest/030_preparing_a_new_repo.html
+- Backblaze B2 integration with restic: https://www.backblaze.com/docs/cloud-storage-integrate-restic-with-backblaze-b2
+- Docker Desktop license: https://docs.docker.com/subscription-billing/desktop-license/
