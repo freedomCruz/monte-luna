@@ -107,6 +107,7 @@ gross amount − provider fee − withholdings (income tax, VAT, ICA, as reporte
 
 - Values come from the provider's settlement report, not from platform calculations.
 - This enables reconciliation between invoiced sales and bank deposits, and gives the accountant the withheld amounts as prepayments.
+- Detailed settlement schema, itemized tracking, and fee VAT breakdown in [payments domain](../domain/payments.md#33-settlements-✎).
 
 Colombian reference rules (verify again before production):
 

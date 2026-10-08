@@ -14,7 +14,9 @@ The exclusive sources of truth for physical hardware, known limits, and active s
 👉 Orders Domain: [docs/domain/orders.md](docs/domain/orders.md)  
 👉 Shipping Domain: [docs/domain/shipping.md](docs/domain/shipping.md)  
 👉 Identity Domain: [docs/domain/identity.md](docs/domain/identity.md)  
-👉 Notifications Domain: [docs/domain/notifications.md](docs/domain/notifications.md)
+👉 Notifications Domain: [docs/domain/notifications.md](docs/domain/notifications.md)  
+👉 Payments Domain: [docs/domain/payments.md](docs/domain/payments.md)  
+👉 Promotions Domain: [docs/domain/promotions.md](docs/domain/promotions.md)
 
 - **Mandatory prior consultation:** Agents must read these canonical documents before proposing architectural changes, introducing dependencies, or designing deployment workflows.
 - **Precedence over proposals and memory:** Decisions recorded in these canonical documents supersede historical proposals (including `docs/plan-payload.md`) and information stored in contextual or persistent memory (Engram). Historical plans or past proposals do not authorize pending technical choices.

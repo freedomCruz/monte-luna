@@ -133,7 +133,7 @@ Cross-module side effects with business consequences use a **transactional outbo
 | Retention of delivered events | 7 days | Matches the NServiceBus outbox default for deduplication data; enough time to investigate incidents |
 | Cleanup job | Every hour, deleting in batches | Keeps tables small without constant deletes at this volume |
 | Retention of `processed_events` | 7 days | Duplicate deliveries happen shortly after delivery, not weeks later |
-| Retention of payment webhook deduplication records | 30 days | Providers may retry for days; confirm against the selected payment gateway's retry window |
+| Retention of payment webhook deduplication records | 30 days | Wompi webhook retry window; deduplicated by checksum in `payments.provider_webhook_events` |
 | Failed events | Retried with increasing backoff up to a maximum number of attempts, then marked failed and shown in the admin panel; never deleted automatically | A payment without its order must never disappear silently |
 
 References: NServiceBus SQL persistence outbox (7-day deduplication retention, cleanup every minute by default); MassTransit Entity Framework outbox (`QueryDelay` default 10 seconds).

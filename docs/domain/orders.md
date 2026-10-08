@@ -17,8 +17,8 @@ Canonical requirements and data model for the `orders` module. Conventions in [d
 | Order tax and fiscal profile snapshot | Approved |
 | Colombian address capture (DANE municipality code) | Approved |
 | Data model (section 3) | Approved |
-| Payment arriving after reservation expiry | Open Item |
-| Detailed discount breakdown by promotions | Open Item |
+| Payment arriving after reservation expiry | Approved (handled via late-payment flow in [payments](payments.md)) |
+| Detailed discount breakdown by promotions | Approved (proportional allocation defined in [promotions](promotions.md)) |
 | Order record commercial and fiscal retention period | Open Item |
 | Personal data retention and privacy policy (Ley 1581) | Open Item |
 
@@ -38,17 +38,25 @@ Canonical requirements and data model for the `orders` module. Conventions in [d
 - `orders` calls the `catalog` public API to allocate stock for the requested variants and quantities (allocating oldest lot first). The allocation is tagged with the order ID as `reference_id`.
 - `orders` persists the order in `pending_payment` status with `reservation_expires_at = placed_at + 30 minutes` and publishes `orders.order_placed` to its outbox.
 - **Compensating transaction:** If persisting the order fails after catalog stock has been allocated, `orders` immediately invokes the catalog release API.
-- A periodic background expiry worker checks for orders where `status = 'pending_payment' AND reservation_expires_at <= now()`.
-- Expired orders transition to `status = 'expired'`, write an entry to `order_status_history`, and publish `orders.order_expired`.
-- The `catalog` module handles stock release upon receiving `orders.order_expired` (or via reconciliation), inserting an `inventory_movements` record with reason `'release'`.
+- **Expiry reconciliation and in-flight payment grace:**
+  - A periodic background expiry worker checks for orders where `status = 'pending_payment' AND reservation_expires_at <= now()`.
+  - Before expiring an order and releasing stock, the worker queries `payments` to check if an active payment attempt is in flight (status `pending` at Wompi, e.g. customer actively completing bank authentication in PSE).
+  - If a payment is in flight, `reservation_expires_at` is extended in steps (e.g. +15 minutes), up to a hard ceiling of **2 hours from `placed_at`**.
+  - If no attempt is in flight or the 2-hour hard maximum is reached without approval, the order transitions to `status = 'expired'`, writes an entry to `order_status_history`, and publishes `orders.order_expired`.
+  - The `catalog` module handles stock release upon receiving `orders.order_expired` (or via reconciliation), inserting an `inventory_movements` record with reason `'release'`.
 
 **Payment confirmation**
-- When payment succeeds, `payments` emits a payment confirmation event consumed by `orders`.
-- `orders` transitions status from `pending_payment` to `paid`, sets `paid_at = now()`, records the transition in `order_status_history`, and emits `orders.order_paid`.
+- When payment succeeds, `payments` emits `payments.payment_approved` consumed by `orders`.
+- If the order is in `pending_payment`, `orders` transitions status to `paid`, sets `paid_at = now()`, records the transition in `order_status_history`, and emits `orders.order_paid`.
+- If the order is already in `expired` status (late-payment arrival):
+  - `orders` calls `catalog` to attempt re-allocating inventory for all order lines.
+  - **Re-allocation succeeds:** `orders` transitions `expired → paid`, sets `paid_at = now()`, writes an audit note to `order_status_history`, and emits `orders.order_paid`.
+  - **Re-allocation fails (stock exhausted):** `orders` transitions `expired → cancelled`, writes an audit note to `order_status_history`, and emits `orders.order_cancelled` with reason `'late_payment_no_stock'` (triggering refund flow in `payments`).
 - `orders.order_paid` is consumed by:
   - `invoicing`: to issue the electronic invoice or fiscal receipt from the immutable tax snapshot.
   - `notifications`: to email the order confirmation and tracking link to the buyer.
   - `shipping`: to initialize a fulfillment shipment in `pending` status.
+  - `promotions`: to transition reserved coupon redemptions to `confirmed`.
 
 **Guest tracking and security**
 - Every order generates a cryptographically secure random tracking token (at least 32 bytes).
@@ -66,9 +74,22 @@ Canonical requirements and data model for the `orders` module. Conventions in [d
 - Happy path: `pending_payment` → `paid` → `preparing` → `shipped` → `delivered`.
 - Pre-payment termination: `pending_payment` → `expired` | `cancelled`.
 - Post-payment cancellation: `paid` → `cancelled` or `preparing` → `cancelled` (triggers refund flow in `payments`).
-- Once in a terminal status (`delivered`, `cancelled`, `expired`), no further transitions are allowed.
+- Late-payment post-expiry transitions:
+  - `expired` → `paid`: Late payment approved and catalog stock re-allocation succeeded.
+  - `expired` → `cancelled`: Late payment approved but catalog stock re-allocation failed due to depleted inventory (triggers refund flow in `payments`).
+- Terminal status rules:
+  - `delivered` and `cancelled` are strictly terminal; no transitions are permitted from them.
+  - `expired` is terminal under ordinary operations, but transitions to `paid` or `cancelled` exclusively through the late-payment post-expiry resolution flow.
 - Every status transition is validated in the Go domain and recorded in `order_status_history`.
 - Status `shipped` is set when `shipping` publishes `shipping.shipment_shipped`.
+
+**Discount calculation and line allocation**
+- If a promotional coupon is applied at checkout:
+  - `orders.coupon_code` snapshots the uppercase coupon code.
+  - Merchandise discounts are recorded in `orders.discount_amount`.
+  - Shipping discounts (e.g. from `free_shipping` coupons) are recorded in `orders.shipping_discount_amount`.
+  - Percentage discounts apply strictly to the merchandise subtotal (`subtotal_amount`) before taxes and shipping.
+  - The total merchandise discount is allocated proportionally across `order_lines.discount_amount` based on each line's subtotal (`quantity * unit_price_amount`). To eliminate minor-unit integer rounding discrepancies, any residual difference is assigned to the line with the largest monetary subtotal.
 
 **Immutable snapshots**
 - `order_lines`: snapshots product title, variant label, SKU, unit price, quantity, tax category, tax rate, and weight at the time of purchase. Live edits or archiving in catalog never alter historical order lines.
@@ -103,10 +124,12 @@ orders ✎ ──< order_lines ──< order_line_lot_allocations
 | `status` | `text` | Not null; `CHECK (status IN ('pending_payment','paid','preparing','shipped','delivered','cancelled','expired'))` |
 | `currency` | `text` | Not null, default `'COP'`; `CHECK (currency ~ '^[A-Z]{3}$')` |
 | `subtotal_amount` | `bigint` | Not null; `CHECK (subtotal_amount >= 0)` |
-| `discount_amount` | `bigint` | Not null, default `0`; `CHECK (discount_amount >= 0)` |
+| `discount_amount` | `bigint` | Not null, default `0`; merchandise discount; `CHECK (discount_amount >= 0)` |
 | `shipping_amount` | `bigint` | Not null; `CHECK (shipping_amount >= 0)` |
+| `shipping_discount_amount` | `bigint` | Not null, default `0`; `CHECK (shipping_discount_amount >= 0 AND shipping_discount_amount <= shipping_amount)` |
 | `tax_amount` | `bigint` | Not null; `CHECK (tax_amount >= 0)` |
 | `total_amount` | `bigint` | Not null; `CHECK (total_amount >= 0)` |
+| `coupon_code` | `text` | Nullable; snapshot of applied coupon code |
 | `shipping_rate_name` | `text` | Not null; snapshot of applied shipping rate name |
 | `customer_email` | `text` | Not null; `CHECK (customer_email = lower(customer_email))` |
 | `customer_name` | `text` | Not null |
@@ -122,7 +145,7 @@ orders ✎ ──< order_lines ──< order_line_lot_allocations
 | `cancelled_at` | `timestamptz` | Nullable |
 
 Table constraints:
-- `CHECK (total_amount = subtotal_amount - discount_amount + shipping_amount + tax_amount)`
+- `CHECK (total_amount = subtotal_amount - discount_amount + shipping_amount - shipping_discount_amount + tax_amount)`
 
 Indexes:
 - Partial index: `(reservation_expires_at) WHERE status = 'pending_payment'` for the reservation expiry worker.
@@ -143,7 +166,7 @@ Immutable snapshot of purchased items. No `updated_at`.
 | `variant_label` | `text` | Not null; snapshot of variant options (e.g. "250 g / Whole Bean") |
 | `unit_price_amount` | `bigint` | Not null; `CHECK (unit_price_amount > 0)` |
 | `quantity` | `integer` | Not null; `CHECK (quantity > 0)` |
-| `discount_amount` | `bigint` | Not null, default `0`; `CHECK (discount_amount >= 0)` |
+| `discount_amount` | `bigint` | Not null, default `0`; allocated merchandise discount; `CHECK (discount_amount >= 0)` |
 | `tax_category` | `text` | Not null; `CHECK (tax_category IN ('excluded','exempt','reduced','standard'))` |
 | `tax_rate_bps` | `integer` | Not null; `CHECK (tax_rate_bps >= 0)`; tax rate in basis points (e.g. 1900 = 19%, 500 = 5%) |
 | `tax_amount` | `bigint` | Not null; `CHECK (tax_amount >= 0)` |
@@ -215,8 +238,6 @@ Outbox table and consumer tracking follow [data-modeling.md](../architecture/dat
 
 ## 4. Open Items
 
-- **Payment arriving after reservation expiry:** When an asynchronous webhook confirms payment for an order that has already transitioned to `expired`, decide coordination with `payments`: attempt immediate re-allocation in `catalog` if stock exists; if insufficient stock remains, trigger an automated refund.
-- **Detailed discount breakdown:** Allocation of multi-line or coupon discounts across order lines once `promotions` module is defined.
 - **Retention policy for orders:** Commercial and fiscal records in Colombia require long-term preservation (e.g. Código de Comercio art. 60 — 10 years, Estatuto Tributario art. 632). Confirm exact archiving policy with merchant's accountant.
 - **Personal data retention and privacy policy:** Customer PII lifecycle (email, phone, address, national ID) under statutory Habeas Data (Ley 1581 de 2012).
 
