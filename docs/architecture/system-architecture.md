@@ -88,9 +88,10 @@ internal/<module>/
 3. **`internal/orders`:** Checkout finalization, order state machines, fulfillment, and customer purchase history.
 4. **`internal/payments`:** Payment provider gateway integrations (e.g., Wompi, Stripe), transactions, incoming webhook reconciliation, and settlement records (provider fees, withholdings, and net payouts).
 5. **`internal/promotions`:** Discount coupons, percentage/fixed offers, and automatic promotional campaigns.
-6. **`internal/identity`:** Admin users, password credentials, and sessions for the `/admin` panel. Designed so customer accounts can be added later without mixing authentication into other modules.
+6. **`internal/identity`:** Admin users with two fixed roles (`owner`, `staff`), password credentials (Argon2id), mandatory TOTP 2FA, and server-side sessions for the `/admin` panel. Invariant ensures at least one active owner always exists. Designed so customer accounts can be added later without mixing authentication into other modules. Design in [docs/domain/identity.md](../domain/identity.md).
 7. **`internal/invoicing`:** Extension point for country-specific tax policies and fiscal documents (e.g., Colombian electronic invoicing). Country rules are implemented as adapters behind Go ports, so new countries or providers are added without changing other modules. Design in [invoicing-and-taxes.md](invoicing-and-taxes.md).
 8. **`internal/platform`:** Shared infrastructure primitives (database connection pools, configuration loader, structured logging, outbox relay).
+9. **`internal/notifications`:** Transactional email triggered by domain events from other modules' outboxes. Resend provider integration via plain `net/http` behind an `EmailSender` port (no SDK). Design in [docs/domain/notifications.md](../domain/notifications.md).
 
 ---
 
@@ -133,6 +134,7 @@ To guarantee that any module can be extracted into an independent microservice i
 | **Backups** | Independent of deploys: daily `pg_dump -Fc` on VPS scheduled via systemd timer plus restic to off-site S3-compatible object storage with client-side encryption and deduplication. Includes disk media if stored on disk (media location pending). Monthly restore drill into a separate database. Backup provider and retention pending (7 daily, 4 weekly, 6 monthly proposed). Point-in-time recovery (pgBackRest) deferred until sales scale |
 | **Local development** | Docker used for PostgreSQL and Testcontainers; Go and Astro run natively on host. Docker Desktop license: free for personal use and small businesses |
 | **Commits and releases** | Conventional Commits 1.0.0; Keep a Changelog 1.1.0; SemVer 2.0.0; single product version and unified `vX.Y.Z` repository tags; no commit or changelog tooling (maintained via agent discipline) |
+| **Transactional email** | Resend via plain `net/http` behind an `EmailSender` port (no vendor SDK); owned by `internal/notifications` module; requires an owned domain with SPF, DKIM, and DMARC DNS records |
 
 ### Admin Authentication
 
@@ -166,6 +168,8 @@ To guarantee that any module can be extracted into an independent microservice i
 | **Data Modeling Conventions** | Normalization, types, JSONB, indexing, inventory, and schema evolution rules in [data-modeling.md](data-modeling.md) | Approved |
 | **Implementation Tooling** | Monorepo, `net/http`, `goose`, TDD + Testcontainers, `golangci-lint` + `depguard`, `npm`, Go toolchain policy with `govulncheck`, frontend testing stack (section 6) | Approved |
 | **Admin Authentication** | SCS sessions in PostgreSQL, Argon2id, `CrossOriginProtection`, secure cookies (section 6) | Approved |
+| **Identity Data Model** | 6-table schema in `identity`: `admin_users`, `admin_totp_credentials`, `admin_recovery_codes`, `password_reset_tokens`, `sessions`, `security_events` | Approved (30-minute reset tokens, bootstrap CLI over SSH, `security_events` kept 1 year; secret management pending) |
+| **Notifications** | Dedicated `internal/notifications` module consuming domain events, Resend provider via `net/http` behind `EmailSender` port, no SDK, delivery webhooks, Go html/template | Approved (Spanish customer emails; `template_data` cleared after 90 days, recipient anonymized after 2 years; domain pending) |
 | **Reverse Proxy** | Caddy official image pinned by version and digest, automatic HTTPS, static file server (`encode zstd gzip`, `precompressed`), proxy `/api` to Go backend; rate limiting in Go app | Approved (domain configuration pending) |
 | **Astro Output Mode** | Static output (`output: 'static'`, no Node.js in production; static assets served by Caddy reverse proxy; Go `embed` rejected) | Approved |
 | **Containers** | Single VPS running Docker Compose with per-service memory limits (Go backend, PostgreSQL 18, Caddy reverse proxy); local Docker for PostgreSQL and Testcontainers | Approved (memory limits pending) |
@@ -219,3 +223,9 @@ To guarantee that any module can be extracted into an independent microservice i
 - Caddy file_server directive: https://caddyserver.com/docs/caddyfile/directives/file_server
 - Caddy security advisories: https://github.com/caddyserver/caddy/security/advisories
 - Caddy rate-limit plugin (xcaddy requirement reference): https://github.com/mholt/caddy-ratelimit
+- Resend pricing: https://resend.com/pricing
+- Resend emails API: https://resend.com/docs/api-reference/emails
+- Resend idempotency keys: https://resend.com/docs/dashboard/emails/idempotency-keys
+- Resend webhook signature verification: https://resend.com/docs/webhooks/verify-webhooks-requests
+- Google email sender guidelines: https://support.google.com/mail/answer/81126
+- RFC 6238 (TOTP: Time-Based One-Time Password Algorithm): https://www.rfc-editor.org/rfc/rfc6238.html

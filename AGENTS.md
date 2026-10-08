@@ -10,7 +10,9 @@ The exclusive sources of truth for physical hardware, known limits, and active s
 👉 System Architecture Baseline: [docs/architecture/system-architecture.md](docs/architecture/system-architecture.md)  
 👉 Data Modeling Conventions: [docs/architecture/data-modeling.md](docs/architecture/data-modeling.md)  
 👉 Invoicing and Taxes: [docs/architecture/invoicing-and-taxes.md](docs/architecture/invoicing-and-taxes.md)  
-👉 Catalog Domain: [docs/domain/catalog.md](docs/domain/catalog.md)
+👉 Catalog Domain: [docs/domain/catalog.md](docs/domain/catalog.md)  
+👉 Identity Domain: [docs/domain/identity.md](docs/domain/identity.md)  
+👉 Notifications Domain: [docs/domain/notifications.md](docs/domain/notifications.md)
 
 - **Mandatory prior consultation:** Agents must read these canonical documents before proposing architectural changes, introducing dependencies, or designing deployment workflows.
 - **Precedence over proposals and memory:** Decisions recorded in these canonical documents supersede historical proposals (including `docs/plan-payload.md`) and information stored in contextual or persistent memory (Engram). Historical plans or past proposals do not authorize pending technical choices.
