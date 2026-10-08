@@ -17,7 +17,7 @@ Canonical requirements and data model for the `catalog` module. Conventions in [
 | Data model (section 3) | Approved |
 | Price per variant | Approved |
 | Media storage location (VPS disk or object storage) | Pending |
-| Stock reservation strategy between `orders` and `catalog` | Pending (orders design) |
+| Stock reservation strategy between `orders` and `catalog` | Approved |
 | Complex promotional rules and coupons | Out of scope here; owned by `promotions` (pending) |
 
 ## 2. Approved Requirements
@@ -209,18 +209,19 @@ Partial index for the public catalog: `(created_at DESC) WHERE status = 'publish
 |---|---|---|
 | `variant_id`, `lot_id` | `uuid` | Composite FK `(variant_id, lot_id)` → `variant_lot_stock (variant_id, lot_id)`; indexed on `(variant_id, lot_id)` |
 | `quantity_delta` | `integer` | Not null; `<> 0` |
-| `reason` | `text` | `CHECK IN ('receipt','sale','return','adjustment','damage')` |
+| `reason` | `text` | `CHECK IN ('receipt','sale','return','adjustment','damage','release')` |
 | `reference_id` | `uuid` | Nullable; another module's identifier (for example an order), plain `uuid` with no FK |
 | `actor_id` | `uuid` | Nullable; admin user from `identity`, plain `uuid` with no FK |
 | `note` | `text` | Nullable |
 
-Inserted in the same transaction as every change to `variant_lot_stock`. An index on `(lot_id, created_at)` serves lot traceability queries (which movements and orders used a lot).
+Inserted in the same transaction as every change to `variant_lot_stock`. An index on `(lot_id, created_at)` serves lot traceability queries (which movements and orders used a lot). The `release` reason returns allocated stock from an expired or cancelled unpaid order reservation.
 
 ### 3.12 Contract with `orders`
 
 - The catalog's public API allocates stock for a variant and quantity and returns the allocations: lot id, lot code, production date, and quantity per lot.
+- Allocation happens when the order is placed and is held for 30 minutes referencing the order ID. Expired or cancelled unpaid orders release their allocations by reference (inventory movement reason `release`).
+- If order persistence fails after allocation, a compensating release is called immediately, and a periodic job reconciles any discrepancies.
 - `orders` stores those allocations in its own order-line snapshot. The catalog ledger references the order only through `inventory_movements.reference_id`.
-- When allocation happens (at checkout or at payment) is part of the pending stock reservation strategy.
 
 ### 3.13 Module infrastructure
 

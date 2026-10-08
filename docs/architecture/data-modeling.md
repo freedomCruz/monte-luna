@@ -72,7 +72,7 @@ Every mutable table includes `created_at timestamptz NOT NULL DEFAULT now()` and
 
 ## 7. Module Boundaries in the Database
 
-- **One schema per module:** `catalog`, `cart`, `orders`, `payments`, `promotions`, `identity`, `notifications`, and others as modules are added.
+- **One schema per module:** `catalog`, `shipping`, `orders`, `payments`, `promotions`, `identity`, `notifications`, and others as modules are added.
 - **Foreign keys are allowed and encouraged within a module** (for example `orders.order_items.order_id` → `orders.orders.id`).
 - **Foreign keys and joins across schemas are prohibited.** A module stores the other module's identifier as a plain `uuid` column.
 - **Cross-module reads** use one of:

@@ -11,6 +11,8 @@ The exclusive sources of truth for physical hardware, known limits, and active s
 👉 Data Modeling Conventions: [docs/architecture/data-modeling.md](docs/architecture/data-modeling.md)  
 👉 Invoicing and Taxes: [docs/architecture/invoicing-and-taxes.md](docs/architecture/invoicing-and-taxes.md)  
 👉 Catalog Domain: [docs/domain/catalog.md](docs/domain/catalog.md)  
+👉 Orders Domain: [docs/domain/orders.md](docs/domain/orders.md)  
+👉 Shipping Domain: [docs/domain/shipping.md](docs/domain/shipping.md)  
 👉 Identity Domain: [docs/domain/identity.md](docs/domain/identity.md)  
 👉 Notifications Domain: [docs/domain/notifications.md](docs/domain/notifications.md)
 
