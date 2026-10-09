@@ -1,0 +1,239 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Monteluna · Inicio</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1510}a:hover{color:#C1272D}
+a:focus-visible,button:focus-visible{outline:3px solid #1B1510;outline-offset:3px}
+.oscuro a:focus-visible{outline-color:#F2B632}
+@keyframes cinta{to{transform:translateX(-50%)}}
+@keyframes flota{0%,100%{transform:translateY(0)}50%{transform:translateY(-12px)}}
+.cinta{animation:cinta 32s linear infinite}.flota{animation:flota 6s ease-in-out infinite}.flota-b{animation:flota 7.5s ease-in-out infinite reverse}
+@media (prefers-reduced-motion:reduce){.cinta,.flota,.flota-b{animation:none}}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 5000px; box-sizing: border-box; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif">
+
+  <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 24px; padding: 10px 24px; background: #0F3B2C; color: #FAF3E3; font-size: 15px; font-weight: 500">
+    <span>100 % arábica</span><span aria-hidden="true" style="color: #F2B632">•</span><span>Café tostado en grano</span><span aria-hidden="true" style="color: #F2B632">•</span><span>Cacao fino de aroma, origen Colombia</span>
+  </div>
+  <header style="background: #F2B632">
+    <div style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 0 48px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; min-height: 84px">
+      <a href="M-Inicio.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-size: 38px; line-height: 1; font-weight: 800; letter-spacing: 0.01em; text-transform: uppercase; color: #1B1510; text-decoration: none">Monteluna</a>
+      <nav aria-label="Principal" style="display: flex; flex-wrap: wrap; gap: 4px 40px; font-size: 18px; font-weight: 700; text-transform: uppercase">
+        <a href="M-Inicio.dc.html" aria-current="page" style="display: inline-flex; align-items: center; min-height: 44px; color: #1B1510; text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 6px">Inicio</a>
+        <a href="M-Listado.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; color: #1B1510; text-decoration: none">Tienda</a>
+        <a href="M-Origenes.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; color: #1B1510; text-decoration: none">Orígenes</a>
+        <a href="#contacto" style="display: inline-flex; align-items: center; min-height: 44px; color: #1B1510; text-decoration: none">Contacto</a>
+      </nav>
+      <a href="M-Carrito-Panel.dc.html" style="display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 22px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 16px; font-weight: 700; text-transform: uppercase; text-decoration: none">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path></svg>Carrito (0)
+      </a>
+    </div>
+  </header>
+  <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 8px 12px; padding: 12px 24px; background: #F3E6C4; font-size: 16px; font-weight: 500">
+    <span>Chocolate oscuro</span>
+    <span style="padding: 4px 12px; border-radius: 8px; background: #4B1C52; color: #FAF3E3; font-weight: 600">Monteluna 65 %, 75 % y 100 %</span>
+    <span>de cacao fino de aroma</span>
+    <a href="M-Listado.dc.html" style="display: inline-flex; align-items: center; min-height: 32px; margin-left: 8px; font-weight: 700; text-transform: uppercase; color: #1B1510">Ver cacao</a>
+  </div>
+
+  <section aria-labelledby="hero-m" style="background: #F8E4AE; overflow: hidden">
+    <div style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 64px 48px 0; display: flex; flex-wrap: wrap; align-items: center; gap: 32px 48px">
+      <div style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 22px; padding-bottom: 72px">
+        <div style="display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="#0F3B2C" aria-hidden="true"><path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2z"></path></svg>
+          <span>Origen Colombia · 100 % arábica</span>
+        </div>
+        <h1 id="hero-m" style="margin: 0; font-size: clamp(46px, 6.2vw, 90px); line-height: 0.95; font-weight: 800; letter-spacing: -0.015em">Café y cacao de las montañas de Colombia.</h1>
+        <p style="margin: 0; font-size: 28px; line-height: 1.1; font-weight: 800; letter-spacing: -0.01em">Tostado en grano, con finca y altura en cada bolsa</p>
+        <p style="margin: 0; max-width: 520px; font-size: 18px; line-height: 1.5">Dos fincas, tostión media y notas de cata a la vista. Y chocolate oscuro Monteluna, de cacao fino de aroma.</p>
+        <div style="display: flex; flex-wrap: wrap; gap: 12px; padding-top: 6px">
+          <a href="M-Listado.dc.html" style="display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 26px; border-radius: 12px; background: #C1272D; color: #FFFFFF; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none">Probar el café</a>
+          <a href="M-Listado.dc.html" style="display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 26px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none">Ver el cacao</a>
+        </div>
+        <div style="display: flex; flex-wrap: wrap; gap: 16px 28px; padding-top: 14px">
+          <div style="display: flex; align-items: center; gap: 12px; font-size: 17px; line-height: 1.15; font-weight: 600">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 20l6-11 4 7 2.5-4L21 20H3z"></path></svg>
+            <span>Fincas entre 1.500<br>y 2.000 m s. n. m.</span>
+          </div>
+          <div aria-hidden="true" style="width: 1px; background: rgba(27,21,16,0.3)"></div>
+          <div style="display: flex; align-items: center; gap: 12px; font-size: 17px; line-height: 1.15; font-weight: 600">
+            <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><ellipse cx="12" cy="12" rx="6" ry="9.5" transform="rotate(30 12 12)"></ellipse><path d="M8.5 17.5C13 14 11 10 15.5 6.5"></path></svg>
+            <span>Chocolate al 65 %, 75 %<br>y 100 % de cacao</span>
+          </div>
+        </div>
+      </div>
+      <div style="position: relative; flex: 1 1 520px; min-width: 0; align-self: flex-end; height: 640px">
+        <div class="flota-b" style="position: absolute; right: -3%; bottom: -7%; height: 86%"><img src="/_blob/0a97d52196c5379b4469272dee57b4de" alt="Bolsa de café Finca La María, 500 g" style="height: 100%; transform: rotate(7deg); filter: drop-shadow(0 22px 20px rgba(27,21,16,0.28))"></div>
+        <div style="position: absolute; right: 20%; bottom: -5%; height: 102%"><img src="/_blob/4599aac869a16a1f06d18202d2ecbc9b" alt="Bolsa de café Finca El Mirador, 500 g" style="height: 100%; filter: drop-shadow(0 26px 22px rgba(27,21,16,0.32))"></div>
+        <div class="flota" style="position: absolute; left: -4%; bottom: -3%; height: 64%"><img src="/_blob/cee819ee8bff77267eb56c58e73e513f" alt="Barra de chocolate oscuro Monteluna 65 % cacao, 80 g" style="height: 100%; transform: rotate(-9deg); filter: drop-shadow(0 20px 18px rgba(27,21,16,0.3))"></div>
+        <div style="position: absolute; right: 2%; top: 4%; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 124px; height: 124px; border-radius: 50%; background: #0F3B2C; color: #FAF3E3; outline: 2px dashed #F2B632; outline-offset: -9px; transform: rotate(10deg); text-align: center">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase">Tostión</span>
+          <span style="font-size: 30px; line-height: 0.95; font-weight: 800; color: #F2B632">Media</span>
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase">en grano</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div aria-hidden="true" style="overflow: hidden; background: #1B1510; color: #FAF3E3">
+    <div class="cinta" style="display: flex; align-items: center; width: max-content; padding: 16px 0; font-size: 34px; line-height: 1; font-weight: 800; white-space: nowrap">
+      <span style="display: inline-flex; align-items: center; gap: 22px; padding-right: 22px">Café tostado en grano <span style="color: #F2B632">✦</span> <span style="padding: 5px 14px; border-radius: 8px; background: #F3E6C4; color: #1B1510; font-size: 16px; font-weight: 600; transform: rotate(-3deg)">Finca El Mirador</span> Cacao fino de aroma <span style="color: #F2B632">✦</span> <span style="padding: 5px 14px; border-radius: 8px; background: #F3E6C4; color: #1B1510; font-size: 16px; font-weight: 600; transform: rotate(2deg)">Monteluna 65 %</span> 100 % arábica <span style="color: #F2B632">✦</span> <span style="padding: 5px 14px; border-radius: 8px; background: #F3E6C4; color: #1B1510; font-size: 16px; font-weight: 600; transform: rotate(-2deg)">Finca La María</span> Origen Colombia <span style="color: #F2B632">✦</span> <span style="padding: 5px 14px; border-radius: 8px; background: #F3E6C4; color: #1B1510; font-size: 16px; font-weight: 600; transform: rotate(3deg)">Monteluna 100 %</span></span>
+      <span style="display: inline-flex; align-items: center; gap: 22px; padding-right: 22px">Café tostado en grano <span style="color: #F2B632">✦</span> <span style="padding: 5px 14px; border-radius: 8px; background: #F3E6C4; color: #1B1510; font-size: 16px; font-weight: 600; transform: rotate(-3deg)">Finca El Mirador</span> Cacao fino de aroma <span style="color: #F2B632">✦</span> <span style="padding: 5px 14px; border-radius: 8px; background: #F3E6C4; color: #1B1510; font-size: 16px; font-weight: 600; transform: rotate(2deg)">Monteluna 65 %</span> 100 % arábica <span style="color: #F2B632">✦</span> <span style="padding: 5px 14px; border-radius: 8px; background: #F3E6C4; color: #1B1510; font-size: 16px; font-weight: 600; transform: rotate(-2deg)">Finca La María</span> Origen Colombia <span style="color: #F2B632">✦</span> <span style="padding: 5px 14px; border-radius: 8px; background: #F3E6C4; color: #1B1510; font-size: 16px; font-weight: 600; transform: rotate(3deg)">Monteluna 100 %</span></span>
+    </div>
+  </div>
+
+  <section aria-labelledby="tienda-m" style="padding: 104px 0 112px">
+    <div style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 0 48px; display: flex; flex-direction: column; gap: 32px">
+      <div style="display: flex; flex-direction: column; align-items: center; gap: 14px; text-align: center">
+        <h2 id="tienda-m" style="margin: 0; max-width: 760px; font-size: 56px; line-height: 1; font-weight: 800; letter-spacing: -0.015em">Dile hola al café de finca. Y al cacao.</h2>
+        <p style="margin: 0; max-width: 560px; font-size: 18px; line-height: 1.5">Dos cafés y tres chocolates oscuros. Entra a cada uno para elegir peso, molienda o porcentaje de cacao.</p>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 24px">
+
+        <article style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 130px; padding: 0 18px 18px; background: #FFFFFF; border-radius: 20px; text-align: center">
+          <img src="/_blob/4599aac869a16a1f06d18202d2ecbc9b" alt="Bolsa de café Finca El Mirador" style="height: 340px; margin-top: -130px; filter: drop-shadow(0 18px 14px rgba(27,21,16,0.24))">
+          <span style="position: absolute; top: 14px; right: 14px; padding: 5px 12px; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-size: 14px; font-weight: 700">Ahorras $7.000</span>
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #0F3B2C">Café · Huila</span>
+          <h3 style="margin: 0; font-size: 26px; line-height: 1.1; font-weight: 800"><a href="M-Detalle.dc.html" style="text-decoration: none">Finca El Mirador</a></h3>
+          <p style="margin: 0; font-size: 17px; line-height: 1.45">Cítricos, panela y chocolate. Final dulce y balanceado.</p>
+          <div style="display: flex; align-items: center; gap: 10px; align-self: stretch; margin-top: auto; padding-top: 8px; font-size: 14px; font-weight: 600; text-transform: uppercase">
+            <span>Clara</span>
+            <div role="img" aria-label="Tostión media" style="position: relative; flex: 1; height: 24px"><div style="position: absolute; left: 0; right: 0; top: 11px; height: 2px; background: #1B1510"></div><svg width="24" height="24" viewBox="0 0 24 24" style="position: absolute; left: 50%; top: 0; margin-left: -12px"><ellipse cx="12" cy="12" rx="6.5" ry="9.5" transform="rotate(35 12 12)" fill="#6B3E1E"></ellipse><path d="M8 17C13 14 11 10 16 7" stroke="#F3E6C4" stroke-width="1.6" fill="none" stroke-linecap="round"></path></svg></div>
+            <span>Oscura</span>
+          </div>
+          <a href="M-Detalle.dc.html" style="display: flex; align-items: center; justify-content: center; align-self: stretch; min-height: 54px; padding: 0 12px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 16px; font-weight: 700; text-transform: uppercase; text-decoration: none">Ver producto · $38.000</a>
+        </article>
+
+        <article style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 130px; padding: 0 18px 18px; background: #FFFFFF; border-radius: 20px; text-align: center">
+          <img src="/_blob/0a97d52196c5379b4469272dee57b4de" alt="Bolsa de café Finca La María" style="height: 340px; margin-top: -130px; filter: drop-shadow(0 18px 14px rgba(27,21,16,0.24))">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #0F3B2C">Café · Colombia</span>
+          <h3 style="margin: 0; font-size: 26px; line-height: 1.1; font-weight: 800"><a href="M-Detalle.dc.html" style="text-decoration: none">Finca La María</a></h3>
+          <p style="margin: 0; font-size: 17px; line-height: 1.45">Chocolate, caramelo y frutos rojos.</p>
+          <div style="display: flex; align-items: center; gap: 10px; align-self: stretch; margin-top: auto; padding-top: 8px; font-size: 14px; font-weight: 600; text-transform: uppercase">
+            <span>Clara</span>
+            <div role="img" aria-label="Tostión media" style="position: relative; flex: 1; height: 24px"><div style="position: absolute; left: 0; right: 0; top: 11px; height: 2px; background: #1B1510"></div><svg width="24" height="24" viewBox="0 0 24 24" style="position: absolute; left: 50%; top: 0; margin-left: -12px"><ellipse cx="12" cy="12" rx="6.5" ry="9.5" transform="rotate(35 12 12)" fill="#6B3E1E"></ellipse><path d="M8 17C13 14 11 10 16 7" stroke="#F3E6C4" stroke-width="1.6" fill="none" stroke-linecap="round"></path></svg></div>
+            <span>Oscura</span>
+          </div>
+          <a href="M-Detalle.dc.html" style="display: flex; align-items: center; justify-content: center; align-self: stretch; min-height: 54px; padding: 0 12px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 16px; font-weight: 700; text-transform: uppercase; text-decoration: none">Ver producto · $42.000</a>
+        </article>
+
+        <article style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 130px; padding: 0 18px 18px; background: #FFFFFF; border-radius: 20px; text-align: center">
+          <img src="/_blob/cee819ee8bff77267eb56c58e73e513f" alt="Barra de chocolate oscuro Monteluna 65 % cacao" style="height: 340px; margin-top: -130px; filter: drop-shadow(0 18px 14px rgba(27,21,16,0.24))">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #4B1C52">Cacao · 80 g</span>
+          <h3 style="margin: 0; font-size: 26px; line-height: 1.1; font-weight: 800"><a href="M-Detalle.dc.html" style="text-decoration: none">Chocolate oscuro 65 %</a></h3>
+          <p style="margin: 0; font-size: 17px; line-height: 1.45">Cacao fino de aroma. Sin gluten, ingredientes naturales.</p>
+          <div style="display: flex; align-items: center; gap: 10px; align-self: stretch; margin-top: auto; padding-top: 8px; font-size: 14px; font-weight: 600; text-transform: uppercase">
+            <span>50 %</span>
+            <div role="img" aria-label="65 % de cacao" style="position: relative; flex: 1; height: 24px"><div style="position: absolute; left: 0; right: 0; top: 11px; height: 2px; background: #1B1510"></div><span style="position: absolute; left: 30%; top: 3px; width: 18px; height: 18px; margin-left: -9px; box-sizing: border-box; border-radius: 50%; background: #4B1C52; border: 3px solid #FFFFFF; outline: 2px solid #4B1C52"></span></div>
+            <span>100 %</span>
+          </div>
+          <a href="M-Detalle.dc.html" style="display: flex; align-items: center; justify-content: center; align-self: stretch; min-height: 54px; padding: 0 12px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 16px; font-weight: 700; text-transform: uppercase; text-decoration: none">Ver producto · $14.000</a>
+        </article>
+
+        <article style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 130px; padding: 0 18px 18px; background: #FFFFFF; border-radius: 20px; text-align: center">
+          <img src="/_blob/174ceb42cc4886c4e3be39d2b3fdb412" alt="Barras de chocolate oscuro Monteluna 75 % y 100 % cacao" style="height: 340px; margin-top: -130px; filter: drop-shadow(0 18px 14px rgba(27,21,16,0.24))">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #4B1C52">Cacao · 80 g</span>
+          <h3 style="margin: 0; font-size: 26px; line-height: 1.1; font-weight: 800"><a href="M-Detalle.dc.html" style="text-decoration: none">Chocolate oscuro 75 % y 100 %</a></h3>
+          <p style="margin: 0; font-size: 17px; line-height: 1.45">Dos intensidades del mismo cacao fino de aroma.</p>
+          <div style="display: flex; align-items: center; gap: 10px; align-self: stretch; margin-top: auto; padding-top: 8px; font-size: 14px; font-weight: 600; text-transform: uppercase">
+            <span>50 %</span>
+            <div role="img" aria-label="75 % y 100 % de cacao" style="position: relative; flex: 1; height: 24px"><div style="position: absolute; left: 0; right: 0; top: 11px; height: 2px; background: #1B1510"></div><span style="position: absolute; left: 50%; top: 3px; width: 18px; height: 18px; margin-left: -9px; box-sizing: border-box; border-radius: 50%; background: #4B1C52; border: 3px solid #FFFFFF; outline: 2px solid #4B1C52"></span><span style="position: absolute; left: 100%; top: 3px; width: 18px; height: 18px; margin-left: -18px; box-sizing: border-box; border-radius: 50%; background: #4B1C52; border: 3px solid #FFFFFF; outline: 2px solid #4B1C52"></span></div>
+            <span>100 %</span>
+          </div>
+          <a href="M-Detalle.dc.html" style="display: flex; align-items: center; justify-content: center; align-self: stretch; min-height: 54px; padding: 0 12px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 16px; font-weight: 700; text-transform: uppercase; text-decoration: none">Elegir · desde $15.000</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="dentro-m" style="padding: 104px 0; background: #FFFFFF">
+    <div style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 0 48px; display: flex; flex-direction: column; gap: 48px">
+      <h2 id="dentro-m" style="margin: 0; max-width: 700px; font-size: 56px; line-height: 1; font-weight: 800; letter-spacing: -0.015em">Lo que hay en cada empaque</h2>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px">
+        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 28px; background: #FAF3E3; border-radius: 20px">
+          <span style="padding: 5px 12px; border-radius: 8px; background: #0F3B2C; color: #FAF3E3; font-size: 15px; font-weight: 600">Café</span>
+          <h3 style="margin: 0; font-size: 30px; line-height: 1.1; font-weight: 800">100 % arábica, tostado en grano</h3>
+          <p style="margin: 0; font-size: 18px; line-height: 1.5">Tostión media en bolsas de 500 g. Cada una dice su finca, su altura y sus notas de cata.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 28px; background: #FAF3E3; border-radius: 20px">
+          <span style="padding: 5px 12px; border-radius: 8px; background: #4B1C52; color: #FAF3E3; font-size: 15px; font-weight: 600">Cacao</span>
+          <h3 style="margin: 0; font-size: 30px; line-height: 1.1; font-weight: 800">Cacao fino de aroma</h3>
+          <p style="margin: 0; font-size: 18px; line-height: 1.5">Chocolate oscuro al 65 %, 75 % y 100 %, en barras de 80 g. Sin gluten y con ingredientes naturales.</p>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 14px; padding: 28px; background: #FAF3E3; border-radius: 20px">
+          <span style="padding: 5px 12px; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-size: 15px; font-weight: 600">Origen</span>
+          <h3 style="margin: 0; font-size: 30px; line-height: 1.1; font-weight: 800">Apoya a nuestros cacaocultores</h3>
+          <p style="margin: 0; font-size: 18px; line-height: 1.5">Café y cacao de origen colombiano, de fincas entre 1.500 y 2.000 m s. n. m.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="oscuro" aria-labelledby="cacao-m" style="background: #4B1C52; color: #FAF3E3; overflow: hidden">
+    <div style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 0 48px; display: flex; flex-wrap: wrap; align-items: center; gap: 24px 64px">
+      <div style="flex: 1 1 440px; min-width: 0; display: flex; justify-content: center; padding-top: 48px"><img class="flota" src="/_blob/174ceb42cc4886c4e3be39d2b3fdb412" alt="Barras de chocolate oscuro Monteluna 75 % y 100 % cacao" style="height: 560px; margin-bottom: -24px; filter: drop-shadow(0 24px 22px rgba(0,0,0,0.4))"></div>
+      <div style="flex: 1 1 440px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 22px; padding: 88px 0">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #F2B632">Monteluna · chocolates de Colombia</span>
+        <h2 id="cacao-m" style="margin: 0; font-size: 56px; line-height: 1; font-weight: 800; letter-spacing: -0.015em">Chocolate oscuro, del 65 al 100 % de cacao.</h2>
+        <p style="margin: 0; max-width: 480px; font-size: 18px; line-height: 1.5">Cacao fino de aroma de origen colombiano. Sin gluten, con ingredientes naturales, en barras de 80 g.</p>
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px">
+          <li style="padding: 8px 16px; border: 2px solid #F2B632; border-radius: 12px; font-size: 20px; font-weight: 800">65 %</li>
+          <li style="padding: 8px 16px; border: 2px solid #F2B632; border-radius: 12px; font-size: 20px; font-weight: 800">75 %</li>
+          <li style="padding: 8px 16px; border: 2px solid #F2B632; border-radius: 12px; font-size: 20px; font-weight: 800">100 %</li>
+        </ul>
+        <a href="M-Listado.dc.html" style="display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 26px; border-radius: 12px; background: #F2B632; color: #1B1510; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none">Ver el cacao</a>
+      </div>
+    </div>
+  </section>
+
+  <section id="origen" class="oscuro" aria-labelledby="origen-m" style="background: #0F3B2C; color: #FAF3E3; padding: 104px 0 120px">
+    <div style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 0 48px; display: flex; flex-wrap: wrap; align-items: center; gap: 72px 64px">
+      <div style="flex: 1 1 440px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 22px">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #F2B632">Finca El Mirador · Huila</span>
+        <h2 id="origen-m" style="margin: 0; font-size: 56px; line-height: 1; font-weight: 800; letter-spacing: -0.015em">Nuestras montañas también cuentan historias.</h2>
+        <p style="margin: 0; max-width: 480px; font-size: 18px; line-height: 1.5">María Gómez cultiva Geisha en Huila, entre 1.500 y 1.900 m s. n. m. Proceso lavado, tostión media y una taza con cítricos, panela y chocolate.</p>
+        <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-wrap: wrap; gap: 10px">
+          <li style="padding: 8px 14px; border-radius: 8px; background: rgba(250,243,227,0.12); font-size: 16px; font-weight: 600">Productora: María Gómez</li>
+          <li style="padding: 8px 14px; border-radius: 8px; background: rgba(250,243,227,0.12); font-size: 16px; font-weight: 600">Variedad Geisha</li>
+          <li style="padding: 8px 14px; border-radius: 8px; background: rgba(250,243,227,0.12); font-size: 16px; font-weight: 600">Puntaje SCA 87</li>
+        </ul>
+        <a href="M-Origen.dc.html" style="display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 26px; border-radius: 12px; background: #FAF3E3; color: #1B1510; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none">Conocer Finca El Mirador</a>
+      </div>
+      <div style="position: relative; flex: 1 1 480px; min-width: 0">
+        <img src="/_blob/0c384b7395214bd75e3bd3a4edd1f262" alt="Cerezas de café madurando en la rama" style="display: block; width: 100%; aspect-ratio: 5 / 4; object-fit: cover; border-radius: 20px">
+        <img src="/_blob/4599aac869a16a1f06d18202d2ecbc9b" alt="" style="position: absolute; left: -56px; bottom: -64px; height: 300px; transform: rotate(-6deg); filter: drop-shadow(0 20px 18px rgba(0,0,0,0.45))">
+      </div>
+    </div>
+  </section>
+
+  <footer id="contacto" class="oscuro" style="background: #1B1510; color: #FAF3E3">
+    <div style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 72px 48px 40px; display: flex; flex-direction: column; gap: 40px">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 40px 64px">
+        <div style="display: flex; flex-direction: column; gap: 12px; max-width: 340px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 44px; line-height: 1; font-weight: 800; text-transform: uppercase; color: #F2B632">Monteluna</span><span style="font-size: 17px; line-height: 1.5; color: #E9DDC3">Café y cacao de origen colombiano.</span></div>
+        <div style="display: flex; flex-wrap: wrap; gap: 32px 96px">
+          <div style="display: flex; flex-direction: column"><span style="margin-bottom: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #F2B632">Tienda</span><a href="M-Listado.dc.html" style="display: inline-flex; align-items: center; min-height: 36px; font-size: 18px; font-weight: 600; color: #FAF3E3; text-decoration: none">Café</a><a href="M-Listado.dc.html" style="display: inline-flex; align-items: center; min-height: 36px; font-size: 18px; font-weight: 600; color: #FAF3E3; text-decoration: none">Cacao</a><a href="M-Origenes.dc.html" style="display: inline-flex; align-items: center; min-height: 36px; font-size: 18px; font-weight: 600; color: #FAF3E3; text-decoration: none">Orígenes</a></div>
+          <div style="display: flex; flex-direction: column"><span style="margin-bottom: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #F2B632">Ayuda</span><a href="#" style="display: inline-flex; align-items: center; min-height: 36px; font-size: 18px; font-weight: 600; color: #FAF3E3; text-decoration: none">Envíos y entregas</a><a href="#" style="display: inline-flex; align-items: center; min-height: 36px; font-size: 18px; font-weight: 600; color: #FAF3E3; text-decoration: none">Contacto</a><a href="#" style="display: inline-flex; align-items: center; min-height: 36px; font-size: 18px; font-weight: 600; color: #FAF3E3; text-decoration: none">Nosotros</a></div>
+        </div>
+      </div>
+      <div style="padding-top: 24px; border-top: 1px solid rgba(250,243,227,0.2); font-size: 15px; color: #E9DDC3">Monteluna · [razón social y datos legales]</div>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":5000}}'>
+class Component extends DCLogic {
+  renderVals() { return {}; }
+}
+</script>
+</body>
+</html>

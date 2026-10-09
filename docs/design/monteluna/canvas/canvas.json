@@ -1,0 +1,485 @@
+{
+  "v": 3,
+  "attachments": {},
+  "boards": {
+    "A-Detalle-1440.dc.html": {
+      "expand": "fill",
+      "h": 2040,
+      "is_interactive": true,
+      "title": "A · Detalle de producto · 1440",
+      "w": 1440,
+      "x": 3510,
+      "y": 0
+    },
+    "A-Detalle-390.dc.html": {
+      "h": 2900,
+      "is_interactive": true,
+      "title": "A · Detalle de producto · 390 (agotado)",
+      "w": 390,
+      "x": 5030,
+      "y": 0
+    },
+    "A-Tarjeta-1440.dc.html": {
+      "expand": "fill",
+      "h": 800,
+      "title": "A · Tarjeta de producto · 1440",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "A-Tarjeta-390.dc.html": {
+      "h": 1180,
+      "title": "A · Tarjeta de producto · 390",
+      "w": 390,
+      "x": 3040,
+      "y": 0
+    },
+    "B-Detalle-1440.dc.html": {
+      "expand": "fill",
+      "h": 2040,
+      "is_interactive": true,
+      "title": "B · Detalle de producto · 1440",
+      "w": 1440,
+      "x": 3510,
+      "y": 3400
+    },
+    "B-Detalle-390.dc.html": {
+      "h": 2900,
+      "is_interactive": true,
+      "title": "B · Detalle de producto · 390 (agotado)",
+      "w": 390,
+      "x": 5030,
+      "y": 3400
+    },
+    "B-Tarjeta-1440.dc.html": {
+      "expand": "fill",
+      "h": 800,
+      "title": "B · Tarjeta de producto · 1440",
+      "w": 1440,
+      "x": 1520,
+      "y": 3400
+    },
+    "B-Tarjeta-390.dc.html": {
+      "h": 1180,
+      "title": "B · Tarjeta de producto · 390",
+      "w": 390,
+      "x": 3040,
+      "y": 3400
+    },
+    "B-Tema.dc.html": {
+      "h": 900,
+      "title": "B · Tema: paleta y tipografía",
+      "w": 1440,
+      "x": 0,
+      "y": 3400
+    },
+    "C-Detalle-1440.dc.html": {
+      "expand": "fill",
+      "h": 2240,
+      "is_interactive": true,
+      "title": "C · Detalle de producto · 1440",
+      "w": 1440,
+      "x": 3510,
+      "y": 6800
+    },
+    "C-Detalle-390.dc.html": {
+      "h": 2900,
+      "is_interactive": true,
+      "title": "C · Detalle de producto · 390 (agotado)",
+      "w": 390,
+      "x": 5030,
+      "y": 6800
+    },
+    "C-Tarjeta-1440.dc.html": {
+      "expand": "fill",
+      "h": 880,
+      "title": "C · Tarjeta de producto · 1440",
+      "w": 1440,
+      "x": 1520,
+      "y": 6800
+    },
+    "C-Tarjeta-390.dc.html": {
+      "h": 1180,
+      "title": "C · Tarjeta de producto · 390",
+      "w": 390,
+      "x": 3040,
+      "y": 6800
+    },
+    "C-Tema.dc.html": {
+      "h": 900,
+      "title": "C · Tema: paleta y tipografía",
+      "w": 1440,
+      "x": 0,
+      "y": 6800
+    },
+    "Editorial-A-Crema-390.dc.html": {
+      "expand": "fill",
+      "h": 3560,
+      "is_interactive": true,
+      "page": "editorial",
+      "title": "A · Crema: móvil 390",
+      "w": 390,
+      "x": 4560,
+      "y": 0
+    },
+    "Editorial-A-Crema.dc.html": {
+      "expand": "fill",
+      "h": 2680,
+      "is_interactive": true,
+      "page": "editorial",
+      "title": "A · Crema: clara, CTA negro (cerca de BR.F)",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "Editorial-A-Inicio-390.dc.html": {
+      "expand": "fill",
+      "h": 4800,
+      "page": "editorial",
+      "title": "A · Crema: inicio · 390",
+      "w": 390,
+      "x": 1520,
+      "y": 5220
+    },
+    "Editorial-A-Inicio.dc.html": {
+      "expand": "fill",
+      "h": 4380,
+      "page": "editorial",
+      "title": "A · Crema: inicio · 1440",
+      "w": 1440,
+      "x": 0,
+      "y": 5220
+    },
+    "Editorial-A-Listado-390.dc.html": {
+      "expand": "fill",
+      "h": 1760,
+      "page": "editorial",
+      "title": "A · Crema: listado de café · 390",
+      "w": 390,
+      "x": 1520,
+      "y": 2920
+    },
+    "Editorial-A-Listado.dc.html": {
+      "expand": "fill",
+      "h": 2060,
+      "page": "editorial",
+      "title": "A · Crema: listado de café · 1440",
+      "w": 1440,
+      "x": 0,
+      "y": 2920
+    },
+    "Editorial-A-Sistema.dc.html": {
+      "h": 6950,
+      "page": "editorial",
+      "title": "A · Crema: sistema de diseño",
+      "w": 1440,
+      "x": 3040,
+      "y": 0
+    },
+    "Editorial-B-Tostado.dc.html": {
+      "expand": "fill",
+      "h": 2440,
+      "is_interactive": true,
+      "page": "editorial",
+      "title": "B · Tostado: café, serif editorial (cerca de Conwerse)",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "M-Carrito-390.dc.html": {
+      "expand": "fill",
+      "h": 4100,
+      "is_interactive": true,
+      "page": "monteluna",
+      "title": "Monteluna · carrito · página · 390",
+      "w": 390,
+      "x": 5030,
+      "y": 6800
+    },
+    "M-Carrito-Panel-390.dc.html": {
+      "h": 844,
+      "is_interactive": true,
+      "page": "monteluna",
+      "title": "Monteluna · carrito · hoja inferior · 390",
+      "w": 390,
+      "x": 3040,
+      "y": 6800
+    },
+    "M-Carrito-Panel.dc.html": {
+      "h": 900,
+      "is_interactive": true,
+      "page": "monteluna",
+      "title": "Monteluna · carrito · panel lateral · 1440",
+      "w": 1440,
+      "x": 1520,
+      "y": 6800
+    },
+    "M-Carrito.dc.html": {
+      "expand": "fill",
+      "h": 2500,
+      "is_interactive": true,
+      "page": "monteluna",
+      "title": "Monteluna · carrito · página · 1440",
+      "w": 1440,
+      "x": 3510,
+      "y": 6800
+    },
+    "M-Checkout-Datos.dc.html": {"expand": "fill", "h": 2500, "is_interactive": true, "page": "monteluna", "title": "Monteluna · checkout · datos y envío · 1440", "w": 1440, "x": 5500, "y": 6800},
+    "M-Checkout-Datos-390.dc.html": {"expand": "fill", "h": 3500, "is_interactive": true, "page": "monteluna", "title": "Monteluna · checkout · datos y envío · 390", "w": 390, "x": 7020, "y": 6800},
+    "M-Checkout-Pago.dc.html": {"expand": "fill", "h": 1900, "is_interactive": true, "page": "monteluna", "title": "Monteluna · checkout · revisa y paga · 1440", "w": 1440, "x": 7490, "y": 6800},
+    "M-Checkout-Pago-390.dc.html": {"expand": "fill", "h": 2500, "is_interactive": true, "page": "monteluna", "title": "Monteluna · checkout · revisa y paga · 390", "w": 390, "x": 9010, "y": 6800},
+    "M-Pedido.dc.html": {"expand": "fill", "h": 2500, "page": "monteluna", "title": "Monteluna · pedido · resultado del pago · 1440", "w": 1440, "x": 9480, "y": 6800},
+    "M-Pedido-390.dc.html": {"expand": "fill", "h": 3300, "page": "monteluna", "title": "Monteluna · pedido · resultado del pago · 390", "w": 390, "x": 11000, "y": 6800},
+    "M-Detalle-390.dc.html": {
+      "expand": "fill",
+      "h": 5300,
+      "is_interactive": true,
+      "page": "monteluna",
+      "title": "Monteluna · detalle de producto · 390",
+      "w": 390,
+      "x": 7020,
+      "y": 0
+    },
+    "M-Detalle.dc.html": {
+      "expand": "fill",
+      "h": 3900,
+      "is_interactive": true,
+      "page": "monteluna",
+      "title": "Monteluna · detalle de producto · 1440",
+      "w": 1440,
+      "x": 5500,
+      "y": 0
+    },
+    "M-Inicio-390.dc.html": {
+      "expand": "fill",
+      "h": 6300,
+      "page": "monteluna",
+      "title": "Monteluna · inicio · 390",
+      "w": 390,
+      "x": 3040,
+      "y": 0
+    },
+    "M-Inicio.dc.html": {
+      "expand": "fill",
+      "h": 5000,
+      "page": "monteluna",
+      "title": "Monteluna · inicio · 1440",
+      "w": 1440,
+      "x": 1520,
+      "y": 0
+    },
+    "M-Listado-390.dc.html": {
+      "expand": "fill",
+      "h": 3900,
+      "page": "monteluna",
+      "title": "Monteluna · tienda · 390",
+      "w": 390,
+      "x": 5030,
+      "y": 0
+    },
+    "M-Listado.dc.html": {
+      "expand": "fill",
+      "h": 2500,
+      "page": "monteluna",
+      "title": "Monteluna · tienda · 1440",
+      "w": 1440,
+      "x": 3510,
+      "y": 0
+    },
+    "M-Origen-390.dc.html": {
+      "expand": "fill",
+      "h": 5900,
+      "page": "monteluna",
+      "title": "Monteluna · origen (plantilla) · café · 390",
+      "w": 390,
+      "x": 9010,
+      "y": 0
+    },
+    "M-Origen-Cacao-390.dc.html": {
+      "expand": "fill",
+      "h": 5700,
+      "page": "monteluna",
+      "title": "Monteluna · origen (plantilla) · cacao · 390",
+      "w": 390,
+      "x": 11000,
+      "y": 0
+    },
+    "M-Origen-Cacao.dc.html": {
+      "expand": "fill",
+      "h": 4300,
+      "page": "monteluna",
+      "title": "Monteluna · origen (plantilla) · cacao · 1440",
+      "w": 1440,
+      "x": 9480,
+      "y": 0
+    },
+    "M-Origen.dc.html": {
+      "expand": "fill",
+      "h": 4800,
+      "page": "monteluna",
+      "title": "Monteluna · origen (plantilla) · café · 1440",
+      "w": 1440,
+      "x": 7490,
+      "y": 0
+    },
+    "M-Origenes-390.dc.html": {
+      "expand": "fill",
+      "h": 1750,
+      "page": "monteluna",
+      "title": "Monteluna · índice de orígenes · 390",
+      "w": 390,
+      "x": 12990,
+      "y": 0
+    },
+    "M-Origenes.dc.html": {
+      "expand": "fill",
+      "h": 1800,
+      "page": "monteluna",
+      "title": "Monteluna · índice de orígenes · 1440",
+      "w": 1440,
+      "x": 11470,
+      "y": 0
+    },
+    "M-Sistema.dc.html": {
+      "h": 8500,
+      "page": "monteluna",
+      "title": "Monteluna · sistema de diseño",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    },
+    "Main.dc.html": {
+      "h": 900,
+      "title": "A · Tema: paleta y tipografía",
+      "w": 1440,
+      "x": 0,
+      "y": 0
+    }
+  },
+  "createdOnFiles": {
+    "at": "2026-10-09T12:00:00Z",
+    "v": 1
+  },
+  "designSystems": [],
+  "launch": {
+    "page": "monteluna",
+    "view": "canvas"
+  },
+  "notes": {
+    "titleA": {
+      "kind": "title1",
+      "maxW": 5420,
+      "text": "A · Páramo: ficha técnica de altura",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "titleB": {
+      "kind": "title1",
+      "maxW": 5420,
+      "text": "B · Mercado: color de plaza, tipografía de cartel",
+      "w": 240,
+      "x": 0,
+      "y": 3100
+    },
+    "titleC": {
+      "kind": "title1",
+      "maxW": 5420,
+      "text": "C · Cacao nocturno: oscuro, pausado, de sobremesa",
+      "w": 240,
+      "x": 0,
+      "y": 6500
+    },
+    "titleCarrito": {
+      "kind": "title1",
+      "maxW": 3900,
+      "page": "monteluna",
+      "text": "Carrito · panel que se abre y página completa",
+      "w": 240,
+      "x": 1520,
+      "y": 6500
+    },
+    "titleCheckout": {"kind": "title1", "maxW": 5890, "page": "monteluna", "text": "Checkout · datos y envío, pago y resultado del pedido", "w": 240, "x": 5500, "y": 6500},
+    "titleEditorial": {
+      "kind": "title1",
+      "maxW": 4950,
+      "page": "editorial",
+      "text": "Detalle de producto · editorial cálido minimal",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    },
+    "titleMonteluna": {
+      "kind": "title1",
+      "maxW": 8000,
+      "page": "monteluna",
+      "text": "Monteluna · dirección fresca, inspirada en Heisenbean",
+      "w": 240,
+      "x": 0,
+      "y": -300
+    }
+  },
+  "order": [
+    "M-Sistema.dc.html",
+    "M-Inicio.dc.html",
+    "M-Inicio-390.dc.html",
+    "M-Listado.dc.html",
+    "M-Listado-390.dc.html",
+    "M-Detalle.dc.html",
+    "M-Detalle-390.dc.html",
+    "M-Origen.dc.html",
+    "M-Origen-390.dc.html",
+    "M-Origen-Cacao.dc.html",
+    "M-Origen-Cacao-390.dc.html",
+    "M-Origenes.dc.html",
+    "M-Origenes-390.dc.html",
+    "M-Carrito-Panel.dc.html",
+    "M-Carrito-Panel-390.dc.html",
+    "M-Carrito.dc.html",
+    "M-Carrito-390.dc.html",
+    "M-Checkout-Datos.dc.html",
+    "M-Checkout-Datos-390.dc.html",
+    "M-Checkout-Pago.dc.html",
+    "M-Checkout-Pago-390.dc.html",
+    "M-Pedido.dc.html",
+    "M-Pedido-390.dc.html",
+    "Main.dc.html",
+    "A-Tarjeta-1440.dc.html",
+    "A-Tarjeta-390.dc.html",
+    "A-Detalle-1440.dc.html",
+    "A-Detalle-390.dc.html",
+    "B-Tema.dc.html",
+    "B-Tarjeta-1440.dc.html",
+    "B-Tarjeta-390.dc.html",
+    "B-Detalle-1440.dc.html",
+    "B-Detalle-390.dc.html",
+    "C-Tema.dc.html",
+    "C-Tarjeta-1440.dc.html",
+    "C-Tarjeta-390.dc.html",
+    "C-Detalle-1440.dc.html",
+    "C-Detalle-390.dc.html",
+    "Editorial-A-Crema.dc.html",
+    "Editorial-B-Tostado.dc.html",
+    "Editorial-A-Sistema.dc.html",
+    "Editorial-A-Crema-390.dc.html",
+    "Editorial-A-Listado.dc.html",
+    "Editorial-A-Listado-390.dc.html",
+    "Editorial-A-Inicio.dc.html",
+    "Editorial-A-Inicio-390.dc.html"
+  ],
+  "pages": [
+    {
+      "id": "exploracion",
+      "name": "Exploración: 3 direcciones"
+    },
+    {
+      "id": "editorial",
+      "name": "Detalle: editorial cálido"
+    },
+    {
+      "id": "monteluna",
+      "name": "Monteluna: dirección fresca"
+    }
+  ],
+  "title": "Café y cacao: 3 direcciones visuales"
+}

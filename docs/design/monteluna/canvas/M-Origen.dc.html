@@ -1,0 +1,274 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Monteluna · Origen (plantilla) · Finca El Mirador</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1510}a:hover{color:#C1272D}
+a:focus-visible,button:focus-visible{outline:3px solid #1B1510;outline-offset:3px}
+.oscuro a:focus-visible{outline-color:#F2B632}
+@keyframes cinta{to{transform:translateX(-50%)}}
+@keyframes flota{0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)}}
+.cinta{animation:cinta 32s linear infinite}.flota{animation:flota 6s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){.cinta,.flota{animation:none}}
+</style>
+</helmet>
+<div style="width: 100%; min-height: {{o.minH}}; box-sizing: border-box; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif">
+
+  <div style="display: flex; flex-wrap: wrap; justify-content: center; gap: 4px 24px; padding: 10px 24px; background: #0F3B2C; color: #FAF3E3; font-size: 15px; font-weight: 500">
+    <span>100 % arábica</span><span aria-hidden="true" style="color: #F2B632">•</span><span>Café tostado en grano</span><span aria-hidden="true" style="color: #F2B632">•</span><span>Cacao fino de aroma, origen Colombia</span>
+  </div>
+  <header style="background: #F2B632">
+    <div style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 0 48px; display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px 24px; min-height: 84px">
+      <a href="M-Inicio.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-size: 38px; line-height: 1; font-weight: 800; letter-spacing: 0.01em; text-transform: uppercase; color: #1B1510; text-decoration: none">Monteluna</a>
+      <nav aria-label="Principal" style="display: flex; flex-wrap: wrap; gap: 4px 40px; font-size: 18px; font-weight: 700; text-transform: uppercase">
+        <a href="M-Inicio.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; color: #1B1510; text-decoration: none">Inicio</a>
+        <a href="M-Listado.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; color: #1B1510; text-decoration: none">Tienda</a>
+        <a href="M-Origenes.dc.html" aria-current="page" style="display: inline-flex; align-items: center; min-height: 44px; color: #1B1510; text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 6px">Orígenes</a>
+        <a href="M-Inicio.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; color: #1B1510; text-decoration: none">Contacto</a>
+      </nav>
+      <a href="#" style="display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 22px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 16px; font-weight: 700; text-transform: uppercase; text-decoration: none">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path></svg>Carrito (0)
+      </a>
+    </div>
+  </header>
+
+  <section class="oscuro" aria-labelledby="origen-h1" style="background: {{o.color}}; color: #FAF3E3; overflow: hidden">
+    <div style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 28px 48px 0; display: flex; flex-direction: column; gap: 28px">
+      <nav aria-label="Ruta de navegación" style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px; font-size: 16px; font-weight: 600"><a href="M-Inicio.dc.html" style="color: #FAF3E3">Inicio</a><span aria-hidden="true">/</span><a href="M-Origenes.dc.html" style="color: #FAF3E3">Orígenes</a><span aria-hidden="true">/</span><span>{{o.nombre}}</span></nav>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 32px 56px">
+        <div style="flex: 1 1 520px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 22px; padding-bottom: 136px">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #F2B632">{{o.etiqueta}}</span>
+          <h1 id="origen-h1" style="margin: 0; font-size: clamp(52px, 7.6vw, 110px); line-height: 0.92; font-weight: 800; letter-spacing: -0.02em">{{o.nombre}}</h1>
+          <p style="margin: 0; font-size: 28px; line-height: 1.1; font-weight: 800; color: #F2B632">Nuestras montañas también cuentan historias.</p>
+          <p style="margin: 0; max-width: 500px; font-size: 18px; line-height: 1.5">{{o.intro}}</p>
+          <div style="display: flex; flex-wrap: wrap; gap: 12px; padding-top: 6px">
+            <a href="#productos" style="display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 26px; border-radius: 12px; background: #FAF3E3; color: #1B1510; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none">{{o.botonProductos}}</a>
+            <a href="#historia" style="display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 26px; border-radius: 12px; background: #F2B632; color: #1B1510; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none">Leer la historia</a>
+          </div>
+        </div>
+        <div style="position: relative; flex: 1 1 480px; min-width: 0; align-self: flex-end; padding: 0 0 96px 72px">
+          <img src="{{o.foto}}" alt="{{o.fotoAlt}}" style="display: block; width: 100%; aspect-ratio: 5 / 5.4; object-fit: cover; border-radius: 20px">
+          <div class="flota" style="position: absolute; left: -8px; bottom: 44px; height: 400px"><img src="{{o.productoImg}}" alt="" style="height: 100%; transform: rotate(-7deg); filter: drop-shadow(0 24px 20px rgba(0,0,0,0.5))"></div>
+          <sc-if value="{{o.conAltura}}" hint-placeholder-val="{{true}}">
+            <div style="position: absolute; right: -14px; top: -22px; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 132px; height: 132px; border-radius: 50%; background: #F2B632; color: #1B1510; outline: 2px dashed {{o.color}}; outline-offset: -9px; transform: rotate(9deg); text-align: center">
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase">Altura</span>
+              <span style="font-size: 25px; line-height: 1; font-weight: 800">{{o.alturaCorta}}</span>
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase">m s. n. m.</span>
+            </div>
+          </sc-if>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div style="max-width: 1320px; margin: -64px auto 0; box-sizing: border-box; padding: 0 48px; position: relative">
+    <dl style="margin: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px">
+      <sc-for list="{{o.datos}}" as="d" hint-placeholder-count="4">
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 22px 24px; background: #FFFFFF; border-radius: 20px"><dt style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5F554A">{{d.k}}</dt><dd style="margin: 0; font-size: 26px; line-height: 1.1; font-weight: 800">{{d.v}}</dd></div>
+      </sc-for>
+    </dl>
+  </div>
+
+  <section id="historia" aria-labelledby="historia-h2" style="padding: 104px 0">
+    <div style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 0 48px; display: flex; flex-wrap: wrap; gap: 32px 72px; align-items: flex-start">
+      <div style="flex: 1 1 380px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: {{o.color}}">La historia</span>
+        <h2 id="historia-h2" style="margin: 0; font-size: 56px; line-height: 1; font-weight: 800; letter-spacing: -0.015em">Quién lo cultiva y dónde.</h2>
+      </div>
+      <div style="flex: 1.4 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 20px">
+        <p style="margin: 0; font-size: 26px; line-height: 1.3; font-weight: 700">{{o.lead}}</p>
+        <sc-for list="{{o.historia}}" as="parrafo" hint-placeholder-count="1">
+          <p style="margin: 0; font-size: 18px; line-height: 1.6">{{parrafo.t}}</p>
+        </sc-for>
+        <sc-if value="{{o.historiaPendiente}}" hint-placeholder-val="{{false}}">
+          <div style="padding: 24px; border: 2px dashed #A8997C; border-radius: 20px; font-size: 18px; line-height: 1.6; color: #5F554A">[Historia corta de esta finca, tal como la escribas en el administrador. Dos o tres párrafos.]</div>
+        </sc-if>
+      </div>
+    </div>
+  </section>
+
+  <div aria-hidden="true" style="overflow: hidden; background: #1B1510; color: #FAF3E3">
+    <div class="cinta" style="display: flex; align-items: center; width: max-content; padding: 16px 0; font-size: 34px; line-height: 1; font-weight: 800; white-space: nowrap">
+      <sc-for list="{{o.cinta}}" as="c" hint-placeholder-count="8">
+        <sc-if value="{{c.texto}}" hint-placeholder-val="{{true}}"><span style="display: inline-flex; align-items: center; gap: 22px; padding-right: 22px">{{c.t}} <span style="color: #F2B632">✦</span></span></sc-if>
+        <sc-if value="{{c.pildora}}" hint-placeholder-val="{{false}}"><span style="margin-right: 22px; padding: 5px 14px; border-radius: 8px; background: #F3E6C4; color: #1B1510; font-size: 16px; font-weight: 600; transform: rotate(-3deg)">{{c.t}}</span></sc-if>
+      </sc-for>
+    </div>
+  </div>
+
+  <section aria-labelledby="proceso-h2" style="padding: 104px 0; background: #FFFFFF">
+    <div style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 0 48px; display: flex; flex-direction: column; gap: 44px">
+      <div style="display: flex; flex-direction: column; gap: 14px; max-width: 720px">
+        <h2 id="proceso-h2" style="margin: 0; font-size: 56px; line-height: 1; font-weight: 800; letter-spacing: -0.015em">{{o.procesoTitulo}}</h2>
+        <p style="margin: 0; font-size: 18px; line-height: 1.5">{{o.procesoSub}}</p>
+      </div>
+      <ol style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 20px">
+        <sc-for list="{{o.pasos}}" as="p" hint-placeholder-count="4">
+          <li style="display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 28px; background: #FAF3E3; border-radius: 20px"><span aria-hidden="true" style="display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: #F2B632; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 800">{{p.n}}</span><h3 style="margin: 0; font-size: 28px; line-height: 1.1; font-weight: 800">{{p.t}}</h3><p style="margin: 0; font-size: 17px; line-height: 1.5">{{p.d}}</p></li>
+        </sc-for>
+      </ol>
+    </div>
+  </section>
+
+  <sc-if value="{{o.conCifras}}" hint-placeholder-val="{{true}}">
+    <section aria-label="El origen en cifras" style="background: #F8E4AE">
+      <div style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 88px 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 40px 48px">
+        <sc-for list="{{o.cifras}}" as="f" hint-placeholder-count="3">
+          <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 90px; line-height: 0.95; font-weight: 800; letter-spacing: -0.02em">{{f.n}}</span><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase">{{f.l}}</span></div>
+        </sc-for>
+      </div>
+    </section>
+  </sc-if>
+
+  <sc-if value="{{o.conGaleria}}" hint-placeholder-val="{{true}}">
+    <section aria-label="Fotos del origen" style="padding: 104px 0 0">
+      <div style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 0 48px; display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 20px">
+        <sc-for list="{{o.galeria}}" as="g" hint-placeholder-count="3">
+          <img src="{{g.src}}" alt="{{g.alt}}" style="display: block; width: 100%; aspect-ratio: 4 / 5; object-fit: cover; background: #FFFFFF; border-radius: 20px">
+        </sc-for>
+      </div>
+    </section>
+  </sc-if>
+
+  <section id="productos" aria-labelledby="productos-h2" style="padding: 104px 0 112px">
+    <div style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 0 48px; display: flex; flex-wrap: wrap; align-items: center; gap: 24px 72px">
+      <div style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; align-items: flex-start; gap: 18px">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: {{o.color}}">{{o.productosEtiqueta}}</span>
+        <h2 id="productos-h2" style="margin: 0; font-size: 56px; line-height: 1; font-weight: 800; letter-spacing: -0.015em">Llévate la montaña a casa.</h2>
+        <p style="margin: 0; max-width: 440px; font-size: 18px; line-height: 1.5">{{o.productosTexto}}</p>
+      </div>
+      <div style="flex: {{o.productosFlex}}; min-width: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(270px, 1fr)); gap: 24px">
+        <sc-for list="{{o.productos}}" as="p" hint-placeholder-count="2">
+          <article style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 130px; padding: 0 18px 18px; background: #FFFFFF; border-radius: 20px; text-align: center">
+            <img src="{{p.img}}" alt="{{p.alt}}" style="height: 340px; margin-top: -130px; filter: drop-shadow(0 18px 14px rgba(27,21,16,0.24))">
+            <sc-if value="{{p.oferta}}" hint-placeholder-val="{{false}}"><span style="position: absolute; top: 14px; right: 14px; padding: 5px 12px; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-size: 14px; font-weight: 700">{{p.pildora}}</span></sc-if>
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: {{o.color}}">{{p.etiqueta}}</span>
+            <h3 style="margin: 0; font-size: 26px; line-height: 1.1; font-weight: 800"><a href="M-Detalle.dc.html" style="text-decoration: none">{{p.nombre}}</a></h3>
+            <p style="margin: 0; font-size: 17px; line-height: 1.45">{{p.desc}}</p>
+            <div style="display: flex; align-items: center; gap: 10px; align-self: stretch; margin-top: auto; padding-top: 8px; font-size: 14px; font-weight: 600; text-transform: uppercase">
+              <span>{{p.izq}}</span>
+              <div role="img" aria-label="{{p.medidor}}" style="position: relative; flex: 1; height: 24px"><div style="position: absolute; left: 0; right: 0; top: 11px; height: 2px; background: #1B1510"></div>
+                <sc-if value="{{p.cafe}}" hint-placeholder-val="{{true}}"><svg width="24" height="24" viewBox="0 0 24 24" style="position: absolute; left: 50%; top: 0; margin-left: -12px"><ellipse cx="12" cy="12" rx="6.5" ry="9.5" transform="rotate(35 12 12)" fill="#6B3E1E"></ellipse><path d="M8 17C13 14 11 10 16 7" stroke="#F3E6C4" stroke-width="1.6" fill="none" stroke-linecap="round"></path></svg></sc-if>
+                <sc-if value="{{p.punto}}" hint-placeholder-val="{{false}}"><span style="position: absolute; left: {{p.pos}}; top: 3px; width: 18px; height: 18px; margin-left: -9px; box-sizing: border-box; border-radius: 50%; background: #4B1C52; border: 3px solid #FFFFFF; outline: 2px solid #4B1C52"></span></sc-if>
+                <sc-if value="{{p.dos}}" hint-placeholder-val="{{false}}"><span style="position: absolute; left: {{p.pos2}}; top: 3px; width: 18px; height: 18px; margin-left: -9px; box-sizing: border-box; border-radius: 50%; background: #4B1C52; border: 3px solid #FFFFFF; outline: 2px solid #4B1C52"></span></sc-if>
+              </div>
+              <span>{{p.der}}</span>
+            </div>
+            <a href="M-Detalle.dc.html" style="display: flex; align-items: center; justify-content: center; align-self: stretch; min-height: 54px; padding: 0 12px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 16px; font-weight: 700; text-transform: uppercase; text-decoration: none">{{p.boton}}</a>
+          </article>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <section aria-labelledby="otros-h2" style="padding: 0 0 112px">
+    <div style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 0 48px; display: flex; flex-direction: column; gap: 16px">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px 32px">
+        <h2 id="otros-h2" style="margin: 0; font-size: 56px; line-height: 1; font-weight: 800; letter-spacing: -0.015em">Otros orígenes</h2>
+        <a href="M-Origenes.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 16px; font-weight: 700; text-transform: uppercase; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px">Ver todos los orígenes <span aria-hidden="true" style="margin-left: 8px">→</span></a>
+      </div>
+      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(420px, 1fr)); gap: 24px">
+        <sc-for list="{{o.otros}}" as="x" hint-placeholder-count="2">
+          <div class="oscuro" style="position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 14px; margin-top: 56px; padding: 36px 220px 36px 36px; background: {{x.color}}; color: #FAF3E3; border-radius: 20px">
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #F2B632">{{x.etiqueta}}</span>
+            <h3 style="margin: 0; font-size: 40px; line-height: 1; font-weight: 800">{{x.nombre}}</h3>
+            <p style="margin: 0; font-size: 18px; line-height: 1.5">{{x.desc}}</p>
+            <a href="{{x.href}}" style="display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 22px; border-radius: 12px; background: #FAF3E3; color: #1B1510; font-size: 16px; font-weight: 700; text-transform: uppercase; text-decoration: none">Conocer el origen</a>
+            <img src="{{x.img}}" alt="" style="position: absolute; right: -4px; bottom: 16px; height: 330px; transform: rotate(6deg); filter: drop-shadow(0 20px 18px rgba(0,0,0,0.45))">
+          </div>
+        </sc-for>
+      </div>
+    </div>
+  </section>
+
+  <footer class="oscuro" style="background: #1B1510; color: #FAF3E3">
+    <div style="max-width: 1320px; margin: 0 auto; box-sizing: border-box; padding: 64px 48px 40px; display: flex; flex-direction: column; gap: 36px">
+      <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 40px 64px">
+        <div style="display: flex; flex-direction: column; gap: 12px; max-width: 340px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 44px; line-height: 1; font-weight: 800; text-transform: uppercase; color: #F2B632">Monteluna</span><span style="font-size: 17px; line-height: 1.5; color: #E9DDC3">Café y cacao de origen colombiano.</span></div>
+        <div style="display: flex; flex-wrap: wrap; gap: 32px 96px">
+          <div style="display: flex; flex-direction: column"><span style="margin-bottom: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #F2B632">Tienda</span><a href="M-Listado.dc.html" style="display: inline-flex; align-items: center; min-height: 36px; font-size: 18px; font-weight: 600; color: #FAF3E3; text-decoration: none">Café</a><a href="M-Listado.dc.html" style="display: inline-flex; align-items: center; min-height: 36px; font-size: 18px; font-weight: 600; color: #FAF3E3; text-decoration: none">Cacao</a><a href="M-Origenes.dc.html" style="display: inline-flex; align-items: center; min-height: 36px; font-size: 18px; font-weight: 600; color: #FAF3E3; text-decoration: none">Orígenes</a></div>
+          <div style="display: flex; flex-direction: column"><span style="margin-bottom: 8px; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #F2B632">Ayuda</span><a href="#" style="display: inline-flex; align-items: center; min-height: 36px; font-size: 18px; font-weight: 600; color: #FAF3E3; text-decoration: none">Envíos y entregas</a><a href="#" style="display: inline-flex; align-items: center; min-height: 36px; font-size: 18px; font-weight: 600; color: #FAF3E3; text-decoration: none">Contacto</a><a href="#" style="display: inline-flex; align-items: center; min-height: 36px; font-size: 18px; font-weight: 600; color: #FAF3E3; text-decoration: none">Nosotros</a></div>
+        </div>
+      </div>
+      <div style="padding-top: 24px; border-top: 1px solid rgba(250,243,227,0.2); font-size: 15px; color: #E9DDC3">Monteluna · [razón social y datos legales]</div>
+    </div>
+  </footer>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"origen":{"editor":"enum","options":["Finca El Mirador","Origen de cacao"],"default":"Finca El Mirador"},"$preview":{"width":1440,"height":4800}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const pasosCafe = [
+      { n: '01', t: 'Cosecha', d: 'Se recogen las cerezas maduras del cafeto.' },
+      { n: '02', t: 'Beneficio', d: 'Se retira la pulpa y el grano se seca. El proceso de cada lote va en su ficha.' },
+      { n: '03', t: 'Tostión', d: 'Se tuesta por lote. La fecha de tueste aparece en cada producto.' },
+      { n: '04', t: 'A tu medida', d: 'En grano entero o molido, según lo que elijas en el producto.' }
+    ];
+    const pasosCacao = [
+      { n: '01', t: 'Cosecha', d: 'Se abren las mazorcas maduras y se saca el grano con su pulpa.' },
+      { n: '02', t: 'Fermentación y secado', d: 'El grano se fermenta y luego se seca.' },
+      { n: '03', t: 'Tostado y molido', d: 'El grano tostado se muele hasta formar la pasta de cacao.' },
+      { n: '04', t: 'En barra', d: 'Se moldea en barras. El porcentaje de cacao va en cada producto.' }
+    ];
+    const txt = (t) => ({ t, texto: true, pildora: false });
+    const pil = (t) => ({ t, texto: false, pildora: true });
+    const mirador = {
+      minH: '4800px', color: '#0F3B2C', etiqueta: 'Origen de café · Huila, Colombia', nombre: 'Finca El Mirador',
+      intro: 'María Gómez cultiva café aquí, entre 1.500 y 1.900 m s. n. m.',
+      botonProductos: 'Ver el café de esta finca',
+      foto: '/_blob/0c384b7395214bd75e3bd3a4edd1f262', fotoAlt: 'Cerezas de café madurando en la rama',
+      productoImg: '/_blob/4599aac869a16a1f06d18202d2ecbc9b',
+      conAltura: true, alturaCorta: '1.500–1.900',
+      datos: [ { k: 'Productora', v: 'María Gómez' }, { k: 'Departamento', v: 'Huila, Colombia' }, { k: 'Municipio', v: '[Municipio]' }, { k: 'Altura', v: '1.500–1.900 m s. n. m.' } ],
+      lead: 'Finca El Mirador está en Huila, Colombia, entre 1.500 y 1.900 metros sobre el nivel del mar. La cultiva María Gómez.',
+      historia: [], historiaPendiente: true,
+      cinta: [ txt('Finca El Mirador'), pil('Huila'), txt('María Gómez'), pil('1.500–1.900 m s. n. m.'), txt('Origen Colombia'), pil('1 café'), txt('Finca El Mirador'), pil('Huila'), txt('María Gómez'), pil('1.500–1.900 m s. n. m.'), txt('Origen Colombia'), pil('1 café') ],
+      procesoTitulo: 'Del árbol a tu bolsa', procesoSub: 'Así llega un café de finca hasta tu casa.', pasos: pasosCafe,
+      conCifras: true, cifras: [ { n: '1.500 m', l: 'Altura mínima sobre el nivel del mar' }, { n: '1.900 m', l: 'Altura máxima sobre el nivel del mar' }, { n: '1', l: 'Café de esta finca en la tienda' } ],
+      conGaleria: true, galeria: [ { src: '/_blob/0c384b7395214bd75e3bd3a4edd1f262', alt: 'Cerezas de café rojas y verdes en la rama' }, { src: '/_blob/11ffca2b5aa6b76b9ad2bcdf2980d97d', alt: 'Granos de café tostados sobre una superficie clara' }, { src: '/_blob/c22017dc735afb6bfcd5c7fe4c0463d3', alt: 'Montón de granos de café tostado enteros' } ],
+      productosEtiqueta: 'El café de esta finca', productosTexto: 'Variedad, proceso, notas de cata y fecha de tueste están en la página de cada producto.', productosFlex: '0 1 360px',
+      productos: [ { img: '/_blob/4599aac869a16a1f06d18202d2ecbc9b', alt: 'Bolsa de café Finca El Mirador', oferta: true, pildora: 'Ahorras $7.000', etiqueta: 'Café · Geisha lavado', nombre: 'Finca El Mirador', desc: 'Cítricos, panela y chocolate. Final dulce y balanceado.', izq: 'Clara', der: 'Oscura', medidor: 'Tostión media', cafe: true, punto: false, dos: false, pos: '50%', pos2: '50%', boton: 'Ver producto · $38.000' } ],
+      otros: [
+        { color: '#0F3B2C', etiqueta: 'Origen de café · Colombia', nombre: 'Finca La María', desc: 'Entre 1.800 y 2.000 m s. n. m.', href: '#', img: '/_blob/0a97d52196c5379b4469272dee57b4de' },
+        { color: '#4B1C52', etiqueta: 'Origen de cacao · Colombia', nombre: '[Origen de cacao]', desc: 'De aquí sale el chocolate Monteluna.', href: 'M-Origen-Cacao.dc.html', img: '/_blob/cee819ee8bff77267eb56c58e73e513f' }
+      ]
+    };
+    const cacao = {
+      minH: '4300px', color: '#4B1C52', etiqueta: 'Origen de cacao · [Departamento], Colombia', nombre: '[Origen de cacao]',
+      intro: '[Productor] cultiva cacao aquí.',
+      botonProductos: 'Ver el cacao de este origen',
+      foto: '/_blob/cbca4d69a07d844717b1b8582c87d058', fotoAlt: 'Mazorcas de cacao rojas y amarillas',
+      productoImg: '/_blob/cee819ee8bff77267eb56c58e73e513f',
+      conAltura: false, alturaCorta: '',
+      datos: [ { k: 'Productor', v: '[Productor]' }, { k: 'Departamento', v: '[Departamento], Colombia' }, { k: 'Municipio', v: '[Municipio]' } ],
+      lead: '[Origen de cacao] está en [Departamento], Colombia. Lo cultiva [Productor].',
+      historia: [], historiaPendiente: false,
+      cinta: [ txt('[Origen de cacao]'), pil('[Departamento]'), txt('[Productor]'), pil('3 chocolates'), txt('Origen Colombia'), pil('Monteluna'), txt('[Origen de cacao]'), pil('[Departamento]'), txt('[Productor]'), pil('3 chocolates'), txt('Origen Colombia'), pil('Monteluna') ],
+      procesoTitulo: 'Del árbol a tu barra', procesoSub: 'Así llega un cacao de origen hasta una barra de chocolate.', pasos: pasosCacao,
+      conCifras: false, cifras: [],
+      conGaleria: true, galeria: [ { src: '/_blob/cbca4d69a07d844717b1b8582c87d058', alt: 'Mazorcas de cacao rojas y amarillas' }, { src: '/_blob/39fdcb7b35dd76acf7e5664bb1e013ca', alt: 'Mazorcas de cacao verdes y amarillas en el tronco del árbol' } ],
+      productosEtiqueta: 'El cacao de este origen', productosTexto: 'El porcentaje de cacao y el peso están en la página de cada producto.', productosFlex: '2 1 560px',
+      productos: [
+        { img: '/_blob/cee819ee8bff77267eb56c58e73e513f', alt: 'Barra de chocolate oscuro Monteluna 65 % cacao', oferta: false, pildora: '', etiqueta: 'Cacao · 80 g', nombre: 'Chocolate oscuro 65 %', desc: 'Cacao fino de aroma. Sin gluten, ingredientes naturales.', izq: '50 %', der: '100 %', medidor: '65 % de cacao', cafe: false, punto: true, dos: false, pos: '30%', pos2: '30%', boton: 'Ver producto · $14.000' },
+        { img: '/_blob/174ceb42cc4886c4e3be39d2b3fdb412', alt: 'Barras de chocolate oscuro Monteluna 75 % y 100 % cacao', oferta: false, pildora: '', etiqueta: 'Cacao · 80 g', nombre: 'Chocolate oscuro 75 % y 100 %', desc: 'Dos intensidades del mismo cacao fino de aroma.', izq: '50 %', der: '100 %', medidor: '75 % y 100 % de cacao', cafe: false, punto: true, dos: true, pos: '50%', pos2: 'calc(100% - 9px)', boton: 'Elegir · desde $15.000' }
+      ],
+      otros: [
+        { color: '#0F3B2C', etiqueta: 'Origen de café · Huila, Colombia', nombre: 'Finca El Mirador', desc: 'María Gómez, entre 1.500 y 1.900 m s. n. m.', href: 'M-Origen.dc.html', img: '/_blob/4599aac869a16a1f06d18202d2ecbc9b' },
+        { color: '#0F3B2C', etiqueta: 'Origen de café · Colombia', nombre: 'Finca La María', desc: 'Entre 1.800 y 2.000 m s. n. m.', href: '#', img: '/_blob/0a97d52196c5379b4469272dee57b4de' }
+      ]
+    };
+    const elegido = this.props.origen ?? 'Finca El Mirador';
+    return { o: elegido === 'Origen de cacao' ? cacao : mirador };
+  }
+}
+</script>
+</body>
+</html>

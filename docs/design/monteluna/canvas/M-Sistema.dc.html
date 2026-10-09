@@ -1,0 +1,431 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Monteluna · Sistema de diseño</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1510}a:hover{color:#C1272D}
+a:focus-visible,button:focus-visible{outline:3px solid #1B1510;outline-offset:3px}
+</style>
+</helmet>
+<div style="width: 1440px; min-height: 8500px; box-sizing: border-box; display: flex; flex-direction: column; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif">
+
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 48px; padding: 56px 72px; background: #F2B632">
+    <div style="display: flex; flex-direction: column; gap: 10px">
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase">Sistema de diseño · dirección fresca</span>
+      <h1 style="margin: 0; font-size: 90px; line-height: 0.95; font-weight: 800; letter-spacing: -0.015em">Monteluna</h1>
+    </div>
+    <p style="margin: 0; max-width: 460px; font-size: 18px; line-height: 1.5; font-weight: 500">Estructura y tipografía tomadas de Heisenbean (Barlow en negrita, tarjetas blancas de radio 20, barras de color, cinta). Colores tomados de tus empaques. Lo marcado «propuesto» no viene de ninguna de las dos fuentes.</p>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 80px; padding: 72px">
+
+  <section style="display: flex; flex-direction: column; gap: 28px">
+    <h2 style="margin: 0; font-size: 44px; line-height: 1; font-weight: 800; letter-spacing: -0.01em">1 · Color</h2>
+    <div style="display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 28px 20px">
+      <sc-for list="{{tokens}}" as="t" hint-placeholder-count="15">
+        <div style="display: flex; flex-direction: column; gap: 8px">
+          <div style="height: 84px; border-radius: 20px; border: 1px solid #E6D9BC; background: {{t.hex}}"></div>
+          <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px"><span style="font-size: 17px; font-weight: 700">{{t.name}}</span><span style="font-size: 15px; color: #5F554A">{{t.hex}}</span></div>
+          <code style="font-family: ui-monospace, Menlo, Consolas, monospace; font-size: 13px; color: #0F3B2C">{{t.css}}</code>
+          <span style="font-size: 14px; line-height: 1.4; color: #5F554A">{{t.use}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 28px">
+    <h2 style="margin: 0; font-size: 44px; line-height: 1; font-weight: 800; letter-spacing: -0.01em">2 · Tipografía</h2>
+    <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 24px">
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 28px; background: #FFFFFF; border-radius: 20px">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5F554A">Títulos, texto y controles</span>
+        <span style="font-size: 64px; line-height: 1; font-weight: 800; letter-spacing: -0.015em">Barlow</span>
+        <span style="font-size: 16px; line-height: 1.45; color: #5F554A">Google Fonts. Pesos 400, 500, 600, 700 y 800. Es la misma familia que usa Heisenbean en títulos, navegación y botones. Respaldo: sans-serif.</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 10px; padding: 28px; background: #FFFFFF; border-radius: 20px">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5F554A">Logotipo, etiquetas y sellos</span>
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 64px; line-height: 1; font-weight: 800; text-transform: uppercase">Barlow Condensed</span>
+        <span style="font-size: 16px; line-height: 1.45; color: #5F554A">Google Fonts. Pesos 700 y 800, siempre en mayúsculas. Heisenbean usa Lab Grotesque (de pago) para párrafos; aquí los párrafos van en Barlow 400.</span>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column">
+      <sc-for list="{{scale}}" as="r" hint-placeholder-count="10">
+        <div style="display: grid; grid-template-columns: 130px minmax(0, 1fr) 320px; gap: 24px; align-items: center; padding: 18px 0; border-top: 1px solid #E6D9BC">
+          <span style="font-size: 17px; font-weight: 700">{{r.name}}</span>
+          <span style="font-family: {{r.ff}}; font-size: {{r.fs}}; font-weight: {{r.fw}}; line-height: {{r.lh}}; letter-spacing: {{r.ls}}; text-transform: {{r.tt}}">{{r.sample}}</span>
+          <span style="font-size: 14px; line-height: 1.45; color: #5F554A">{{r.spec}}</span>
+        </div>
+      </sc-for>
+    </div>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 28px">
+    <h2 style="margin: 0; font-size: 44px; line-height: 1; font-weight: 800; letter-spacing: -0.01em">3 · Radios, espaciado y sombras</h2>
+    <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px">
+      <div style="display: flex; flex-direction: column; gap: 14px; padding: 28px; background: #FFFFFF; border-radius: 20px">
+        <span style="font-size: 20px; font-weight: 800">Radios</span>
+        <div style="display: flex; gap: 14px; align-items: flex-end">
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600"><div style="width: 68px; height: 52px; background: #F3E6C4; border-radius: 8px"></div>8 · píldora</div>
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600"><div style="width: 68px; height: 52px; background: #F3E6C4; border-radius: 12px"></div>12 · botón</div>
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600"><div style="width: 68px; height: 52px; background: #F3E6C4; border-radius: 20px"></div>20 · tarjeta</div>
+          <div style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 600"><div style="width: 52px; height: 52px; background: #F3E6C4; border-radius: 50%"></div>sello</div>
+        </div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px; padding: 28px; background: #FFFFFF; border-radius: 20px">
+        <span style="font-size: 20px; font-weight: 800">Espaciado</span>
+        <span style="font-size: 16px; line-height: 1.5">Base de 4 px. En componentes: 8, 12, 16, 24 y 28. Entre secciones: 104 px arriba y abajo (72 en móvil). Margen lateral: 48 px (20 en móvil). Ancho máximo: 1320 px.</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 14px; padding: 28px; background: #FFFFFF; border-radius: 20px">
+        <span style="font-size: 20px; font-weight: 800">Sombras</span>
+        <span style="font-size: 16px; line-height: 1.5">Ninguna en botones, tarjetas ni paneles. Solo los productos recortados proyectan sombra: drop-shadow 0 18px 14px rgba(27,21,16,.24). Foco: contorno de 3 px en foreground con 3 px de separación (amarillo sobre fondos oscuros).</span>
+      </div>
+    </div>
+  </section>
+
+  <section style="display: flex; flex-direction: column; gap: 32px">
+    <h2 style="margin: 0; font-size: 44px; line-height: 1; font-weight: 800; letter-spacing: -0.01em">4 · Componentes</h2>
+
+    <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 24px; border-top: 2px solid #1B1510">
+      <span style="font-size: 18px; font-weight: 800">Botones</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 20px 24px">
+        <div style="display: flex; flex-direction: column; gap: 8px"><a href="#" style="display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 26px; border-radius: 12px; background: #C1272D; color: #FFFFFF; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none">Agregar al carrito</a><span style="font-size: 14px; color: #5F554A">Acento · acción principal</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><a href="#" style="display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 26px; border-radius: 12px; background: #A51F26; color: #FFFFFF; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none">Agregar al carrito</a><span style="font-size: 14px; color: #5F554A">Hover #A51F26 (propuesto)</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><a href="#" style="display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 26px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none">Ver producto · $38.000</a><span style="font-size: 14px; color: #5F554A">Oscuro · tarjetas y carrito</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><a href="#" style="display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 26px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none; outline: 3px solid #1B1510; outline-offset: 3px">Ver producto</a><span style="font-size: 14px; color: #5F554A">Foco</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><button type="button" disabled style="min-height: 56px; padding: 0 26px; border: 0; border-radius: 12px; background: #E6D9BC; color: #5F554A; font-family: inherit; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase">Agotado</button><span style="font-size: 14px; color: #5F554A">Desactivado</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><div style="padding: 10px; border-radius: 16px; background: #4B1C52"><a href="#" style="display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 26px; border-radius: 12px; background: #F2B632; color: #1B1510; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none">Ver el cacao</a></div><span style="font-size: 14px; color: #5F554A">Amarillo · sobre morado</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><div style="padding: 10px; border-radius: 16px; background: #0F3B2C"><a href="#" style="display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 26px; border-radius: 12px; background: #FAF3E3; color: #1B1510; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none">Conocer la finca</a></div><span style="font-size: 14px; color: #5F554A">Crema · sobre verde</span></div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 24px; border-top: 2px solid #1B1510">
+      <span style="font-size: 18px; font-weight: 800">Barras y cabecera</span>
+      <div style="display: flex; flex-direction: column; border-radius: 20px; overflow: hidden">
+        <div style="display: flex; justify-content: center; gap: 24px; padding: 10px 24px; background: #0F3B2C; color: #FAF3E3; font-size: 15px; font-weight: 500"><span>100 % arábica</span><span aria-hidden="true" style="color: #F2B632">•</span><span>Café tostado en grano</span><span aria-hidden="true" style="color: #F2B632">•</span><span>Cacao fino de aroma, origen Colombia</span></div>
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 84px; padding: 0 32px; background: #F2B632">
+          <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 38px; line-height: 1; font-weight: 800; text-transform: uppercase">Monteluna</span>
+          <div style="display: flex; gap: 36px; font-size: 18px; font-weight: 700; text-transform: uppercase"><span style="text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 6px">Inicio</span><span>Tienda</span><span>Orígenes</span><span>Contacto</span></div>
+          <span style="display: inline-flex; align-items: center; min-height: 52px; padding: 0 22px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 16px; font-weight: 700; text-transform: uppercase">Carrito (0)</span>
+        </div>
+        <div style="display: flex; align-items: center; justify-content: center; gap: 12px; padding: 12px 24px; background: #F3E6C4; font-size: 16px; font-weight: 500"><span>Chocolate oscuro</span><span style="padding: 4px 12px; border-radius: 8px; background: #4B1C52; color: #FAF3E3; font-weight: 600">Monteluna 65 %, 75 % y 100 %</span><span>de cacao fino de aroma</span><span style="font-weight: 700; text-transform: uppercase; text-decoration: underline">Ver cacao</span></div>
+        <div style="display: flex; align-items: center; gap: 22px; padding: 16px 24px; background: #1B1510; color: #FAF3E3; font-size: 34px; line-height: 1; font-weight: 800; white-space: nowrap; overflow: hidden">Café tostado en grano <span style="color: #F2B632">✦</span> <span style="padding: 5px 14px; border-radius: 8px; background: #F3E6C4; color: #1B1510; font-size: 16px; font-weight: 600; transform: rotate(-3deg)">Finca El Mirador</span> Cacao fino de aroma <span style="color: #F2B632">✦</span> <span style="padding: 5px 14px; border-radius: 8px; background: #F3E6C4; color: #1B1510; font-size: 16px; font-weight: 600; transform: rotate(2deg)">Monteluna 65 %</span> 100 % arábica</div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 24px; border-top: 2px solid #1B1510">
+      <span style="font-size: 18px; font-weight: 800">Chip de opción</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 8px"><button type="button" aria-pressed="false" style="width: 124px; height: 54px; border: 2px solid #D9CBA8; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Media</button><span style="font-size: 14px; color: #5F554A">Normal</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><button type="button" aria-pressed="false" style="width: 124px; height: 54px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Media</button><span style="font-size: 14px; color: #5F554A">Hover (propuesto)</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><button type="button" aria-pressed="true" style="width: 124px; height: 54px; border: 2px solid #0F3B2C; border-radius: 12px; background: #0F3B2C; color: #FAF3E3; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Media</button><span style="font-size: 14px; color: #5F554A">Seleccionado</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><button type="button" aria-pressed="false" style="width: 124px; height: 54px; border: 2px solid #D9CBA8; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer; outline: 3px solid #1B1510; outline-offset: 3px">Media</button><span style="font-size: 14px; color: #5F554A">Foco</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><button type="button" aria-pressed="false" aria-label="Fina, agotado en esta combinación" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; width: 124px; height: 54px; border: 2px dashed #A8997C; border-radius: 12px; background: #F3E6C4; color: #5F554A; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer"><span style="text-decoration: line-through">Fina</span><span style="font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #9B1C1C">Agotado</span></button><span style="font-size: 14px; color: #5F554A">Agotado</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><button type="button" aria-pressed="true" aria-label="Fina, agotado en esta combinación" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1px; width: 124px; height: 54px; border: 2px solid #1B1510; border-radius: 12px; background: #F3E6C4; color: #1B1510; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer"><span style="text-decoration: line-through">Fina</span><span style="font-size: 12px; letter-spacing: 0.06em; text-transform: uppercase; color: #9B1C1C">Agotado</span></button><span style="font-size: 14px; color: #5F554A">Agotado y seleccionado</span></div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 24px; border-top: 2px solid #1B1510">
+      <span style="font-size: 18px; font-weight: 800">Precio, cantidad, píldoras y sello</span>
+      <div style="display: flex; flex-wrap: wrap; gap: 28px 40px; align-items: flex-start">
+        <div style="display: flex; flex-direction: column; gap: 8px"><div style="display: flex; align-items: center; gap: 14px; min-height: 58px"><span style="font-size: 44px; line-height: 1; font-weight: 800; letter-spacing: -0.02em">$38.000</span><s aria-label="Precio anterior: $45.000" style="font-size: 20px; font-weight: 500; color: #5F554A">$45.000</s><span style="padding: 5px 12px; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-size: 14px; font-weight: 700">Ahorras $7.000</span></div><span style="font-size: 14px; color: #5F554A">Precio en oferta · sin oferta va solo la cifra</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><div role="group" aria-label="Cantidad" style="display: flex; align-items: center; height: 58px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF"><button type="button" aria-label="Disminuir cantidad" style="width: 50px; height: 100%; border: 0; border-radius: 12px; background: transparent; color: #1B1510; font-family: inherit; font-size: 22px; font-weight: 700; cursor: pointer">−</button><span style="min-width: 26px; text-align: center; font-size: 18px; font-weight: 800">1</span><button type="button" aria-label="Aumentar cantidad" style="width: 50px; height: 100%; border: 0; border-radius: 12px; background: transparent; color: #1B1510; font-family: inherit; font-size: 22px; font-weight: 700; cursor: pointer">+</button></div><span style="font-size: 14px; color: #5F554A">Cantidad</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px; min-height: 58px; max-width: 330px"><span style="padding: 5px 12px; border-radius: 8px; background: #0F3B2C; color: #FAF3E3; font-size: 15px; font-weight: 600">Café</span><span style="padding: 5px 12px; border-radius: 8px; background: #4B1C52; color: #FAF3E3; font-size: 15px; font-weight: 600">Cacao</span><span style="padding: 5px 12px; border-radius: 8px; background: #F3E6C4; font-size: 15px; font-weight: 600">Finca El Mirador</span><span style="padding: 5px 12px; border-radius: 8px; background: #1B1510; color: #FAF3E3; font-size: 14px; font-weight: 700">Agotado</span></div><span style="font-size: 14px; color: #5F554A">Píldoras · radio 8</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><div style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 124px; height: 124px; border-radius: 50%; background: #0F3B2C; color: #FAF3E3; outline: 2px dashed #F2B632; outline-offset: -9px; transform: rotate(10deg); text-align: center"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase">Tostión</span><span style="font-size: 30px; line-height: 0.95; font-weight: 800; color: #F2B632">Media</span><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase">en grano</span></div><span style="font-size: 14px; color: #5F554A">Sello · girado 10°</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px; width: 330px"><div style="display: flex; align-items: center; gap: 14px; padding: 16px 18px; background: #F3E6C4; border-radius: 16px"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="3"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg><div style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; font-weight: 800">Tostado el 2 oct 2026</span><span style="font-size: 15px; color: #5F554A">Es el lote que recibirás</span></div></div><span style="font-size: 14px; color: #5F554A">Panel de información · radio 16</span></div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 24px; border-top: 2px solid #1B1510">
+      <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 18px; font-weight: 800">Tarjeta de producto</span><span style="font-size: 14px; line-height: 1.45; color: #5F554A">El producto sobresale 130 px por arriba (72 en móvil). Fondo card, radio 20, sin sombra. El botón lleva al detalle, nunca agrega al carrito. Medidor de tostión para café y de porcentaje para cacao.</span></div>
+      <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <article style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 110px; padding: 0 16px 16px; background: #FFFFFF; border-radius: 20px; text-align: center">
+            <img src="/_blob/0a97d52196c5379b4469272dee57b4de" alt="" style="height: 280px; margin-top: -110px; filter: drop-shadow(0 18px 14px rgba(27,21,16,0.24))">
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #0F3B2C">Café · Colombia</span>
+            <span style="font-size: 23px; line-height: 1.1; font-weight: 800">Finca La María</span>
+            <span style="font-size: 16px; line-height: 1.4">Chocolate, caramelo y frutos rojos.</span>
+            <div style="display: flex; align-items: center; gap: 8px; align-self: stretch; font-size: 13px; font-weight: 600; text-transform: uppercase"><span>Clara</span><div style="position: relative; flex: 1; height: 24px"><div style="position: absolute; left: 0; right: 0; top: 11px; height: 2px; background: #1B1510"></div><svg width="24" height="24" viewBox="0 0 24 24" style="position: absolute; left: 50%; top: 0; margin-left: -12px"><ellipse cx="12" cy="12" rx="6.5" ry="9.5" transform="rotate(35 12 12)" fill="#6B3E1E"></ellipse><path d="M8 17C13 14 11 10 16 7" stroke="#F3E6C4" stroke-width="1.6" fill="none" stroke-linecap="round"></path></svg></div><span>Oscura</span></div>
+            <span style="display: flex; align-items: center; justify-content: center; align-self: stretch; min-height: 50px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 15px; font-weight: 700; text-transform: uppercase">Ver producto · $42.000</span>
+          </article>
+          <span style="font-size: 14px; color: #5F554A">Normal</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <article style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 110px; padding: 0 16px 16px; background: #FFFFFF; border-radius: 20px; text-align: center">
+            <img src="/_blob/4599aac869a16a1f06d18202d2ecbc9b" alt="" style="height: 280px; margin-top: -110px; filter: drop-shadow(0 18px 14px rgba(27,21,16,0.24))">
+            <span style="position: absolute; top: 12px; right: 12px; padding: 4px 10px; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-size: 13px; font-weight: 700">Ahorras $7.000</span>
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #0F3B2C">Café · Huila</span>
+            <span style="font-size: 23px; line-height: 1.1; font-weight: 800">Finca El Mirador</span>
+            <span style="font-size: 16px; line-height: 1.4">Cítricos, panela y chocolate.</span>
+            <div style="display: flex; align-items: center; gap: 8px; align-self: stretch; font-size: 13px; font-weight: 600; text-transform: uppercase"><span>Clara</span><div style="position: relative; flex: 1; height: 24px"><div style="position: absolute; left: 0; right: 0; top: 11px; height: 2px; background: #1B1510"></div><svg width="24" height="24" viewBox="0 0 24 24" style="position: absolute; left: 50%; top: 0; margin-left: -12px"><ellipse cx="12" cy="12" rx="6.5" ry="9.5" transform="rotate(35 12 12)" fill="#6B3E1E"></ellipse><path d="M8 17C13 14 11 10 16 7" stroke="#F3E6C4" stroke-width="1.6" fill="none" stroke-linecap="round"></path></svg></div><span>Oscura</span></div>
+            <span style="display: flex; align-items: center; justify-content: center; align-self: stretch; min-height: 50px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 15px; font-weight: 700; text-transform: uppercase">Ver producto · $38.000</span>
+          </article>
+          <span style="font-size: 14px; color: #5F554A">En oferta</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <article style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 110px; padding: 0 16px 16px; background: #FFFFFF; border-radius: 20px; text-align: center">
+            <img src="/_blob/cee819ee8bff77267eb56c58e73e513f" alt="" style="height: 280px; margin-top: -110px; opacity: 0.45; filter: grayscale(0.5)">
+            <span style="position: absolute; top: 12px; right: 12px; padding: 4px 10px; border-radius: 8px; background: #1B1510; color: #FAF3E3; font-size: 13px; font-weight: 700">Agotado</span>
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #4B1C52">Cacao · 80 g</span>
+            <span style="font-size: 23px; line-height: 1.1; font-weight: 800">Chocolate oscuro 65 %</span>
+            <span style="font-size: 16px; line-height: 1.4">Cacao fino de aroma.</span>
+            <div style="display: flex; align-items: center; gap: 8px; align-self: stretch; font-size: 13px; font-weight: 600; text-transform: uppercase"><span>50 %</span><div style="position: relative; flex: 1; height: 24px"><div style="position: absolute; left: 0; right: 0; top: 11px; height: 2px; background: #1B1510"></div><span style="position: absolute; left: 30%; top: 3px; width: 18px; height: 18px; margin-left: -9px; box-sizing: border-box; border-radius: 50%; background: #4B1C52; border: 3px solid #FFFFFF; outline: 2px solid #4B1C52"></span></div><span>100 %</span></div>
+            <span style="display: flex; align-items: center; justify-content: center; align-self: stretch; min-height: 50px; border-radius: 12px; background: #E6D9BC; color: #5F554A; font-size: 15px; font-weight: 700; text-transform: uppercase">Ver producto · agotado</span>
+          </article>
+          <span style="font-size: 14px; color: #5F554A">Agotado · sigue enlazando al detalle</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <article style="position: relative; display: flex; flex-direction: column; align-items: center; gap: 10px; margin-top: 110px; padding: 0 16px 16px; background: #FFFFFF; border-radius: 20px; text-align: center">
+            <img src="/_blob/174ceb42cc4886c4e3be39d2b3fdb412" alt="" style="height: 280px; margin-top: -110px; filter: drop-shadow(0 18px 14px rgba(27,21,16,0.24))">
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #4B1C52">Cacao · 80 g</span>
+            <span style="font-size: 23px; line-height: 1.1; font-weight: 800; color: #C1272D">Chocolate oscuro 75 % y 100 %</span>
+            <span style="font-size: 16px; line-height: 1.4">Dos intensidades.</span>
+            <div style="display: flex; align-items: center; gap: 8px; align-self: stretch; font-size: 13px; font-weight: 600; text-transform: uppercase"><span>50 %</span><div style="position: relative; flex: 1; height: 24px"><div style="position: absolute; left: 0; right: 0; top: 11px; height: 2px; background: #1B1510"></div><span style="position: absolute; left: 50%; top: 3px; width: 18px; height: 18px; margin-left: -9px; box-sizing: border-box; border-radius: 50%; background: #4B1C52; border: 3px solid #FFFFFF; outline: 2px solid #4B1C52"></span><span style="position: absolute; left: 100%; top: 3px; width: 18px; height: 18px; margin-left: -18px; box-sizing: border-box; border-radius: 50%; background: #4B1C52; border: 3px solid #FFFFFF; outline: 2px solid #4B1C52"></span></div><span>100 %</span></div>
+            <span style="display: flex; align-items: center; justify-content: center; align-self: stretch; min-height: 50px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 15px; font-weight: 700; text-transform: uppercase; outline: 3px solid #1B1510; outline-offset: 3px">Elegir · desde $15.000</span>
+          </article>
+          <span style="font-size: 14px; color: #5F554A">Hover (nombre en acento) y foco</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 24px; border-top: 2px solid #1B1510">
+      <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 18px; font-weight: 800">Paso numerado y cifra grande</span><span style="align-self: flex-start; padding: 4px 10px; border-radius: 8px; background: #F2B632; font-size: 13px; font-weight: 700">Nuevos · página de origen</span><span style="font-size: 14px; line-height: 1.45; color: #5F554A">El paso cuenta el proceso en orden: número en círculo amarillo, título h3 y una frase. La cifra usa el tamaño display con una etiqueta debajo.</span></div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px">
+        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px; background: #FFFFFF; border-radius: 20px"><span style="display: inline-flex; align-items: center; justify-content: center; width: 52px; height: 52px; border-radius: 50%; background: #F2B632; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 800">02</span><span style="font-size: 26px; line-height: 1.1; font-weight: 800">Lavado</span><span style="font-size: 17px; line-height: 1.5">Se retira la pulpa y el grano se lava antes de secarse.</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 24px; background: #F8E4AE; border-radius: 20px"><span style="font-size: 90px; line-height: 0.95; font-weight: 800; letter-spacing: -0.02em">87</span><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase">Puntos SCA</span></div>
+        <div style="display: flex; align-items: center; gap: 18px; padding: 24px; background: #0F3B2C; border-radius: 20px"><div style="flex: none; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 112px; height: 112px; border-radius: 50%; background: #F2B632; color: #1B1510; outline: 2px dashed #0F3B2C; outline-offset: -8px; transform: rotate(-8deg); text-align: center"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase">Altura</span><span style="font-size: 22px; line-height: 1; font-weight: 800">1.500–1.900</span><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase">m s. n. m.</span></div><span style="font-size: 15px; line-height: 1.45; color: #FAF3E3">Sello invertido: sobre fondos oscuros va en amarillo con texto foreground.</span></div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 24px; border-top: 2px solid #1B1510">
+      <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 18px; font-weight: 800">Panel de color</span><span style="font-size: 14px; line-height: 1.45; color: #5F554A">Ya se usaba en la tienda y faltaba aquí. Verde para café, morado para cacao. Radio 20, etiqueta amarilla, título h2 y un párrafo. Puede llevar botón crema y un producto que sobresale.</span></div>
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px">
+        <div style="position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 40px; padding: 28px 150px 28px 28px; background: #0F3B2C; color: #FAF3E3; border-radius: 20px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #F2B632">Café · Colombia</span><span style="font-size: 34px; line-height: 1; font-weight: 800">Finca La María</span><span style="font-size: 16px; line-height: 1.45">Chocolate, caramelo y frutos rojos.</span><span style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 20px; border-radius: 12px; background: #FAF3E3; color: #1B1510; font-size: 15px; font-weight: 700; text-transform: uppercase">Ver el café</span><img src="/_blob/0a97d52196c5379b4469272dee57b4de" alt="" style="position: absolute; right: -6px; bottom: 12px; height: 250px; transform: rotate(6deg); filter: drop-shadow(0 16px 14px rgba(0,0,0,0.4))"></div>
+        <div style="position: relative; display: flex; flex-direction: column; align-items: flex-start; gap: 12px; margin-top: 40px; padding: 28px 150px 28px 28px; background: #4B1C52; color: #FAF3E3; border-radius: 20px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 17px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #F2B632">Cacao · Colombia</span><span style="font-size: 34px; line-height: 1; font-weight: 800">Chocolate Monteluna</span><span style="font-size: 16px; line-height: 1.45">Cacao fino de aroma, del 65 al 100 %.</span><span style="display: inline-flex; align-items: center; min-height: 48px; padding: 0 20px; border-radius: 12px; background: #F2B632; color: #1B1510; font-size: 15px; font-weight: 700; text-transform: uppercase">Ver el cacao</span><img src="/_blob/cee819ee8bff77267eb56c58e73e513f" alt="" style="position: absolute; right: -6px; bottom: 12px; height: 250px; transform: rotate(6deg); filter: drop-shadow(0 16px 14px rgba(0,0,0,0.4))"></div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 24px; border-top: 2px solid #1B1510">
+      <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 18px; font-weight: 800">Plantilla de origen</span><span style="align-self: flex-start; padding: 4px 10px; border-radius: 8px; background: #F2B632; font-size: 13px; font-weight: 700">Página dinámica</span><span style="font-size: 14px; line-height: 1.45; color: #5F554A">Una sola plantilla para todos los orígenes de café y cacao. Cada bloque se pinta con los datos de ese origen y se oculta si el dato falta. El menú «Orígenes» lleva al índice, nunca a un origen concreto. En el índice, el primer origen usa el panel de color a todo el ancho.</span></div>
+      <div style="display: flex; flex-direction: column; background: #FFFFFF; border-radius: 20px; overflow: hidden">
+        <div style="display: grid; grid-template-columns: 1fr 1.2fr 1.4fr; gap: 20px; padding: 14px 24px; background: #1B1510; color: #FAF3E3; font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase"><span>Bloque</span><span>De dónde sale</span><span>Si falta</span></div>
+        <sc-for list="{{plantilla}}" as="f" hint-placeholder-count="10">
+          <div style="display: grid; grid-template-columns: 1fr 1.2fr 1.4fr; gap: 20px; padding: 13px 24px; border-top: 1px solid #E6D9BC; font-size: 15px; line-height: 1.4"><span style="font-weight: 700">{{f.b}}</span><span>{{f.d}}</span><span style="color: #5F554A">{{f.s}}</span></div>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 24px; border-top: 2px solid #1B1510">
+      <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 18px; font-weight: 800">Línea de carrito</span><span style="align-self: flex-start; padding: 4px 10px; border-radius: 8px; background: #F2B632; font-size: 13px; font-weight: 700">Nueva · carrito</span><span style="font-size: 14px; line-height: 1.45; color: #5F554A">Tarjeta card de radio 20 con el producto asomando por arriba a la izquierda, girado unos grados. Lleva nombre, variante, cantidad compacta, total de la línea y quitar. El café muestra su fecha de tueste y el enlace a su origen; un producto sin origen no lo lleva.</span></div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div style="position: relative; display: flex; flex-direction: column; gap: 8px; margin-top: 22px; padding: 16px 16px 16px 118px; background: #FFFFFF; border-radius: 20px">
+            <img src="/_blob/4599aac869a16a1f06d18202d2ecbc9b" alt="" style="position: absolute; left: 2px; top: -22px; height: 160px; transform: rotate(-6deg); filter: drop-shadow(0 12px 10px rgba(27,21,16,0.26))">
+            <span style="font-size: 20px; line-height: 1.1; font-weight: 800">Finca El Mirador</span>
+            <span style="font-size: 15px; font-weight: 500; color: #5F554A">500 g · Grano entero</span>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px"><span style="padding: 4px 10px; border-radius: 8px; background: #F3E6C4; font-size: 13px; font-weight: 600">Tostado el 2 oct 2026</span><span style="font-size: 13px; font-weight: 700; text-transform: uppercase; text-decoration: underline; text-underline-offset: 4px">Su origen →</span></div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><div style="display: flex; align-items: center; height: 44px; border: 2px solid #1B1510; border-radius: 12px"><span style="width: 44px; text-align: center; font-size: 20px; font-weight: 700">−</span><span style="min-width: 20px; text-align: center; font-size: 16px; font-weight: 800">1</span><span style="width: 44px; text-align: center; font-size: 20px; font-weight: 700">+</span></div><div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px"><s style="font-size: 13px; color: #5F554A">$45.000</s><span style="font-size: 21px; line-height: 1; font-weight: 800">$38.000</span></div></div>
+          </div>
+          <span style="font-size: 14px; color: #5F554A">En oferta, con tueste y origen</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div style="position: relative; display: flex; flex-direction: column; gap: 8px; margin-top: 22px; padding: 16px 16px 16px 118px; background: #FFFFFF; border-radius: 20px">
+            <img src="/_blob/cee819ee8bff77267eb56c58e73e513f" alt="" style="position: absolute; left: 2px; top: -22px; height: 160px; transform: rotate(5deg); filter: drop-shadow(0 12px 10px rgba(27,21,16,0.26))">
+            <span style="font-size: 20px; line-height: 1.1; font-weight: 800">Chocolate oscuro 65 %</span>
+            <span style="font-size: 15px; font-weight: 500; color: #5F554A">Barra de 80 g · $14.000 c/u</span>
+            <span style="align-self: flex-start; padding: 4px 10px; border-radius: 8px; background: #4B1C52; color: #FAF3E3; font-size: 13px; font-weight: 600">Cacao fino de aroma</span>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><div style="display: flex; align-items: center; height: 44px; border: 2px solid #1B1510; border-radius: 12px"><span style="width: 44px; text-align: center; font-size: 20px; font-weight: 700">−</span><span style="min-width: 20px; text-align: center; font-size: 16px; font-weight: 800">2</span><span style="width: 44px; text-align: center; font-size: 20px; font-weight: 700">+</span></div><span style="font-size: 21px; line-height: 1; font-weight: 800">$28.000</span></div>
+          </div>
+          <span style="font-size: 14px; color: #5F554A">Normal, sin origen</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px">
+          <div style="position: relative; display: flex; flex-direction: column; gap: 8px; margin-top: 22px; padding: 16px 16px 16px 118px; background: #F3E6C4; border: 2px dashed #A8997C; border-radius: 20px">
+            <img src="/_blob/4599aac869a16a1f06d18202d2ecbc9b" alt="" style="position: absolute; left: 2px; top: -22px; height: 160px; transform: rotate(-6deg); opacity: 0.45; filter: grayscale(0.5)">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px"><span style="font-size: 20px; line-height: 1.1; font-weight: 800">Finca El Mirador</span><span style="padding: 4px 10px; border-radius: 8px; background: #1B1510; color: #FAF3E3; font-size: 13px; font-weight: 700">Agotado</span></div>
+            <span style="font-size: 15px; font-weight: 500; color: #5F554A">500 g · Fina</span>
+            <span style="font-size: 15px; line-height: 1.4; font-weight: 600; color: #9B1C1C">Esta combinación se agotó. No se cobrará.</span>
+            <div style="display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 14px; font-weight: 700; text-transform: uppercase"><span style="text-decoration: underline; text-underline-offset: 4px">Cambiar opciones</span><span style="text-decoration: underline; text-underline-offset: 4px">Quitar</span></div>
+          </div>
+          <span style="font-size: 14px; color: #5F554A">Sin existencias al cotizar (propuesto)</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 24px; border-top: 2px solid #1B1510">
+      <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 18px; font-weight: 800">Resumen, pasos y controles</span><span style="align-self: flex-start; padding: 4px 10px; border-radius: 8px; background: #F2B632; font-size: 13px; font-weight: 700">Nuevos · carrito</span><span style="font-size: 14px; line-height: 1.45; color: #5F554A">El resumen dice «subtotal estimado»: el total real lo calcula el servidor al pagar. En el carrito no hay campo de cupón ni costo de envío.</span></div>
+      <div style="display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; align-items: start">
+        <div style="display: flex; flex-direction: column; gap: 14px; padding: 24px; background: #FFFFFF; border-radius: 20px">
+          <span style="font-size: 26px; line-height: 1.1; font-weight: 800">Resumen</span>
+          <div style="display: flex; justify-content: space-between; gap: 12px; font-size: 17px"><span>Precio regular</span><span style="font-weight: 600">$73.000</span></div>
+          <div style="display: flex; justify-content: space-between; gap: 12px; font-size: 17px; color: #C1272D; font-weight: 700"><span>Ahorras en ofertas</span><span>−$7.000</span></div>
+          <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; padding-top: 14px; border-top: 2px solid #1B1510"><span style="font-size: 17px; font-weight: 700">Subtotal estimado</span><span style="font-size: 36px; line-height: 0.95; font-weight: 800; letter-spacing: -0.02em">$66.000</span></div>
+          <div style="display: flex; justify-content: space-between; gap: 12px; font-size: 15px; color: #5F554A"><span>Envío</span><span>Se calcula con tu municipio</span></div>
+          <div style="display: flex; justify-content: space-between; gap: 12px; font-size: 15px; color: #5F554A"><span>Cupón</span><span>Se ingresa al pagar</span></div>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 20px">
+          <div style="display: flex; flex-direction: column; gap: 8px">
+            <ol style="list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700">
+              <li style="display: flex; align-items: center; gap: 8px"><span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: #1B1510; color: #FAF3E3; font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800">1</span>Carrito</li>
+              <li aria-hidden="true" style="flex: 1; height: 2px; background: #1B1510"></li>
+              <li style="display: flex; align-items: center; gap: 8px; color: #5F554A"><span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; box-sizing: border-box; border: 2px solid #A8997C; border-radius: 50%; background: #FFFFFF; font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800">2</span>Datos y envío</li>
+              <li aria-hidden="true" style="flex: 1; height: 2px; background: #D9CBA8"></li>
+              <li style="display: flex; align-items: center; gap: 8px; color: #5F554A"><span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; box-sizing: border-box; border: 2px solid #A8997C; border-radius: 50%; background: #FFFFFF; font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800">3</span>Pago</li>
+            </ol>
+            <span style="font-size: 14px; color: #5F554A">Pasos de compra · actual en foreground, siguientes con borde (propuesto)</span>
+          </div>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px">
+            <div style="display: flex; align-items: center; height: 44px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF"><span style="width: 44px; text-align: center; font-size: 20px; font-weight: 700">−</span><span style="min-width: 22px; text-align: center; font-size: 16px; font-weight: 800">2</span><span style="width: 44px; text-align: center; font-size: 20px; font-weight: 700">+</span></div>
+            <span style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 12px; background: #1B1510; color: #FAF3E3"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></span>
+            <span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; color: #5F554A"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></span>
+            <span style="min-width: 22px; height: 22px; box-sizing: border-box; padding: 0 5px; border-radius: 999px; background: #C1272D; color: #FFFFFF; font-size: 13px; line-height: 22px; font-weight: 800; text-align: center">3</span>
+          </div>
+          <span style="font-size: 14px; line-height: 1.45; color: #5F554A">Cantidad compacta de 44 px, botón de cerrar, botón de quitar y contador del carrito.</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 24px; border-top: 2px solid #1B1510">
+      <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 18px; font-weight: 800">Panel del carrito</span><span style="align-self: flex-start; padding: 4px 10px; border-radius: 8px; background: #F2B632; font-size: 13px; font-weight: 700">Nuevo · movimiento</span></div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px">
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 24px; background: #FFFFFF; border-radius: 20px"><span style="font-size: 20px; font-weight: 800">Forma</span><span style="font-size: 16px; line-height: 1.5">Escritorio: panel a la derecha de 500 px y alto completo. Móvil: hoja que sube desde abajo, con las esquinas de arriba a radio 24 y una pestaña para arrastrar. Cabecera amarilla, cuerpo background con desplazamiento, pie card fijo con filete foreground.</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 24px; background: #FFFFFF; border-radius: 20px"><span style="font-size: 20px; font-weight: 800">Movimiento</span><span style="font-size: 16px; line-height: 1.5">Abre en 480 ms con curva cubic-bezier(.22, 1, .36, 1); cierra en 320 ms. El velo foreground al 58 % aparece en 380 ms con desenfoque de 3 px. Las líneas suben escalonadas cada 80 ms y cada producto cae girando con un pequeño rebote.</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px; padding: 24px; background: #FFFFFF; border-radius: 20px"><span style="font-size: 20px; font-weight: 800">Reglas</span><span style="font-size: 16px; line-height: 1.5">Con «reducir movimiento» abre y cierra sin animación. Se cierra con el botón, con el velo o con Escape, y el foco vuelve al botón del carrito. Vacío: sello, título y un solo botón a la tienda, sin pie.</span></div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 24px; border-top: 2px solid #1B1510">
+      <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 18px; font-weight: 800">Campo de formulario</span><span style="align-self: flex-start; padding: 4px 10px; border-radius: 8px; background: #F2B632; font-size: 13px; font-weight: 700">Nuevo · checkout</span><span style="font-size: 14px; line-height: 1.45; color: #5F554A">Etiqueta arriba en 16/700. Caja de 56 px, radio 12 y borde foreground de 2 px, igual que la cantidad: el límite del campo supera 3:1. Ayuda y error debajo en 15 px. El error lleva icono y texto, nunca solo color. «Opcional» se escribe; lo obligatorio no lleva asterisco.</span></div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 20px; align-items: start">
+        <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Correo</span><span style="display: flex; align-items: center; height: 56px; box-sizing: border-box; padding: 0 16px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF; font-size: 18px; font-weight: 500; color: #5F554A">nombre@correo.com</span><span style="font-size: 15px; color: #5F554A">Vacío · el ejemplo va en muted-foreground</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Nombre completo</span><span style="display: flex; align-items: center; height: 56px; box-sizing: border-box; padding: 0 16px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF; font-size: 18px; font-weight: 500">María Gómez</span><span style="font-size: 15px; color: #5F554A">Con valor · 18/500 foreground</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Dirección</span><span style="display: flex; align-items: center; height: 56px; box-sizing: border-box; padding: 0 16px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF; font-size: 18px; font-weight: 500; outline: 3px solid #1B1510; outline-offset: 3px">Calle 5 # 12-34<span aria-hidden="true" style="width: 2px; height: 24px; margin-left: 2px; background: #1B1510"></span></span><span style="font-size: 15px; color: #5F554A">Foco · mismo anillo de 3 px que los botones</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Correo</span><span style="display: flex; align-items: center; height: 56px; box-sizing: border-box; padding: 0 16px; border: 2px solid #9B1C1C; border-radius: 12px; background: #FFFFFF; font-size: 18px; font-weight: 500">maria@correo</span><span style="display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; color: #9B1C1C"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5v.2"></path></svg>Escribe un correo completo, como nombre@correo.com</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Departamento</span><span style="display: flex; align-items: center; justify-content: space-between; height: 56px; box-sizing: border-box; padding: 0 16px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF; font-size: 18px; font-weight: 500">Huila<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></span><span style="font-size: 15px; color: #5F554A">Lista · el municipio es un buscador con la misma caja</span></div>
+        <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Cupón <span style="font-weight: 500; color: #5F554A">(opcional)</span></span><span style="display: flex; align-items: center; height: 56px; box-sizing: border-box; padding: 0 16px; border: 2px dashed #A8997C; border-radius: 12px; background: #F3E6C4; font-size: 18px; font-weight: 500; color: #5F554A">Código</span><span style="font-size: 15px; color: #5F554A">Deshabilitado · secondary, borde punteado y la razón escrita debajo</span></div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 24px; border-top: 2px solid #1B1510">
+      <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 18px; font-weight: 800">Casilla, cupón y avisos</span><span style="align-self: flex-start; padding: 4px 10px; border-radius: 8px; background: #F2B632; font-size: 13px; font-weight: 700">Nuevos · checkout</span><span style="font-size: 14px; line-height: 1.45; color: #5F554A">La casilla marcada usa brand-green, como el chip elegido. Un solo cupón por pedido. El aviso de error bloquea el paso y siempre trae una salida.</span></div>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 20px; align-items: start">
+        <div style="display: flex; flex-direction: column; gap: 14px">
+          <span style="display: flex; align-items: flex-start; gap: 12px; font-size: 17px; line-height: 1.4"><span style="flex: none; width: 28px; height: 28px; box-sizing: border-box; border: 2px solid #1B1510; border-radius: 8px; background: #FFFFFF"></span>Necesito factura con mis datos</span>
+          <span style="display: flex; align-items: flex-start; gap: 12px; font-size: 17px; line-height: 1.4"><span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 8px; background: #0F3B2C; color: #FAF3E3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>Recibe la misma persona</span>
+          <span style="font-size: 15px; color: #5F554A">Casilla de 28 px con radio 8. Toda la fila es el área de toque (44 px mínimo).</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; gap: 8px"><span style="flex: 1; display: flex; align-items: center; height: 52px; box-sizing: border-box; padding: 0 14px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF; font-size: 17px; font-weight: 600; text-transform: uppercase">BIENVENIDA10</span><span style="display: inline-flex; align-items: center; height: 52px; padding: 0 18px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 15px; font-weight: 700; text-transform: uppercase">Aplicar</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 10px 10px 14px; border: 2px dashed #1B1510; border-radius: 12px; background: #F8E4AE"><span style="display: flex; flex-direction: column"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800; letter-spacing: 0.06em">BIENVENIDA10</span><span style="font-size: 14px; font-weight: 600">10 % en tus productos</span></span><span style="display: inline-flex; align-items: center; justify-content: center; width: 40px; height: 40px; border-radius: 10px; color: #1B1510"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></span></div>
+          <span style="font-size: 15px; color: #5F554A">Campo de cupón y cupón aplicado: un tiquete punteado sobre hero, con botón de quitar.</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 12px">
+          <div style="display: flex; align-items: flex-start; gap: 12px; padding: 16px 18px; border: 2px solid #9B1C1C; border-radius: 16px; background: #FFFFFF"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9B1C1C" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="flex: none"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5v.2"></path></svg><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 17px; font-weight: 800">Todavía no llegamos a ese municipio</span><span style="font-size: 15px; line-height: 1.45">Prueba con otra dirección o escríbenos.</span></span></div>
+          <div style="display: flex; align-items: flex-start; gap: 12px; padding: 16px 18px; border-radius: 16px; background: #F3E6C4"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg><span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 17px; font-weight: 800">Aviso informativo</span><span style="font-size: 15px; line-height: 1.45; color: #5F554A">El panel de información que ya existía.</span></span></div>
+          <span style="font-size: 15px; color: #5F554A">Error: card con borde destructive de 2 px. Información: secondary sin borde.</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 24px; border-top: 2px solid #1B1510">
+      <div style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 18px; font-weight: 800">Piezas de la compra</span><span style="align-self: flex-start; padding: 4px 10px; border-radius: 8px; background: #F2B632; font-size: 13px; font-weight: 700">Nuevas · checkout</span><span style="font-size: 14px; line-height: 1.45; color: #5F554A">Cabecera sin menú para no sacar a nadie de la compra. El envío es una sola tarifa: se informa, no se elige. El medio de pago se elige dentro de la ventana de Wompi. Cada bloque del formulario abre con una letra (A, B, C) en un círculo brand-yellow, para no confundirla con los pasos numerados. El resumen del checkout lleva un corte de tiquete punteado antes del total. El resultado del pedido reutiliza el sello: amarillo aprobado, foreground en curso o vencido, destructive rechazado.</span></div>
+      <div style="display: grid; grid-template-columns: 1.15fr 1fr; gap: 24px 20px; align-items: start">
+        <div style="display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; min-height: 64px; padding: 0 20px; background: #F2B632; border-radius: 12px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 30px; line-height: 1; font-weight: 800; text-transform: uppercase">Monteluna</span><span style="display: inline-flex; align-items: center; gap: 8px; font-size: 15px; font-weight: 700; text-transform: uppercase"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"></rect><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path></svg>Compra segura</span></div>
+          <span style="font-size: 14px; color: #5F554A">Cabecera de compra · logo, «compra segura» y volver al carrito. Sin menú ni botón de carrito.</span>
+          <ol style="list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 10px; font-size: 15px; font-weight: 700">
+            <li style="display: flex; align-items: center; gap: 8px"><span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: #1E6B45; color: #FFFFFF"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><span style="text-decoration: underline; text-underline-offset: 4px">Carrito</span></li>
+            <li aria-hidden="true" style="flex: 1; height: 2px; background: #1B1510"></li>
+            <li style="display: flex; align-items: center; gap: 8px"><span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: #1B1510; color: #FAF3E3; font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800">2</span>Datos y envío</li>
+            <li aria-hidden="true" style="flex: 1; height: 2px; background: #A8997C"></li>
+            <li style="display: flex; align-items: center; gap: 8px; color: #5F554A"><span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; box-sizing: border-box; border: 2px solid #A8997C; border-radius: 50%; background: #FFFFFF; font-family: 'Barlow Condensed', sans-serif; font-size: 20px; font-weight: 800">3</span>Pago</li>
+          </ol>
+          <span style="font-size: 14px; color: #5F554A">Paso hecho · círculo success con visto; el nombre es un enlace para volver. La misma pieza sirve de seguimiento del pedido (Pagado, Preparando, Enviado, Entregado).</span>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 12px 14px; background: #FFFFFF; border-radius: 16px"><span style="position: relative; flex: none; width: 64px; height: 64px; border-radius: 12px; background: #F3E6C4"><img src="/_blob/4599aac869a16a1f06d18202d2ecbc9b" alt="" style="position: absolute; left: 8px; bottom: 4px; height: 76px; transform: rotate(-6deg); filter: drop-shadow(0 8px 6px rgba(27,21,16,0.24))"><span style="position: absolute; top: -8px; right: -8px; min-width: 22px; height: 22px; box-sizing: border-box; padding: 0 5px; border-radius: 999px; background: #1B1510; color: #FAF3E3; font-size: 13px; line-height: 22px; font-weight: 800; text-align: center">1</span></span><span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; font-weight: 800">Finca El Mirador</span><span style="font-size: 15px; color: #5F554A">500 g · Grano entero</span></span><span style="font-size: 17px; font-weight: 800">$38.000</span></div>
+          <span style="font-size: 14px; color: #5F554A">Línea corta del resumen · el producto se asoma por encima de su casilla y lleva la cantidad en un contador foreground.</span>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 16px">
+          <div style="display: flex; align-items: center; gap: 16px; padding: 18px 20px; background: #0F3B2C; color: #FAF3E3; border-radius: 16px"><svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#F2B632" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M2.5 6.5h11v10h-11zM13.5 10h4l3 3v3.5h-7"></path><circle cx="7" cy="17.5" r="1.8"></circle><circle cx="17" cy="17.5" r="1.8"></circle></svg><span style="flex: 1; display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #F2B632">Envío a Pitalito, Huila</span><span style="font-size: 17px; font-weight: 600">Llega en 2 a 4 días hábiles</span></span><span style="font-size: 30px; line-height: 1; font-weight: 800">$9.500</span></div>
+          <div style="display: flex; align-items: center; gap: 14px; padding: 18px 20px; border: 2px dashed #A8997C; border-radius: 16px; font-size: 16px; line-height: 1.4; color: #5F554A">Elige tu municipio y aquí verás el costo y el tiempo de entrega.</div>
+          <span style="font-size: 14px; color: #5F554A">Envío cotizado y su estado vacío. Si el pedido alcanza el umbral, la cifra dice «Gratis».</span>
+          <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px 18px; background: #1B1510; color: #FAF3E3; border-radius: 16px"><span style="display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 16px; font-weight: 700"><span>Tu pedido está apartado</span><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 26px; font-weight: 800; color: #F2B632">29:58</span></span><span style="height: 8px; border-radius: 999px; background: rgba(250,243,227,0.22)"><span style="display: block; width: 92%; height: 100%; border-radius: 999px; background: #F2B632"></span></span></div>
+          <span style="font-size: 14px; color: #5F554A">Reserva · cuenta atrás de 30 minutos con barra que se vacía. Solo aparece después de crear el pedido.</span>
+          <div style="display: flex; align-items: center; gap: 12px; min-height: 60px; padding: 0 16px; border: 2px solid #E6D9BC; border-radius: 12px; background: #FFFFFF"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"></rect><path d="M2.5 10h19"></path></svg><span style="flex: 1; font-size: 17px; font-weight: 700">Tarjeta</span><span style="font-size: 14px; color: #5F554A">Crédito o débito</span></div>
+          <span style="font-size: 14px; color: #5F554A">Medio de pago · fila informativa, no se selecciona aquí.</span>
+        </div>
+      </div>
+    </div>
+
+    <div style="display: grid; grid-template-columns: 190px minmax(0, 1fr); gap: 24px; align-items: start; padding-top: 24px; border-top: 2px solid #1B1510">
+      <span style="font-size: 18px; font-weight: 800">Tarjeta de beneficio y dato de ficha</span>
+      <div style="display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 20px">
+        <div style="display: flex; flex-direction: column; align-items: flex-start; gap: 12px; padding: 24px; background: #FFFFFF; border-radius: 20px"><span style="padding: 5px 12px; border-radius: 8px; background: #4B1C52; color: #FAF3E3; font-size: 15px; font-weight: 600">Cacao</span><span style="font-size: 28px; line-height: 1.1; font-weight: 800">Cacao fino de aroma</span><span style="font-size: 17px; line-height: 1.5">Píldora de color, título h3 y un párrafo. Fondo card sobre background, o background sobre card.</span></div>
+        <div style="display: flex; flex-direction: column; gap: 6px; padding: 20px 24px; background: #FFFFFF; border-radius: 20px; align-self: start"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5F554A">Altura</span><span style="font-size: 26px; line-height: 1.1; font-weight: 800">1.500–1.900 m s. n. m.</span></div>
+        <div style="display: flex; flex-direction: column; gap: 10px; font-size: 16px; line-height: 1.5"><span><span style="font-weight: 800; color: #1E6B45">Sí.</span> Productos recortados grandes, girados unos grados y saliéndose de su contenedor. Un color de fondo por sección.</span><span><span style="font-weight: 800; color: #9B1C1C">No.</span> Sombras en tarjetas, degradados, fotos dentro de marcos, ni más de un botón rojo por pantalla.</span></div>
+      </div>
+    </div>
+  </section>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":8500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const sans = "'Barlow', sans-serif";
+    const cond = "'Barlow Condensed', sans-serif";
+    const row = (name, sample, ff, fs, fw, lh, spec, extra) => ({ name, sample, ff, fs, fw, lh, spec, ls: 'normal', tt: 'none', ...(extra || {}) });
+    return {
+      plantilla: [
+        { b: 'Color de la página', d: 'Tipo de producto del origen', s: 'Verde para café, morado para cacao' },
+        { b: 'Nombre, departamento y país', d: 'Nombre y ubicación del origen', s: 'Siempre existen' },
+        { b: 'Productor o productora', d: 'Productor del origen', s: 'Siempre existe' },
+        { b: 'Municipio', d: 'Municipio del origen', s: 'Se quita ese dato' },
+        { b: 'Sello, dato y cifras de altura', d: 'Altura mínima y máxima', s: 'Se ocultan el sello, el dato y la franja de cifras' },
+        { b: 'Historia', d: 'Historia corta del origen', s: 'Queda solo la frase armada con nombre, lugar y productor' },
+        { b: 'Foto del hero y galería', d: 'Fotos del origen, en su orden', s: 'El hero muestra solo el producto sobre el color; la galería se oculta' },
+        { b: 'Pasos del proceso', d: 'Texto fijo por tipo: uno para café, otro para cacao', s: 'No aplica' },
+        { b: 'Productos de este origen', d: 'Todos los productos activos que apuntan al origen', s: 'Se ocultan el bloque y el botón del hero' },
+        { b: 'Variedad, proceso, notas, tueste, puntaje', d: 'Son del producto: van en su tarjeta y en su detalle', s: 'Nunca se muestran como datos del origen' },
+        { b: 'Otros orígenes', d: 'Los demás orígenes activos', s: 'Se oculta el bloque' },
+        { b: 'Enlace desde el detalle', d: 'Origen del producto', s: 'Producto sin origen: no hay enlace ni bloque de origen' }
+      ],
+      tokens: [
+        { name: 'background', hex: '#FAF3E3', css: '--background', use: 'Fondo de página, crema del empaque aclarada' },
+        { name: 'card', hex: '#FFFFFF', css: '--card · --popover', use: 'Tarjetas, chips y secciones blancas' },
+        { name: 'secondary', hex: '#F3E6C4', css: '--secondary · --muted', use: 'Barra de aviso, píldoras, paneles' },
+        { name: 'hero', hex: '#F8E4AE', css: '--hero (propia)', use: 'Fondo del hero y cabeceras de página' },
+        { name: 'foreground', hex: '#1B1510', css: '--foreground · --primary · --ring', use: 'Texto, botón oscuro, cinta, pie' },
+        { name: 'primary-foreground', hex: '#FAF3E3', css: '--primary-foreground', use: 'Texto sobre oscuro, verde y morado' },
+        { name: 'muted-foreground', hex: '#5F554A', css: '--muted-foreground', use: 'Texto secundario y precio tachado' },
+        { name: 'accent', hex: '#C1272D', css: '--accent', use: 'Rojo cereza: acción principal y ofertas' },
+        { name: 'brand-green', hex: '#0F3B2C', css: '--brand-green (propia)', use: 'Verde botella: café, barra superior, chip activo' },
+        { name: 'brand-yellow', hex: '#F2B632', css: '--brand-yellow (propia)', use: 'Amarillo maíz: cabecera y acentos sobre oscuro' },
+        { name: 'brand-purple', hex: '#4B1C52', css: '--brand-purple (propia)', use: 'Morado Monteluna: todo lo de cacao' },
+        { name: 'border', hex: '#E6D9BC', css: '--border', use: 'Filetes y botón desactivado' },
+        { name: 'input', hex: '#D9CBA8', css: '--input', use: 'Borde de chip en reposo' },
+        { name: 'success', hex: '#1E6B45', css: '--success (propia)', use: 'Mensaje «Disponible»' },
+        { name: 'destructive', hex: '#9B1C1C', css: '--destructive', use: 'Errores y texto «Agotado»' }
+      ],
+      scale: [
+        row('display', 'Café y cacao', sans, '90px', 800, 0.95, 'Barlow · de 46 a 90 px según el ancho · 800 · interlínea 0,95 · tracking −0,015em. Titular del hero.', { ls: '-0.015em' }),
+        row('h1', 'Finca El Mirador', sans, '64px', 800, 1, 'Barlow · 64 px (40 en móvil) · 800 · interlínea 1. Nombre del producto y título de página.', { ls: '-0.015em' }),
+        row('h2', 'Lo que hay en cada empaque', sans, '56px', 800, 1, 'Barlow · 56 px (36 en móvil) · 800 · interlínea 1. Título de sección.', { ls: '-0.015em' }),
+        row('h3', 'Cacao fino de aroma', sans, '30px', 800, 1.1, 'Barlow · 30 px · 800 · interlínea 1,1. En tarjeta de producto baja a 26 px (18 en móvil).'),
+        row('precio', '$38.000', sans, '44px', 800, 1, 'Barlow · 44 px (36 en móvil) · 800 · tracking −0,02em.', { ls: '-0.02em' }),
+        row('body', 'Dos fincas, tostión media y notas de cata a la vista.', sans, '18px', 400, 1.5, 'Barlow · 18 px (17 en móvil) · 400 · interlínea 1,5.'),
+        row('small', 'Es el lote que recibirás', sans, '15px', 500, 1.45, 'Barlow · 15 px · 500 · color muted-foreground.'),
+        row('nav', 'Tienda', sans, '18px', 700, 1, 'Barlow · 18 px · 700 · mayúsculas. Navegación.', { tt: 'uppercase' }),
+        row('botón', 'Agregar al carrito', sans, '16px', 700, 1, 'Barlow · 16 px · 700 · mayúsculas · tracking 0,02em.', { tt: 'uppercase', ls: '0.02em' }),
+        row('label', 'Café · Huila', cond, '16px', 700, 1.2, 'Barlow Condensed · 16 px · 700 · mayúsculas · tracking 0,08em. Etiquetas y sellos.', { tt: 'uppercase', ls: '0.08em' })
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

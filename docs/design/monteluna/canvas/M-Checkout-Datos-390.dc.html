@@ -1,0 +1,316 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Monteluna · Checkout · Datos y envío · Móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1510}a:hover{color:#C1272D}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #1B1510;outline-offset:3px}
+.oscuro a:focus-visible{outline-color:#F2B632}
+input::placeholder,textarea::placeholder{color:#5F554A;opacity:1}
+@keyframes sube{from{opacity:0;transform:translateY(20px)}}
+@keyframes cae{from{opacity:0;transform:translateY(-20px) rotate(-20deg)}}
+.sube{animation:sube 520ms cubic-bezier(.22,1,.36,1) backwards}
+.cae{animation:cae 640ms cubic-bezier(.34,1.4,.64,1) backwards}
+.r1{animation-delay:80ms}.r2{animation-delay:180ms}.r3{animation-delay:280ms}
+@media (prefers-reduced-motion:reduce){.mov{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="width: 100%; max-width: 430px; min-height: 3500px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif">
+
+  <div style="padding: 8px 20px; background: #0F3B2C; color: #FAF3E3; font-size: 14px; font-weight: 500; text-align: center">Sin crear cuenta <span aria-hidden="true" style="color: #F2B632">•</span> Pago seguro con Wompi</div>
+  <header style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 64px; padding: 0 20px; background: #F2B632">
+    <a href="M-Inicio-390.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-size: 32px; line-height: 1; font-weight: 800; text-transform: uppercase; color: #1B1510; text-decoration: none">Monteluna</a>
+    <a href="M-Carrito-390.dc.html" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 15px; font-weight: 700; text-transform: uppercase; color: #1B1510; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px"><span aria-hidden="true">←</span> Carrito</a>
+  </header>
+
+  <div style="display: flex; flex-direction: column; gap: 14px; padding: 22px 20px 24px; background: #F8E4AE">
+    <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase">Paso 2 de 3</span>
+    <h1 style="margin: 0; font-size: 40px; line-height: 1; font-weight: 800; letter-spacing: -0.015em">¿A dónde lo enviamos?</h1>
+    <ol aria-label="Pasos de compra" style="list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700">
+      <li style="display: flex; align-items: center; gap: 6px"><span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: #1E6B45; color: #FFFFFF"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><a href="M-Carrito-390.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; text-underline-offset: 4px">Carrito</a></li>
+      <li aria-hidden="true" style="flex: 1; height: 2px; background: #1B1510"></li>
+      <li aria-current="step" style="display: flex; align-items: center; gap: 6px"><span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: #1B1510; color: #FAF3E3; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800">2</span>Datos</li>
+      <li aria-hidden="true" style="flex: 1; height: 2px; background: #A8997C"></li>
+      <li style="display: flex; align-items: center; gap: 6px; color: #5F554A"><span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; box-sizing: border-box; border: 2px solid #A8997C; border-radius: 50%; background: #FFFFFF; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800">3</span>Pago</li>
+    </ol>
+  </div>
+
+  <a href="#pedido" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; min-height: 56px; padding: 0 20px; background: #FFFFFF; border-bottom: 1px solid #E6D9BC; color: #1B1510; text-decoration: none">
+    <span style="display: flex; align-items: center; gap: 10px; font-size: 16px; font-weight: 700"><span style="min-width: 24px; height: 24px; box-sizing: border-box; padding: 0 6px; border-radius: 999px; background: #1B1510; color: #FAF3E3; font-size: 14px; line-height: 24px; font-weight: 800; text-align: center">3</span>Ver tu pedido <span aria-hidden="true">↓</span></span>
+    <span style="font-size: 20px; font-weight: 800">{{total}}</span>
+  </a>
+
+  <form style="flex: 1; display: flex; flex-direction: column; gap: 14px; margin: 0; padding: 16px 12px 40px">
+
+    <sc-if value="{{conErrores}}" hint-placeholder-val="{{false}}">
+      <div role="alert" style="display: flex; align-items: flex-start; gap: 12px; padding: 16px; border: 2px solid #9B1C1C; border-radius: 16px; background: #FFFFFF">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9B1C1C" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="flex: none"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5v.2"></path></svg>
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 17px; font-weight: 800">Faltan 2 datos para continuar</span><span style="font-size: 15px; line-height: 1.45"><a href="#correo">Revisa el correo</a> y <a href="#direccion">escribe la dirección</a>.</span></div>
+      </div>
+    </sc-if>
+
+    <section aria-labelledby="h-contacto" class="mov sube r1" style="display: flex; flex-direction: column; gap: 18px; padding: 22px 18px; background: #FFFFFF; border-radius: 20px">
+      <div style="display: flex; align-items: center; gap: 12px"><span aria-hidden="true" style="display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; background: #F2B632; font-family: 'Barlow Condensed', sans-serif; font-size: 21px; font-weight: 800">A</span><h2 id="h-contacto" style="margin: 0; font-size: 26px; line-height: 1.05; font-weight: 800">Tus datos</h2></div>
+      <label style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Correo</span>
+        <input id="correo" type="email" autocomplete="email" value="{{correo}}" aria-invalid="{{inv}}" style="width: 100%; height: 56px; box-sizing: border-box; padding: 0 16px; border: 2px solid {{errBc}}; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 18px; font-weight: 500">
+        <sc-if value="{{conErrores}}" hint-placeholder-val="{{false}}"><span style="display: flex; align-items: flex-start; gap: 6px; font-size: 15px; font-weight: 700; color: #9B1C1C"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="flex: none; margin-top: 1px"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5v.2"></path></svg>Escribe un correo completo, como nombre@correo.com</span></sc-if>
+        <sc-if value="{{sinErrores}}" hint-placeholder-val="{{true}}"><span style="font-size: 15px; line-height: 1.4; color: #5F554A">Aquí llegan la confirmación y el enlace para seguir tu pedido.</span></sc-if>
+      </label>
+      <label style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Nombre completo</span>
+        <input type="text" autocomplete="name" value="María Gómez" style="width: 100%; height: 56px; box-sizing: border-box; padding: 0 16px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 18px; font-weight: 500">
+      </label>
+      <label style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Celular <span style="font-weight: 500; color: #5F554A">(opcional)</span></span>
+        <input type="tel" autocomplete="tel" placeholder="300 123 4567" style="width: 100%; height: 56px; box-sizing: border-box; padding: 0 16px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 18px; font-weight: 500">
+      </label>
+    </section>
+
+    <section aria-labelledby="h-entrega" class="mov sube r2" style="display: flex; flex-direction: column; gap: 18px; padding: 22px 18px; background: #FFFFFF; border-radius: 20px">
+      <div style="display: flex; align-items: center; gap: 12px"><span aria-hidden="true" style="display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; background: #F2B632; font-family: 'Barlow Condensed', sans-serif; font-size: 21px; font-weight: 800">B</span><h2 id="h-entrega" style="margin: 0; font-size: 26px; line-height: 1.05; font-weight: 800">Entrega</h2></div>
+      <button type="button" role="checkbox" aria-checked="{{misma.aria}}" onClick="{{toggleMisma}}" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0; border: 0; background: transparent; color: #1B1510; font-family: inherit; font-size: 17px; font-weight: 600; text-align: left; cursor: pointer">
+        <span aria-hidden="true" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; box-sizing: border-box; border: 2px solid {{misma.bc}}; border-radius: 8px; background: {{misma.bg}}; color: #FAF3E3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="opacity: {{misma.op}}"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>
+        Lo recibo yo, María Gómez
+      </button>
+      <sc-if value="{{otraPersona}}" hint-placeholder-val="{{false}}">
+        <label style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Nombre de quien recibe</span>
+          <input type="text" placeholder="Nombre y apellido" style="width: 100%; height: 56px; box-sizing: border-box; padding: 0 16px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 18px; font-weight: 500">
+        </label>
+      </sc-if>
+      <label style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Celular de quien recibe</span>
+        <input type="tel" autocomplete="tel" value="310 555 0142" style="width: 100%; height: 56px; box-sizing: border-box; padding: 0 16px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 18px; font-weight: 500">
+        <span style="font-size: 15px; line-height: 1.4; color: #5F554A">La transportadora llama a este número.</span>
+      </label>
+      <label style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Departamento</span>
+        <span style="position: relative; display: block">
+          <select autocomplete="address-level1" style="appearance: none; -webkit-appearance: none; width: 100%; height: 56px; box-sizing: border-box; padding: 0 44px 0 16px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 18px; font-weight: 500"><option>{{depto}}</option><option>Antioquia</option><option>Bogotá, D. C.</option><option>Cundinamarca</option><option>Nariño</option><option>Valle del Cauca</option></select>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: absolute; right: 16px; top: 18px; pointer-events: none"><path d="M6 9l6 6 6-6"></path></svg>
+        </span>
+      </label>
+      <label style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Municipio</span>
+        <span style="position: relative; display: block">
+          <input type="text" role="combobox" aria-expanded="false" aria-autocomplete="list" autocomplete="address-level2" value="{{muni}}" placeholder="Escribe y elige" style="width: 100%; height: 56px; box-sizing: border-box; padding: 0 44px 0 16px; border: 2px solid {{muniBc}}; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 18px; font-weight: 500">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="position: absolute; right: 16px; top: 18px; pointer-events: none"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg>
+        </span>
+      </label>
+      <label style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Dirección</span>
+        <input id="direccion" type="text" autocomplete="address-line1" value="{{direccion}}" placeholder="Calle 5 # 12-34" aria-invalid="{{inv}}" style="width: 100%; height: 56px; box-sizing: border-box; padding: 0 16px; border: 2px solid {{errBc}}; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 18px; font-weight: 500">
+        <sc-if value="{{conErrores}}" hint-placeholder-val="{{false}}"><span style="display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; color: #9B1C1C"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5v.2"></path></svg>Escribe la dirección de entrega</span></sc-if>
+      </label>
+      <div style="display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 12px; align-items: end">
+        <label style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Apto, torre u oficina <span style="font-weight: 500; color: #5F554A">(opcional)</span></span>
+          <input type="text" autocomplete="address-line2" value="Apto 302" style="width: 100%; height: 56px; box-sizing: border-box; padding: 0 16px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 18px; font-weight: 500">
+        </label>
+        <label style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Código postal <span style="font-weight: 500; color: #5F554A">(opcional)</span></span>
+          <input type="text" inputmode="numeric" autocomplete="postal-code" placeholder="417030" style="width: 100%; height: 56px; box-sizing: border-box; padding: 0 16px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 18px; font-weight: 500">
+        </label>
+      </div>
+      <label style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Indicaciones para la entrega <span style="font-weight: 500; color: #5F554A">(opcional)</span></span>
+        <textarea rows="2" placeholder="Portería, punto de referencia…" style="width: 100%; min-height: 88px; box-sizing: border-box; padding: 14px 16px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 18px; font-weight: 500; line-height: 1.4; resize: vertical"></textarea>
+      </label>
+
+      <div aria-live="polite" style="display: flex; flex-direction: column">
+        <sc-if value="{{envCotizado}}" hint-placeholder-val="{{true}}">
+          <div class="mov sube" style="display: flex; flex-direction: column; gap: 10px; padding: 18px; background: #0F3B2C; color: #FAF3E3; border-radius: 16px">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #F2B632">Envío a {{muni}}, {{depto}}</span>
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#F2B632" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M2.5 6.5h11v10h-11zM13.5 10h4l3 3v3.5h-7"></path><circle cx="7" cy="17.5" r="1.8"></circle><circle cx="17" cy="17.5" r="1.8"></circle></svg>
+            </div>
+            <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+              <span style="font-size: 18px; line-height: 1.25; font-weight: 700">Llega en 2 a 4<br>días hábiles</span>
+              <span style="display: flex; flex-direction: column; align-items: flex-end"><sc-if value="{{envGratis}}" hint-placeholder-val="{{false}}"><s aria-label="Costo normal" style="font-size: 15px; color: #E9DDC3">$9.500</s></sc-if><span style="font-size: 36px; line-height: 1; font-weight: 800; letter-spacing: -0.02em">{{envPrecio}}</span></span>
+            </div>
+            <span style="font-size: 14px; color: #E9DDC3">{{envNota}}</span>
+          </div>
+        </sc-if>
+        <sc-if value="{{envVacio}}" hint-placeholder-val="{{false}}">
+          <div style="padding: 18px; border: 2px dashed #A8997C; border-radius: 16px; font-size: 16px; line-height: 1.45; color: #5F554A">Elige tu municipio y aquí verás cuánto cuesta el envío y cuándo llega. Es una sola tarifa.</div>
+        </sc-if>
+        <sc-if value="{{envSinCobertura}}" hint-placeholder-val="{{false}}">
+          <div role="alert" style="display: flex; align-items: flex-start; gap: 12px; padding: 16px; border: 2px solid #9B1C1C; border-radius: 16px; background: #FFFFFF">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#9B1C1C" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="flex: none"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5v.2"></path></svg>
+            <div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 17px; font-weight: 800">Todavía no llegamos a {{muni}}</span><span style="font-size: 15px; line-height: 1.45">Prueba con otro municipio o <a href="#">escríbenos</a>.</span></div>
+          </div>
+        </sc-if>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-factura" class="mov sube r3" style="display: flex; flex-direction: column; gap: 16px; padding: 22px 18px; background: #FFFFFF; border-radius: 20px">
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px">
+        <div style="display: flex; align-items: center; gap: 12px"><span aria-hidden="true" style="display: inline-flex; align-items: center; justify-content: center; width: 38px; height: 38px; border-radius: 50%; background: #F2B632; font-family: 'Barlow Condensed', sans-serif; font-size: 21px; font-weight: 800">C</span><h2 id="h-factura" style="margin: 0; font-size: 26px; line-height: 1.05; font-weight: 800">Factura</h2></div>
+        <span style="padding: 4px 10px; border-radius: 8px; background: #F3E6C4; font-size: 14px; font-weight: 600">Opcional</span>
+      </div>
+      <button type="button" role="checkbox" aria-checked="{{fac.aria}}" onClick="{{toggleFactura}}" style="display: flex; align-items: center; gap: 12px; min-height: 44px; padding: 0; border: 0; background: transparent; color: #1B1510; font-family: inherit; font-size: 17px; font-weight: 600; text-align: left; cursor: pointer">
+        <span aria-hidden="true" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; box-sizing: border-box; border: 2px solid {{fac.bc}}; border-radius: 8px; background: {{fac.bg}}; color: #FAF3E3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="opacity: {{fac.op}}"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>
+        Necesito la factura con mi documento
+      </button>
+      <sc-if value="{{fac.on}}" hint-placeholder-val="{{false}}">
+        <div class="mov sube" style="display: flex; flex-direction: column; gap: 16px">
+          <div role="group" aria-label="Tipo de persona" style="display: flex; gap: 8px">
+            <sc-for list="{{personas}}" as="p" hint-placeholder-count="2">
+              <button type="button" aria-pressed="{{p.pressed}}" onClick="{{p.pick}}" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; min-height: 52px; padding: 0 10px; border: 2px solid {{p.bc}}; border-radius: 12px; background: {{p.bg}}; color: {{p.fg}}; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">{{p.label}}</button>
+            </sc-for>
+          </div>
+          <label style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">Tipo de documento</span>
+            <span style="position: relative; display: block">
+              <select style="appearance: none; -webkit-appearance: none; width: 100%; height: 56px; box-sizing: border-box; padding: 0 44px 0 16px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 18px; font-weight: 500"><option>{{docTipo}}</option><option>Cédula de extranjería</option><option>Pasaporte</option></select>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: absolute; right: 16px; top: 18px; pointer-events: none"><path d="M6 9l6 6 6-6"></path></svg>
+            </span>
+          </label>
+          <label style="display: flex; flex-direction: column; gap: 8px"><span style="font-size: 16px; font-weight: 700">{{docEtiqueta}}</span>
+            <input type="text" inputmode="numeric" placeholder="{{docEjemplo}}" style="width: 100%; height: 56px; box-sizing: border-box; padding: 0 16px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 18px; font-weight: 500">
+          </label>
+          <span style="font-size: 15px; line-height: 1.45; color: #5F554A">{{docAyuda}}</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{fac.off}}" hint-placeholder-val="{{true}}">
+        <span style="font-size: 15px; line-height: 1.45; color: #5F554A">Si no la marcas, recibes igual la confirmación de tu pedido por correo.</span>
+      </sc-if>
+    </section>
+
+    <section id="pedido" aria-labelledby="h-pedido" style="display: flex; flex-direction: column; gap: 16px; padding: 22px 18px; background: #FFFFFF; border-radius: 20px">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+        <h2 id="h-pedido" style="margin: 0; font-size: 26px; line-height: 1.05; font-weight: 800">Tu pedido</h2>
+        <a href="M-Carrito-390.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 700; text-transform: uppercase; text-underline-offset: 5px">Editar</a>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px">
+        <span style="position: relative; flex: none; width: 64px; height: 64px; border-radius: 12px; background: #F3E6C4"><img class="mov cae r1" src="/_blob/4599aac869a16a1f06d18202d2ecbc9b" alt="" style="position: absolute; left: 9px; bottom: 4px; height: 78px; transform: rotate(-6deg); filter: drop-shadow(0 8px 6px rgba(27,21,16,0.24))"><span style="position: absolute; top: -8px; right: -8px; min-width: 22px; height: 22px; box-sizing: border-box; padding: 0 5px; border-radius: 999px; background: #1B1510; color: #FAF3E3; font-size: 13px; line-height: 22px; font-weight: 800; text-align: center">1</span></span>
+        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; font-weight: 800">Finca El Mirador</span><span style="font-size: 14px; color: #5F554A">500 g · Grano entero</span><span style="font-size: 13px; font-weight: 600; color: #0F3B2C">Tostado el 2 oct 2026</span></span>
+        <span style="display: flex; flex-direction: column; align-items: flex-end"><s aria-label="Precio anterior" style="font-size: 13px; color: #5F554A">$45.000</s><span style="font-size: 17px; font-weight: 800">$38.000</span></span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px">
+        <span style="position: relative; flex: none; width: 64px; height: 64px; border-radius: 12px; background: #F3E6C4"><img class="mov cae r2" src="/_blob/cee819ee8bff77267eb56c58e73e513f" alt="" style="position: absolute; left: 12px; bottom: 4px; height: 78px; transform: rotate(5deg); filter: drop-shadow(0 8px 6px rgba(27,21,16,0.24))"><span style="position: absolute; top: -8px; right: -8px; min-width: 22px; height: 22px; box-sizing: border-box; padding: 0 5px; border-radius: 999px; background: #1B1510; color: #FAF3E3; font-size: 13px; line-height: 22px; font-weight: 800; text-align: center">2</span></span>
+        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; font-weight: 800">Chocolate oscuro 65 %</span><span style="font-size: 14px; color: #5F554A">Barra de 80 g</span></span>
+        <span style="font-size: 17px; font-weight: 800">$28.000</span>
+      </div>
+
+      <div style="display: flex; flex-direction: column; gap: 10px; padding-top: 16px; border-top: 1px solid #E6D9BC">
+        <sc-if value="{{cupCerrado}}" hint-placeholder-val="{{false}}">
+          <button type="button" aria-expanded="false" onClick="{{abrirCupon}}" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; padding: 0; border: 0; background: transparent; color: #1B1510; font-family: inherit; font-size: 16px; font-weight: 700; text-transform: uppercase; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px; cursor: pointer">¿Tienes un cupón?</button>
+        </sc-if>
+        <sc-if value="{{cupCampo}}" hint-placeholder-val="{{true}}">
+          <label for="cupon" style="font-size: 16px; font-weight: 700">Cupón</label>
+          <div style="display: flex; gap: 8px">
+            <input id="cupon" type="text" autocapitalize="characters" value="{{cupValor}}" placeholder="Código" aria-invalid="{{cupInv}}" style="flex: 1; min-width: 0; height: 52px; box-sizing: border-box; padding: 0 14px; border: 2px solid {{cupBc}}; border-radius: 12px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 17px; font-weight: 600; text-transform: uppercase">
+            <button type="button" onClick="{{aplicarCupon}}" style="height: 52px; padding: 0 16px; border: 0; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-family: inherit; font-size: 15px; font-weight: 700; text-transform: uppercase; cursor: pointer">Aplicar</button>
+          </div>
+          <sc-if value="{{cupError}}" hint-placeholder-val="{{false}}"><span role="alert" style="display: flex; align-items: center; gap: 6px; font-size: 15px; font-weight: 700; color: #9B1C1C"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5v.2"></path></svg>Este cupón ya venció. Prueba con otro.</span></sc-if>
+          <sc-if value="{{cupAyuda}}" hint-placeholder-val="{{true}}"><span style="font-size: 14px; line-height: 1.4; color: #5F554A">Un cupón por pedido. Lo validamos con tu correo y tu municipio.</span></sc-if>
+        </sc-if>
+        <sc-if value="{{cupAplicado}}" hint-placeholder-val="{{false}}">
+          <div class="mov sube" style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 10px 8px 10px 14px; border: 2px dashed #1B1510; border-radius: 12px; background: #F8E4AE">
+            <span style="display: flex; flex-direction: column"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 21px; font-weight: 800; letter-spacing: 0.06em">BIENVENIDA10</span><span style="font-size: 14px; font-weight: 600">10 % en tus productos</span></span>
+            <button type="button" aria-label="Quitar el cupón BIENVENIDA10" onClick="{{quitarCupon}}" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; border-radius: 10px; background: transparent; color: #1B1510; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+          </div>
+        </sc-if>
+      </div>
+
+      <div aria-live="polite" style="display: flex; flex-direction: column; gap: 8px; font-size: 17px">
+        <div style="display: flex; justify-content: space-between; gap: 12px"><span>Subtotal</span><span style="font-weight: 600">$66.000</span></div>
+        <sc-if value="{{cupAplicado}}" hint-placeholder-val="{{false}}">
+          <div style="display: flex; justify-content: space-between; gap: 12px; font-weight: 700; color: #C1272D"><span>Cupón BIENVENIDA10</span><span>−$6.600</span></div>
+        </sc-if>
+        <div style="display: flex; justify-content: space-between; gap: 12px"><span>Envío</span><span style="font-weight: 600; color: {{envColor}}">{{envResumen}}</span></div>
+      </div>
+      <div style="position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 2px -18px 0; padding: 18px 18px 0; border-top: 2px dashed #A8997C">
+        <span aria-hidden="true" style="position: absolute; left: -12px; top: -12px; width: 24px; height: 24px; border-radius: 50%; background: #FAF3E3"></span>
+        <span aria-hidden="true" style="position: absolute; right: -12px; top: -12px; width: 24px; height: 24px; border-radius: 50%; background: #FAF3E3"></span>
+        <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; font-weight: 700">{{totalEtiqueta}}</span><span style="font-size: 13px; color: #5F554A">Pesos colombianos</span></span>
+        <span style="font-size: 40px; line-height: 0.95; font-weight: 800; letter-spacing: -0.02em">{{total}}</span>
+      </div>
+    </section>
+
+    <div style="display: flex; flex-direction: column; gap: 12px; padding: 10px 8px 0">
+      <button type="button" role="checkbox" aria-checked="{{acepto.aria}}" onClick="{{toggleAcepto}}" style="display: flex; align-items: flex-start; gap: 12px; min-height: 44px; padding: 0; border: 0; background: transparent; color: #1B1510; font-family: inherit; font-size: 16px; line-height: 1.45; text-align: left; cursor: pointer">
+        <span aria-hidden="true" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; box-sizing: border-box; border: 2px solid {{aceptoBc}}; border-radius: 8px; background: {{acepto.bg}}; color: #FAF3E3"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" style="opacity: {{acepto.op}}"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span>
+        <span>Autorizo a Monteluna a tratar mis datos personales para gestionar este pedido, según la Política de Tratamiento de Datos Personales.</span>
+      </button>
+      <sc-if value="{{faltaAcepto}}" hint-placeholder-val="{{false}}">
+        <span role="alert" style="display: flex; align-items: center; gap: 6px; padding-left: 40px; font-size: 15px; font-weight: 700; color: #9B1C1C"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5v.2"></path></svg>Marca esta casilla para continuar</span>
+      </sc-if>
+      <span style="padding-left: 40px; font-size: 15px; line-height: 1.45; color: #5F554A">Lee la <a href="#">política de datos</a> y los <a href="#">términos de compra</a>.</span>
+    </div>
+  </form>
+
+  <footer class="oscuro" style="display: flex; flex-direction: column; gap: 6px; padding: 24px 20px; background: #1B1510; color: #E9DDC3; font-size: 14px">
+    <span>Monteluna · [razón social y datos legales]</span>
+    <div style="display: flex; flex-wrap: wrap; gap: 0 20px; font-weight: 600"><a href="#" style="display: inline-flex; align-items: center; min-height: 44px; color: #FAF3E3">Envíos</a><a href="#" style="display: inline-flex; align-items: center; min-height: 44px; color: #FAF3E3">Política de datos</a><a href="#" style="display: inline-flex; align-items: center; min-height: 44px; color: #FAF3E3">Términos</a></div>
+  </footer>
+
+  <div style="position: sticky; bottom: 0; z-index: 5; display: flex; align-items: center; gap: 14px; padding: 12px 16px; background: #FFFFFF; border-top: 2px solid #1B1510">
+    <span style="display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 700; color: #5F554A">{{totalEtiqueta}}</span><span aria-live="polite" style="font-size: 24px; line-height: 1; font-weight: 800; letter-spacing: -0.02em">{{total}}</span></span>
+    <sc-if value="{{acepto.on}}" hint-placeholder-val="{{true}}">
+      <a href="M-Checkout-Pago-390.dc.html" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; border-radius: 12px; background: #C1272D; color: #FFFFFF; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none">Continuar al pago <span aria-hidden="true">→</span></a>
+    </sc-if>
+    <sc-if value="{{acepto.off}}" hint-placeholder-val="{{false}}">
+      <button type="button" onClick="{{avisarAcepto}}" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; border: 0; border-radius: 12px; background: #C1272D; color: #FFFFFF; font-family: inherit; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; cursor: pointer">Continuar al pago <span aria-hidden="true">→</span></button>
+    </sc-if>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"envio":{"editor":"enum","options":["Cotizado","Sin cotizar","Gratis","Sin cobertura"],"default":"Cotizado"},"cupon":{"editor":"enum","options":["Campo","Aplicado","Vencido","Cerrado"],"default":"Aplicado"},"validacion":{"editor":"enum","options":["Sin errores","Con errores"],"default":"Sin errores"},"$preview":{"width":390,"height":3500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const envio = this.props.envio ?? 'Cotizado';
+    const conErrores = (this.props.validacion ?? 'Sin errores') === 'Con errores';
+    const cup = st.cup ?? (this.props.cupon ?? 'Aplicado');
+    const misma = st.misma ?? true;
+    const factura = st.factura ?? false;
+    const persona = st.persona ?? 'Persona natural';
+    const acepto = st.acepto ?? false;
+    const fmt = (v) => '$' + String(v).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const caja = (on) => ({ on, off: !on, aria: on ? 'true' : 'false', bg: on ? '#0F3B2C' : '#FFFFFF', bc: on ? '#0F3B2C' : '#1B1510', op: on ? 1 : 0 });
+
+    const cotizado = envio === 'Cotizado' || envio === 'Gratis';
+    const gratis = envio === 'Gratis';
+    const sinCobertura = envio === 'Sin cobertura';
+    const aplicado = cup === 'Aplicado';
+    const total = 66000 - (aplicado ? 6600 : 0) + (cotizado && !gratis ? 9500 : 0);
+    const empresa = persona === 'Empresa';
+    const chip = (label) => { const on = persona === label; return { label, pressed: on ? 'true' : 'false', pick: () => this.setState({ persona: label }), bg: on ? '#0F3B2C' : '#FFFFFF', fg: on ? '#FAF3E3' : '#1B1510', bc: on ? '#0F3B2C' : '#D9CBA8' }; };
+
+    return {
+      conErrores, sinErrores: !conErrores,
+      correo: conErrores ? 'maria.gomez@correo' : 'maria.gomez@correo.com',
+      inv: conErrores ? 'true' : 'false', errBc: conErrores ? '#9B1C1C' : '#1B1510',
+      direccion: conErrores ? '' : 'Calle 5 # 12-34',
+      misma: caja(misma), otraPersona: !misma, toggleMisma: () => this.setState({ misma: !misma }),
+      depto: sinCobertura ? 'San Andrés y Providencia' : 'Huila',
+      muni: envio === 'Sin cotizar' ? '' : (sinCobertura ? 'Providencia' : 'Pitalito'),
+      muniBc: sinCobertura ? '#9B1C1C' : '#1B1510',
+      envCotizado: cotizado, envVacio: envio === 'Sin cotizar', envSinCobertura: sinCobertura, envGratis: gratis,
+      envPrecio: gratis ? 'Gratis' : '$9.500',
+      envNota: gratis ? 'Tu pedido supera los $60.000 de esta zona.' : 'Tarifa única para este destino y este peso.',
+      envResumen: cotizado ? (gratis ? 'Gratis' : '$9.500') : (sinCobertura ? 'Sin cobertura' : 'Elige tu municipio'),
+      envColor: cotizado ? (gratis ? '#1E6B45' : '#1B1510') : (sinCobertura ? '#9B1C1C' : '#5F554A'),
+      fac: caja(factura), toggleFactura: () => this.setState({ factura: !factura }),
+      personas: [chip('Persona natural'), chip('Empresa')],
+      docTipo: empresa ? 'NIT' : 'Cédula de ciudadanía',
+      docEtiqueta: empresa ? 'NIT de la empresa' : 'Número de documento',
+      docEjemplo: empresa ? '900.123.456-7' : '1.234.567.890',
+      docAyuda: empresa ? 'La factura sale con la razón social que escribiste en «Nombre completo».' : 'La factura sale a nombre de María Gómez. Lo cambias en «Tus datos».',
+      acepto: caja(acepto), aceptoBc: st.falta && !acepto ? '#9B1C1C' : (acepto ? '#0F3B2C' : '#1B1510'),
+      faltaAcepto: !!st.falta && !acepto,
+      toggleAcepto: () => this.setState({ acepto: !acepto, falta: false }),
+      avisarAcepto: () => this.setState({ falta: true }),
+      cupCerrado: cup === 'Cerrado', cupCampo: cup === 'Campo' || cup === 'Vencido', cupAplicado: aplicado,
+      cupError: cup === 'Vencido', cupAyuda: cup === 'Campo',
+      cupValor: cup === 'Vencido' ? 'COSECHA2025' : 'BIENVENIDA10',
+      cupInv: cup === 'Vencido' ? 'true' : 'false', cupBc: cup === 'Vencido' ? '#9B1C1C' : '#1B1510',
+      abrirCupon: () => this.setState({ cup: 'Campo' }),
+      aplicarCupon: () => this.setState({ cup: 'Aplicado' }),
+      quitarCupon: () => this.setState({ cup: 'Cerrado' }),
+      total: fmt(total), totalEtiqueta: cotizado ? 'Total' : 'Total sin envío'
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Monteluna · Checkout · Pago · Móvil</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1510}a:hover{color:#C1272D}
+a:focus-visible,button:focus-visible{outline:3px solid #1B1510;outline-offset:3px}
+.oscuro a:focus-visible,.oscuro button:focus-visible{outline-color:#F2B632}
+@keyframes sube{from{opacity:0;transform:translateY(20px)}}
+@keyframes cae{from{opacity:0;transform:translateY(-20px) rotate(-20deg)}}
+@keyframes entraVelo{from{opacity:0}}
+@keyframes entraHoja{from{transform:translateY(104%)}}
+@keyframes vacia{to{width:0}}
+.sube{animation:sube 520ms cubic-bezier(.22,1,.36,1) backwards}
+.cae{animation:cae 640ms cubic-bezier(.34,1.4,.64,1) backwards}
+.velo-in{animation:entraVelo 380ms ease-out backwards}
+.hoja-in{animation:entraHoja 480ms cubic-bezier(.22,1,.36,1) backwards}
+.vacia{animation:vacia 1800s linear forwards}
+.r1{animation-delay:80ms}.r2{animation-delay:180ms}.r3{animation-delay:280ms}
+@media (prefers-reduced-motion:reduce){.mov{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="position: relative; width: 100%; max-width: 430px; min-height: 2500px; margin: 0 auto; box-sizing: border-box; display: flex; flex-direction: column; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif">
+
+  <div style="padding: 8px 20px; background: #0F3B2C; color: #FAF3E3; font-size: 14px; font-weight: 500; text-align: center">Sin crear cuenta <span aria-hidden="true" style="color: #F2B632">•</span> Pago seguro con Wompi</div>
+  <header style="display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 64px; padding: 0 20px; background: #F2B632">
+    <a href="M-Inicio-390.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-size: 32px; line-height: 1; font-weight: 800; text-transform: uppercase; color: #1B1510; text-decoration: none">Monteluna</a>
+    <a href="M-Carrito-390.dc.html" style="display: inline-flex; align-items: center; gap: 6px; min-height: 44px; font-size: 15px; font-weight: 700; text-transform: uppercase; color: #1B1510; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px"><span aria-hidden="true">←</span> Carrito</a>
+  </header>
+
+  <div style="display: flex; flex-direction: column; gap: 14px; padding: 22px 20px 24px; background: #F8E4AE">
+    <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase">Paso 3 de 3</span>
+    <h1 style="margin: 0; font-size: 40px; line-height: 1; font-weight: 800; letter-spacing: -0.015em">Revisa y paga</h1>
+    <ol aria-label="Pasos de compra" style="list-style: none; margin: 0; padding: 0; display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 700">
+      <li style="display: flex; align-items: center; gap: 6px"><span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: #1E6B45; color: #FFFFFF"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><a href="M-Carrito-390.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; text-underline-offset: 4px">Carrito</a></li>
+      <li aria-hidden="true" style="flex: 1; height: 2px; background: #1B1510"></li>
+      <li style="display: flex; align-items: center; gap: 6px"><span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: #1E6B45; color: #FFFFFF"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><a href="M-Checkout-Datos-390.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; text-underline-offset: 4px">Datos</a></li>
+      <li aria-hidden="true" style="flex: 1; height: 2px; background: #1B1510"></li>
+      <li aria-current="step" style="display: flex; align-items: center; gap: 6px"><span style="display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 32px; border-radius: 50%; background: #1B1510; color: #FAF3E3; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800">3</span>Pago</li>
+    </ol>
+  </div>
+
+  <main style="flex: 1; display: flex; flex-direction: column; gap: 14px; padding: 16px 12px 40px">
+
+    <sc-if value="{{sinExistencias}}" hint-placeholder-val="{{false}}">
+      <div role="alert" class="mov sube" style="display: flex; flex-direction: column; gap: 12px; padding: 16px; border: 2px solid #9B1C1C; border-radius: 16px; background: #FFFFFF">
+        <div style="display: flex; align-items: flex-start; gap: 12px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#9B1C1C" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="flex: none"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5v.2"></path></svg><div style="display: flex; flex-direction: column; gap: 4px"><span style="font-size: 18px; line-height: 1.2; font-weight: 800">Una de tus bolsas se agotó mientras comprabas</span><span style="font-size: 15px; line-height: 1.45">Finca El Mirador · 500 g · Grano entero ya no tiene existencias. No creamos el pedido ni te cobramos nada.</span></div></div>
+        <a href="M-Carrito-390.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 52px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 16px; font-weight: 700; text-transform: uppercase; text-decoration: none">Ajustar el carrito</a>
+      </div>
+    </sc-if>
+
+    <section aria-label="Tus datos" class="mov sube r1" style="display: flex; flex-direction: column; padding: 6px 18px; background: #FFFFFF; border-radius: 20px">
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 14px 0; border-bottom: 1px solid #E6D9BC">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #5F554A">Contacto</span><a href="M-Checkout-Datos-390.dc.html" aria-label="Cambiar los datos de contacto" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 700; text-transform: uppercase; text-underline-offset: 4px">Cambiar</a></div>
+        <span style="font-size: 18px; font-weight: 800">María Gómez</span><span style="font-size: 16px">maria.gomez@correo.com</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 14px 0; border-bottom: 1px solid #E6D9BC">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #5F554A">Entrega</span><a href="M-Checkout-Datos-390.dc.html" aria-label="Cambiar la dirección de entrega" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 700; text-transform: uppercase; text-underline-offset: 4px">Cambiar</a></div>
+        <span style="font-size: 18px; font-weight: 800">Calle 5 # 12-34, Apto 302</span><span style="font-size: 16px">Pitalito, Huila</span><span style="font-size: 15px; color: #5F554A">Recibe María Gómez · 310 555 0142</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 6px; padding: 18px 0; border-bottom: 1px solid #E6D9BC">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #5F554A">Envío</span>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px"><span style="font-size: 18px; font-weight: 800">Llega en 2 a 4 días hábiles</span><span style="padding: 4px 10px; border-radius: 8px; background: #0F3B2C; color: #FAF3E3; font-size: 14px; font-weight: 700">$9.500</span></div>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 2px; padding: 14px 0">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #5F554A">Factura</span><a href="M-Checkout-Datos-390.dc.html" aria-label="Agregar datos de factura" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 700; text-transform: uppercase; text-underline-offset: 4px">Agregar</a></div>
+        <span style="font-size: 18px; font-weight: 800">Sin datos de factura</span><span style="font-size: 15px; color: #5F554A">Recibes la confirmación del pedido por correo.</span>
+      </div>
+    </section>
+
+    <section aria-labelledby="h-pedido" class="mov sube r2" style="display: flex; flex-direction: column; gap: 16px; padding: 22px 18px; background: #FFFFFF; border-radius: 20px">
+      <div style="display: flex; align-items: baseline; justify-content: space-between; gap: 12px">
+        <h2 id="h-pedido" style="margin: 0; font-size: 26px; line-height: 1.05; font-weight: 800">Tu pedido</h2>
+        <a href="M-Carrito-390.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 700; text-transform: uppercase; text-underline-offset: 5px">Editar</a>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px">
+        <span style="position: relative; flex: none; width: 64px; height: 64px; border-radius: 12px; background: #F3E6C4"><img class="mov cae r1" src="/_blob/4599aac869a16a1f06d18202d2ecbc9b" alt="" style="position: absolute; left: 9px; bottom: 4px; height: 78px; transform: rotate(-6deg); filter: drop-shadow(0 8px 6px rgba(27,21,16,0.24))"><span style="position: absolute; top: -8px; right: -8px; min-width: 22px; height: 22px; box-sizing: border-box; padding: 0 5px; border-radius: 999px; background: #1B1510; color: #FAF3E3; font-size: 13px; line-height: 22px; font-weight: 800; text-align: center">1</span></span>
+        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; font-weight: 800">Finca El Mirador</span><span style="font-size: 14px; color: #5F554A">500 g · Grano entero</span><span style="font-size: 13px; font-weight: 600; color: #0F3B2C">Tostado el 2 oct 2026</span></span>
+        <span style="display: flex; flex-direction: column; align-items: flex-end"><s aria-label="Precio anterior" style="font-size: 13px; color: #5F554A">$45.000</s><span style="font-size: 17px; font-weight: 800">$38.000</span></span>
+      </div>
+      <div style="display: flex; align-items: center; gap: 14px">
+        <span style="position: relative; flex: none; width: 64px; height: 64px; border-radius: 12px; background: #F3E6C4"><img class="mov cae r2" src="/_blob/cee819ee8bff77267eb56c58e73e513f" alt="" style="position: absolute; left: 12px; bottom: 4px; height: 78px; transform: rotate(5deg); filter: drop-shadow(0 8px 6px rgba(27,21,16,0.24))"><span style="position: absolute; top: -8px; right: -8px; min-width: 22px; height: 22px; box-sizing: border-box; padding: 0 5px; border-radius: 999px; background: #1B1510; color: #FAF3E3; font-size: 13px; line-height: 22px; font-weight: 800; text-align: center">2</span></span>
+        <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; font-weight: 800">Chocolate oscuro 65 %</span><span style="font-size: 14px; color: #5F554A">Barra de 80 g</span></span>
+        <span style="font-size: 17px; font-weight: 800">$28.000</span>
+      </div>
+      <div style="display: flex; flex-direction: column; gap: 8px; padding-top: 16px; border-top: 1px solid #E6D9BC; font-size: 17px">
+        <div style="display: flex; justify-content: space-between; gap: 12px"><span>Subtotal</span><span style="font-weight: 600">$66.000</span></div>
+        <div style="display: flex; justify-content: space-between; gap: 12px; font-weight: 700; color: #C1272D"><span>Cupón BIENVENIDA10</span><span>−$6.600</span></div>
+        <div style="display: flex; justify-content: space-between; gap: 12px"><span>Envío a Pitalito</span><span style="font-weight: 600">$9.500</span></div>
+      </div>
+      <div style="position: relative; display: flex; align-items: flex-end; justify-content: space-between; gap: 12px; margin: 2px -18px 0; padding: 18px 18px 0; border-top: 2px dashed #A8997C">
+        <span aria-hidden="true" style="position: absolute; left: -12px; top: -12px; width: 24px; height: 24px; border-radius: 50%; background: #FAF3E3"></span>
+        <span aria-hidden="true" style="position: absolute; right: -12px; top: -12px; width: 24px; height: 24px; border-radius: 50%; background: #FAF3E3"></span>
+        <span style="display: flex; flex-direction: column; gap: 2px"><span style="font-size: 17px; font-weight: 700">Total a pagar</span><span style="font-size: 13px; color: #5F554A">Pesos colombianos</span></span>
+        <span style="font-size: 40px; line-height: 0.95; font-weight: 800; letter-spacing: -0.02em">$68.900</span>
+      </div>
+      <span style="align-self: flex-start; padding: 5px 12px; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-size: 14px; font-weight: 700">Ahorras $13.600 en este pedido</span>
+    </section>
+
+    <section aria-labelledby="h-pago" class="oscuro mov sube r3" style="display: flex; flex-direction: column; gap: 20px; padding: 26px 18px; background: #1B1510; color: #FAF3E3; border-radius: 20px">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #F2B632">Pago</span>
+        <h2 id="h-pago" style="margin: 0; font-size: 30px; line-height: 1.02; font-weight: 800; letter-spacing: -0.015em">Pagas en la ventana segura de Wompi.</h2>
+        <p style="margin: 0; font-size: 16px; line-height: 1.5; color: #E9DDC3">Ahí eliges el medio. Monteluna nunca ve ni guarda los datos de tu tarjeta o de tu banco.</p>
+      </div>
+      <ul aria-label="Medios de pago disponibles" style="list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px">
+        <li style="display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: 12px; background: #FAF3E3; color: #1B1510"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="2.5" y="5" width="19" height="14" rx="2.5"></rect><path d="M2.5 10h19M6 15h4"></path></svg><span style="font-size: 17px; font-weight: 800">Tarjeta</span><span style="font-size: 14px; line-height: 1.3; color: #5F554A">Crédito o débito</span></li>
+        <li style="display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: 12px; background: #FAF3E3; color: #1B1510"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 9.5l9-5 9 5M5 10v7M9.5 10v7M14.5 10v7M19 10v7M3 19.5h18"></path></svg><span style="font-size: 17px; font-weight: 800">PSE</span><span style="font-size: 14px; line-height: 1.3; color: #5F554A">Débito desde tu banco</span></li>
+        <li style="display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: 12px; background: #FAF3E3; color: #1B1510"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"></rect><path d="M10.5 18h3"></path></svg><span style="font-size: 17px; font-weight: 800">Nequi</span><span style="font-size: 14px; line-height: 1.3; color: #5F554A">Lo apruebas en la app</span></li>
+        <li style="display: flex; flex-direction: column; gap: 6px; padding: 14px; border-radius: 12px; background: #FAF3E3; color: #1B1510"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h13l-3-3M20 16H7l3 3"></path></svg><span style="font-size: 17px; font-weight: 800">Bancolombia</span><span style="font-size: 14px; line-height: 1.3; color: #5F554A">Transferencia</span></li>
+      </ul>
+      <ol style="list-style: none; margin: 0; padding: 18px 0 0; display: flex; flex-direction: column; gap: 14px; border-top: 1px solid rgba(250,243,227,0.22)">
+        <li style="display: flex; align-items: flex-start; gap: 12px"><span aria-hidden="true" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: #F2B632; color: #1B1510; font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 800">1</span><span style="font-size: 16px; line-height: 1.4"><span style="font-weight: 800">Creamos tu pedido</span> <span style="color: #E9DDC3">con un número para seguirlo.</span></span></li>
+        <li style="display: flex; align-items: flex-start; gap: 12px"><span aria-hidden="true" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: #F2B632; color: #1B1510; font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 800">2</span><span style="font-size: 16px; line-height: 1.4"><span style="font-weight: 800">Lo apartamos 30 minutos</span> <span style="color: #E9DDC3">para que nadie se lleve tu café.</span></span></li>
+        <li style="display: flex; align-items: flex-start; gap: 12px"><span aria-hidden="true" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: #F2B632; color: #1B1510; font-family: 'Barlow Condensed', sans-serif; font-size: 19px; font-weight: 800">3</span><span style="font-size: 16px; line-height: 1.4"><span style="font-weight: 800">Pagas y te confirmamos</span> <span style="color: #E9DDC3">por correo, con el enlace de seguimiento.</span></span></li>
+      </ol>
+    </section>
+  </main>
+
+  <footer class="oscuro" style="display: flex; flex-direction: column; gap: 6px; padding: 24px 20px; background: #1B1510; color: #E9DDC3; font-size: 14px">
+    <span>Monteluna · [razón social y datos legales]</span>
+    <div style="display: flex; flex-wrap: wrap; gap: 0 20px; font-weight: 600"><a href="#" style="display: inline-flex; align-items: center; min-height: 44px; color: #FAF3E3">Envíos</a><a href="#" style="display: inline-flex; align-items: center; min-height: 44px; color: #FAF3E3">Política de datos</a><a href="#" style="display: inline-flex; align-items: center; min-height: 44px; color: #FAF3E3">Términos</a></div>
+  </footer>
+
+  <div style="position: sticky; bottom: 0; z-index: 5; display: flex; align-items: center; gap: 14px; padding: 12px 16px; background: #FFFFFF; border-top: 2px solid #1B1510">
+    <span style="display: flex; flex-direction: column"><span style="font-size: 13px; font-weight: 700; color: #5F554A">Total</span><span style="font-size: 24px; line-height: 1; font-weight: 800; letter-spacing: -0.02em">$68.900</span></span>
+    <button type="button" onClick="{{pagar}}" style="flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; min-height: 56px; border: 0; border-radius: 12px; background: #C1272D; color: #FFFFFF; font-family: inherit; font-size: 17px; font-weight: 800; letter-spacing: 0.02em; text-transform: uppercase; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"></rect><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path></svg>Pagar</button>
+  </div>
+
+  <sc-if value="{{ventana}}" hint-placeholder-val="{{false}}">
+    <div class="mov velo-in" style="position: fixed; inset: 0; z-index: 10; display: flex; align-items: flex-end; justify-content: center; background: rgba(27,21,16,0.62)">
+      <div role="dialog" aria-modal="true" aria-labelledby="h-ventana" class="mov hoja-in" style="width: 100%; max-width: 430px; box-sizing: border-box; display: flex; flex-direction: column; gap: 14px; padding: 10px 16px 20px; background: #FFFFFF; border-radius: 24px 24px 0 0">
+        <span aria-hidden="true" style="align-self: center; width: 44px; height: 5px; border-radius: 999px; background: #D9CBA8"></span>
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px">
+          <div style="display: flex; flex-direction: column; gap: 2px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #5F554A">Pedido creado</span><h2 id="h-ventana" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 34px; line-height: 1; font-weight: 800; letter-spacing: 0.02em">ORD-7K2M9Q4X</h2></div>
+          <button type="button" aria-label="Cerrar la ventana de pago" onClick="{{cerrar}}" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 46px; height: 46px; border: 0; border-radius: 12px; background: #1B1510; color: #FAF3E3; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+        </div>
+        <div style="display: flex; flex-direction: column; gap: 10px; padding: 14px 16px; background: #1B1510; color: #FAF3E3; border-radius: 16px">
+          <span style="display: flex; align-items: center; justify-content: space-between; gap: 12px; font-size: 16px; font-weight: 700"><span>Tu pedido está apartado</span><span role="timer" aria-label="Quedan 29 minutos y 58 segundos" style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; line-height: 1; font-weight: 800; color: #F2B632">29:58</span></span>
+          <span aria-hidden="true" style="display: block; height: 8px; border-radius: 999px; background: rgba(250,243,227,0.22); overflow: hidden"><span class="mov vacia" style="display: block; width: 100%; height: 100%; border-radius: 999px; background: #F2B632"></span></span>
+        </div>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; min-height: 260px; padding: 20px; border: 2px dashed #A8997C; border-radius: 16px; text-align: center; color: #5F554A">
+          <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="5" y="10.5" width="14" height="10" rx="2"></rect><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path></svg>
+          <span style="font-size: 17px; font-weight: 800; color: #1B1510">[Aquí se abre la ventana de pago de Wompi]</span>
+          <span style="font-size: 15px; line-height: 1.45">El medio de pago se elige ahí, no en Monteluna. Total a pagar: $68.900.</span>
+        </div>
+        <a href="M-Pedido-390.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 56px; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-size: 16px; font-weight: 700; text-transform: uppercase; text-decoration: none">Simular el regreso del pago →</a>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"estado":{"editor":"enum","options":["Por pagar","Ventana de pago","Sin existencias"],"default":"Por pagar"},"$preview":{"width":390,"height":2500}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const estado = st.estado ?? (this.props.estado ?? 'Por pagar');
+    return {
+      ventana: estado === 'Ventana de pago',
+      sinExistencias: estado === 'Sin existencias',
+      pagar: () => this.setState({ estado: 'Ventana de pago' }),
+      cerrar: () => this.setState({ estado: 'Por pagar' })
+    };
+  }
+}
+</script>
+</body>
+</html>

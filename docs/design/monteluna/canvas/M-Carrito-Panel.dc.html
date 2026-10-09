@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Monteluna · Carrito · Panel lateral</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800;900&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1510}a:hover{color:#C1272D}
+a:focus-visible,button:focus-visible{outline:3px solid #1B1510;outline-offset:3px}
+@keyframes entraPanel{from{transform:translateX(100%)}}
+@keyframes entraVelo{from{opacity:0}}
+@keyframes sube{from{opacity:0;transform:translateY(20px)}}
+@keyframes cae{from{opacity:0;transform:translateY(-26px) rotate(-20deg)}}
+.panel-in{animation:entraPanel 560ms cubic-bezier(.22,1,.36,1) backwards}
+.velo-in{animation:entraVelo 380ms ease backwards}
+.sube{animation:sube 480ms cubic-bezier(.22,1,.36,1) backwards}
+.cae{animation:cae 620ms cubic-bezier(.34,1.4,.64,1) backwards}
+.r1{animation-delay:180ms}.r2{animation-delay:260ms}.r3{animation-delay:340ms}.r4{animation-delay:420ms}
+@media (prefers-reduced-motion:reduce){.mov{animation:none!important;transition:none!important}}
+</style>
+</helmet>
+<div style="position: relative; width: 1440px; height: 900px; overflow: hidden; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif">
+
+  <div style="display: flex; justify-content: center; gap: 24px; padding: 10px 24px; background: #0F3B2C; color: #FAF3E3; font-size: 15px; font-weight: 500">
+    <span>100 % arábica</span><span aria-hidden="true" style="color: #F2B632">•</span><span>Café tostado en grano</span><span aria-hidden="true" style="color: #F2B632">•</span><span>Cacao fino de aroma, origen Colombia</span>
+  </div>
+  <header style="display: flex; align-items: center; justify-content: space-between; gap: 24px; min-height: 84px; padding: 0 108px; background: #F2B632">
+    <a href="M-Inicio.dc.html" style="font-family: 'Barlow Condensed', sans-serif; font-size: 38px; line-height: 1; font-weight: 800; text-transform: uppercase; color: #1B1510; text-decoration: none">Monteluna</a>
+    <nav aria-label="Principal" style="display: flex; gap: 40px; font-size: 18px; font-weight: 700; text-transform: uppercase">
+      <a href="M-Inicio.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; color: #1B1510; text-decoration: none">Inicio</a>
+      <a href="M-Listado.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; color: #1B1510; text-decoration: underline; text-decoration-thickness: 3px; text-underline-offset: 6px">Tienda</a>
+      <a href="M-Origenes.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; color: #1B1510; text-decoration: none">Orígenes</a>
+      <a href="M-Inicio.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; color: #1B1510; text-decoration: none">Contacto</a>
+    </nav>
+    <button type="button" onClick="{{abrir}}" aria-haspopup="dialog" style="display: inline-flex; align-items: center; gap: 10px; min-height: 52px; padding: 0 22px; border: 0; border-radius: 12px; background: #1B1510; color: #FAF3E3; font-family: inherit; font-size: 16px; font-weight: 700; text-transform: uppercase; cursor: pointer">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 8h14l-1 12H6L5 8z"></path><path d="M9 8V6a3 3 0 0 1 6 0v2"></path></svg>Carrito ({{n}})
+    </button>
+  </header>
+  <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 48px; padding: 40px 108px 48px; background: #F8E4AE">
+    <div style="display: flex; flex-direction: column; gap: 14px">
+      <h1 style="margin: 0; font-size: 64px; line-height: 1; font-weight: 800; letter-spacing: -0.015em">Café y cacao</h1>
+      <p style="margin: 0; font-size: 18px; line-height: 1.5">5 productos · 2 cafés de finca y 3 chocolates oscuros</p>
+    </div>
+  </div>
+  <div style="display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 24px; padding: 24px 108px 0">
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 130px; padding: 0 18px 18px; background: #FFFFFF; border-radius: 20px; text-align: center"><img src="/_blob/4599aac869a16a1f06d18202d2ecbc9b" alt="" style="height: 340px; margin-top: -130px; filter: drop-shadow(0 18px 14px rgba(27,21,16,0.24))"><span style="font-size: 26px; line-height: 1.1; font-weight: 800">Finca El Mirador</span><span style="font-size: 17px">Cítricos, panela y chocolate.</span></div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 130px; padding: 0 18px 18px; background: #FFFFFF; border-radius: 20px; text-align: center"><img src="/_blob/0a97d52196c5379b4469272dee57b4de" alt="" style="height: 340px; margin-top: -130px; filter: drop-shadow(0 18px 14px rgba(27,21,16,0.24))"><span style="font-size: 26px; line-height: 1.1; font-weight: 800">Finca La María</span><span style="font-size: 17px">Chocolate, caramelo y frutos rojos.</span></div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 130px; padding: 0 18px 18px; background: #FFFFFF; border-radius: 20px; text-align: center"><img src="/_blob/cee819ee8bff77267eb56c58e73e513f" alt="" style="height: 340px; margin-top: -130px; filter: drop-shadow(0 18px 14px rgba(27,21,16,0.24))"><span style="font-size: 26px; line-height: 1.1; font-weight: 800">Chocolate oscuro 65 %</span><span style="font-size: 17px">Cacao fino de aroma.</span></div>
+    <div style="display: flex; flex-direction: column; align-items: center; gap: 12px; margin-top: 130px; padding: 0 18px 18px; background: #FFFFFF; border-radius: 20px; text-align: center"><img src="/_blob/174ceb42cc4886c4e3be39d2b3fdb412" alt="" style="height: 340px; margin-top: -130px; filter: drop-shadow(0 18px 14px rgba(27,21,16,0.24))"><span style="font-size: 26px; line-height: 1.1; font-weight: 800">Chocolate 75 % y 100 %</span><span style="font-size: 17px">Dos intensidades.</span></div>
+  </div>
+
+  <button type="button" class="mov velo-in" aria-label="Cerrar el carrito" onClick="{{cerrar}}" tabindex="-1" style="position: absolute; inset: 0; width: 100%; height: 100%; padding: 0; border: 0; background: rgba(27,21,16,0.58); backdrop-filter: blur(3px); cursor: pointer; opacity: {{velo}}; pointer-events: {{veloPE}}; transition: opacity {{dur}} ease"></button>
+
+  <div class="mov" role="dialog" aria-modal="true" aria-labelledby="carrito-titulo" style="position: absolute; top: 0; right: 0; bottom: 0; width: 500px; transform: {{panelT}}; transition: transform {{dur}} cubic-bezier(0.22, 1, 0.36, 1)">
+    <div class="mov panel-in" style="display: flex; flex-direction: column; height: 100%; background: #FAF3E3">
+
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 22px 24px; background: #F2B632">
+        <div style="display: flex; align-items: center; gap: 12px">
+          <h2 id="carrito-titulo" style="margin: 0; font-size: 40px; line-height: 1; font-weight: 800; letter-spacing: -0.015em">Tu carrito</h2>
+          <span style="padding: 5px 12px; border-radius: 8px; background: #1B1510; color: #FAF3E3; font-size: 15px; font-weight: 700">{{etiquetaN}}</span>
+        </div>
+        <button type="button" aria-label="Cerrar el carrito" onClick="{{cerrar}}" style="display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border: 0; border-radius: 12px; background: #1B1510; color: #FAF3E3; cursor: pointer"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button>
+      </div>
+
+      <sc-if value="{{conProductos}}" hint-placeholder-val="{{true}}">
+        <div style="flex: 1; min-height: 0; overflow-y: auto; display: flex; flex-direction: column; gap: 14px; padding: 14px 24px 24px">
+
+          <sc-if value="{{verA}}" hint-placeholder-val="{{true}}">
+            <article class="{{cl1}}" style="position: relative; display: flex; flex-direction: column; gap: 8px; margin-top: 22px; padding: 16px 16px 16px 132px; background: #FFFFFF; border-radius: 20px">
+              <img class="{{ci1}}" src="/_blob/4599aac869a16a1f06d18202d2ecbc9b" alt="Bolsa de café Finca El Mirador" style="position: absolute; left: 4px; top: -22px; height: 172px; transform: rotate(-6deg); filter: drop-shadow(0 12px 10px rgba(27,21,16,0.26))">
+              <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px">
+                <div style="display: flex; flex-direction: column; gap: 3px">
+                  <h3 style="margin: 0; font-size: 21px; line-height: 1.1; font-weight: 800"><a href="M-Detalle.dc.html" style="text-decoration: none">Finca El Mirador</a></h3>
+                  <span style="font-size: 15px; font-weight: 500; color: #5F554A">500 g · Grano entero</span>
+                </div>
+                <button type="button" aria-label="Quitar Finca El Mirador del carrito" onClick="{{quitarA}}" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: -8px -8px 0 0; border: 0; border-radius: 12px; background: transparent; color: #5F554A; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></button>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px">
+                <span style="padding: 4px 10px; border-radius: 8px; background: #F3E6C4; font-size: 14px; font-weight: 600">Tostado el 2 oct 2026</span>
+                <a href="M-Origen.dc.html" style="font-size: 14px; font-weight: 700; text-transform: uppercase; text-decoration: underline; text-underline-offset: 4px">Su origen →</a>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 4px">
+                <div role="group" aria-label="Cantidad de Finca El Mirador" style="display: flex; align-items: center; height: 44px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF">
+                  <button type="button" aria-label="Quitar una unidad" onClick="{{decA}}" style="width: 44px; height: 100%; border: 0; border-radius: 10px; background: transparent; color: #1B1510; font-family: inherit; font-size: 20px; font-weight: 700; cursor: pointer">−</button>
+                  <span aria-live="polite" style="min-width: 22px; text-align: center; font-size: 16px; font-weight: 800">{{qa}}</span>
+                  <button type="button" aria-label="Agregar una unidad" onClick="{{incA}}" style="width: 44px; height: 100%; border: 0; border-radius: 10px; background: transparent; color: #1B1510; font-family: inherit; font-size: 20px; font-weight: 700; cursor: pointer">+</button>
+                </div>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 2px">
+                  <s aria-label="Precio anterior" style="font-size: 14px; font-weight: 500; color: #5F554A">{{antesA}}</s>
+                  <span style="font-size: 22px; line-height: 1; font-weight: 800; letter-spacing: -0.01em">{{totalA}}</span>
+                </div>
+              </div>
+            </article>
+          </sc-if>
+
+          <sc-if value="{{verB}}" hint-placeholder-val="{{true}}">
+            <article class="{{cl2}}" style="position: relative; display: flex; flex-direction: column; gap: 8px; margin-top: 22px; padding: 16px 16px 16px 132px; background: #FFFFFF; border-radius: 20px">
+              <img class="{{ci2}}" src="/_blob/cee819ee8bff77267eb56c58e73e513f" alt="Barra de chocolate oscuro Monteluna 65 % cacao" style="position: absolute; left: 4px; top: -22px; height: 172px; transform: rotate(5deg); filter: drop-shadow(0 12px 10px rgba(27,21,16,0.26))">
+              <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 8px">
+                <div style="display: flex; flex-direction: column; gap: 3px">
+                  <h3 style="margin: 0; font-size: 21px; line-height: 1.1; font-weight: 800"><a href="M-Detalle.dc.html" style="text-decoration: none">Chocolate oscuro 65 %</a></h3>
+                  <span style="font-size: 15px; font-weight: 500; color: #5F554A">Barra de 80 g · $14.000 c/u</span>
+                </div>
+                <button type="button" aria-label="Quitar Chocolate oscuro 65 % del carrito" onClick="{{quitarB}}" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; margin: -8px -8px 0 0; border: 0; border-radius: 12px; background: transparent; color: #5F554A; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13"></path></svg></button>
+              </div>
+              <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px 10px">
+                <span style="padding: 4px 10px; border-radius: 8px; background: #4B1C52; color: #FAF3E3; font-size: 14px; font-weight: 600">Cacao fino de aroma</span>
+              </div>
+              <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-top: 4px">
+                <div role="group" aria-label="Cantidad de Chocolate oscuro 65 %" style="display: flex; align-items: center; height: 44px; border: 2px solid #1B1510; border-radius: 12px; background: #FFFFFF">
+                  <button type="button" aria-label="Quitar una unidad" onClick="{{decB}}" style="width: 44px; height: 100%; border: 0; border-radius: 10px; background: transparent; color: #1B1510; font-family: inherit; font-size: 20px; font-weight: 700; cursor: pointer">−</button>
+                  <span aria-live="polite" style="min-width: 22px; text-align: center; font-size: 16px; font-weight: 800">{{qb}}</span>
+                  <button type="button" aria-label="Agregar una unidad" onClick="{{incB}}" style="width: 44px; height: 100%; border: 0; border-radius: 10px; background: transparent; color: #1B1510; font-family: inherit; font-size: 20px; font-weight: 700; cursor: pointer">+</button>
+                </div>
+                <span style="font-size: 22px; line-height: 1; font-weight: 800; letter-spacing: -0.01em">{{totalB}}</span>
+              </div>
+            </article>
+          </sc-if>
+
+          <div class="{{cl3}}" style="display: flex; align-items: center; gap: 14px; margin-top: 6px; padding: 12px 14px; background: #0F3B2C; color: #FAF3E3; border-radius: 20px">
+            <img src="/_blob/0a97d52196c5379b4469272dee57b4de" alt="" style="flex: none; height: 92px; margin: -22px 0 -6px -4px; transform: rotate(-5deg); filter: drop-shadow(0 10px 8px rgba(0,0,0,0.4))">
+            <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px">
+              <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #F2B632">Prueba otra finca</span>
+              <span style="font-size: 18px; line-height: 1.1; font-weight: 800">Finca La María · $42.000</span>
+            </div>
+            <a href="M-Detalle.dc.html" style="flex: none; display: inline-flex; align-items: center; justify-content: center; min-height: 44px; padding: 0 16px; border-radius: 12px; background: #FAF3E3; color: #1B1510; font-size: 14px; font-weight: 700; text-transform: uppercase; text-decoration: none">Ver</a>
+          </div>
+        </div>
+
+        <div class="{{cl4}}" style="display: flex; flex-direction: column; gap: 12px; padding: 18px 24px 22px; background: #FFFFFF; border-top: 2px solid #1B1510">
+          <div style="display: flex; align-items: flex-end; justify-content: space-between; gap: 12px">
+            <div style="display: flex; flex-direction: column; gap: 6px">
+              <span style="font-size: 16px; font-weight: 700">Subtotal estimado</span>
+              <sc-if value="{{hayAhorro}}" hint-placeholder-val="{{true}}"><span style="align-self: flex-start; padding: 4px 10px; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-size: 14px; font-weight: 700">Ahorras {{ahorro}}</span></sc-if>
+            </div>
+            <span aria-live="polite" style="font-size: 40px; line-height: 0.95; font-weight: 800; letter-spacing: -0.02em">{{subtotal}}</span>
+          </div>
+          <p style="margin: 0; font-size: 14px; line-height: 1.4; color: #5F554A">El envío se calcula con tu municipio y los cupones se ingresan al pagar.</p>
+          <a href="M-Checkout-Datos.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 58px; border-radius: 12px; background: #C1272D; color: #FFFFFF; font-size: 17px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none">Ir a pagar</a>
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 6px 12px">
+            <a href="M-Carrito.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 700; text-transform: uppercase; text-decoration: underline; text-decoration-thickness: 2px; text-underline-offset: 5px">Ver carrito completo</a>
+            <span style="font-size: 13px; font-weight: 500; color: #5F554A">Tarjeta · PSE · Nequi · Bancolombia</span>
+          </div>
+        </div>
+      </sc-if>
+
+      <sc-if value="{{vacio}}" hint-placeholder-val="{{false}}">
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 20px; padding: 32px 40px; text-align: center">
+          <div class="mov sube" style="display: flex; flex-direction: column; align-items: center; justify-content: center; width: 148px; height: 148px; border-radius: 50%; background: #0F3B2C; color: #FAF3E3; outline: 2px dashed #F2B632; outline-offset: -10px; transform: rotate(-8deg)">
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase">Todavía</span>
+            <span style="font-size: 34px; line-height: 0.95; font-weight: 800; color: #F2B632">Vacío</span>
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase">sin café</span>
+          </div>
+          <h3 style="margin: 0; font-size: 30px; line-height: 1.1; font-weight: 800">Tu carrito está vacío</h3>
+          <p style="margin: 0; font-size: 17px; line-height: 1.5">Elige un café de finca o un chocolate oscuro y aparecerá aquí.</p>
+          <a href="M-Listado.dc.html" style="display: inline-flex; align-items: center; justify-content: center; min-height: 56px; padding: 0 26px; border-radius: 12px; background: #C1272D; color: #FFFFFF; font-size: 16px; font-weight: 700; letter-spacing: 0.02em; text-transform: uppercase; text-decoration: none">Ir a la tienda</a>
+        </div>
+      </sc-if>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"inicio":{"editor":"enum","options":["Abierto","Cerrado"],"default":"Abierto"},"estado":{"editor":"enum","options":["Con productos","Vacío"],"default":"Con productos"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const vacioIni = (this.props.estado ?? 'Con productos') === 'Vacío';
+    const abierto = st.abierto ?? ((this.props.inicio ?? 'Abierto') === 'Abierto');
+    const qa = st.qa ?? (vacioIni ? 0 : 1);
+    const qb = st.qb ?? (vacioIni ? 0 : 2);
+    const PA = 38000, OA = 45000, PB = 14000;
+    const fmt = (v) => '$' + String(v).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const n = qa + qb;
+    const ahorro = qa * (OA - PA);
+    const fila = (r) => (abierto ? 'mov sube ' + r : 'mov');
+    return {
+      n, qa, qb,
+      etiquetaN: n + (n === 1 ? ' producto' : ' productos'),
+      conProductos: n > 0, vacio: n === 0, verA: qa > 0, verB: qb > 0,
+      totalA: fmt(qa * PA), antesA: fmt(qa * OA), totalB: fmt(qb * PB),
+      subtotal: fmt(qa * PA + qb * PB), ahorro: fmt(ahorro), hayAhorro: ahorro > 0,
+      abrir: () => this.setState({ abierto: true }),
+      cerrar: () => this.setState({ abierto: false }),
+      incA: () => this.setState({ qa: qa + 1 }), decA: () => this.setState({ qa: Math.max(1, qa - 1) }), quitarA: () => this.setState({ qa: 0 }),
+      incB: () => this.setState({ qb: qb + 1 }), decB: () => this.setState({ qb: Math.max(1, qb - 1) }), quitarB: () => this.setState({ qb: 0 }),
+      panelT: abierto ? 'translateX(0)' : 'translateX(104%)',
+      velo: abierto ? 1 : 0, veloPE: abierto ? 'auto' : 'none', dur: abierto ? '480ms' : '320ms',
+      cl1: fila('r1'), cl2: fila('r2'), cl3: fila('r3'), cl4: fila('r4'),
+      ci1: abierto ? 'mov cae r1' : 'mov', ci2: abierto ? 'mov cae r2' : 'mov'
+    };
+  }
+}
+</script>
+</body>
+</html>
