@@ -41,6 +41,7 @@ Before working in an area, read every matching skill's `SKILL.md`. Skills define
 | Skill | Load when | Path |
 |---|---|---|
 | `backend-go-modules` | Any Go code under `backend/` | [.agents/skills/backend-go-modules/SKILL.md](.agents/skills/backend-go-modules/SKILL.md) |
+| `catalog-domain` | Any code, schema, migration, endpoint, admin screen, or event of the catalog module | [.agents/skills/catalog-domain/SKILL.md](.agents/skills/catalog-domain/SKILL.md) |
 | `changelog-releases` | User-visible changes, releases, or tags | [.agents/skills/changelog-releases/SKILL.md](.agents/skills/changelog-releases/SKILL.md) |
 | `conventional-commits` | Writing a commit message | [.agents/skills/conventional-commits/SKILL.md](.agents/skills/conventional-commits/SKILL.md) |
 | `database-postgres` | Tables, migrations, indexes, or sqlc queries | [.agents/skills/database-postgres/SKILL.md](.agents/skills/database-postgres/SKILL.md) |
@@ -48,8 +49,14 @@ Before working in an area, read every matching skill's `SKILL.md`. Skills define
 | `deployment` | Deployment scripts, releases to the VPS, Docker Compose, production migrations, backups, or rollback | [.agents/skills/deployment/SKILL.md](.agents/skills/deployment/SKILL.md) |
 | `domain-events-outbox` | Cross-module side effects, events, consumers, or webhook deduplication | [.agents/skills/domain-events-outbox/SKILL.md](.agents/skills/domain-events-outbox/SKILL.md) |
 | `frontend-astro-islands` | Anything under `frontend/` (storefront or `/admin`) | [.agents/skills/frontend-astro-islands/SKILL.md](.agents/skills/frontend-astro-islands/SKILL.md) |
+| `identity-domain` | Any code, schema, migration, endpoint, admin screen, or event of the identity module | [.agents/skills/identity-domain/SKILL.md](.agents/skills/identity-domain/SKILL.md) |
 | `invoicing-taxes` | Taxes, fiscal data, fiscal documents, or payment settlements with withholdings | [.agents/skills/invoicing-taxes/SKILL.md](.agents/skills/invoicing-taxes/SKILL.md) |
 | `monorepo` | Repository layout, root files, Taskfile tasks, Node.js or npm versions, environment variables, line endings, or editor settings | [.agents/skills/monorepo/SKILL.md](.agents/skills/monorepo/SKILL.md) |
+| `notifications-domain` | Any code, schema, migration, endpoint, admin screen, or event of the notifications module | [.agents/skills/notifications-domain/SKILL.md](.agents/skills/notifications-domain/SKILL.md) |
+| `orders-domain` | Any code, schema, migration, endpoint, admin screen, or event of the orders module | [.agents/skills/orders-domain/SKILL.md](.agents/skills/orders-domain/SKILL.md) |
+| `payments-domain` | Any code, schema, migration, endpoint, admin screen, or event of the payments module | [.agents/skills/payments-domain/SKILL.md](.agents/skills/payments-domain/SKILL.md) |
+| `promotions-domain` | Any code, schema, migration, endpoint, admin screen, or event of the promotions module | [.agents/skills/promotions-domain/SKILL.md](.agents/skills/promotions-domain/SKILL.md) |
+| `shipping-domain` | Any code, schema, migration, endpoint, admin screen, or event of the shipping module | [.agents/skills/shipping-domain/SKILL.md](.agents/skills/shipping-domain/SKILL.md) |
 | `testing` | Writing or changing any test or verification step | [.agents/skills/testing/SKILL.md](.agents/skills/testing/SKILL.md) |
 
-Domain skills for individual modules (catalog, orders, payments) will be added after their data models are approved.
+Each business module has a `<module>-domain` skill; invoicing rules live in `invoicing-taxes`. Load the domain skill together with the technical skills it lists.
