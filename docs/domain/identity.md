@@ -15,7 +15,7 @@ Canonical requirements and data model for the `identity` module. Conventions in 
 | Bootstrap and emergency recovery CLI via SSH | Approved |
 | Password reset token validity: 30 minutes | Approved |
 | Data model (section 3) | Approved |
-| Secret management for application encryption key | Pending |
+| Secret management for application encryption key: protected environment variable (`0600`) in v1 | Approved |
 | Retention policy for `security_events`: 1 year | Approved |
 | Customer accounts | Deferred (post-v1) |
 
@@ -45,8 +45,9 @@ Canonical requirements and data model for the `identity` module. Conventions in 
 - **Session management:** Server-side sessions using `alexedwards/scs` backed by a custom PostgreSQL store writing to `identity.sessions` using schema-qualified queries.
 - **Passwords:** Argon2id via `golang.org/x/crypto/argon2` meeting OWASP minimums (19 MiB memory, 2 iterations, parallelism 1), formatted as PHC strings (`$argon2id$v=19$m=19456,t=2,p=1$...`) to enable transparent parameter upgrades upon successful authentication.
 - **CSRF protection:** Go standard library `http.CrossOriginProtection`; state-changing actions are strictly forbidden on `GET`, `HEAD`, and `OPTIONS`.
-- **Cookies:** `HttpOnly`, `Secure`, and `SameSite` flags. Session tokens are regenerated on login to prevent session fixation.
+- **Cookies:** `HttpOnly`, `Secure`, and `SameSite` flags with the strict OWASP prefix `__Host-session` (no `Domain` attribute, `Path=/`, HTTPS only). Session tokens are regenerated on login to prevent session fixation.
 - **Rate limiting:** Implemented in the Go application layer to prevent brute-force attacks per account and per IP. Account-level lockout is persisted in `admin_users` (`locked_until`) to survive process restarts and deployments.
+- **Application encryption key:** The AES-256-GCM master key used to encrypt TOTP secrets and outbox password reset tokens is injected via an environment variable (`APP_ENCRYPTION_KEY`) from an env file with `0600` permissions on the VPS, validated at startup.
 - **Session invalidation:** Because SCS session data is serialized and opaque in PostgreSQL, individual sessions cannot be queried by user ID. Invalidation uses a `session_version` counter in `admin_users`, mirrored inside the session payload. Incrementing `session_version` on password changes, user disabling, role modification, or 2FA reset immediately invalidates all active sessions for that user on their next request.
 
 **Bootstrap and emergency recovery**

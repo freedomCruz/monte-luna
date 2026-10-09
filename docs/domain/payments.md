@@ -18,7 +18,7 @@ Canonical requirements and data model for the `payments` module. Conventions in 
 | Refunds (`card_void` automated, `manual` bank transfer with admin confirmation) | Approved |
 | Settlements and withholdings ledger (manual entry in v1 per provider report) | Approved |
 | Data model (section 3) | Approved |
-| Secret management tooling (env variables in v1) | Pending (infrastructure) |
+| Secret management tooling (env variables in v1, `0600` env file on VPS) | Approved |
 | Automated settlement report import (API / CSV upload) | Deferred (post-v1) |
 | Wompi endpoint confirmation for querying in-flight transaction by reference | Open Item (verify at implementation) |
 
@@ -242,7 +242,7 @@ Outbox table and consumer tracking follow [data-modeling.md](../architecture/dat
 
 ## 4. Open Items
 
-- **Secret management tooling:** Secure storage and injection of production API keys and signing secrets (Vault, Doppler, or protected VPS environment files) pending infrastructure baseline completion.
+- **Secret management tooling:** Production API keys and signing secrets are injected via environment variables from an env file with `0600` permissions on the VPS outside the repository, loaded by Docker Compose and validated at application startup. Dedicated secret engines (Vault/Doppler) deferred post-v1.
 - **Automated settlement import:** Automated ingestion of Wompi settlement reports via API or CSV file upload deferred to post-v1.
 - **In-flight transaction query endpoint:** Confirm the exact Wompi REST endpoint used by the backend to poll an in-flight transaction by reference before the provider transaction ID is returned (`GET /v1/transactions?reference={ref}`).
 

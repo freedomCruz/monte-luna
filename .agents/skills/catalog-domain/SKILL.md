@@ -35,7 +35,7 @@ Do not use alone for cross-cutting workflows. Load alongside: `backend-go-module
 
 | Situation | Action |
 | --- | --- |
-| Media storage location requested | Stop and ask user (pending: VPS disk vs object storage) |
+| Media storage location requested | Use Cloudflare R2 (S3-compatible via `MediaStorePort`; approved) |
 | Food health or INVIMA rules needed | Stop and ask user (open item in domain doc) |
 | Digital products requested | Reject; physical products only in v1 |
 | Concurrent stock allocation | Atomic decrement on oldest lot; fallback to next lot if insufficient |

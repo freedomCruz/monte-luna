@@ -27,7 +27,7 @@ Do not use alone for customer accounts (deferred post-v1; guest checkout only). 
 - Single-use recovery codes hashed with SHA-256; regenerating codes deletes prior unused codes.
 - Password reset tokens are single-use, SHA-256 hashed, valid 30 minutes; new requests invalidate prior ones; uniform responses prevent account enumeration.
 - Raw reset token encrypted with application key inside `identity.password_reset_requested` outbox payload; never stored in plaintext.
-- Server-side sessions use `alexedwards/scs` in `identity.sessions`. Cookie name prefix `__Host-` is not yet decided; do not invent it.
+- Server-side sessions use `alexedwards/scs` in `identity.sessions`. Cookie name uses the strict OWASP prefix `__Host-session` (`Secure`, `Path=/`, `HttpOnly`, `SameSite=Lax`, no `Domain` attribute).
 - Immediate session revocation via `session_version` in `admin_users` mirrored in session data; incrementing `session_version` invalidates active sessions on next request.
 - `security_events` is append-only with 1-year retention; bootstrap and emergency recovery use CLI over SSH.
 
@@ -35,7 +35,7 @@ Do not use alone for customer accounts (deferred post-v1; guest checkout only). 
 
 | Situation | Action |
 | --- | --- |
-| Application encryption key management | Stop and ask user (pending decision: secret storage) |
+| Application encryption key management | Use `APP_ENCRYPTION_KEY` from protected environment variable (`0600` on VPS; approved) |
 | Storefront customer registration requested | Reject; deferred post-v1 (guest checkout only) |
 | Last active owner demotion or deletion | Reject; invariant violation |
 | Password reset requested | Emit encrypted outbox event; respond uniformly |

@@ -16,7 +16,7 @@ Canonical requirements and data model for the `catalog` module. Conventions in [
 | Barcode on variants | Approved |
 | Data model (section 3) | Approved |
 | Price per variant | Approved |
-| Media storage location (VPS disk or object storage) | Pending |
+| Media storage location: Cloudflare R2 (S3-compatible object storage, $0 egress, standard SDK via `MediaStorePort`) | Approved |
 | Stock reservation strategy between `orders` and `catalog` | Approved |
 | Complex promotional rules and coupons | Out of scope here; owned by `promotions` (pending) |
 
@@ -112,7 +112,7 @@ Both tables are ✎ (reordered and edited from the admin panel).
 
 - `origin_images`: `origin_id` (FK, indexed), `storage_key text NOT NULL`, `alt_text text NOT NULL`, `position integer`.
 - `product_images`: `product_id` (FK, indexed), optional `variant_id` with FK `(variant_id, product_id)` → `product_variants (id, product_id)` and an index on `(variant_id, product_id)`, `storage_key text NOT NULL`, `alt_text text NOT NULL`, `position integer`.
-- `storage_key` identifies the file in the media store; where files live is pending (section 1).
+- `storage_key` identifies the object in the Cloudflare R2 bucket (S3-compatible object storage). URLs are resolved through a `MediaStorePort` in Go and served via CDN with zero egress fees. Relative keys only are stored in the database.
 
 ### 3.4 `product_types` ✎
 
