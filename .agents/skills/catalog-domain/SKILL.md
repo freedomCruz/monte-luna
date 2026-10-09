@@ -36,7 +36,7 @@ Do not use alone for cross-cutting workflows. Load alongside: `backend-go-module
 | Situation | Action |
 | --- | --- |
 | Media storage location requested | Use Cloudflare R2 (S3-compatible via `MediaStorePort`; approved) |
-| Food health or INVIMA rules needed | Stop and ask user (open item in domain doc) |
+| Food health or INVIMA rules requested | Reject; explicitly out of scope for ecommerce platform |
 | Digital products requested | Reject; physical products only in v1 |
 | Concurrent stock allocation | Atomic decrement on oldest lot; fallback to next lot if insufficient |
 | Requirement not in domain doc or open item | Stop and ask user; do not invent rules |

@@ -18,7 +18,8 @@ Canonical requirements and data model for the `catalog` module. Conventions in [
 | Price per variant | Approved |
 | Media storage location: Cloudflare R2 (S3-compatible object storage, $0 egress, standard SDK via `MediaStorePort`) | Approved |
 | Stock reservation strategy between `orders` and `catalog` | Approved |
-| Complex promotional rules and coupons | Out of scope here; owned by `promotions` (pending) |
+| Complex promotional rules and coupons | Out of scope here; owned by `promotions` |
+| Food health and sanitary regulations (INVIMA) | Out of scope; not managed by ecommerce platform |
 
 ## 2. Approved Requirements
 
@@ -229,7 +230,7 @@ Inserted in the same transaction as every change to `variant_lot_stock`. An inde
 
 ## 4. Open Items
 
-- Food health and labeling requirements (for example INVIMA) for selling coffee and cacao online have not been researched; review before production.
+None. All v1 catalog requirements, data models, media storage, inventory rules, and architectural boundaries are fully resolved and approved. Sanitary regulation tracking (INVIMA) is explicitly excluded from ecommerce scope.
 
 ## 5. Sources
 

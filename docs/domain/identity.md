@@ -160,7 +160,7 @@ Outbox table follows [data-modeling.md](../architecture/data-modeling.md) sectio
 
 ## 4. Open Items
 
-- **Secret management:** Strategy for provisioning, storing, and rotating the application symmetric encryption key used for TOTP secrets and outbox reset tokens.
+- **Secret management:** Approved for v1 via protected environment variable (`APP_ENCRYPTION_KEY` from `0600` file on VPS); dedicated secret engine (Vault/Doppler) deferred to future iterations.
 - **Customer accounts:** Deferred to future iterations; architecture ensures storefront buyer accounts can be added without coupling to administrator schemas.
 
 ## 5. Sources
