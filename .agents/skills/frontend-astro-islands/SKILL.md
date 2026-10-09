@@ -1,6 +1,6 @@
 ---
 name: frontend-astro-islands
-description: "Trigger: frontend/, Astro page, React island, client:load, Storefront UI, Tailwind, storefront, admin UI. Build static-first Astro pages with minimal React islands."
+description: "Trigger: frontend/, Astro page, React island, client:load, shadcn/ui, Tailwind, storefront, admin UI. Build static-first Astro pages with minimal React islands."
 license: Apache-2.0
 metadata:
   author: ecommerce-project
@@ -16,18 +16,19 @@ Do not use for backend logic; the frontend displays and collects data, and the b
 ## Hard Rules
 
 - Read `docs/architecture/system-architecture.md` section 2 before structural changes.
+- Read `docs/design/monteluna/design-system.md` before any UI work. Use tokens and CSS variables defined in the design system; never use ad-hoc hex values.
 - One Astro app in `frontend/` serves the storefront and `/admin`. Pinned to Node 26 LTS via root `.node-version` (read by fnm). Use npm 12 only, enforced via `devEngines.packageManager` in `frontend/package.json` (`{ "name": "npm", "version": "<exact>", "onFail": "error" }`).
 - Build configuration: static output (`output: 'static'`). No Node.js process in production; static build assets are served directly by Caddy from a versioned container image tagged with the release version and commit SHA (Go `embed` is rejected).
 - Environment variables: Astro static builds embed environment values at build time; expose only `PUBLIC_`-prefixed non-secret variables to client code. Never expose private secrets.
 - Dependency installation: never install dependencies autonomously; follow `dependency-audit`. npm 12 blocks install scripts by default (`allowScripts`); never set `ignore-scripts=true`. Never omit optional dependencies (`--omit=optional`) so `esbuild` and `sharp` run with platform binaries without scripts.
 - Never copy `node_modules` between operating systems; production builds occur in Linux containers. Playwright browsers are installed with `npx playwright install` (dev/test only; never on the VPS).
-- Default to `.astro` components rendered as static HTML. Use a React island only where interaction is required.
+- Default to `.astro` components rendered as static HTML. React (including shadcn/ui) components without a `client:` directive render as static HTML; hydrate only interactive islands where client interaction is required.
 - Hydration directives: `client:load` for above-the-fold purchase controls; `client:idle` for non-urgent widgets; `client:visible` for below-the-fold content. Never hydrate static content.
-- React is the only client framework. UI primitives come from Storefront UI (`@storefront-ui/react`) with Tailwind CSS. No other UI library without user approval.
+- React is the only client framework. UI primitives come from shadcn/ui with Radix primitives (`--base radix`) and Tailwind CSS. Components are copied into the repository by the shadcn CLI (project-owned code); edit copied components to match Monteluna design tokens and conventions. No other UI library without user approval.
+- The shadcn CLI runs only after explicit user approval following `dependency-audit`, and must be executed through npm (`npx shadcn@<exact>`), never pnpm, even if a preset command mentions pnpm. Candidate package set to record (exact versions to be audited upon scaffolding): `shadcn` (CLI, dev-time), `radix-ui`, `class-variance-authority`, `clsx`, `tailwind-merge`, `lucide-react`, `tw-animate-css`.
 - Independent islands do not share React Context. Group tightly coupled controls into one island, or share state through a lightweight store.
 - Props passed to hydrated islands must be serializable; never pass functions.
 - Never compute authoritative prices, discounts, stock, or taxes in the frontend. Show backend values; the backend validates every action.
-- Check package versions before installing: `@storefront-ui/react` 4.x declares a React 19 peer dependency. Do not copy Next.js-specific setup steps from its guides.
 - Use semantic HTML, keyboard-accessible controls, visible focus, and `alt` text for product images.
 - Load `dependency-audit` before proposing, adding, or updating any dependency; installation still requires explicit user approval.
 
@@ -35,18 +36,18 @@ Do not use for backend logic; the frontend displays and collects data, and the b
 
 | Situation | Action |
 | --- | --- |
-| Content without interaction | `.astro` component, no JavaScript |
+| Content without interaction | `.astro` component or React component without `client:` directive, no JavaScript |
 | Production runtime | Static output (`output: 'static'`); no Node.js process on the VPS |
 | Browser testing install | Install browsers via `npx playwright install` for local development and test only; never on the VPS |
 | Shared state across separate islands | Group into one island; if not possible, propose a store (Nano Stores is named in the architecture) and get approval before adding it |
 | `/admin` page | Authenticate through the backend session cookie; never prerender private data; hydrate admin data client-side after the session check |
 | Out-of-stock variant | Show an out-of-stock badge and disable add-to-cart; the backend still rejects the purchase |
-| Storefront UI lacks a needed component | Build it with Tailwind in the same visual language; do not add another UI library |
+| shadcn/ui lacks a needed component | Build it with Tailwind and Monteluna tokens, adding it to `docs/design/monteluna/design-system.md` first; do not add another UI library without approval |
 
 ## Execution Steps
 
 1. Load `testing` and write tests first where behavior exists (Vitest, Astro Container API, React Testing Library).
-2. Choose static `.astro` or island per the gates above; implement with Storefront UI and Tailwind.
+2. Choose static `.astro` or island per the gates above; implement with shadcn/ui and Tailwind using Monteluna design tokens.
 3. Connect to backend endpoints; handle loading and error states.
 4. Cover user flows with Playwright and axe-core accessibility checks per `testing`.
 5. Run every verification gate.
@@ -64,6 +65,7 @@ Report:
 Paths are relative to the repository root.
 
 - `docs/architecture/system-architecture.md` — section 2, frontend architecture.
+- `docs/design/monteluna/design-system.md` — Monteluna design system, CSS variable tokens, and typography.
 - `.agents/skills/monorepo/SKILL.md` — light monorepo layout, Taskfile tasks, and repository conventions.
 - `.agents/skills/testing/SKILL.md` — testing strategy, Vitest, Astro Container API, Playwright, axe-core.
 - `.agents/skills/dependency-audit/SKILL.md` — dependency evaluation, exact pinning, npm security audit.

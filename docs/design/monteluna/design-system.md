@@ -1,6 +1,6 @@
 # Monteluna Design System
 
-Status: design reference for the storefront, approved visually by the merchant on 2026-10-09. It is not an architecture decision. The frontend stack stays as recorded in [system-architecture.md](../../architecture/system-architecture.md) (Astro, React islands, Storefront UI, Tailwind CSS).
+Status: canonical design reference approved by the merchant on 2026-10-09; implemented with shadcn/ui (Radix) + Tailwind per [system-architecture.md](../../architecture/system-architecture.md).
 
 The source of truth for every value below is the design sheet [`canvas/M-Sistema.dc.html`](canvas/M-Sistema.dc.html). When this document and the sheet disagree, the sheet wins and this document must be corrected.
 

@@ -16,7 +16,7 @@ The system is organized as a decoupled frontend and a single modular backend app
                 │          Frontend Layer (Astro)         │
                 │  - Content-rich pages (Static HTML/SEO) │
                 │  - Interactive React Islands            │
-                │    (Storefront UI + Tailwind CSS)       │
+                │    (shadcn/ui + Tailwind CSS)           │
                 └────────────────────┬────────────────────┘
                                      │ (JSON / REST API)
                                      ▼
@@ -45,10 +45,10 @@ The system is organized as a decoupled frontend and a single modular backend app
   - Product variant selectors and purchase controls (`client:load`).
   - Slide-over shopping cart and checkout interaction (`client:load` / `client:idle`).
   - Search auto-complete and catalog filters (`client:visible`).
-- **Component Design System:** **Storefront UI** (`@storefront-ui/react`) and **Tailwind CSS**, providing accessible e-commerce component primitives.
+- **Component Design System:** **shadcn/ui** with Radix primitives (`--base radix`) and **Tailwind CSS**, providing accessible e-commerce component primitives owned directly in the repository code and themed with the Monteluna design system.
 - **Island Props:** Props passed to hydrated islands must be serializable data; functions cannot cross the server-to-client boundary.
 - **Cross-Island State:** Independent React islands do not share a global React Context tree. Cross-island synchronization (e.g., header cart counter reacting to an "Add to Cart" event) uses lightweight reactive stores (e.g., Nano Stores) or grouped composite islands.
-- **Merchant Admin Panel:** A compact, custom administrative interface located under `/admin`, built using the same Astro + React + Storefront UI stack and consuming Go REST endpoints.
+- **Merchant Admin Panel:** A compact, custom administrative interface located under `/admin`, built using the same Astro + React + shadcn/ui stack and consuming Go REST endpoints.
 - **Output Mode and Production Runtime:** Astro static output (`output: 'static'`). No Node.js process runs in production; all storefront pages and the `/admin` shell are pre-rendered to static assets. The `/admin` area remains a static shell that authenticates through the backend session cookie and loads private data client-side. Static assets in production are served directly by Caddy from a Caddy-based container image with pre-rendered assets baked in; Go `embed` for static files is rejected. Caddy proxies `/api` to the Go backend, leaving the Go application unexposed directly to the internet.
 
 ---
@@ -153,7 +153,8 @@ To guarantee that any module can be extracted into an independent microservice i
 
 | Area | Decision | Status |
 |---|---|---|
-| **Frontend** | Astro + React Islands + Storefront UI + Tailwind CSS | Approved |
+| **Frontend** | Astro + React Islands + shadcn/ui (Radix) + Tailwind CSS | Approved |
+| **Visual Design System** | Monteluna storefront design system with CSS variables, typography, and component specs in [docs/design/monteluna/design-system.md](../design/monteluna/design-system.md) | Approved |
 | **Backend** | Go Modular Monolith (Pragmatic Hexagonal Architecture) | Approved |
 | **Database Engine** | PostgreSQL 18 (Isolated domain schemas; native `uuidv7()`) | Approved |
 | **Primary Keys** | UUIDv7 (time-ordered, B-tree friendly). Not a security token: public links (e.g., guest order tracking, password reset) use separate random tokens, and authorization is always enforced | Approved |
@@ -234,3 +235,5 @@ To guarantee that any module can be extracted into an independent microservice i
 - Resend webhook signature verification: https://resend.com/docs/webhooks/verify-webhooks-requests
 - Google email sender guidelines: https://support.google.com/mail/answer/81126
 - RFC 6238 (TOTP: Time-Based One-Time Password Algorithm): https://www.rfc-editor.org/rfc/rfc6238.html
+- shadcn/ui Astro installation: https://ui.shadcn.com/docs/installation/astro
+- shadcn/ui theming: https://ui.shadcn.com/docs/theming
