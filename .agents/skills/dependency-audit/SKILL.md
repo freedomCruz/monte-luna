@@ -26,7 +26,7 @@ Do not install or update dependencies autonomously. Installing or updating depen
   - Produce an audit report; installation strictly requires explicit user approval.
 - Pinning, npm:
   - Exact versions only (no `^` or `~`).
-  - Node.js runtime: Node 26 LTS pinned to an exact version in root `.node-version` and read by fnm (`fnm env --use-on-cd --version-file-strategy=recursive`). The production build container consumes the same `.node-version`. Exact patch chosen under `dependency-audit` when `frontend/` is scaffolded.
+  - Node.js runtime: Node 24 LTS pinned to an exact version in root `.node-version` and read by fnm (`fnm env --use-on-cd --version-file-strategy=recursive`). The production build container consumes the same `.node-version`. Exact patch chosen under `dependency-audit` when `frontend/` is scaffolded.
   - npm 12: exact version enforced in `frontend/package.json` with `devEngines.packageManager` (`{ "name": "npm", "version": "<exact>", "onFail": "error" }`). Installed once per fnm Node version with `npm install -g npm@<exact>`. Verify `devEngines.runtime` check for Node against npm docs at scaffold time; `.node-version` remains the single source of truth.
   - `frontend/.npmrc` sets `save-exact=true` and `min-release-age=7` (npm resolves versions published >7 days ago so compromised releases are caught before install). Scaffolded with `frontend/`.
   - npm 12 install-script policy: dependency install scripts are blocked by npm 12's default `allowScripts` policy; project target is an empty allowlist. Approve a package's scripts only after `dependency-audit`, using version-pinned approvals (`npm approve-scripts <pkg>` writes pinned approvals to `package.json`, committed).
