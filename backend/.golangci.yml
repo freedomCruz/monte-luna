@@ -1,0 +1,21 @@
+# golangci-lint v2 configuration. Run: go tool -modfile=tools.mod golangci-lint run
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - depguard
+  settings:
+    depguard:
+      rules:
+        # contracttest validates HTTP exchanges in tests; production code never imports it.
+        contracttest-only-in-tests:
+          files:
+            - "$all"
+            - "!$test"
+            - "!**/internal/contracttest/**"
+          deny:
+            - pkg: github.com/freedomCruz/monte-luna/backend/internal/contracttest
+              desc: contracttest is test-only
+        # Module boundary rules (other modules may import only internal/<module>, never its
+        # domain, app, or adapters packages) are added as each business module is created.
