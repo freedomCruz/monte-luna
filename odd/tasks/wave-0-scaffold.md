@@ -24,7 +24,7 @@ Serial monorepo scaffold by the coordinator before Catalog v1 parallel work (D6,
 | T5 | Astro + shadcn frontend with Monteluna tokens (done) | S6 | inline | `899375e` |
 | T6 | `contracts/openapi/common.yaml` and health contract (done, before T4) | S7 | inline | `9495f96` |
 | T7 | `task setup` per-worktree database and ports (done) | S4 | inline | `9dd3d99` + user `35def25` |
-| T8 | `task verify` and CHANGELOG verified; user-owned push/PR pending | S8 | inline | local commit below |
+| T8 | `task verify` and CHANGELOG verified; user-owned push/PR pending | S8 | inline | `cbdb7f4` |
 | T9 | Update transitive Go x/text to approved security fix v0.42.0 (done) | S2 | inline | `a99b781` |
 
 ## Log
@@ -60,3 +60,4 @@ Serial monorepo scaffold by the coordinator before Catalog v1 parallel work (D6,
 - L29 (2026-10-13, user): "listo ya está commiteado". Checked Git metadata only (no `.env*` read): current branch `chore/wave-0-scaffold`, HEAD `35def25` with subject `chore(infra): document per-worktree environment variables`, clean tree except this tracking file. T7 is now done; T8 begins.
 - L30 (2026-10-13, T8 evidence): `task verify` was RED (task missing, exit 200), then GREEN after adding serial `backend:verify` (mod verify, readonly build/test/vet, lint, govulncheck) and `frontend:verify` (npm ci, signatures, audit, generated API type drift, Astro check, Vitest, build). Full command exited 0: Go 0 lint issues and no vulnerabilities; npm 461 signatures, 198 attestations and 0 vulnerabilities; Astro check 0 errors, Vitest 3/3, static build 1 page. CHANGELOG [Unreleased] documents Wave 0 and patched x/text. Independent read-only verifier approved S8 technical gates and changelog; PR review warning: package-lock adds 9,373 lines (generated dependency metadata). E2E Playwright/axe deferred to first real UI flows. T8 awaits explicit local commit authorization and the user's publication/PR decision; no push or PR yet.
 - L31 (2026-10-13, user): explicitly authorized the local T8 commit limited to `Taskfile.yml`, `CHANGELOG.md`, and this tracking file. Publication and PR remain user-owned because the agent cannot independently inspect `.env.example`; no push or PR has been authorized.
+- L32 (2026-10-13, evidence): Committed only `Taskfile.yml`, `CHANGELOG.md`, and this tracking file as `cbdb7f4` (`chore(infra): add serial Wave 0 verification gate`). The working tree was clean immediately after that commit. This tracking-only follow-up records the commit identity; T8 remains open until the user publishes the branch, opens and merges the PR.
