@@ -39,6 +39,7 @@ Do not use for Go application logic inside `backend/` (load `backend-go-modules`
 - Go developer tools:
   - Pinned in `backend/go.mod` via `tool` directive (`go get -tool <module>/cmd/<tool>@vX.Y.Z`).
   - Run via `go tool <name>` from `backend/`; never installed globally. Must pass `dependency-audit`.
+  - Tools with a large dependency graph (`golangci-lint`) live in a separate `backend/tools.mod`: pin with `go get -modfile=tools.mod -tool <module>@vX.Y.Z`, run with `go tool -modfile=tools.mod <name>`.
 - Environment configuration:
   - Root `.env.example` committed with safe placeholders; real `.env` files are never committed.
   - Go backend reads strictly from environment, validates on startup, and fails fast.
