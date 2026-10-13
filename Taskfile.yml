@@ -34,6 +34,36 @@ tasks:
     cmds:
       - npm run dev -- --host 127.0.0.1 --port "$FRONTEND_PORT"
 
+  backend:verify:
+    desc: Verify Go module integrity, build, tests, vet, boundaries, and vulnerabilities
+    dir: backend
+    cmds:
+      - go mod verify
+      - go build -mod=readonly ./...
+      - go test -mod=readonly ./...
+      - go vet -mod=readonly ./...
+      - go tool -modfile=tools.mod golangci-lint run ./...
+      - go tool govulncheck ./...
+
+  frontend:verify:
+    desc: Clean-install and verify npm dependencies, generated API types, tests, and static build
+    dir: frontend
+    cmds:
+      - npm ci --no-fund
+      - npm audit signatures
+      - npm audit --audit-level=high
+      - npm run types:generate
+      - git diff --exit-code -- src/generated/platform.ts
+      - npm run check
+      - npm run test
+      - npm run build
+
+  verify:
+    desc: Run all local verification gates serially (backend then frontend)
+    cmds:
+      - task: backend:verify
+      - task: frontend:verify
+
   dev:db:up:
     desc: Start the local PostgreSQL container and wait until it is healthy
     preconditions:

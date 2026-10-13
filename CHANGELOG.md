@@ -17,7 +17,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Parallel agent work rules (roles, path ownership, contract approval gates, feature branch integration) and an Orca + Pi coordination skill.
 - HTTP API conventions shared by every module contract: paths, JSON naming, money, dates, errors, pagination, authentication, and idempotency.
 - Delivery plan: serial monorepo scaffold first, then a read-only Catalog v1 storefront as the first feature, with all changes merged through pull requests.
+- Local PostgreSQL development with an isolated database and development ports for each Git worktree.
+- Go API health endpoint and shared OpenAPI 3.1 contract with generated frontend types.
+- Static Astro storefront scaffold themed with Monteluna design tokens and a reviewed shadcn/ui button.
+- `task verify` to run backend and frontend checks before review.
 
 ### Changed
 
 - Frontend UI component library changed from Storefront UI to shadcn/ui (Radix primitives) for the storefront and admin panel, styled with Tailwind CSS using the Monteluna design system.
+
+### Security
+
+- Updated the backend's indirect `golang.org/x/text` dependency to resolve GO-2026-6629 and GO-2026-5970.
