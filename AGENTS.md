@@ -9,6 +9,7 @@ The exclusive sources of truth for physical hardware, known limits, and active s
 👉 Infrastructure Baseline: [docs/architecture/infrastructure.md](docs/architecture/infrastructure.md)  
 👉 System Architecture Baseline: [docs/architecture/system-architecture.md](docs/architecture/system-architecture.md)  
 👉 Data Modeling Conventions: [docs/architecture/data-modeling.md](docs/architecture/data-modeling.md)  
+👉 HTTP API Conventions: [docs/architecture/api-conventions.md](docs/architecture/api-conventions.md)  
 👉 Invoicing and Taxes: [docs/architecture/invoicing-and-taxes.md](docs/architecture/invoicing-and-taxes.md)  
 👉 Catalog Domain: [docs/domain/catalog.md](docs/domain/catalog.md)  
 👉 Orders Domain: [docs/domain/orders.md](docs/domain/orders.md)  
