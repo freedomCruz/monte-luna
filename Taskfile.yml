@@ -1,0 +1,24 @@
+# Root task runner (go-task v3.54.0). Run `task --list` to see tasks.
+version: "3"
+
+dotenv: [".env"]
+
+tasks:
+  dev:db:up:
+    desc: Start the local PostgreSQL container and wait until it is healthy
+    preconditions:
+      - sh: test -f .env
+        msg: "Missing .env. Create it with: cp .env.example .env"
+    cmds:
+      - docker compose up -d --wait postgres
+
+  dev:db:down:
+    desc: Stop the local PostgreSQL container (data is kept)
+    cmds:
+      - docker compose stop postgres
+
+  dev:db:psql:
+    desc: Open psql in the local PostgreSQL container
+    interactive: true
+    cmds:
+      - docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"
