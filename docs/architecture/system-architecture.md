@@ -63,6 +63,7 @@ The system is organized as a decoupled frontend and a single modular backend app
 - **Domain Events:** Transactional outbox in PostgreSQL, relayed by a goroutine inside the same binary. No message broker is required. Details in [data-modeling.md](data-modeling.md#11-domain-events-transactional-outbox).
 - **HTTP API Contract:** Contract-first, hand-written **OpenAPI 3.1** documents are the source of truth for every REST endpoint; Go handlers and frontend code conform to them, never the other way around.
   - Layout: one document per module at `contracts/openapi/<module>.yaml`; shared schemas (errors, pagination, money, identifiers) live in `contracts/openapi/common.yaml` and are referenced with `$ref`.
+  - Shared rules (paths, `snake_case` fields, money in minor units, RFC 9457 errors, cursor pagination, authentication, idempotency) are defined in [api-conventions.md](api-conventions.md).
   - Each module document holds both surfaces: public storefront paths under `/api/v1/...` and admin paths under `/api/v1/admin/...`, with the admin session security scheme declared in the contract.
   - A module's contract is written and approved before its backend and frontend work start, so both can proceed in parallel against it. Contract changes go through the same approval.
   - Contract verification: Go HTTP handler tests validate every request and response against the module's OpenAPI document with an OpenAPI 3.1 validation library used only in tests. The library is selected and pinned under `dependency-audit` when `backend/` is scaffolded.
@@ -168,6 +169,7 @@ To guarantee that any module can be extracted into an independent microservice i
 | **Backend** | Go Modular Monolith (Pragmatic Hexagonal Architecture) | Approved |
 | **HTTP API Contract** | Contract-first hand-written OpenAPI 3.1, one document per module in `contracts/openapi/` plus `common.yaml`; public and `/admin` paths in the same module document (section 3) | Approved |
 | **Contract Verification and Frontend Types** | Go handler tests validate requests and responses against the OpenAPI documents (test-only library, audited at backend scaffold); TypeScript types generated with `openapi-typescript` (types only, audited at frontend scaffold) | Approved |
+| **HTTP API Conventions** | `snake_case` JSON, money as integer minor units, RFC 9457 problem details, cursor pagination, `Idempotency-Key` for order placement and payment start; see [api-conventions.md](api-conventions.md) | Approved |
 | **Storefront Data Strategy** | Hybrid: stable catalog content pre-rendered at build time; price, stock, and roast date fetched in the browser by the purchase island (section 2) | Approved |
 | **Database Engine** | PostgreSQL 18 (Isolated domain schemas; native `uuidv7()`) | Approved |
 | **Primary Keys** | UUIDv7 (time-ordered, B-tree friendly). Not a security token: public links (e.g., guest order tracking, password reset) use separate random tokens, and authorization is always enforced | Approved |
