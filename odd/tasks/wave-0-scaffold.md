@@ -18,7 +18,7 @@ Serial monorepo scaffold by the coordinator before Catalog v1 parallel work (D6,
 | ID | Task | Specs | Route | Commit |
 | --- | --- | --- | --- | --- |
 | T1 | Audit and approve block 1: Node, npm, Go toolchain, Taskfile, PostgreSQL image (done; Node 26.11.1 and npm 12.2.0 installed in T5 on or after 2026-10-14) | S2 | inline | — |
-| T2 | Root files and local PostgreSQL compose (done) | S3, S8 | inline | see Log L6 |
+| T2 | Root files and local PostgreSQL compose (done) | S3, S8 | inline | `a930df2` |
 | T3 | Audit and approve block 2: backend and frontend dependencies | S2 | inline | — |
 | T4 | Go backend skeleton with health endpoint (TDD) | S5 | inline | — |
 | T5 | Astro + shadcn frontend with Monteluna tokens | S6 | inline | — |
