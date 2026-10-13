@@ -1,0 +1,149 @@
+openapi: 3.1.0
+info:
+  title: Monteluna shared API components
+  version: 1.0.0
+  description: >-
+    Shared schemas, parameters, responses, and security schemes referenced by
+    every module contract. Rules: docs/architecture/api-conventions.md.
+paths: {}
+components:
+  securitySchemes:
+    adminSession:
+      type: apiKey
+      in: cookie
+      name: __Host-session
+      description: Admin session cookie issued by the identity module.
+
+  parameters:
+    Limit:
+      name: limit
+      in: query
+      required: false
+      description: Page size for cursor pagination.
+      schema:
+        type: integer
+        minimum: 1
+        maximum: 100
+        default: 24
+    Cursor:
+      name: cursor
+      in: query
+      required: false
+      description: Opaque cursor taken from a previous `next_cursor`.
+      schema:
+        type: string
+        minLength: 1
+    IdempotencyKey:
+      name: Idempotency-Key
+      in: header
+      required: true
+      description: Client-generated UUID; repeating it within 24 hours returns the original result.
+      schema:
+        type: string
+        format: uuid
+
+  schemas:
+    Id:
+      type: string
+      format: uuid
+      description: UUIDv7 identifier.
+    Slug:
+      type: string
+      pattern: "^[a-z0-9]+(-[a-z0-9]+)*$"
+    MoneyAmount:
+      type: integer
+      format: int64
+      minimum: 0
+      description: Amount in minor units of the store currency (COP centavos). $38.000 is 3800000.
+    Timestamp:
+      type: string
+      format: date-time
+      description: RFC 3339 timestamp in UTC.
+    CalendarDate:
+      type: string
+      format: date
+    NextCursor:
+      type:
+        - string
+        - "null"
+      description: Cursor for the next page, or null on the last page.
+    FieldError:
+      type: object
+      additionalProperties: false
+      required: [field, code, message]
+      properties:
+        field:
+          type: string
+          description: Dotted path into the request body.
+        code:
+          type: string
+          pattern: "^[a-z][a-z0-9_]*$"
+        message:
+          type: string
+    Problem:
+      type: object
+      description: RFC 9457 problem details with a stable machine code.
+      required: [type, title, status, code]
+      properties:
+        type:
+          type: string
+          format: uri
+        title:
+          type: string
+        status:
+          type: integer
+          minimum: 400
+          maximum: 599
+        code:
+          type: string
+          pattern: "^[a-z][a-z0-9_]*$"
+        detail:
+          type: string
+        errors:
+          type: array
+          items:
+            $ref: "#/components/schemas/FieldError"
+
+  responses:
+    BadRequest:
+      description: Malformed request.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Unauthorized:
+      description: Not authenticated.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Forbidden:
+      description: Authenticated but not allowed.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    NotFound:
+      description: Resource not found.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    Conflict:
+      description: Request conflicts with the current state.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    ValidationFailed:
+      description: One or more fields are invalid.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"
+    InternalError:
+      description: Unexpected server error.
+      content:
+        application/problem+json:
+          schema:
+            $ref: "#/components/schemas/Problem"

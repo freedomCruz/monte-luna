@@ -1,0 +1,84 @@
+# Root task runner (go-task v3.54.0). Run `task --list` to see tasks.
+version: "3"
+
+dotenv: [".env"]
+
+tasks:
+  setup:
+    desc: Create this worktree's database in the shared local PostgreSQL container
+    silent: true
+    cmds:
+      - bash scripts/setup-worktree.sh
+
+  setup:preview:
+    desc: Print this worktree's database and HTTP ports without writing files or contacting Docker
+    silent: true
+    cmds:
+      - bash scripts/setup-worktree.sh --dry-run
+
+  backend:dev:
+    desc: Run the Go API on this worktree's API_ADDR
+    dir: backend
+    preconditions:
+      - sh: test -n "$API_ADDR"
+        msg: "Set API_ADDR using the values from task setup:preview"
+    cmds:
+      - go run ./cmd/api
+
+  frontend:dev:
+    desc: Run Astro on this worktree's FRONTEND_PORT (localhost only)
+    dir: frontend
+    preconditions:
+      - sh: test -n "$FRONTEND_PORT"
+        msg: "Set FRONTEND_PORT using the values from task setup:preview"
+    cmds:
+      - npm run dev -- --host 127.0.0.1 --port "$FRONTEND_PORT"
+
+  backend:verify:
+    desc: Verify Go module integrity, build, tests, vet, boundaries, and vulnerabilities
+    dir: backend
+    cmds:
+      - go mod verify
+      - go build -mod=readonly ./...
+      - go test -mod=readonly ./...
+      - go vet -mod=readonly ./...
+      - go tool -modfile=tools.mod golangci-lint run ./...
+      - go tool govulncheck ./...
+
+  frontend:verify:
+    desc: Clean-install and verify npm dependencies, generated API types, tests, and static build
+    dir: frontend
+    cmds:
+      - npm ci --no-fund
+      - npm audit signatures
+      - npm audit --audit-level=high
+      - npm run types:generate
+      - git diff --exit-code -- src/generated/platform.ts
+      - npm run check
+      - npm run test
+      - npm run build
+
+  verify:
+    desc: Run all local verification gates serially (backend then frontend)
+    cmds:
+      - task: backend:verify
+      - task: frontend:verify
+
+  dev:db:up:
+    desc: Start the local PostgreSQL container and wait until it is healthy
+    preconditions:
+      - sh: test -f .env
+        msg: "Missing .env. Create it with: cp .env.example .env"
+    cmds:
+      - docker compose up -d --wait postgres
+
+  dev:db:down:
+    desc: Stop the local PostgreSQL container (data is kept)
+    cmds:
+      - docker compose stop postgres
+
+  dev:db:psql:
+    desc: Open psql in the local PostgreSQL container
+    interactive: true
+    cmds:
+      - docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"

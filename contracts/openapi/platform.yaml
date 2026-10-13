@@ -1,0 +1,40 @@
+openapi: 3.1.0
+info:
+  title: Monteluna platform API
+  version: 1.0.0
+  description: >-
+    Cross-cutting endpoints that belong to no business module.
+    Rules: docs/architecture/api-conventions.md.
+paths:
+  /api/v1/health:
+    get:
+      operationId: getHealth
+      summary: Liveness check
+      description: >-
+        Returns 200 while the process can serve requests. Used by deploy health
+        checks. Sends Cache-Control no-store.
+      tags: [platform]
+      responses:
+        "200":
+          description: The service is running.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Health"
+        "500":
+          $ref: "./common.yaml#/components/responses/InternalError"
+components:
+  schemas:
+    Health:
+      type: object
+      additionalProperties: false
+      required: [status]
+      properties:
+        status:
+          type: string
+          enum: [ok]
