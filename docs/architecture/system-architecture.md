@@ -60,6 +60,11 @@ The system is organized as a decoupled frontend and a single modular backend app
 - **Database Access:** **`pgx/v5`** connection pool with **`sqlc`**. No heavy Object-Relational Mappers (ORMs). Database interactions use compiled, strongly typed Go queries generated directly from verified raw SQL definitions.
 - **Caching Strategy:** In-memory caching within the Go process (e.g., `otter` or `golang-lru`), protected behind an abstract `CachePort` interface. Redis is intentionally omitted for single-VPS deployment to eliminate unnecessary network socket overhead and memory overhead.
 - **Domain Events:** Transactional outbox in PostgreSQL, relayed by a goroutine inside the same binary. No message broker is required. Details in [data-modeling.md](data-modeling.md#11-domain-events-transactional-outbox).
+- **HTTP API Contract:** Contract-first, hand-written **OpenAPI 3.1** documents are the source of truth for every REST endpoint; Go handlers and frontend code conform to them, never the other way around.
+  - Layout: one document per module at `contracts/openapi/<module>.yaml`; shared schemas (errors, pagination, money, identifiers) live in `contracts/openapi/common.yaml` and are referenced with `$ref`.
+  - Each module document holds both surfaces: public storefront paths under `/api/v1/...` and admin paths under `/api/v1/admin/...`, with the admin session security scheme declared in the contract.
+  - A module's contract is written and approved before its backend and frontend work start, so both can proceed in parallel against it. Contract changes go through the same approval.
+  - No code generation is adopted yet; contract verification (D2) and frontend types (D3) are pending decisions.
 
 ---
 
@@ -115,7 +120,7 @@ To guarantee that any module can be extracted into an independent microservice i
 
 | Concern | Decision |
 |---|---|
-| **Repository layout** | Light monorepo: single Git repository without heavy build engines (no Turborepo, Nx, Bazel, or Pants). Layout: `backend/` (Go module; `go.mod` resides here, not at repository root), `frontend/` (Astro app containing storefront and `/admin`), `deploy/` (production Docker Compose file and deploy/backup scripts), `docs/`, `.agents/skills/`, `odd/`, and root files `AGENTS.md`, `CHANGELOG.md`, `Taskfile.yml`, `.node-version`, `compose.yaml` (local development services such as PostgreSQL), `.env.example`, `.gitattributes`, `.editorconfig`. Deferred files are created when their area is scaffolded |
+| **Repository layout** | Light monorepo: single Git repository without heavy build engines (no Turborepo, Nx, Bazel, or Pants). Layout: `backend/` (Go module; `go.mod` resides here, not at repository root), `frontend/` (Astro app containing storefront and `/admin`), `deploy/` (production Docker Compose file and deploy/backup scripts), `contracts/openapi/` (HTTP API contracts, section 3), `docs/`, `.agents/skills/`, `odd/`, and root files `AGENTS.md`, `CHANGELOG.md`, `Taskfile.yml`, `.node-version`, `compose.yaml` (local development services such as PostgreSQL), `.env.example`, `.gitattributes`, `.editorconfig`. Deferred files are created when their area is scaffolded |
 | **Node.js runtime** | Node 26 LTS (Active LTS from 2026-10-28; Maintenance from 2027-10-20; end of life 2029-04-30). Exact version pinned in root `.node-version`, read by fnm (`fnm env --use-on-cd --version-file-strategy=recursive`). Same version used in production build containers. Exact patch chosen under `dependency-audit` when `frontend/` is scaffolded |
 | **HTTP router** | Standard library `net/http` |
 | **Reverse proxy** | Caddy official image pinned to exact version and digest. Handles automatic HTTPS (obtains and renews certificates, redirects HTTP to HTTPS), compression (`encode zstd gzip` with `file_server` `precompressed` sidecars), serving static Astro build assets, and proxying `/api` to the Go backend. Rate limiting is kept in the Go application to avoid custom `xcaddy` builds. Certificate storage directory persisted in a Docker volume and backed up; admin API bound locally and never exposed. Security advisories monitored under `dependency-audit` |
@@ -156,6 +161,8 @@ To guarantee that any module can be extracted into an independent microservice i
 | **Frontend** | Astro + React Islands + shadcn/ui (Radix) + Tailwind CSS | Approved |
 | **Visual Design System** | Monteluna storefront design system with CSS variables, typography, and component specs in [docs/design/monteluna/design-system.md](../design/monteluna/design-system.md) | Approved |
 | **Backend** | Go Modular Monolith (Pragmatic Hexagonal Architecture) | Approved |
+| **HTTP API Contract** | Contract-first hand-written OpenAPI 3.1, one document per module in `contracts/openapi/` plus `common.yaml`; public and `/admin` paths in the same module document (section 3) | Approved |
+| **Contract Verification and Frontend Types** | How Go tests verify handlers against the contract, and whether TypeScript types are hand-written or generated | Pending |
 | **Database Engine** | PostgreSQL 18 (Isolated domain schemas; native `uuidv7()`) | Approved |
 | **Primary Keys** | UUIDv7 (time-ordered, B-tree friendly). Not a security token: public links (e.g., guest order tracking, password reset) use separate random tokens, and authorization is always enforced | Approved |
 | **Database Access** | `pgx/v5` + `sqlc` (Type-safe SQL, zero heavy ORM) | Approved |
@@ -181,7 +188,7 @@ To guarantee that any module can be extracted into an independent microservice i
 | **Media Storage** | Cloudflare R2 (S3-compatible object storage with zero egress fees, global CDN delivery). Backend uses `aws-sdk-go-v2/service/s3` behind Go `MediaStorePort`. Image keys stored relatively in database | Approved |
 | **Deployment** | Script-based deployment from developer machine, no registry, pre-deploy dump, expand-migrate-contract migrations, Docker Compose restart, health check, auto-rollback | Approved (script creation and secrets pending) |
 | **Backups** | Daily `pg_dump -Fc` on VPS + restic to off-site S3-compatible storage with encryption/deduplication, monthly restore drill; PITR deferred | Approved (provider and retention pending) |
-| **Monorepo Rules** | Light monorepo (`backend/`, `frontend/`, `deploy/`), Node 26 LTS via `.node-version` + fnm, npm 12 via `devEngines.packageManager`, Taskfile root runner with 7-day quarantine, Go developer tools via `go tool`, strict env validation with `.env.example`, LF line endings (`.gitattributes`), and `.editorconfig` | Approved |
+| **Monorepo Rules** | Light monorepo (`backend/`, `frontend/`, `deploy/`, `contracts/`), Node 26 LTS via `.node-version` + fnm, npm 12 via `devEngines.packageManager`, Taskfile root runner with 7-day quarantine, Go developer tools via `go tool`, strict env validation with `.env.example`, LF line endings (`.gitattributes`), and `.editorconfig` | Approved |
 | **Dependency Policy** | Pre-install audit, exact pinning, script lockdown, signature verification, no broad updates | Approved |
 | **Commits and Releases** | Conventional Commits 1.0.0, Keep a Changelog 1.1.0, SemVer 2.0.0, unified `vX.Y.Z` tags, manual discipline | Approved |
 | **Microservices Path** | Bounded contexts with zero cross-module SQL joins | Architectural Invariant |
@@ -189,6 +196,8 @@ To guarantee that any module can be extracted into an independent microservice i
 ---
 
 ## 8. Sources
+
+- OpenAPI Specification 3.1: https://spec.openapis.org/oas/v3.1.0
 
 - Go release history and support policy: https://go.dev/doc/devel/release
 - Go vulnerability management and `govulncheck`: https://go.dev/doc/security/vuln/

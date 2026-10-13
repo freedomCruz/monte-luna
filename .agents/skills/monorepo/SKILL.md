@@ -20,6 +20,7 @@ Do not use for Go application logic inside `backend/` (load `backend-go-modules`
   - `backend/`: Go module (`go.mod` resides here, not at root).
   - `frontend/`: Astro application (`package.json` resides here).
   - `deploy/`: production Compose file, deploy, and backup scripts.
+  - `contracts/openapi/`: hand-written OpenAPI 3.1 documents, one per module plus `common.yaml`; source of truth for the HTTP API.
   - `docs/`, `.agents/skills/`, `odd/`.
   - Root files: `AGENTS.md`, `CHANGELOG.md`, `Taskfile.yml`, `.node-version`, `compose.yaml` (local dev PostgreSQL), `.env.example`, `.gitattributes`, `.editorconfig`.
   - Deferred files: create area-specific files only when scaffolding that area.
@@ -63,7 +64,7 @@ Do not use for Go application logic inside `backend/` (load `backend-go-modules`
 
 ## Execution Steps
 
-1. Verify paths match repository layout (`backend/`, `frontend/`, `deploy/`) before creating files.
+1. Verify paths match repository layout (`backend/`, `frontend/`, `deploy/`, `contracts/`) before creating files.
 2. Confirm exact version pinning for root tools and runtimes, and the 7-day quarantine for the Taskfile binary.
 3. Update `.env.example` whenever new environment variables are introduced.
 4. Add recurring commands as namespaced tasks in `Taskfile.yml`.
