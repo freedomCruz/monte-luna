@@ -55,6 +55,7 @@ Before working in an area, read every matching skill's `SKILL.md`. Skills define
 | `invoicing-taxes` | Taxes, fiscal data, fiscal documents, or payment settlements with withholdings | [.agents/skills/invoicing-taxes/SKILL.md](.agents/skills/invoicing-taxes/SKILL.md) |
 | `monorepo` | Repository layout, root files, Taskfile tasks, Node.js or npm versions, environment variables, line endings, or editor settings | [.agents/skills/monorepo/SKILL.md](.agents/skills/monorepo/SKILL.md) |
 | `notifications-domain` | Any code, schema, migration, endpoint, admin screen, or event of the notifications module | [.agents/skills/notifications-domain/SKILL.md](.agents/skills/notifications-domain/SKILL.md) |
+| `parallel-agents-orca` | Planning, coordinating, or working as a worker in a feature built by parallel agents under Orca | [.agents/skills/parallel-agents-orca/SKILL.md](.agents/skills/parallel-agents-orca/SKILL.md) |
 | `orders-domain` | Any code, schema, migration, endpoint, admin screen, or event of the orders module | [.agents/skills/orders-domain/SKILL.md](.agents/skills/orders-domain/SKILL.md) |
 | `payments-domain` | Any code, schema, migration, endpoint, admin screen, or event of the payments module | [.agents/skills/payments-domain/SKILL.md](.agents/skills/payments-domain/SKILL.md) |
 | `promotions-domain` | Any code, schema, migration, endpoint, admin screen, or event of the promotions module | [.agents/skills/promotions-domain/SKILL.md](.agents/skills/promotions-domain/SKILL.md) |
@@ -62,3 +63,43 @@ Before working in an area, read every matching skill's `SKILL.md`. Skills define
 | `testing` | Writing or changing any test or verification step | [.agents/skills/testing/SKILL.md](.agents/skills/testing/SKILL.md) |
 
 Each business module has a `<module>-domain` skill; invoicing rules live in `invoicing-taxes`. Load the domain skill together with the technical skills it lists.
+
+## 5. Parallel Agent Work
+
+Rules for any feature built by several agents at the same time. They are tool-neutral; the Orca + Pi recipe is in the `parallel-agents-orca` skill.
+
+### Roles and path ownership
+
+Each path has exactly one writer during a feature. Everyone else only reads it.
+
+| Role | Writes | Reads | Branch |
+|---|---|---|---|
+| Coordinator | `odd/`, `docs/`, `AGENTS.md`, `CHANGELOG.md`, root files, `.agents/skills/` | Everything | Feature branch `feat/<feature>` |
+| Backend worker | `contracts/openapi/<module>.yaml`, `contracts/openapi/common.yaml`, `backend/` | `docs/`, `.agents/skills/` | `feat/<feature>-backend` |
+| Frontend worker | `frontend/` | `contracts/`, `docs/`, `.agents/skills/` | `feat/<feature>-frontend` |
+| Verifier | Nothing | Everything | None (read-only on the integrated feature branch) |
+
+- Workers never create or edit ODD feature documents, canonical docs, or the changelog. They report findings to the coordinator, who records them.
+- A worker that needs a change in a path it does not own asks the coordinator; it never edits that path.
+
+### Order of work
+
+1. The coordinator writes the ODD feature document (`odd/tasks/<feature>.md`): specs with acceptance criteria and a task list. Each task names its owner and the specs it covers.
+2. The backend worker writes the module contract (task C1) following `docs/architecture/api-conventions.md`.
+3. **Gate: the user approves the contract.** Nothing runs in parallel before this approval.
+4. Backend and frontend work in parallel against the approved contract. The frontend uses generated types and mocks; it never waits for backend code.
+5. **Gate: any contract change** during the feature is requested to the coordinator, written by the backend worker as a new task, and approved by the user before either side builds on it.
+6. The coordinator merges each worker branch into the feature branch only after the worker reports done and its checks pass, then a verifier checks every spec on the integrated branch.
+7. The coordinator opens one pull request from the feature branch to `main`. The user reviews and merges it.
+
+### Coordinator duties
+
+- Owns the task order (the dependency graph). Agents do not decide order among themselves.
+- Marks a task done only after an accepted worker report and a green merge into the feature branch, and records the commit id.
+- Keeps the existing gates: dependency installation needs `dependency-audit` and user approval; merges into `main` are the user's.
+
+### Isolation
+
+- Each worker runs in its own Git worktree on its own branch.
+- Each worktree uses its own local PostgreSQL database and its own development ports, so migrations and servers never collide.
+- Secrets come only from each worktree's local `.env`, which is never committed.
