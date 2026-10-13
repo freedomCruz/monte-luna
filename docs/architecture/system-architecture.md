@@ -46,6 +46,7 @@ The system is organized as a decoupled frontend and a single modular backend app
   - Slide-over shopping cart and checkout interaction (`client:load` / `client:idle`).
   - Search auto-complete and catalog filters (`client:visible`).
 - **Component Design System:** **shadcn/ui** with Radix primitives (`--base radix`) and **Tailwind CSS**, providing accessible e-commerce component primitives owned directly in the repository code and themed with the Monteluna design system.
+- **Storefront Data Strategy (hybrid):** Stable catalog content (product and origin pages, descriptions, attributes, images, categories) is fetched from the public API at build time and pre-rendered. Volatile data (current price, compare-at price, stock availability, next lot roast date) is fetched by the purchase island in the browser when the page loads, so it is always current. Pre-rendered pages never show an authoritative price or stock without that refresh. Catalog content changes require a rebuild and deploy; a rebuild trigger from the admin panel is a later decision.
 - **Island Props:** Props passed to hydrated islands must be serializable data; functions cannot cross the server-to-client boundary.
 - **Cross-Island State:** Independent React islands do not share a global React Context tree. Cross-island synchronization (e.g., header cart counter reacting to an "Add to Cart" event) uses lightweight reactive stores (e.g., Nano Stores) or grouped composite islands.
 - **Merchant Admin Panel:** A compact, custom administrative interface located under `/admin`, built using the same Astro + React + shadcn/ui stack and consuming Go REST endpoints.
@@ -64,7 +65,9 @@ The system is organized as a decoupled frontend and a single modular backend app
   - Layout: one document per module at `contracts/openapi/<module>.yaml`; shared schemas (errors, pagination, money, identifiers) live in `contracts/openapi/common.yaml` and are referenced with `$ref`.
   - Each module document holds both surfaces: public storefront paths under `/api/v1/...` and admin paths under `/api/v1/admin/...`, with the admin session security scheme declared in the contract.
   - A module's contract is written and approved before its backend and frontend work start, so both can proceed in parallel against it. Contract changes go through the same approval.
-  - No code generation is adopted yet; contract verification (D2) and frontend types (D3) are pending decisions.
+  - Contract verification: Go HTTP handler tests validate every request and response against the module's OpenAPI document with an OpenAPI 3.1 validation library used only in tests. The library is selected and pinned under `dependency-audit` when `backend/` is scaffolded.
+  - Frontend types: TypeScript types are generated from the contracts with `openapi-typescript` (development dependency, types only, no runtime code), audited when `frontend/` is scaffolded. Generated types are never edited by hand; a contract change regenerates them and the type check shows what must change.
+  - No server or client code generation beyond those types.
 
 ---
 
@@ -162,7 +165,8 @@ To guarantee that any module can be extracted into an independent microservice i
 | **Visual Design System** | Monteluna storefront design system with CSS variables, typography, and component specs in [docs/design/monteluna/design-system.md](../design/monteluna/design-system.md) | Approved |
 | **Backend** | Go Modular Monolith (Pragmatic Hexagonal Architecture) | Approved |
 | **HTTP API Contract** | Contract-first hand-written OpenAPI 3.1, one document per module in `contracts/openapi/` plus `common.yaml`; public and `/admin` paths in the same module document (section 3) | Approved |
-| **Contract Verification and Frontend Types** | How Go tests verify handlers against the contract, and whether TypeScript types are hand-written or generated | Pending |
+| **Contract Verification and Frontend Types** | Go handler tests validate requests and responses against the OpenAPI documents (test-only library, audited at backend scaffold); TypeScript types generated with `openapi-typescript` (types only, audited at frontend scaffold) | Approved |
+| **Storefront Data Strategy** | Hybrid: stable catalog content pre-rendered at build time; price, stock, and roast date fetched in the browser by the purchase island (section 2) | Approved |
 | **Database Engine** | PostgreSQL 18 (Isolated domain schemas; native `uuidv7()`) | Approved |
 | **Primary Keys** | UUIDv7 (time-ordered, B-tree friendly). Not a security token: public links (e.g., guest order tracking, password reset) use separate random tokens, and authorization is always enforced | Approved |
 | **Database Access** | `pgx/v5` + `sqlc` (Type-safe SQL, zero heavy ORM) | Approved |

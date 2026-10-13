@@ -22,6 +22,7 @@ Do not use alone for: repository layout, root files, or Taskfile tasks (`monorep
 - `domain`: pure Go entities, invariants, and port interfaces. Never import `net/http`, `pgx`, sqlc output, `platform`, or another module.
 - `app`: use cases that depend only on `domain` types and ports.
 - `adapters`: `net/http` handlers, sqlc/pgx repositories, cache and gateway implementations of domain ports.
+- HTTP handlers implement the module's approved contract in `contracts/openapi/<module>.yaml`; never add or change an endpoint that is not in the contract. Handler tests validate every request and response against that document.
 - A module's public contract lives only in its root package `backend/internal/<module>`. Other modules may import that root package, never its `domain`, `app`, or `adapters`.
 - Cross-module reads go through a port in the consumer's `domain`, implemented by an adapter that calls the producer's root package. Never read another module's tables.
 - Routing: standard library `net/http` patterns (for example `GET /products/{slug}`). No third-party router.
