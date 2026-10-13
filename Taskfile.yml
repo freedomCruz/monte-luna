@@ -4,6 +4,36 @@ version: "3"
 dotenv: [".env"]
 
 tasks:
+  setup:
+    desc: Create this worktree's database in the shared local PostgreSQL container
+    silent: true
+    cmds:
+      - bash scripts/setup-worktree.sh
+
+  setup:preview:
+    desc: Print this worktree's database and HTTP ports without writing files or contacting Docker
+    silent: true
+    cmds:
+      - bash scripts/setup-worktree.sh --dry-run
+
+  backend:dev:
+    desc: Run the Go API on this worktree's API_ADDR
+    dir: backend
+    preconditions:
+      - sh: test -n "$API_ADDR"
+        msg: "Set API_ADDR using the values from task setup:preview"
+    cmds:
+      - go run ./cmd/api
+
+  frontend:dev:
+    desc: Run Astro on this worktree's FRONTEND_PORT (localhost only)
+    dir: frontend
+    preconditions:
+      - sh: test -n "$FRONTEND_PORT"
+        msg: "Set FRONTEND_PORT using the values from task setup:preview"
+    cmds:
+      - npm run dev -- --host 127.0.0.1 --port "$FRONTEND_PORT"
+
   dev:db:up:
     desc: Start the local PostgreSQL container and wait until it is healthy
     preconditions:
