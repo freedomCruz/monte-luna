@@ -40,7 +40,8 @@ The exclusive sources of truth for physical hardware, known limits, and active s
 
 - Build cohesive components with a single responsibility and explicit props or slots. Reuse shared UI instead of copying markup across pages; do not split trivial markup without a meaningful responsibility.
 - Product cards must share one implementation across the storefront. Product-type differences (coffee roast indicator or cacao percentage) belong in explicit component composition, not duplicated page templates.
-- Follow the original approved screens and the resolved reference precedence in `docs/design/monteluna/design-system.md`. Preserve product-image overflow, indicators, typography, spacing, and CTA placement; do not replace them with an approximate layout.
+- Before implementing or reviewing any storefront screen, read its original desktop and mobile HTML references under `docs/design/monteluna/canvas/`, their CSS, and the approved design tokens. A prose summary or screenshot alone is not enough. Follow the resolved reference precedence in `docs/design/monteluna/design-system.md`.
+- Replicate the approved composition, product-image overflow, indicators, typography, spacing, and CTA placement; do not independently redesign, omit elements, or substitute approximate layouts. Ask the user about conflicting references or unsupported data/behavior before deviating. Preserve explicitly approved scope exceptions, such as no add-to-cart in Catalog v1.
 - Visual acceptance requires comparison of rendered desktop and mobile views against the original references. Passing functional tests or accessibility scans is not proof of visual fidelity. Report missing design elements as failures.
 - Keep volatile prices and availability client-fetched, and never invent catalog attributes or hard-code amounts from design screenshots.
 
