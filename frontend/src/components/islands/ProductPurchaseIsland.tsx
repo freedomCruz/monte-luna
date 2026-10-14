@@ -98,16 +98,14 @@ export function ProductPurchaseIsland({
     };
   }, [productSlug]);
 
-  // Find currently selected variant
+  // Find currently selected variant (or undefined if the selected options combination does not exist)
   const currentVariant = useMemo(() => {
-    return (
-      variants.find((v) => {
-        return Object.entries(selectedOptions).every(([key, val]) => {
-          const opt = v.options.find((o: VariantOption) => o.key === key);
-          return opt ? opt.value === val : false;
-        });
-      }) || variants[0]
-    );
+    return variants.find((v) => {
+      return Object.entries(selectedOptions).every(([key, val]) => {
+        const opt = v.options.find((o: VariantOption) => o.key === key);
+        return opt ? opt.value === val : false;
+      });
+    });
   }, [variants, selectedOptions]);
 
   const currentAvailability = currentVariant
@@ -140,21 +138,21 @@ export function ProductPurchaseIsland({
   return (
     <div className="flex flex-col gap-6" data-testid="product-purchase-island">
       {/* Live Pricing and Roast Date Display Area */}
-      <div className="p-6 rounded-2xl bg-[#FAF3E3] border border-[#1B1510]/10 flex flex-col gap-3 min-h-[120px] justify-center">
+      <div className="p-6 rounded-2xl bg-background border border-foreground/10 flex flex-col gap-3 min-h-[120px] justify-center">
         {loading ? (
           <div className="flex flex-col gap-2">
             <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-[#F2B632] animate-pulse"></span>
-              <span className="text-sm font-semibold text-[#5F554A]">
+              <span className="w-2.5 h-2.5 rounded-full bg-brand-yellow animate-pulse"></span>
+              <span className="text-sm font-semibold text-muted-foreground">
                 Cargando disponibilidad y precio...
               </span>
             </div>
-            <div className="h-4 bg-[#F3E6C4] rounded-md animate-pulse w-48"></div>
+            <div className="h-4 bg-secondary rounded-md animate-pulse w-48"></div>
           </div>
         ) : error ? (
           <div
             role="alert"
-            className="flex items-center gap-3 text-[#9B1C1C] p-3 rounded-xl bg-white border border-[#9B1C1C]/30"
+            className="flex items-center gap-3 text-destructive p-3 rounded-xl bg-card border border-destructive/30"
           >
             <svg
               className="w-5 h-5 shrink-0"
@@ -174,11 +172,11 @@ export function ProductPurchaseIsland({
               No fue posible cargar el precio o disponibilidad. Intenta recargar la página.
             </span>
           </div>
-        ) : currentAvailability ? (
+        ) : currentVariant && currentAvailability ? (
           <div className="flex flex-col gap-3">
             {/* Price line with savings badge */}
             <div className="flex flex-wrap items-baseline gap-3">
-              <span className="text-4xl font-extrabold tracking-tight text-[#1B1510] font-sans">
+              <span className="text-4xl font-extrabold tracking-tight text-foreground font-sans">
                 {formatMoneyCop(currentAvailability.price_amount)}
               </span>
               {currentAvailability.compare_at_price_amount &&
@@ -188,11 +186,11 @@ export function ProductPurchaseIsland({
                       aria-label={`Precio anterior: ${formatMoneyCop(
                         currentAvailability.compare_at_price_amount
                       )}`}
-                      className="text-lg font-medium text-[#5F554A]"
+                      className="text-lg font-medium text-muted-foreground"
                     >
                       {formatMoneyCop(currentAvailability.compare_at_price_amount)}
                     </s>
-                    <span className="px-2.5 py-1 rounded-lg bg-[#C1272D] text-white text-xs font-bold uppercase tracking-wider">
+                    <span className="px-2.5 py-1 rounded-lg bg-accent text-primary-foreground text-xs font-bold uppercase tracking-wider">
                       Ahorras{' '}
                       {formatMoneyCop(
                         currentAvailability.compare_at_price_amount -
@@ -205,9 +203,9 @@ export function ProductPurchaseIsland({
 
             {/* Roast Date / Lot Production Date */}
             {currentAvailability.production_date && (
-              <div className="flex items-center gap-3 p-3 bg-[#F3E6C4] rounded-xl text-sm">
+              <div className="flex items-center gap-3 p-3 bg-secondary rounded-xl text-sm">
                 <svg
-                  className="w-5 h-5 text-[#1B1510] shrink-0"
+                  className="w-5 h-5 text-foreground shrink-0"
                   viewBox="0 0 24 24"
                   fill="none"
                   stroke="currentColor"
@@ -222,19 +220,19 @@ export function ProductPurchaseIsland({
                   <line x1="3" y1="10" x2="21" y2="10"></line>
                 </svg>
                 <div className="flex flex-col">
-                  <span className="font-bold text-[#1B1510]">
+                  <span className="font-bold text-foreground">
                     Tostado el {formatRoastDateSpanish(currentAvailability.production_date)}
                   </span>
-                  <span className="text-xs text-[#5F554A]">
-                    Lote más reciente asignado al próximo pedido
+                  <span className="text-xs text-muted-foreground">
+                    Lote más antiguo con existencias disponibles para este pedido
                   </span>
                 </div>
               </div>
             )}
           </div>
         ) : (
-          <div className="text-sm text-[#5F554A] italic">
-            Variante no disponible actualmente
+          <div className="text-sm text-muted-foreground italic">
+            Combinación no disponible
           </div>
         )}
       </div>
@@ -246,30 +244,28 @@ export function ProductPurchaseIsland({
 
         return (
           <fieldset key={axis.key} className="m-0 p-0 border-0 min-w-0 flex flex-col gap-2.5">
-            <legend className="p-0 text-sm font-bold text-[#1B1510]">
+            <legend className="p-0 text-sm font-bold text-foreground">
               <span>{axis.label}</span>{' '}
-              {currentDisplay && <span className="text-[#5F554A] font-normal">· {currentDisplay}</span>}
+              {currentDisplay && <span className="text-muted-foreground font-normal">· {currentDisplay}</span>}
             </legend>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
               {axis.values.map((opt) => {
                 const isSelected = opt.value === currentVal;
                 const isSoldOut = isOptionOutOfStock(axis.key, opt.value);
 
-                // Design System states for Option Chips (M-Sistema / M-Detalle)
-                let bg = '#FFFFFF';
-                let fg = '#1B1510';
-                let border = '2px solid #D9CBA8';
-                let textDeco = 'none';
+                // Monteluna Design System classes for Option Chips (M-Sistema / M-Detalle)
+                // Rest: bg-card text-foreground border-2 border-input
+                // Selected: bg-brand-green text-primary-foreground border-2 border-brand-green
+                // Sold out: bg-secondary text-muted-foreground border-2 border-dashed border-dashed line-through
+                // Sold out & selected: bg-secondary text-foreground border-2 border-foreground line-through
+                let chipClasses = 'bg-card text-foreground border-2 border-input';
 
-                if (isSoldOut) {
-                  bg = '#F3E6C4';
-                  fg = isSelected ? '#1B1510' : '#5F554A';
-                  border = isSelected ? '2px solid #1B1510' : '2px dashed #A8997C';
-                  textDeco = 'line-through';
+                if (isSoldOut && isSelected) {
+                  chipClasses = 'bg-secondary text-foreground border-2 border-foreground';
+                } else if (isSoldOut) {
+                  chipClasses = 'bg-secondary text-muted-foreground border-2 border-dashed border-dashed';
                 } else if (isSelected) {
-                  bg = '#0F3B2C';
-                  fg = '#FAF3E3';
-                  border = '2px solid #0F3B2C';
+                  chipClasses = 'bg-brand-green text-primary-foreground border-2 border-brand-green';
                 }
 
                 return (
@@ -283,16 +279,11 @@ export function ProductPurchaseIsland({
                         : opt.display_value
                     }
                     onClick={() => handleSelectOption(axis.key, opt.value)}
-                    style={{
-                      background: bg,
-                      color: fg,
-                      border,
-                    }}
-                    className="flex flex-col items-center justify-center gap-0.5 h-[54px] px-3 rounded-xl font-bold text-sm cursor-pointer transition-colors focus-visible:outline-3 focus-visible:outline-[#1B1510]"
+                    className={`flex flex-col items-center justify-center gap-0.5 h-[54px] px-3 rounded-xl font-bold text-sm cursor-pointer transition-colors focus-visible:outline-3 focus-visible:outline-foreground ${chipClasses}`}
                   >
-                    <span style={{ textDecoration: textDeco }}>{opt.display_value}</span>
+                    <span className={isSoldOut ? 'line-through' : ''}>{opt.display_value}</span>
                     {isSoldOut && (
-                      <span className="text-[10px] tracking-wider uppercase font-bold text-[#9B1C1C]">
+                      <span className="text-[10px] tracking-wider uppercase font-bold text-destructive">
                         Agotado
                       </span>
                     )}
@@ -306,12 +297,19 @@ export function ProductPurchaseIsland({
 
       {/* Out of Stock notice & Stock status message */}
       <div className="flex flex-col gap-2 pt-2">
-        {isCurrentOutOfStock ? (
+        {!currentVariant ? (
           <div
             role="status"
-            className="flex items-center gap-2 text-sm font-bold text-[#9B1C1C]"
+            className="flex items-center gap-2 text-sm font-semibold text-muted-foreground italic"
           >
-            <span className="w-2.5 h-2.5 rounded-full bg-[#9B1C1C]" aria-hidden="true"></span>
+            <span>Selecciona una combinación disponible de opciones</span>
+          </div>
+        ) : isCurrentOutOfStock ? (
+          <div
+            role="status"
+            className="flex items-center gap-2 text-sm font-bold text-destructive"
+          >
+            <span className="w-2.5 h-2.5 rounded-full bg-destructive" aria-hidden="true"></span>
             <span>
               Sin existencias para{' '}
               {currentVariant.options
@@ -324,9 +322,9 @@ export function ProductPurchaseIsland({
           currentAvailability && (
             <div
               role="status"
-              className="flex items-center gap-2 text-sm font-semibold text-[#1E6B45]"
+              className="flex items-center gap-2 text-sm font-semibold text-success"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-[#1E6B45]" aria-hidden="true"></span>
+              <span className="w-2.5 h-2.5 rounded-full bg-success" aria-hidden="true"></span>
               <span>
                 Disponible en{' '}
                 {currentVariant.options

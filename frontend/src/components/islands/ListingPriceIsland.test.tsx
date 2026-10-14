@@ -109,6 +109,15 @@ describe('ListingPriceIsland', () => {
     });
   });
 
+  it('renders an observable DOM element so Astro client:visible observes a child element', () => {
+    const { container } = render(<ListingPriceIsland productSlugs={['finca-el-mirador']} />);
+    // Astro's visible directive observes el.children:
+    // for (const child of el.children) { io.observe(child); }
+    // If the island renders null or no element, el.children is empty and the island never hydrates.
+    expect(container.firstElementChild).not.toBeNull();
+    expect(container.querySelector('[data-listing-price-island]')).not.toBeNull();
+  });
+
   it('renders Agotado badge when all variants for a product are out_of_stock', async () => {
     const mockResponse: ProductAvailabilityPage = {
       items: [

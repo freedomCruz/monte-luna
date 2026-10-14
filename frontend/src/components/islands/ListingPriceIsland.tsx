@@ -54,8 +54,8 @@ export function ListingPriceIsland({ productSlugs }: ListingPriceIslandProps) {
             // All variants are out of stock
             slots.forEach((slot) => {
               slot.innerHTML = `
-                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-[#FAF3E3] border border-[#9B1C1C]/40 text-[#9B1C1C] text-xs font-bold uppercase tracking-wider">
-                  <span class="w-2 h-2 rounded-full bg-[#9B1C1C]"></span>
+                <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-background border border-destructive/40 text-destructive text-xs font-bold uppercase tracking-wider">
+                  <span class="w-2 h-2 rounded-full bg-destructive"></span>
                   Agotado
                 </span>
               `;
@@ -79,19 +79,19 @@ export function ListingPriceIsland({ productSlugs }: ListingPriceIslandProps) {
             if (hasMultiplePrices) {
               html = `
                 <div class="flex flex-col">
-                  <span class="text-[10px] font-bold text-[#5F554A] uppercase tracking-wider leading-none">Desde</span>
-                  <span class="text-lg font-black text-[#1B1510] leading-tight">${formatMoneyCop(minPrice)}</span>
+                  <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider leading-none">Desde</span>
+                  <span class="text-lg font-black text-foreground leading-tight">${formatMoneyCop(minPrice)}</span>
                 </div>
               `;
             } else if (compareAt && compareAt > minPrice) {
               html = `
                 <div class="flex items-baseline gap-2">
-                  <span class="text-lg font-black text-[#1B1510]">${formatMoneyCop(minPrice)}</span>
-                  <s class="text-xs font-medium text-[#5F554A]" aria-label="Precio anterior: ${formatMoneyCop(compareAt)}">${formatMoneyCop(compareAt)}</s>
+                  <span class="text-lg font-black text-foreground">${formatMoneyCop(minPrice)}</span>
+                  <s class="text-xs font-medium text-muted-foreground" aria-label="Precio anterior: ${formatMoneyCop(compareAt)}">${formatMoneyCop(compareAt)}</s>
                 </div>
               `;
             } else {
-              html = `<span class="text-lg font-black text-[#1B1510]">${formatMoneyCop(minPrice)}</span>`;
+              html = `<span class="text-lg font-black text-foreground">${formatMoneyCop(minPrice)}</span>`;
             }
             slot.innerHTML = html;
           });
@@ -102,7 +102,7 @@ export function ListingPriceIsland({ productSlugs }: ListingPriceIslandProps) {
         for (const slug of productSlugs) {
           const slots = document.querySelectorAll(`[data-live-price-slot="${slug}"]`);
           slots.forEach((slot) => {
-            slot.innerHTML = `<span class="text-xs font-medium text-[#9B1C1C]/70 italic">Precio no disponible</span>`;
+            slot.innerHTML = `<span class="text-xs font-medium text-destructive/70 italic">Precio no disponible</span>`;
           });
         }
       }
@@ -115,6 +115,16 @@ export function ListingPriceIsland({ productSlugs }: ListingPriceIslandProps) {
     };
   }, [productSlugs]);
 
-  // Headless island returns null or an invisible DOM anchor
-  return null;
+  // Render a real wrapper element with an observable child node
+  // so Astro's client:visible IntersectionObserver (`for (const child of el.children) io.observe(child)`)
+  // can reliably observe it and trigger hydration.
+  return (
+    <div
+      data-listing-price-island
+      aria-hidden="true"
+      style={{ display: 'contents' }}
+    >
+      <span style={{ display: 'none' }} />
+    </div>
+  );
 }
