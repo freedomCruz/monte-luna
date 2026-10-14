@@ -29,8 +29,8 @@ const weightAttr = product.attributes.find((a) => a.key === 'weight' || a.key ==
 
 // Category detection
 const primaryCategorySlug = categorySlug || product.categories[0]?.slug;
-const isCoffee = product.product_type?.slug === 'coffee' || primaryCategorySlug === 'coffee' || Boolean(roastAttr);
-const isCacao = product.product_type?.slug === 'cacao' || primaryCategorySlug === 'cacao' || primaryCategorySlug === 'chocolate' || Boolean(cacaoAttr);
+const isCoffee = product.product_type?.slug === 'coffee' || primaryCategorySlug === 'coffee';
+const isCacao = product.product_type?.slug === 'cacao' || primaryCategorySlug === 'cacao' || primaryCategorySlug === 'chocolate';
 
 // Eyebrow label formatting
 let eyebrowText = '';
@@ -42,14 +42,14 @@ if (isCoffee) {
   if (product.origin?.name) {
     eyebrowText = `Café · ${product.origin.name}`;
   } else {
-    eyebrowText = 'Café · Colombia';
+    eyebrowText = 'Café';
   }
 } else if (isCacao) {
   eyebrowColorClass = 'text-brand-purple';
   if (weightAttr) {
     eyebrowText = `Cacao · ${weightAttr}`;
   } else {
-    eyebrowText = 'Cacao · 80 g';
+    eyebrowText = 'Cacao';
   }
 } else if (product.product_type?.name) {
   eyebrowText = product.product_type.name;
@@ -93,10 +93,6 @@ if (cacaoAttr) {
     cacaoDots.push({ percentPos: `${pos}%`, value: numVal });
     cacaoAriaLabel = `${numVal} % de cacao`;
   }
-} else if (product.slug.includes('75') && product.slug.includes('100')) {
-  cacaoDots.push({ percentPos: '50%', value: 75 });
-  cacaoDots.push({ percentPos: '100%', value: 100 });
-  cacaoAriaLabel = '75 % y 100 % de cacao';
 }
 ---
 
@@ -158,7 +154,7 @@ if (cacaoAttr) {
   ) : null}
 
   <!-- Data-driven indicator (Coffee Roast or Cacao percentage) -->
-  {isCoffee && (
+  {isCoffee && roastAttr && (
     <div
       class="flex items-center gap-2.5 self-stretch mt-auto pt-2 text-sm font-semibold uppercase text-foreground"
     >
