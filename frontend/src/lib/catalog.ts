@@ -4,6 +4,8 @@ import {
 } from '../mocks/catalog';
 
 export type Product = components['schemas']['Product'];
+export type Variant = Product['variants'][number];
+export type VariantOption = Variant['options'][number];
 export type Category = components['schemas']['Category'];
 export type Origin = components['schemas']['Origin'];
 export type ProductPage = components['schemas']['ProductPage'];
