@@ -108,7 +108,7 @@ migrated development database to obtain the complete unmodified demo fixture.
 
 | Fixture | Details |
 | --- | --- |
-| Types | Coffee and Cacao, with 16 labelled attribute definitions |
+| Types | Café and Cacao, with 16 labelled attribute definitions |
 | Origins | `finca-el-mirador` and `demo-cacao-origin`; region, DANE code, altitude, story, image |
 | Products | `finca-el-mirador`, `finca-la-maria`, `chocolate-70`, `chocolate-85` |
 | No origin | `chocolate-85` has a commercial brand but null `origin_id` |

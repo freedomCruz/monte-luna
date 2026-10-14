@@ -110,14 +110,71 @@ func TestEveryCatalogEndpointAndFilters(t *testing.T) {
 	if product["price_amount"] != nil || product["availability"] != nil {
 		t.Error("stable product contains volatile data")
 	}
+	if pt, ok := product["product_type"].(map[string]any); !ok || pt["name"] != "Café" {
+		t.Errorf("product_type name=%v, want Café", product["product_type"])
+	}
+	if desc, ok := product["description"].(string); !ok || !strings.HasPrefix(desc, "Café lavado demo") {
+		t.Errorf("description=%q, want prefix Café lavado demo", desc)
+	}
+	if orig, ok := product["origin"].(map[string]any); !ok || orig["producer_name"] != "Productor de café demo" {
+		t.Errorf("origin producer_name=%v, want Productor de café demo", product["origin"])
+	}
+	attrs := map[string]map[string]any{}
+	for _, a := range product["attributes"].([]any) {
+		m := a.(map[string]any)
+		attrs[m["key"].(string)] = m
+	}
+	for _, tc := range []struct{ key, label, display string }{
+		{"species", "Especie", "Arábica"},
+		{"process", "Proceso", "Lavado"},
+		{"roast_level", "Tostión", "Media"},
+		{"tasting_notes", "Notas de cata", "Cítricos, panela y chocolate (demo)"},
+	} {
+		m, ok := attrs[tc.key]
+		if !ok || m["label"] != tc.label || m["display_value"] != tc.display {
+			t.Errorf("attr %s: got label=%v display=%v, want %s/%s", tc.key, m["label"], m["display_value"], tc.label, tc.display)
+		}
+	}
+	variants := product["variants"].([]any)
+	if len(variants) > 0 {
+		v0 := variants[0].(map[string]any)
+		opts := map[string]map[string]any{}
+		for _, o := range v0["options"].([]any) {
+			m := o.(map[string]any)
+			opts[m["key"].(string)] = m
+		}
+		if p, ok := opts["presentation"]; !ok || p["label"] != "Presentación" || p["display_value"] != "250" {
+			t.Errorf("variant presentation option=%v", p)
+		}
+		if g, ok := opts["grind"]; !ok || g["label"] != "Molienda" || g["display_value"] != "Grano entero" {
+			t.Errorf("variant grind option=%v", g)
+		}
+	}
 	images := product["images"].([]any)
 	if images[0].(map[string]any)["url"] != "https://media.example/store/demo/products/finca-el-mirador.jpg" {
 		t.Error("media URL not resolved")
+	}
+	if images[0].(map[string]any)["alt_text"] != "Empaque de café Finca El Mirador demo" {
+		t.Errorf("image alt_text=%v, want Empaque de café Finca El Mirador demo", images[0].(map[string]any)["alt_text"])
 	}
 	origin := read(t, mux, c, "/api/v1/origins/finca-el-mirador", 200, "public, max-age=60")
 	for _, key := range []string{"attributes", "varieties", "process", "tasting_notes", "cupping_score", "roast_level", "products"} {
 		if _, exists := origin[key]; exists {
 			t.Errorf("origin leaked product field %s", key)
+		}
+	}
+	if origin["producer_name"] != "Productor de café demo" {
+		t.Errorf("origin producer_name=%v, want Productor de café demo", origin["producer_name"])
+	}
+	cacaoOrigin := read(t, mux, c, "/api/v1/origins/demo-cacao-origin", 200, "public, max-age=60")
+	if cacaoOrigin["name"] != "[Origen de cacao demo]" || cacaoOrigin["producer_name"] != "Productor de cacao demo" {
+		t.Errorf("cacaoOrigin = %v", cacaoOrigin)
+	}
+	cats := read(t, mux, c, "/api/v1/categories", 200, "public, max-age=60")
+	for _, item := range items(t, cats) {
+		m := item.(map[string]any)
+		if m["slug"] == "coffee" && m["name"] != "Café" {
+			t.Errorf("category coffee name=%v, want Café", m["name"])
 		}
 	}
 	if origin["municipality_code"] != "41668" {
