@@ -39,7 +39,17 @@ The rules (roles, path ownership, gates, merge flow) live in `AGENTS.md` section
 1. Repository setup (once): register the repository in Orca and set its base ref to `main` (check `orca repo --help`). Worktree setup runs the project `task setup` provided by Wave 0, which installs dependencies, creates the worktree's own database, and assigns its own ports. `.env` reaches each worktree only through the local, untracked include mechanism Orca provides.
 2. Coordinator writes `odd/tasks/<feature>.md` and commits it on `feat/<feature>`.
 3. Create the Run and the task graph with dependencies: C1 contract → gate → backend tasks and frontend tasks in parallel → integration → verifier.
-4. Pi workers have no model flag on `worker-start`: open a terminal running `pi` with the chosen provider and model, then start the worker on that terminal. Pi terminals can be reused across dispatches.
+4. Launch every worker unattended with its role model; never ask the user to pick a model. `worker-start --model` does not support Pi and cannot combine with `--terminal`, so the coordinator first creates the terminal with the model, then attaches the worker to it:
+   - `orca terminal create --worktree <selector> --title <ROLE> --command "pi --model <provider/id>" --json`
+   - `orca orchestration worker-start --task <task_id> --terminal <handle> --worktree <same selector>`
+   Pi terminals can be reused across dispatches. Role models (confirm ids with `pi --list-models`):
+
+   | Role | Model |
+   | --- | --- |
+   | Coordinator and important decisions | `claude-bridge/claude-opus-5-5` |
+   | Backend worker | `openai-codex/gpt-6.1-sol` |
+   | Frontend worker | `local-proxy/gemini-3.8-flash-high` |
+   | Verifier (read-only, different model from both writers) | `claude-bridge/claude-sonnet-5-5` |
 5. Worker branches are named after the worktree; rename them to `feat/<feature>-backend` and `feat/<feature>-frontend` with `git branch -m` when they differ.
 6. Wait for worker reports with `orca orchestration check`; handle questions and gates as above.
 7. After integration and a passing verifier, open the pull request from `feat/<feature>` to `main` and hand it to the user.
