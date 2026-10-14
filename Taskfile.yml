@@ -1,0 +1,108 @@
+# Root task runner (go-task v3.54.0). Run `task --list` to see tasks.
+version: "3"
+
+dotenv: [".env"]
+
+# Per-worktree values are derived from the worktree path (scripts/setup-worktree.sh),
+# so the shared .env stays identical in every worktree. They override .env values.
+env:
+  WORKTREE_DB:
+    sh: bash scripts/setup-worktree.sh --get WORKTREE_DB
+  API_ADDR:
+    sh: bash scripts/setup-worktree.sh --get API_ADDR
+  FRONTEND_PORT:
+    sh: bash scripts/setup-worktree.sh --get FRONTEND_PORT
+  # Local development only; the password must be URL-safe.
+  DATABASE_URL: "postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@127.0.0.1:{{.POSTGRES_PORT}}/{{.WORKTREE_DB}}?sslmode=disable"
+
+tasks:
+  setup:
+    desc: Create this worktree's database in the shared local PostgreSQL container
+    silent: true
+    cmds:
+      - bash scripts/setup-worktree.sh
+
+  setup:preview:
+    desc: Print this worktree's database and HTTP ports without writing files or contacting Docker
+    silent: true
+    cmds:
+      - bash scripts/setup-worktree.sh --dry-run
+
+  backend:dev:
+    desc: Run the Go API on this worktree's API_ADDR
+    dir: backend
+    preconditions:
+      - sh: test -n "$API_ADDR"
+        msg: "API_ADDR is derived by Taskfile; unset any shell override"
+    cmds:
+      - go run ./cmd/api
+
+  frontend:dev:
+    desc: Run Astro on this worktree's FRONTEND_PORT (localhost only)
+    dir: frontend
+    preconditions:
+      - sh: test -n "$FRONTEND_PORT"
+        msg: "FRONTEND_PORT is derived by Taskfile; unset any shell override"
+    cmds:
+      - npm run dev -- --host 127.0.0.1 --port "$FRONTEND_PORT"
+
+  backend:migrate:
+    desc: Apply embedded database migrations to this worktree's database
+    dir: backend
+    cmds:
+      - go run ./cmd/migrate
+
+  backend:seed:
+    desc: Load the idempotent demo catalog into this worktree's database (never production)
+    dir: backend
+    cmds:
+      - go run ./cmd/seed
+
+  backend:verify:
+    desc: Verify Go module integrity, build, tests, vet, boundaries, and vulnerabilities
+    dir: backend
+    cmds:
+      - go mod verify
+      - go build -mod=readonly ./...
+      - go test -mod=readonly ./...
+      - go vet -mod=readonly ./...
+      - go tool -modfile=tools.mod golangci-lint run ./...
+      - go tool govulncheck ./...
+
+  frontend:verify:
+    desc: Clean-install and verify npm dependencies, generated API types, tests, and static build
+    dir: frontend
+    cmds:
+      - npm ci --no-fund
+      - npm audit signatures
+      - npm audit --audit-level=high
+      - npm run types:generate
+      - git diff --exit-code -- src/generated/platform.ts
+      - npm run check
+      - npm run test
+      - npm run build
+
+  verify:
+    desc: Run all local verification gates serially (backend then frontend)
+    cmds:
+      - task: backend:verify
+      - task: frontend:verify
+
+  dev:db:up:
+    desc: Start the local PostgreSQL container and wait until it is healthy
+    preconditions:
+      - sh: test -f .env
+        msg: "Missing .env. Create it with: cp .env.example .env"
+    cmds:
+      - docker compose up -d --wait postgres
+
+  dev:db:down:
+    desc: Stop the local PostgreSQL container (data is kept)
+    cmds:
+      - docker compose stop postgres
+
+  dev:db:psql:
+    desc: Open psql in the local PostgreSQL container
+    interactive: true
+    cmds:
+      - docker compose exec postgres psql -U "$POSTGRES_USER" -d "$POSTGRES_DB"
