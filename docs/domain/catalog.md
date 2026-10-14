@@ -98,6 +98,7 @@ origins ──< origin_images
 | Column | Type | Rules |
 |---|---|---|
 | `name` | `text` | Not null; farm or producer unit name |
+| `slug` | `text` | `UNIQUE`; public route of the origin page |
 | `producer_name` | `text` | Not null; owner or producer |
 | `country_code` | `text` | Not null; `CHECK (country_code ~ '^[A-Z]{2}$')` |
 | `department` | `text` | Nullable |
