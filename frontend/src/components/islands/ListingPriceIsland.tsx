@@ -34,14 +34,17 @@ export function ListingPriceIsland({ productSlugs }: ListingPriceIslandProps) {
         }
 
         for (const slug of productSlugs) {
-          const slots = document.querySelectorAll(`[data-live-price-slot="${slug}"]`);
-          if (slots.length === 0) continue;
+          const priceSlots = document.querySelectorAll(`[data-live-price-slot="${slug}"]`);
+          const savingsSlots = document.querySelectorAll(`[data-live-savings-slot="${slug}"]`);
 
           const item = productMap.get(slug);
 
           if (!item || !item.variants || item.variants.length === 0) {
-            slots.forEach((slot) => {
+            priceSlots.forEach((slot) => {
               slot.innerHTML = `<span class="text-xs font-medium text-foreground/50 italic">Precio no disponible</span>`;
+            });
+            savingsSlots.forEach((slot) => {
+              slot.innerHTML = '';
             });
             continue;
           }
@@ -52,13 +55,16 @@ export function ListingPriceIsland({ productSlugs }: ListingPriceIslandProps) {
 
           if (inStockVariants.length === 0) {
             // All variants are out of stock
-            slots.forEach((slot) => {
+            priceSlots.forEach((slot) => {
               slot.innerHTML = `
                 <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-background border border-destructive/40 text-destructive text-xs font-bold uppercase tracking-wider">
                   <span class="w-2 h-2 rounded-full bg-destructive"></span>
                   Agotado
                 </span>
               `;
+            });
+            savingsSlots.forEach((slot) => {
+              slot.innerHTML = '';
             });
             continue;
           }
@@ -74,35 +80,56 @@ export function ListingPriceIsland({ productSlugs }: ListingPriceIslandProps) {
           // Check if there are distinct variant prices
           const hasMultiplePrices = new Set(prices).size > 1;
 
-          slots.forEach((slot) => {
+          priceSlots.forEach((slot) => {
             let html = '';
             if (hasMultiplePrices) {
               html = `
-                <div class="flex flex-col">
-                  <span class="text-[10px] font-bold text-muted-foreground uppercase tracking-wider leading-none">Desde</span>
-                  <span class="text-lg font-black text-foreground leading-tight">${formatMoneyCop(minPrice)}</span>
+                <div class="flex items-baseline gap-1.5">
+                  <span class="text-xs font-bold text-primary-foreground/75 uppercase tracking-wider">Desde</span>
+                  <span class="text-base font-extrabold text-primary-foreground leading-none">${formatMoneyCop(minPrice)}</span>
                 </div>
               `;
             } else if (compareAt && compareAt > minPrice) {
               html = `
                 <div class="flex items-baseline gap-2">
-                  <span class="text-lg font-black text-foreground">${formatMoneyCop(minPrice)}</span>
-                  <s class="text-xs font-medium text-muted-foreground" aria-label="Precio anterior: ${formatMoneyCop(compareAt)}">${formatMoneyCop(compareAt)}</s>
+                  <span class="text-base font-extrabold text-primary-foreground leading-none">${formatMoneyCop(minPrice)}</span>
+                  <s class="text-xs font-medium text-primary-foreground/70" aria-label="Precio anterior: ${formatMoneyCop(compareAt)}">${formatMoneyCop(compareAt)}</s>
                 </div>
               `;
             } else {
-              html = `<span class="text-lg font-black text-foreground">${formatMoneyCop(minPrice)}</span>`;
+              html = `<span class="text-base font-extrabold text-primary-foreground leading-none">${formatMoneyCop(minPrice)}</span>`;
             }
             slot.innerHTML = html;
           });
+
+          // Live savings pill for matching variant: "Ahorras $X.000"
+          if (compareAt && compareAt > minPrice) {
+            const savingsAmount = compareAt - minPrice;
+            const savingsText = `Ahorras ${formatMoneyCop(savingsAmount)}`;
+            savingsSlots.forEach((slot) => {
+              slot.innerHTML = `
+                <span class="px-2.5 sm:px-3 py-1 rounded-lg bg-accent text-white text-xs sm:text-sm font-bold tracking-wide shadow-sm">
+                  ${savingsText}
+                </span>
+              `;
+            });
+          } else {
+            savingsSlots.forEach((slot) => {
+              slot.innerHTML = '';
+            });
+          }
         }
       } catch (_err) {
         if (cancelled) return;
         // On network or API error, gracefully show unobtrusive error status in price slots
         for (const slug of productSlugs) {
-          const slots = document.querySelectorAll(`[data-live-price-slot="${slug}"]`);
-          slots.forEach((slot) => {
+          const priceSlots = document.querySelectorAll(`[data-live-price-slot="${slug}"]`);
+          priceSlots.forEach((slot) => {
             slot.innerHTML = `<span class="text-xs font-medium text-destructive/70 italic">Precio no disponible</span>`;
+          });
+          const savingsSlots = document.querySelectorAll(`[data-live-savings-slot="${slug}"]`);
+          savingsSlots.forEach((slot) => {
+            slot.innerHTML = '';
           });
         }
       }

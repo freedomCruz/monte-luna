@@ -34,13 +34,21 @@ test.describe('Tienda (/tienda)', () => {
     const mariaPriceSlot = page.locator('[data-live-price-slot="finca-la-maria"]').first();
     await expect(mariaPriceSlot).toContainText('$36.000');
 
-    // Chocolate 70%: $18.000 COP
+    // Live savings badge: "Ahorras $4.000" rendered on Finca La María
+    const mariaSavingsSlot = page.locator('[data-live-savings-slot="finca-la-maria"]').first();
+    await expect(mariaSavingsSlot).toContainText('Ahorras $4.000');
+
+    // Chocolate 70%: $18.000 COP with compare_at $20.000 -> Ahorras $2.000
     const choc70PriceSlot = page.locator('[data-live-price-slot="chocolate-70"]').first();
     await expect(choc70PriceSlot).toContainText('$18.000');
+    const choc70SavingsSlot = page.locator('[data-live-savings-slot="chocolate-70"]').first();
+    await expect(choc70SavingsSlot).toContainText('Ahorras $2.000');
 
-    // Chocolate 85%: all variants are out_of_stock in our fixture -> renders "Agotado" pill
+    // Chocolate 85%: all variants are out_of_stock in our fixture -> renders "Agotado" pill, empty savings
     const choc85PriceSlot = page.locator('[data-live-price-slot="chocolate-85"]').first();
     await expect(choc85PriceSlot).toContainText('Agotado');
+    const choc85SavingsSlot = page.locator('[data-live-savings-slot="chocolate-85"]').first();
+    await expect(choc85SavingsSlot).toBeEmpty();
 
     // 4. Invariant: NO add-to-cart or buy buttons anywhere on /tienda
     const addToCartButtons = page.getByRole('button', { name: /comprar|carrito|agregar/i });

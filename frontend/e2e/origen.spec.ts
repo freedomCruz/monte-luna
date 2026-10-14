@@ -22,7 +22,7 @@ test.describe('Origin Detail (/origenes/[slug])', () => {
     await expect(page.locator('dd', { hasText: /1700 – 1900 m s\. n\. m\./i })).toBeVisible();
 
     // 3. Verify Associated Products are listed with links to their product detail
-    const productCard = page.locator('article', { hasText: 'Finca El Mirador' });
+    const productCard = page.locator('article', { has: page.getByRole('heading', { name: 'Finca El Mirador' }) }).first();
     await expect(productCard).toBeVisible();
 
     const detailLink = productCard.locator('a[href="/productos/finca-el-mirador"]').first();
