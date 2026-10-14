@@ -16,13 +16,18 @@ is pinged at startup with a 15-second timeout and closed on shutdown.
 
 `MEDIA_BASE_URL` is the public HTTP(S) base serving media objects, not an S3 API
 endpoint or credential-bearing URL. It may include a path prefix, but no user info,
-query, or fragment. For example, `https://media.example/store/` resolves
-`demo/products/finca-el-mirador.jpg` to
-`https://media.example/store/demo/products/finca-el-mirador.jpg`.
+query, or fragment. For example, `http://127.0.0.1:4321/` resolves
+`images/packaging-finca-el-mirador.webp` to
+`http://127.0.0.1:4321/images/packaging-finca-el-mirador.webp`.
 The backend only resolves URLs: it does not download, upload, or serve images.
-The configured origin must actually serve the relative demo keys to show images.
-The coordinator must wire this value into the root environment example/Taskfile;
-this backend-only task deliberately leaves those files unchanged.
+In local development, demo media reuses the design asset images in `frontend/public/images/`
+served directly by Astro, with `MEDIA_BASE_URL` pointing to the frontend server
+(e.g., `http://127.0.0.1:<FRONTEND_PORT>/`). Storage keys in demo fixtures are relative
+paths matching those static assets (such as `images/packaging-finca-el-mirador.webp` and
+`images/photo-coffee-cherries.jpg`). Brand logo is set to `NULL` (`logo_storage_key` is
+nullable and no logo file exists in demo assets). The coordinator wires `MEDIA_BASE_URL`
+into the root environment example/Taskfile; this backend-only task deliberately leaves
+those files unchanged.
 
 Public GET paths under `/api/v1`:
 
@@ -129,8 +134,10 @@ are nullable. No product attributes are stored as origin facts.
 All agronomic facts, assessments, cacao merchant declarations, dates, and 500 g prices
 are explicitly fictional demo content. The placeholder prices/names follow the design
 system. The explicit `excluded` tax category is demo Scenario A, not a production tax
-classification or a schema default. Media paths are relative `demo/...` storage keys:
-no image files are added or uploaded, and media URL resolution remains B2 work.
+classification or a schema default. Media paths are relative storage keys matching the
+local design assets in `frontend/public/images/` (e.g. `images/packaging-finca-el-mirador.webp`,
+`images/photo-coffee-cherries.jpg`), resolved against `MEDIA_BASE_URL`: no external image
+files are added or uploaded, and the brand logo storage key is `NULL`.
 
 ## Verify persistence
 
