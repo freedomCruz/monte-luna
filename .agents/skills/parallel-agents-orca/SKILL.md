@@ -59,7 +59,7 @@ The rules (roles, path ownership, gates, merge flow) live in `AGENTS.md` section
 - `node_modules` and Go caches are per worktree; run the setup task before tests in a fresh worktree, including the coordinator checkout.
 - Pi sessions appear lazily and peer session lists can be stale; rely on Orca task state, not on session lists.
 - A shared database across worktrees breaks migrations; never point two worktrees at the same database.
-- `worker-start --terminal` reports `input_accepted` even when the prompt reaches Pi before its TUI has loaded; the prompt is then lost and Pi sits idle at 0% context. After `terminal create`, wait until `orca terminal read --terminal <handle>` shows the Pi model status line before `worker-start`, and 30 seconds after it confirm the context gauge moved. If it did not, `worker-abandon` the Dispatch and `worker-start --retry-of <dispatch>` on the same terminal.
+- `worker-start --terminal` reports `input_accepted` even when the prompt reaches Pi before its TUI has loaded; the prompt is then lost and Pi sits idle at 0% context. The model status line appears before Pi's input editor accepts text, so it is not a readiness signal: in Catalog v1 the first dispatch to each fresh Pi terminal was lost (2 of 2), while every later dispatch to an idle terminal worked. Always confirm about 45 seconds after `worker-start` that the context gauge in `orca terminal read --terminal <handle>` moved above 0%; if it did not, `worker-abandon` the Dispatch and `worker-start --retry-of <dispatch>` on the same terminal.
 
 ## Output Contract
 
