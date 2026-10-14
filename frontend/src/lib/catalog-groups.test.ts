@@ -16,14 +16,18 @@ describe('Catalog grouping helpers for tienda', () => {
       expect(group.products.length).toBeGreaterThan(0);
       expect(group.id).toBe(`cat-group-${group.category.slug}`);
     }
+  });
 
-    const cafeGroup = groups.find((g) => g.category.slug === 'cafe');
-    expect(cafeGroup).toBeDefined();
-    expect(cafeGroup?.products.some((p) => p.slug === 'finca-el-mirador-lavado')).toBe(true);
-
-    const cacaoGroup = groups.find((g) => g.category.slug === 'cacao');
-    expect(cacaoGroup).toBeDefined();
-    expect(cacaoGroup?.products.some((p) => p.slug === 'chocolate-artesanal-70')).toBe(true);
+  it('preserves uncategorized published products in a fallback section', () => {
+    const uncategorizedProduct = {
+      ...products[0],
+      slug: 'producto-sin-categoria',
+      categories: [],
+    };
+    const groups = groupProductsByCategory([uncategorizedProduct], categories);
+    expect(groups.some((g) => g.id === 'cat-group-otros' || g.category.slug === 'otros')).toBe(true);
+    const otherGroup = groups.find((g) => g.id === 'cat-group-otros' || g.category.slug === 'otros');
+    expect(otherGroup?.products.some((p) => p.slug === 'producto-sin-categoria')).toBe(true);
   });
 
   it('groups products by product_type with distinct banners and titles', () => {

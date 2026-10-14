@@ -23,23 +23,25 @@ describe('Pre-rendered HTML output invariants', () => {
     }
   });
 
-  it('generates all expected static pages in the build output', () => {
+  it('generates all expected static pages in the build output matching demo fixtures', () => {
     expect(fs.existsSync(path.join(fixtureDir, 'tienda/index.html'))).toBe(true);
-    expect(fs.existsSync(path.join(fixtureDir, 'productos/finca-el-mirador-lavado/index.html'))).toBe(true);
-    expect(fs.existsSync(path.join(fixtureDir, 'productos/chocolate-artesanal-70/index.html'))).toBe(true);
-    expect(fs.existsSync(path.join(fixtureDir, 'productos/taza-ceramica-monteluna/index.html'))).toBe(true);
+    expect(fs.existsSync(path.join(fixtureDir, 'productos/finca-el-mirador/index.html'))).toBe(true);
+    expect(fs.existsSync(path.join(fixtureDir, 'productos/finca-la-maria/index.html'))).toBe(true);
+    expect(fs.existsSync(path.join(fixtureDir, 'productos/chocolate-70/index.html'))).toBe(true);
+    expect(fs.existsSync(path.join(fixtureDir, 'productos/chocolate-85/index.html'))).toBe(true);
     expect(fs.existsSync(path.join(fixtureDir, 'origenes/finca-el-mirador/index.html'))).toBe(true);
-    expect(fs.existsSync(path.join(fixtureDir, 'origenes/finca-la-maria/index.html'))).toBe(true);
+    expect(fs.existsSync(path.join(fixtureDir, 'origenes/demo-cacao-origin/index.html'))).toBe(true);
   });
 
   it('contains NO <astro-island> tags across any generated HTML page', () => {
     const htmlFiles = [
       'tienda/index.html',
-      'productos/finca-el-mirador-lavado/index.html',
-      'productos/chocolate-artesanal-70/index.html',
-      'productos/taza-ceramica-monteluna/index.html',
+      'productos/finca-el-mirador/index.html',
+      'productos/finca-la-maria/index.html',
+      'productos/chocolate-70/index.html',
+      'productos/chocolate-85/index.html',
       'origenes/finca-el-mirador/index.html',
-      'origenes/finca-la-maria/index.html',
+      'origenes/demo-cacao-origin/index.html',
       'index.html',
     ];
 
@@ -52,54 +54,60 @@ describe('Pre-rendered HTML output invariants', () => {
     }
   });
 
-  it('tienda.astro renders grouped category sections with unique IDs and valid navigation links', () => {
+  it('tienda.astro renders grouped category sections with collision-free article IDs for multi-category products', () => {
     const tiendaHtml = fs.readFileSync(path.join(fixtureDir, 'tienda/index.html'), 'utf-8');
 
     // Category navigation links target exact group sections
-    expect(tiendaHtml).toContain('href="#cat-group-cafe"');
+    expect(tiendaHtml).toContain('href="#cat-group-coffee"');
     expect(tiendaHtml).toContain('href="#cat-group-cacao"');
-    expect(tiendaHtml).toContain('href="#cat-group-accesorios"');
+    expect(tiendaHtml).toContain('href="#cat-group-chocolate"');
 
     // Distinct section IDs exist for each group
-    expect(tiendaHtml).toContain('id="cat-group-cafe"');
+    expect(tiendaHtml).toContain('id="cat-group-coffee"');
     expect(tiendaHtml).toContain('id="cat-group-cacao"');
-    expect(tiendaHtml).toContain('id="cat-group-accesorios"');
+    expect(tiendaHtml).toContain('id="cat-group-chocolate"');
 
-    // Unique product IDs exist on articles
-    expect(tiendaHtml).toContain('id="product-finca-el-mirador-lavado"');
-    expect(tiendaHtml).toContain('id="product-chocolate-artesanal-70"');
-    expect(tiendaHtml).toContain('id="product-taza-ceramica-monteluna"');
+    // Multi-category products (like chocolate-70 and chocolate-85) appear under both cacao and chocolate groups
+    // with distinct, collision-free DOM IDs scoped by category group
+    expect(tiendaHtml).toContain('id="product-cacao-chocolate-70"');
+    expect(tiendaHtml).toContain('id="product-chocolate-chocolate-70"');
 
-    // No duplicate article IDs: match all id="product-..."
+    // All product article IDs must be strictly unique across the entire DOM tree
     const productIds = Array.from(tiendaHtml.matchAll(/id="(product-[^"]+)"/g)).map((m) => m[1]);
+    expect(productIds.length).toBeGreaterThan(0);
     const uniqueIds = new Set(productIds);
     expect(productIds.length).toBe(uniqueIds.size);
   });
 
-  it('product detail page does NOT contain hardcoded prices or add-to-cart buttons', () => {
+  it('product detail page does NOT contain hardcoded prices, add-to-cart buttons, or static availability claims', () => {
     const productHtml = fs.readFileSync(
-      path.join(fixtureDir, 'productos/finca-el-mirador-lavado/index.html'),
+      path.join(fixtureDir, 'productos/finca-el-mirador/index.html'),
       'utf-8'
     );
 
     // Checks that placeholder slot exists
-    expect(productHtml).toContain('data-product-slug="finca-el-mirador-lavado"');
+    expect(productHtml).toContain('data-product-slug="finca-el-mirador"');
     expect(productHtml).toContain('id="purchase-action-island-slot"');
 
-    // No hardcoded prices or add-to-cart button
+    // Invariant: No hardcoded prices or add-to-cart button
     expect(productHtml).not.toMatch(/\$3[89]\.000/);
     expect(productHtml).not.toContain('Añadir al carrito');
     expect(productHtml).not.toContain('Agregar al carrito');
+
+    // Invariant: Pre-rendered markup must never claim "Disponible" or "Agotado" before live data arrives
+    expect(productHtml).not.toContain('<span>Disponible</span>');
+    expect(productHtml).not.toContain('<span>Agotado</span>');
+    expect(productHtml).toContain('data-variant-stock-slot');
   });
 
   it('originless product page does not display an origin link', () => {
-    const tazaHtml = fs.readFileSync(
-      path.join(fixtureDir, 'productos/taza-ceramica-monteluna/index.html'),
+    const chocolate85Html = fs.readFileSync(
+      path.join(fixtureDir, 'productos/chocolate-85/index.html'),
       'utf-8'
     );
 
-    expect(tazaHtml).not.toContain('/origenes/');
-    expect(tazaHtml).not.toContain('Conocer el origen');
+    expect(chocolate85Html).not.toContain('/origenes/');
+    expect(chocolate85Html).not.toContain('Conocer el origen');
   });
 
   it('origin page renders origin facts and related products', () => {
@@ -109,8 +117,8 @@ describe('Pre-rendered HTML output invariants', () => {
     );
 
     expect(originHtml).toContain('Finca El Mirador');
-    expect(originHtml).toContain('Familia Patiño');
-    expect(originHtml).toContain('1650');
-    expect(originHtml).toContain('/productos/finca-el-mirador-lavado');
+    expect(originHtml).toContain('Demo coffee producer');
+    expect(originHtml).toContain('1700');
+    expect(originHtml).toContain('/productos/finca-el-mirador');
   });
 });

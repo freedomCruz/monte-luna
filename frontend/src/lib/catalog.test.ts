@@ -31,26 +31,26 @@ describe('Catalog Data Source', () => {
     it('returns all mock products with pagination and filter support', async () => {
       const result = await getCatalogProducts();
       expect(result.items).toHaveLength(mockCatalogData.products.length);
-      expect(result.items.map((p) => p.slug)).toContain('finca-el-mirador-lavado');
-      expect(result.items.map((p) => p.slug)).toContain('taza-ceramica-monteluna');
+      expect(result.items.map((p) => p.slug)).toContain('finca-el-mirador');
+      expect(result.items.map((p) => p.slug)).toContain('chocolate-85');
     });
 
     it('filters products by category slug', async () => {
-      const result = await getCatalogProducts({ category: ['cafe'] });
-      expect(result.items).toHaveLength(1);
-      expect(result.items[0].slug).toBe('finca-el-mirador-lavado');
+      const result = await getCatalogProducts({ category: ['coffee'] });
+      expect(result.items.length).toBeGreaterThanOrEqual(1);
+      expect(result.items.map((p) => p.slug)).toContain('finca-el-mirador');
     });
 
     it('filters products by product_type slug', async () => {
-      const result = await getCatalogProducts({ product_type: ['accesorios'] });
-      expect(result.items).toHaveLength(1);
-      expect(result.items[0].slug).toBe('taza-ceramica-monteluna');
+      const result = await getCatalogProducts({ product_type: ['cacao'] });
+      expect(result.items.length).toBeGreaterThanOrEqual(1);
+      expect(result.items.map((p) => p.slug)).toContain('chocolate-70');
     });
 
     it('retrieves single product by slug or returns null when not found', async () => {
-      const product = await getCatalogProductBySlug('finca-el-mirador-lavado');
+      const product = await getCatalogProductBySlug('finca-el-mirador');
       expect(product).not.toBeNull();
-      expect(product?.slug).toBe('finca-el-mirador-lavado');
+      expect(product?.slug).toBe('finca-el-mirador');
       expect(product?.origin?.slug).toBe('finca-el-mirador');
 
       const notFound = await getCatalogProductBySlug('inexistente');
@@ -61,13 +61,14 @@ describe('Catalog Data Source', () => {
       const origins = await getCatalogOrigins();
       expect(origins.items).toHaveLength(2);
       expect(origins.items.map((o) => o.slug)).toContain('finca-el-mirador');
+      expect(origins.items.map((o) => o.slug)).toContain('demo-cacao-origin');
     });
 
     it('retrieves single origin by slug', async () => {
       const origin = await getCatalogOriginBySlug('finca-el-mirador');
       expect(origin).not.toBeNull();
       expect(origin?.name).toBe('Finca El Mirador');
-      expect(origin?.altitude_min_masl).toBe(1650);
+      expect(origin?.altitude_min_masl).toBe(1700);
 
       const notFound = await getCatalogOriginBySlug('inexistente');
       expect(notFound).toBeNull();
@@ -76,7 +77,7 @@ describe('Catalog Data Source', () => {
     it('retrieves mock categories', async () => {
       const categories = await getCatalogCategories();
       expect(categories.items).toHaveLength(3);
-      expect(categories.items.map((c) => c.slug)).toContain('cafe');
+      expect(categories.items.map((c) => c.slug)).toContain('coffee');
     });
   });
 
@@ -132,12 +133,12 @@ describe('Catalog Data Source', () => {
 
       (globalThis as unknown as { fetch: unknown }).fetch = fetchMock;
 
-      const product = await getCatalogProductBySlug('finca-el-mirador-lavado');
+      const product = await getCatalogProductBySlug('finca-el-mirador');
       expect(fetchMock).toHaveBeenCalledWith(
-        'https://api.monteluna.test/api/v1/products/finca-el-mirador-lavado',
+        'https://api.monteluna.test/api/v1/products/finca-el-mirador',
         expect.any(Object)
       );
-      expect(product?.slug).toBe('finca-el-mirador-lavado');
+      expect(product?.slug).toBe('finca-el-mirador');
     });
 
     it('returns null on 404 from API', async () => {

@@ -104,7 +104,7 @@ const categoryGroups = groupProductsByCategory(products, categories);
 
               return (
                 <article
-                  id={`product-${product.slug}`}
+                  id={`product-${group.category.slug}-${product.slug}`}
                   data-category={group.category.slug}
                   data-product-type={product.product_type.slug}
                   class="group bg-card rounded-2xl overflow-hidden border border-foreground/10 flex flex-col transition-all hover:shadow-lg"
