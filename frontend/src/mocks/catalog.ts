@@ -8,18 +8,18 @@ export type Variant = components['schemas']['Variant'];
 export const mockOriginCoffee: Origin = {
   slug: 'finca-el-mirador',
   name: 'Finca El Mirador',
-  producer_name: 'Demo coffee producer',
+  producer_name: 'Productor de café demo',
   country_code: 'CO',
   department: 'Huila',
   municipality_code: '41668',
   municipality_name: 'San Agustín',
   altitude_min_masl: 1700,
   altitude_max_masl: 1900,
-  story: '[Demo story] A fictional coffee farm used to demonstrate reusable origin facts.',
+  story: '[Historia demo] Finca cafetera ficticia utilizada para demostrar datos de origen reutilizables.',
   images: [
     {
       url: '/images/photo-coffee-cherries.jpg',
-      alt_text: 'Demo coffee farm landscape',
+      alt_text: 'Paisaje de finca cafetera demo',
     },
     {
       url: '/images/photo-roasted-beans-concrete.jpg',
@@ -30,19 +30,19 @@ export const mockOriginCoffee: Origin = {
 
 export const mockOriginCacao: Origin = {
   slug: 'demo-cacao-origin',
-  name: '[Demo cacao origin]',
-  producer_name: 'Demo cacao producer',
+  name: '[Origen de cacao demo]',
+  producer_name: 'Productor de cacao demo',
   country_code: 'CO',
   department: 'Santander',
   municipality_code: '68689',
   municipality_name: 'San Vicente de Chucurí',
   altitude_min_masl: 400,
   altitude_max_masl: 700,
-  story: '[Demo story] A fictional cacao producer unit; the merchant must replace these facts.',
+  story: '[Historia demo] Unidad productora de cacao ficticia; el comerciante debe reemplazar estos datos.',
   images: [
     {
       url: '/images/photo-cacao-pods-trunk.jpg',
-      alt_text: 'Demo cacao farm landscape',
+      alt_text: 'Paisaje de finca cacaotera demo',
     },
     {
       url: '/images/photo-cacao-pods-colourful.jpg',
@@ -54,7 +54,7 @@ export const mockOriginCacao: Origin = {
 export const mockCategories: Category[] = [
   {
     slug: 'coffee',
-    name: 'Coffee',
+    name: 'Café',
     parent_slug: null,
     position: 0,
   },
@@ -74,7 +74,7 @@ export const mockCategories: Category[] = [
 
 export const mockProductTypeCoffee = {
   slug: 'coffee',
-  name: 'Coffee',
+  name: 'Café',
 };
 
 export const mockProductTypeCacao = {
@@ -90,7 +90,7 @@ export const mockBrandMonteluna = {
 export const mockCoffeeProduct: Product = {
   slug: 'finca-el-mirador',
   title: 'Finca El Mirador',
-  description: 'Demo washed coffee with a fixed medium roast and independent stock per presentation and grind.',
+  description: 'Café lavado demo con tostión media fija y existencias independientes por presentación y molienda.',
   created_at: '2026-10-10T12:00:00Z',
   product_type: mockProductTypeCoffee,
   brand: mockBrandMonteluna,
@@ -103,7 +103,7 @@ export const mockCoffeeProduct: Product = {
   images: [
     {
       url: '/images/packaging-finca-el-mirador.webp',
-      alt_text: 'Demo Finca El Mirador coffee packaging',
+      alt_text: 'Empaque de café Finca El Mirador demo',
       variant_id: null,
     },
     {
@@ -115,15 +115,15 @@ export const mockCoffeeProduct: Product = {
   attributes: [
     {
       key: 'species',
-      label: 'Species',
+      label: 'Especie',
       data_type: 'option',
       unit: null,
       value: 'arabica',
-      display_value: 'Arabica',
+      display_value: 'Arábica',
     },
     {
       key: 'varieties',
-      label: 'Varieties',
+      label: 'Variedades',
       data_type: 'multi_option',
       unit: null,
       value: ['geisha', 'bourbon'],
@@ -131,31 +131,31 @@ export const mockCoffeeProduct: Product = {
     },
     {
       key: 'process',
-      label: 'Process',
+      label: 'Proceso',
       data_type: 'option',
       unit: null,
       value: 'washed',
-      display_value: 'Washed',
+      display_value: 'Lavado',
     },
     {
       key: 'roast_level',
-      label: 'Roast level',
+      label: 'Tostión',
       data_type: 'option',
       unit: null,
       value: 'medium',
-      display_value: 'Medium',
+      display_value: 'Media',
     },
     {
       key: 'tasting_notes',
-      label: 'Tasting notes',
+      label: 'Notas de cata',
       data_type: 'text',
       unit: null,
-      value: 'Citrus, panela and chocolate (demo)',
-      display_value: 'Citrus, panela and chocolate (demo)',
+      value: 'Cítricos, panela y chocolate (demo)',
+      display_value: 'Cítricos, panela y chocolate (demo)',
     },
     {
       key: 'cupping_score',
-      label: 'Cupping score',
+      label: 'Puntaje de cata',
       data_type: 'decimal',
       unit: null,
       value: 88.5,
@@ -163,11 +163,11 @@ export const mockCoffeeProduct: Product = {
     },
     {
       key: 'cupping_protocol',
-      label: 'Assessment protocol',
+      label: 'Protocolo de evaluación',
       data_type: 'option',
       unit: null,
       value: 'sca',
-      display_value: 'SCA (demo assessment)',
+      display_value: 'SCA (evaluación demo)',
     },
   ],
   variants: [
@@ -178,7 +178,7 @@ export const mockCoffeeProduct: Product = {
       options: [
         {
           key: 'presentation',
-          label: 'Presentation',
+          label: 'Presentación',
           data_type: 'option',
           unit: 'g',
           value: '250_g',
@@ -186,11 +186,11 @@ export const mockCoffeeProduct: Product = {
         },
         {
           key: 'grind',
-          label: 'Grind',
+          label: 'Molienda',
           data_type: 'option',
           unit: null,
           value: 'whole_bean',
-          display_value: 'Whole bean',
+          display_value: 'Grano entero',
         },
       ],
     },
@@ -201,7 +201,7 @@ export const mockCoffeeProduct: Product = {
       options: [
         {
           key: 'presentation',
-          label: 'Presentation',
+          label: 'Presentación',
           data_type: 'option',
           unit: 'g',
           value: '250_g',
@@ -209,11 +209,11 @@ export const mockCoffeeProduct: Product = {
         },
         {
           key: 'grind',
-          label: 'Grind',
+          label: 'Molienda',
           data_type: 'option',
           unit: null,
           value: 'fine',
-          display_value: 'Fine',
+          display_value: 'Fina',
         },
       ],
     },
@@ -224,7 +224,7 @@ export const mockCoffeeProduct: Product = {
       options: [
         {
           key: 'presentation',
-          label: 'Presentation',
+          label: 'Presentación',
           data_type: 'option',
           unit: 'g',
           value: '250_g',
@@ -232,11 +232,11 @@ export const mockCoffeeProduct: Product = {
         },
         {
           key: 'grind',
-          label: 'Grind',
+          label: 'Molienda',
           data_type: 'option',
           unit: null,
           value: 'medium',
-          display_value: 'Medium',
+          display_value: 'Media',
         },
       ],
     },
@@ -247,7 +247,7 @@ export const mockCoffeeProduct: Product = {
       options: [
         {
           key: 'presentation',
-          label: 'Presentation',
+          label: 'Presentación',
           data_type: 'option',
           unit: 'g',
           value: '250_g',
@@ -255,11 +255,11 @@ export const mockCoffeeProduct: Product = {
         },
         {
           key: 'grind',
-          label: 'Grind',
+          label: 'Molienda',
           data_type: 'option',
           unit: null,
           value: 'coarse',
-          display_value: 'Coarse',
+          display_value: 'Gruesa',
         },
       ],
     },
@@ -270,7 +270,7 @@ export const mockCoffeeProduct: Product = {
       options: [
         {
           key: 'presentation',
-          label: 'Presentation',
+          label: 'Presentación',
           data_type: 'option',
           unit: 'g',
           value: '500_g',
@@ -278,11 +278,11 @@ export const mockCoffeeProduct: Product = {
         },
         {
           key: 'grind',
-          label: 'Grind',
+          label: 'Molienda',
           data_type: 'option',
           unit: null,
           value: 'whole_bean',
-          display_value: 'Whole bean',
+          display_value: 'Grano entero',
         },
       ],
     },
@@ -293,7 +293,7 @@ export const mockCoffeeProduct: Product = {
       options: [
         {
           key: 'presentation',
-          label: 'Presentation',
+          label: 'Presentación',
           data_type: 'option',
           unit: 'g',
           value: '500_g',
@@ -301,11 +301,11 @@ export const mockCoffeeProduct: Product = {
         },
         {
           key: 'grind',
-          label: 'Grind',
+          label: 'Molienda',
           data_type: 'option',
           unit: null,
           value: 'fine',
-          display_value: 'Fine',
+          display_value: 'Fina',
         },
       ],
     },
@@ -316,7 +316,7 @@ export const mockCoffeeProduct: Product = {
       options: [
         {
           key: 'presentation',
-          label: 'Presentation',
+          label: 'Presentación',
           data_type: 'option',
           unit: 'g',
           value: '500_g',
@@ -324,11 +324,11 @@ export const mockCoffeeProduct: Product = {
         },
         {
           key: 'grind',
-          label: 'Grind',
+          label: 'Molienda',
           data_type: 'option',
           unit: null,
           value: 'medium',
-          display_value: 'Medium',
+          display_value: 'Media',
         },
       ],
     },
@@ -339,7 +339,7 @@ export const mockCoffeeProduct: Product = {
       options: [
         {
           key: 'presentation',
-          label: 'Presentation',
+          label: 'Presentación',
           data_type: 'option',
           unit: 'g',
           value: '500_g',
@@ -347,11 +347,11 @@ export const mockCoffeeProduct: Product = {
         },
         {
           key: 'grind',
-          label: 'Grind',
+          label: 'Molienda',
           data_type: 'option',
           unit: null,
           value: 'coarse',
-          display_value: 'Coarse',
+          display_value: 'Gruesa',
         },
       ],
     },
@@ -361,7 +361,7 @@ export const mockCoffeeProduct: Product = {
 export const mockCoffeeProductMaria: Product = {
   slug: 'finca-la-maria',
   title: 'Finca La María',
-  description: 'Second demo coffee sharing the reusable coffee origin.',
+  description: 'Segundo café demo que comparte el origen de café reutilizable.',
   created_at: '2026-10-11T10:00:00Z',
   product_type: mockProductTypeCoffee,
   brand: mockBrandMonteluna,
@@ -374,7 +374,7 @@ export const mockCoffeeProductMaria: Product = {
   images: [
     {
       url: '/images/packaging-finca-el-mirador.webp',
-      alt_text: 'Demo Finca La María coffee packaging',
+      alt_text: 'Empaque de café Finca La María demo',
       variant_id: null,
     },
     {
@@ -386,15 +386,15 @@ export const mockCoffeeProductMaria: Product = {
   attributes: [
     {
       key: 'species',
-      label: 'Species',
+      label: 'Especie',
       data_type: 'option',
       unit: null,
       value: 'arabica',
-      display_value: 'Arabica',
+      display_value: 'Arábica',
     },
     {
       key: 'varieties',
-      label: 'Varieties',
+      label: 'Variedades',
       data_type: 'multi_option',
       unit: null,
       value: ['castillo'],
@@ -402,7 +402,7 @@ export const mockCoffeeProductMaria: Product = {
     },
     {
       key: 'process',
-      label: 'Process',
+      label: 'Proceso',
       data_type: 'option',
       unit: null,
       value: 'natural',
@@ -410,19 +410,19 @@ export const mockCoffeeProductMaria: Product = {
     },
     {
       key: 'roast_level',
-      label: 'Roast level',
+      label: 'Tostión',
       data_type: 'option',
       unit: null,
       value: 'light',
-      display_value: 'Light',
+      display_value: 'Clara',
     },
     {
       key: 'tasting_notes',
-      label: 'Tasting notes',
+      label: 'Notas de cata',
       data_type: 'text',
       unit: null,
-      value: 'Red fruit (demo)',
-      display_value: 'Red fruit (demo)',
+      value: 'Frutos rojos (demo)',
+      display_value: 'Frutos rojos (demo)',
     },
   ],
   variants: [
@@ -433,7 +433,7 @@ export const mockCoffeeProductMaria: Product = {
       options: [
         {
           key: 'presentation',
-          label: 'Presentation',
+          label: 'Presentación',
           data_type: 'option',
           unit: 'g',
           value: '250_g',
@@ -441,11 +441,11 @@ export const mockCoffeeProductMaria: Product = {
         },
         {
           key: 'grind',
-          label: 'Grind',
+          label: 'Molienda',
           data_type: 'option',
           unit: null,
           value: 'whole_bean',
-          display_value: 'Whole bean',
+          display_value: 'Grano entero',
         },
       ],
     },
@@ -455,7 +455,7 @@ export const mockCoffeeProductMaria: Product = {
 export const mockCacaoProduct: Product = {
   slug: 'chocolate-70',
   title: 'Chocolate 70%',
-  description: 'Demo cacao bar; origin facts stay separate from cacao product attributes.',
+  description: 'Barra de cacao demo; los datos de origen se mantienen separados de los atributos del producto de cacao.',
   created_at: '2026-10-11T14:30:00Z',
   product_type: mockProductTypeCacao,
   brand: mockBrandMonteluna,
@@ -469,7 +469,7 @@ export const mockCacaoProduct: Product = {
   images: [
     {
       url: '/images/packaging-chocolate-75-100.webp',
-      alt_text: 'Demo 70 percent cacao bar packaging',
+      alt_text: 'Empaque de barra de chocolate 70 % cacao demo',
       variant_id: null,
     },
     {
@@ -481,7 +481,7 @@ export const mockCacaoProduct: Product = {
   attributes: [
     {
       key: 'genetic_group',
-      label: 'Genetic group',
+      label: 'Grupo genético',
       data_type: 'option',
       unit: null,
       value: 'trinitario',
@@ -489,27 +489,27 @@ export const mockCacaoProduct: Product = {
     },
     {
       key: 'fermentation',
-      label: 'Fermentation',
+      label: 'Fermentación',
       data_type: 'text',
       unit: null,
-      value: 'Six days (demo)',
-      display_value: 'Six days (demo)',
+      value: 'Seis días (demo)',
+      display_value: 'Seis días (demo)',
     },
     {
       key: 'drying',
-      label: 'Drying',
+      label: 'Secado',
       data_type: 'text',
       unit: null,
-      value: 'Sun-dried (demo)',
-      display_value: 'Sun-dried (demo)',
+      value: 'Secado al sol (demo)',
+      display_value: 'Secado al sol (demo)',
     },
     {
       key: 'product_form',
-      label: 'Product form',
+      label: 'Forma del producto',
       data_type: 'option',
       unit: null,
       value: 'bar',
-      display_value: 'Bar',
+      display_value: 'Barra',
     },
     {
       key: 'cacao_percentage',
@@ -521,7 +521,7 @@ export const mockCacaoProduct: Product = {
     },
     {
       key: 'fine_or_flavour',
-      label: 'Fine or flavour (merchant declaration)',
+      label: 'Fino o de aroma (declaración del comerciante)',
       data_type: 'boolean',
       unit: null,
       value: true,
@@ -536,7 +536,7 @@ export const mockCacaoProduct: Product = {
       options: [
         {
           key: 'presentation',
-          label: 'Presentation',
+          label: 'Presentación',
           data_type: 'option',
           unit: 'g',
           value: '80_g',
@@ -550,7 +550,7 @@ export const mockCacaoProduct: Product = {
 export const mockOriginlessProduct: Product = {
   slug: 'chocolate-85',
   title: 'Chocolate 85%',
-  description: 'Demo commercial-brand product without an agricultural origin; no origin link is shown.',
+  description: 'Producto demo de marca comercial sin origen agrícola; no se muestra enlace de origen.',
   created_at: '2026-10-12T09:15:00Z',
   product_type: mockProductTypeCacao,
   brand: mockBrandMonteluna,
@@ -560,18 +560,18 @@ export const mockOriginlessProduct: Product = {
   images: [
     {
       url: '/images/packaging-chocolate-75-100.webp',
-      alt_text: 'Demo 85 percent cacao bar packaging',
+      alt_text: 'Empaque de barra de chocolate 85 % cacao demo',
       variant_id: null,
     },
   ],
   attributes: [
     {
       key: 'product_form',
-      label: 'Product form',
+      label: 'Forma del producto',
       data_type: 'option',
       unit: null,
       value: 'bar',
-      display_value: 'Bar',
+      display_value: 'Barra',
     },
     {
       key: 'cacao_percentage',
@@ -583,7 +583,7 @@ export const mockOriginlessProduct: Product = {
     },
     {
       key: 'fine_or_flavour',
-      label: 'Fine or flavour (merchant declaration)',
+      label: 'Fino o de aroma (declaración del comerciante)',
       data_type: 'boolean',
       unit: null,
       value: false,
@@ -598,7 +598,7 @@ export const mockOriginlessProduct: Product = {
       options: [
         {
           key: 'presentation',
-          label: 'Presentation',
+          label: 'Presentación',
           data_type: 'option',
           unit: 'g',
           value: '80_g',
@@ -608,6 +608,11 @@ export const mockOriginlessProduct: Product = {
     },
   ],
 };
+
+// Aliases for convenient importing in tests
+export const mockMariaProduct = mockCoffeeProductMaria;
+export const mockChocolateProduct = mockCacaoProduct;
+export const mockNoOriginProduct = mockOriginlessProduct;
 
 export const mockCatalogData = {
   origins: [mockOriginCoffee, mockOriginCacao],

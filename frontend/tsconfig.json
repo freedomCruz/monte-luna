@@ -9,6 +9,6 @@
     "jsx": "react-jsx",
     "jsxImportSource": "react"
   },
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist", "**/*.test.ts", "**/*.test.tsx"]
+  "include": [".astro/types.d.ts", "src/**/*"],
+  "exclude": ["dist", "**/*.test.ts", "**/*.test.tsx", "e2e/**/*", "playwright.config.ts"]
 }
