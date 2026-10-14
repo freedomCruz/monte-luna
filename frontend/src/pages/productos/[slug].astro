@@ -1,176 +1,441 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getCatalogProducts } from '../../lib/catalog';
-import type { Product } from '../../lib/catalog';
+import { getCatalogProducts, getCatalogOriginBySlug } from '../../lib/catalog';
+import type { Product, Origin } from '../../lib/catalog';
 import { ProductPurchaseIsland } from '../../components/islands/ProductPurchaseIsland';
+import ProductCard from '../../components/catalog/ProductCard.astro';
+import { ListingPriceIsland } from '../../components/islands/ListingPriceIsland';
 
 export async function getStaticPaths() {
-
   const productsPage = await getCatalogProducts();
   return productsPage.items.map((product) => ({
     params: { slug: product.slug },
-    props: { product },
+    props: {
+      product,
+      allProducts: productsPage.items,
+    },
   }));
 }
 
 interface Props {
   product: Product;
+  allProducts: Product[];
 }
 
-const { product } = Astro.props;
+const { product, allProducts = [] } = Astro.props;
 
-// Categorize attributes for presentation
-const nonVariantAttributes = product.attributes.filter(
-  (attr) => attr.display_value !== null && attr.display_value !== ''
-);
+// Fetch full origin details if available
+let origin: Origin | null = null;
+if (product.origin?.slug) {
+  origin = await getCatalogOriginBySlug(product.origin.slug);
+}
 
-// Key highlights
-const tastingNotes = product.attributes.find((a) => a.key === 'tasting_notes')?.display_value;
+// Attributes for extraction
+const getAttr = (key: string) => product.attributes.find((a) => a.key === key);
 
-const mainImage = product.images[0]?.url || '/images/photo-roasted-beans-pile.jpg';
+const species = getAttr('species')?.display_value;
+const varieties = getAttr('varieties')?.display_value;
+const process = getAttr('process')?.display_value;
+const roastLevel = getAttr('roast_level')?.display_value;
+const roastVal = getAttr('roast_level')?.value?.toString().toLowerCase() || '';
+const tastingNotes = getAttr('tasting_notes')?.display_value;
+const cuppingScore = getAttr('cupping_score')?.display_value;
+
+// Cacao specific attributes
+const geneticGroup = getAttr('genetic_group')?.display_value;
+const fermentation = getAttr('fermentation')?.display_value;
+const cacaoPercentage = getAttr('cacao_percentage')?.display_value;
+
+const isCoffee = product.product_type?.slug === 'coffee';
+const isCacao = product.product_type?.slug === 'cacao';
+
+// Format eyebrow
+let eyebrow = '';
+if (isCoffee) {
+  const parts = ['Café'];
+  if (origin?.department) parts.push(origin.department);
+  else if (product.origin?.name) parts.push(product.origin.name);
+  if (origin?.altitude_min_masl && origin?.altitude_max_masl) {
+    parts.push(`${origin.altitude_min_masl.toLocaleString('es-CO')}–${origin.altitude_max_masl.toLocaleString('es-CO')} m s. n. m.`);
+  }
+  eyebrow = parts.join(' · ');
+} else if (isCacao) {
+  const parts = ['Cacao'];
+  if (cacaoPercentage) parts.push(`${cacaoPercentage}%`);
+  if (origin?.department) parts.push(origin.department);
+  eyebrow = parts.join(' · ');
+} else {
+  eyebrow = product.product_type?.name || 'Monteluna';
+}
+
+// Subtitle text
+let subtitle = '';
+if (isCoffee) {
+  const parts = ['Café de origen colombiano'];
+  if (varieties) parts.push(`${varieties} ${process?.toLowerCase() || ''}`.trim());
+  if (product.origin?.producer_name) parts.push(`Productora: ${product.origin.producer_name}`);
+  subtitle = parts.join(' · ');
+} else if (isCacao) {
+  subtitle = product.description || 'Cacao fino de aroma, origen Colombia';
+}
+
+// Roast position for visual scale
+let roastPercent = '50%';
+if (roastVal.includes('light') || roastVal.includes('clara')) roastPercent = '15%';
+else if (roastVal.includes('dark') || roastVal.includes('oscura')) roastPercent = '85%';
+
+// Tasting notes parsed into pills
+const tastingNotesList = tastingNotes
+  ? tastingNotes
+      .replace(/\(demo\)/gi, '')
+      .split(/[,•]/)
+      .map((s) => s.trim())
+      .filter(Boolean)
+  : [];
+
+// Main images
+const mainImage = product.images[0]?.url || '/images/photo-coffee-bag.jpg';
 const mainImageAlt = product.images[0]?.alt_text || product.title;
+
+// Related products ("También te puede gustar")
+const relatedProducts = allProducts.filter((p) => p.slug !== product.slug).slice(0, 3);
 ---
 
 <Layout title={`${product.title} · Monteluna`} description={product.description || undefined}>
-  <!-- Breadcrumb Navigation -->
-  <nav aria-label="Ruta de navegación" class="bg-secondary/50 border-b border-foreground/10 py-3.5">
-    <div class="max-w-[1320px] mx-auto px-6 md:px-12 flex flex-wrap items-center gap-2 text-sm font-semibold text-foreground/70">
-      <a href="/" class="hover:text-foreground">Inicio</a>
-      <span aria-hidden="true">/</span>
-      <a href="/tienda" class="hover:text-foreground">Tienda</a>
-      <span aria-hidden="true">/</span>
-      {product.origin && (
-        <>
-          <a href={`/origenes/${product.origin.slug}`} class="hover:text-foreground">
-            {product.origin.name}
-          </a>
-          <span aria-hidden="true">/</span>
-        </>
-      )}
-      <span class="text-foreground truncate max-w-[200px] sm:max-w-none">{product.title}</span>
-    </div>
-  </nav>
+  <!-- Hero Section with Warm Yellow Background (#F8E4AE) matching M-Detalle.dc.html -->
+  <div class="bg-hero">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 pt-7 pb-16 md:pb-20 flex flex-col gap-6">
+      <!-- Breadcrumb Navigation -->
+      <nav aria-label="Ruta de navegación" class="flex flex-wrap items-center gap-2.5 text-sm sm:text-base font-semibold text-foreground">
+        <a href="/" class="hover:text-accent transition-colors">Inicio</a>
+        <span aria-hidden="true" class="text-foreground/40">/</span>
+        <a href="/tienda" class="hover:text-accent transition-colors">Tienda</a>
+        <span aria-hidden="true" class="text-foreground/40">/</span>
+        <span class="text-foreground">{product.title}</span>
+      </nav>
 
-  <!-- Product Detail Section (M-Detalle design layout) -->
-  <main class="max-w-[1320px] mx-auto px-6 md:px-12 py-12 md:py-16">
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
-      
-      <!-- Left Column: Gallery / Images -->
-      <div class="lg:col-span-7 flex flex-col gap-6">
-        <div class="aspect-square bg-card rounded-3xl overflow-hidden border border-foreground/10 shadow-sm relative">
-          <img
-            src={mainImage}
-            alt={mainImageAlt}
-            class="w-full h-full object-cover object-center"
-          />
-          {product.product_type && (
-            <span class="absolute top-6 left-6 bg-foreground text-primary-foreground font-condensed text-sm font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-xl shadow-md">
-              {product.product_type.name}
-            </span>
-          )}
-        </div>
-
-        <!-- Additional images thumbnails if present -->
-        {product.images.length > 1 && (
-          <div class="grid grid-cols-4 gap-4">
-            {product.images.map((img) => (
-              <div class="aspect-square rounded-2xl overflow-hidden border border-foreground/10 bg-card">
-                <img
-                  src={img.url}
-                  alt={img.alt_text}
-                  loading="lazy"
-                  class="w-full h-full object-cover"
-                />
-              </div>
-            ))}
-          </div>
-        )}
-
-        <!-- Origin Feature Card (if product has origin) -->
-        {product.origin && (
-          <div class="bg-secondary rounded-3xl p-8 border border-foreground/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mt-4">
-            <div class="flex flex-col gap-1">
-              <span class="font-condensed text-xs font-bold uppercase tracking-wider text-brand-purple">
-                Finca & Origen
-              </span>
-              <h3 class="text-2xl font-black text-foreground">
-                {product.origin.name}
-              </h3>
-              <p class="text-sm text-foreground/80">
-                Producido con dedicación por {product.origin.producer_name}.
-              </p>
-            </div>
-            <a
-              href={`/origenes/${product.origin.slug}`}
-              class="font-condensed text-sm font-bold uppercase tracking-wider px-5 py-3 rounded-xl bg-foreground text-primary-foreground hover:bg-brand-purple transition-colors shrink-0"
-            >
-              Conocer el origen →
-            </a>
-          </div>
-        )}
-      </div>
-
-      <!-- Right Column: Product Info & Purchase Island Slot -->
-      <div class="lg:col-span-5 flex flex-col gap-8">
+      <!-- Main Product Canvas: Bag on Left, Purchase Card on Right -->
+      <main class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-start">
         
-        <!-- Header Info -->
-        <div class="flex flex-col gap-3">
-          {product.brand && (
-            <span class="font-condensed text-sm font-bold uppercase tracking-wider text-brand-green">
-              {product.brand.name}
-            </span>
-          )}
-          <h1 class="text-4xl md:text-5xl font-black tracking-tight text-foreground leading-[1.1]">
-            {product.title}
-          </h1>
-          {tastingNotes && (
-            <p class="text-lg font-medium text-brand-purple italic">
-              «{tastingNotes}»
-            </p>
-          )}
-        </div>
+        <!-- Left: Floating Product Packaging with Shadow and SCA Badge -->
+        <div class="lg:col-span-6 xl:col-span-7 flex flex-col items-center gap-6">
+          <div class="relative flex justify-center self-stretch">
+            <div class="flota py-4">
+              <img
+                src={mainImage}
+                alt={mainImageAlt}
+                class="block h-[420px] sm:h-[540px] md:h-[620px] max-w-full object-contain filter drop-shadow-[0_30px_24px_rgba(27,21,16,0.3)]"
+              />
+            </div>
 
-        <!-- Live Purchase Island (F2 client:load island) -->
-        <div id="product-purchase-island-container" class="flex flex-col">
-          <ProductPurchaseIsland
-            client:load
-            productSlug={product.slug}
-            variants={product.variants}
-          />
-        </div>
-
-        <!-- Description -->
-        {product.description && (
-          <div class="prose prose-stone border-t border-foreground/10 pt-6">
-            <h4 class="font-condensed text-base font-bold uppercase tracking-wider text-foreground mb-2">
-              Descripción
-            </h4>
-            <p class="text-base text-foreground/80 leading-relaxed">
-              {product.description}
-            </p>
+            <!-- SCA Score Stamp Medallion (when cuppingScore exists) -->
+            {cuppingScore && (
+              <div
+                class="absolute left-2 sm:left-6 top-4 sm:top-6 flex flex-col items-center justify-center w-[100px] sm:w-[124px] h-[100px] sm:h-[124px] rounded-full bg-brand-green text-primary-foreground text-center -rotate-10 shadow-lg"
+                style="outline: 2px dashed #F2B632; outline-offset: -9px;"
+              >
+                <span class="font-condensed text-xs sm:text-sm font-bold tracking-widest uppercase text-primary-foreground">
+                  Puntaje SCA
+                </span>
+                <span class="text-3xl sm:text-[44px] font-extrabold leading-none text-brand-yellow">
+                  {cuppingScore}
+                </span>
+              </div>
+            )}
           </div>
-        )}
 
-        <!-- Technical Attributes Table (M-Detalle specs list) -->
-        {nonVariantAttributes.length > 0 && (
-          <div class="border-t border-foreground/10 pt-6 flex flex-col gap-3">
-            <h4 class="font-condensed text-base font-bold uppercase tracking-wider text-foreground">
-              Ficha Técnica
-            </h4>
-            <dl class="divide-y divide-foreground/10 text-sm">
-              {nonVariantAttributes.map((attr) => (
-                <div class="py-2.5 flex justify-between items-center gap-4">
-                  <dt class="font-medium text-foreground/70">{attr.label}</dt>
-                  <dd class="font-bold text-foreground text-right">
-                    {attr.display_value} {attr.unit || ''}
-                  </dd>
+          <!-- Thumbnail Gallery -->
+          {product.images.length > 1 && (
+            <div class="flex flex-wrap justify-center gap-3">
+              {product.images.map((img, index) => (
+                <div
+                  class={`w-[84px] h-[84px] sm:w-[92px] sm:h-[92px] p-1.5 rounded-2xl bg-card overflow-hidden ${
+                    index === 0 ? 'border-2 border-foreground' : 'border-2 border-transparent'
+                  }`}
+                >
+                  <img
+                    src={img.url}
+                    alt={img.alt_text}
+                    class="w-full h-full object-contain"
+                  />
                 </div>
               ))}
-            </dl>
+            </div>
+          )}
+        </div>
+
+        <!-- Right: Crisp White Floating Purchase Card (#FFFFFF, rounded-20px, p-36px) -->
+        <div class="lg:col-span-6 xl:col-span-5 bg-card text-foreground rounded-[20px] p-6 sm:p-9 shadow-sm flex flex-col gap-6">
+          
+          <!-- Category Eyebrow & Status Header -->
+          <div class="flex flex-col gap-3">
+            <div class="flex flex-wrap items-center justify-between gap-2.5">
+              <span class={`font-condensed text-base sm:text-lg font-bold tracking-wider uppercase ${isCoffee ? 'text-brand-green' : 'text-brand-purple'}`}>
+                {eyebrow}
+              </span>
+            </div>
+
+            <h1 class="text-4xl sm:text-5xl lg:text-[56px] font-black leading-tight tracking-tight text-foreground">
+              {product.title}
+            </h1>
+
+            {subtitle && (
+              <p class="text-base sm:text-lg font-semibold text-foreground/90 leading-snug">
+                {subtitle}
+              </p>
+            )}
+
+            {product.origin && (
+              <a
+                href={`/origenes/${product.origin.slug}`}
+                class="self-start inline-flex items-center gap-2 min-h-[44px] text-sm sm:text-base font-bold uppercase underline decoration-2 underline-offset-4 hover:text-accent transition-colors"
+              >
+                Conoce la historia de esta finca <span aria-hidden="true">→</span>
+              </a>
+            )}
+          </div>
+
+          <!-- Tasting Notes Chips -->
+          {tastingNotesList.length > 0 && (
+            <div class="flex flex-col gap-2.5">
+              <span class="text-sm sm:text-base font-bold text-foreground">Notas de cata</span>
+              <div class="flex flex-wrap items-center gap-2">
+                {tastingNotesList.map((note) => (
+                  <span class="px-3.5 py-1.5 rounded-lg bg-secondary text-foreground text-sm sm:text-base font-semibold">
+                    {note}
+                  </span>
+                ))}
+              </div>
+            </div>
+          )}
+
+          <!-- Interactive Purchase & Live Price Island -->
+          <div id="product-purchase-island-container">
+            <ProductPurchaseIsland
+              client:load
+              productSlug={product.slug}
+              variants={product.variants}
+            />
+          </div>
+
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Ficha del Lote Section (matching M-Detalle.dc.html <section aria-labelledby="ficha-m">) -->
+  <section aria-labelledby="ficha-lote-title" class="py-16 sm:py-24">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 flex flex-col gap-8 sm:gap-10">
+      <h2 id="ficha-lote-title" class="text-3xl sm:text-5xl font-extrabold tracking-tight text-foreground">
+        Ficha del lote
+      </h2>
+
+      <dl class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {origin?.department && (
+          <div class="flex flex-col gap-1.5 p-5 sm:p-6 bg-card rounded-[20px] border border-foreground/5 shadow-sm">
+            <dt class="font-condensed text-sm sm:text-base font-bold tracking-wider uppercase text-muted-foreground">
+              Origen
+            </dt>
+            <dd class="m-0 text-xl sm:text-2xl font-extrabold leading-tight text-foreground">
+              {origin.department}, Colombia
+            </dd>
           </div>
         )}
 
-      </div>
+        {origin?.altitude_min_masl && origin?.altitude_max_masl && (
+          <div class="flex flex-col gap-1.5 p-5 sm:p-6 bg-card rounded-[20px] border border-foreground/5 shadow-sm">
+            <dt class="font-condensed text-sm sm:text-base font-bold tracking-wider uppercase text-muted-foreground">
+              Altura
+            </dt>
+            <dd class="m-0 text-xl sm:text-2xl font-extrabold leading-tight text-foreground">
+              {origin.altitude_min_masl.toLocaleString('es-CO')}–{origin.altitude_max_masl.toLocaleString('es-CO')} m s. n. m.
+            </dd>
+          </div>
+        )}
+
+        {product.origin?.producer_name && (
+          <div class="flex flex-col gap-1.5 p-5 sm:p-6 bg-card rounded-[20px] border border-foreground/5 shadow-sm">
+            <dt class="font-condensed text-sm sm:text-base font-bold tracking-wider uppercase text-muted-foreground">
+              Productora
+            </dt>
+            <dd class="m-0 text-xl sm:text-2xl font-extrabold leading-tight text-foreground">
+              {product.origin.producer_name}
+            </dd>
+          </div>
+        )}
+
+        {species && (
+          <div class="flex flex-col gap-1.5 p-5 sm:p-6 bg-card rounded-[20px] border border-foreground/5 shadow-sm">
+            <dt class="font-condensed text-sm sm:text-base font-bold tracking-wider uppercase text-muted-foreground">
+              Especie
+            </dt>
+            <dd class="m-0 text-xl sm:text-2xl font-extrabold leading-tight text-foreground">
+              {species}
+            </dd>
+          </div>
+        )}
+
+        {varieties && (
+          <div class="flex flex-col gap-1.5 p-5 sm:p-6 bg-card rounded-[20px] border border-foreground/5 shadow-sm">
+            <dt class="font-condensed text-sm sm:text-base font-bold tracking-wider uppercase text-muted-foreground">
+              Variedad
+            </dt>
+            <dd class="m-0 text-xl sm:text-2xl font-extrabold leading-tight text-foreground">
+              {varieties}
+            </dd>
+          </div>
+        )}
+
+        {process && (
+          <div class="flex flex-col gap-1.5 p-5 sm:p-6 bg-card rounded-[20px] border border-foreground/5 shadow-sm">
+            <dt class="font-condensed text-sm sm:text-base font-bold tracking-wider uppercase text-muted-foreground">
+              Proceso
+            </dt>
+            <dd class="m-0 text-xl sm:text-2xl font-extrabold leading-tight text-foreground">
+              {process}
+            </dd>
+          </div>
+        )}
+
+        <!-- Coffee Roast Indicator Card -->
+        {roastLevel && (
+          <div class="flex flex-col gap-2.5 p-5 sm:p-6 bg-card rounded-[20px] border border-foreground/5 shadow-sm">
+            <dt class="font-condensed text-sm sm:text-base font-bold tracking-wider uppercase text-muted-foreground">
+              Tostión
+            </dt>
+            <dd class="m-0 flex flex-col gap-2">
+              <span class="text-xl sm:text-2xl font-extrabold leading-tight text-foreground">
+                {roastLevel}
+              </span>
+              <div class="flex items-center gap-2.5 text-xs sm:text-sm font-semibold uppercase text-foreground">
+                <span>Clara</span>
+                <div class="relative flex-1 h-6">
+                  <span class="absolute left-0 right-0 top-[11px] h-[2px] bg-foreground"></span>
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    class="absolute top-0 -ml-3"
+                    style={`left: ${roastPercent};`}
+                    aria-hidden="true"
+                  >
+                    <ellipse cx="12" cy="12" rx="6.5" ry="9.5" transform="rotate(35 12 12)" fill="#6B3E1E"></ellipse>
+                    <path d="M8 17C13 14 11 10 16 7" stroke="#F3E6C4" stroke-width="1.6" fill="none" stroke-linecap="round"></path>
+                  </svg>
+                </div>
+                <span>Oscura</span>
+              </div>
+            </dd>
+          </div>
+        )}
+
+        <!-- Cacao Specific Cards -->
+        {geneticGroup && (
+          <div class="flex flex-col gap-1.5 p-5 sm:p-6 bg-card rounded-[20px] border border-foreground/5 shadow-sm">
+            <dt class="font-condensed text-sm sm:text-base font-bold tracking-wider uppercase text-muted-foreground">
+              Grupo genético
+            </dt>
+            <dd class="m-0 text-xl sm:text-2xl font-extrabold leading-tight text-foreground">
+              {geneticGroup}
+            </dd>
+          </div>
+        )}
+
+        {fermentation && (
+          <div class="flex flex-col gap-1.5 p-5 sm:p-6 bg-card rounded-[20px] border border-foreground/5 shadow-sm">
+            <dt class="font-condensed text-sm sm:text-base font-bold tracking-wider uppercase text-muted-foreground">
+              Fermentación
+            </dt>
+            <dd class="m-0 text-xl sm:text-2xl font-extrabold leading-tight text-foreground">
+              {fermentation}
+            </dd>
+          </div>
+        )}
+
+        {cacaoPercentage && (
+          <div class="flex flex-col gap-1.5 p-5 sm:p-6 bg-card rounded-[20px] border border-foreground/5 shadow-sm">
+            <dt class="font-condensed text-sm sm:text-base font-bold tracking-wider uppercase text-muted-foreground">
+              Porcentaje Cacao
+            </dt>
+            <dd class="m-0 text-xl sm:text-2xl font-extrabold leading-tight text-foreground">
+              {cacaoPercentage}%
+            </dd>
+          </div>
+        )}
+
+        <!-- SCA Cupping Score Card Highlight -->
+        {cuppingScore && (
+          <div class="flex flex-col gap-1.5 p-5 sm:p-6 bg-brand-green text-primary-foreground rounded-[20px] shadow-sm">
+            <dt class="font-condensed text-sm sm:text-base font-bold tracking-wider uppercase text-brand-yellow">
+              Puntaje SCA
+            </dt>
+            <dd class="m-0 text-4xl sm:text-6xl font-extrabold leading-none text-primary-foreground">
+              {cuppingScore}
+            </dd>
+          </div>
+        )}
+      </dl>
     </div>
-  </main>
+  </section>
+
+  <!-- Full-Width Origin Feature Section (#0F3B2C Dark Green) -->
+  {product.origin && (
+    <section
+      id="origen"
+      aria-labelledby="origen-detail-heading"
+      class="bg-brand-green text-primary-foreground py-16 sm:py-24"
+    >
+      <div class="max-w-[1320px] mx-auto px-6 md:px-12 flex flex-wrap items-center gap-10 lg:gap-16">
+        <div class="flex-1 min-w-[280px] sm:min-w-[420px]">
+          <img
+            src="/images/photo-coffee-cherries.jpg"
+            alt={`Paisaje de la finca ${product.origin.name}`}
+            class="block w-full aspect-[5/4] object-cover rounded-[20px]"
+          />
+        </div>
+        <div class="flex-1 min-w-[280px] sm:min-w-[420px] flex flex-col items-start gap-5">
+          <span class="font-condensed text-base sm:text-lg font-bold tracking-widest uppercase text-brand-yellow">
+            Origen · {origin?.department || product.origin.name}
+          </span>
+          <h2 id="origen-detail-heading" class="text-3xl sm:text-5xl font-extrabold leading-tight tracking-tight">
+            Nuestras montañas también cuentan historias.
+          </h2>
+          <p class="max-w-lg text-base sm:text-lg leading-relaxed text-primary-foreground/90">
+            {origin?.story || `Producido con dedicación por ${product.origin.producer_name}. Cuidado artesanal desde el cultivo hasta la cosecha.`}
+          </p>
+          <a
+            href={`/origenes/${product.origin.slug}`}
+            class="inline-flex items-center justify-center min-h-[56px] px-7 rounded-xl bg-background text-foreground text-base font-bold tracking-wide uppercase hover:bg-brand-yellow transition-colors"
+          >
+            Conocer la historia de la finca
+          </a>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- "También te puede gustar" Section (matching M-Detalle.dc.html) -->
+  {relatedProducts.length > 0 && (
+    <section aria-labelledby="mas-productos-heading" class="py-16 sm:py-24">
+      <div class="max-w-[1320px] mx-auto px-6 md:px-12 flex flex-col gap-12">
+        <h2 id="mas-productos-heading" class="text-3xl sm:text-5xl font-extrabold tracking-tight text-center text-foreground">
+          También te puede gustar
+        </h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-x-8 sm:gap-y-12">
+          {relatedProducts.map((relProduct) => (
+            <ProductCard
+              product={relProduct}
+              cardId={`rel-${relProduct.slug}`}
+              categorySlug={relProduct.categories[0]?.slug}
+            />
+          ))}
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Live price island for the related cards -->
+  <div class="hidden">
+    <ListingPriceIsland client:visible productSlugs={relatedProducts.map((p) => p.slug)} />
+  </div>
 </Layout>

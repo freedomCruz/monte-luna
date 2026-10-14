@@ -138,104 +138,99 @@ export function ProductPurchaseIsland({
   return (
     <div className="flex flex-col gap-6" data-testid="product-purchase-island">
       {/* Live Pricing and Roast Date Display Area */}
-      <div className="p-6 rounded-2xl bg-background border border-foreground/10 flex flex-col gap-3 min-h-[120px] justify-center">
-        {loading ? (
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center gap-3">
-              <span className="w-2.5 h-2.5 rounded-full bg-brand-yellow animate-pulse"></span>
-              <span className="text-sm font-semibold text-muted-foreground">
-                Cargando disponibilidad y precio...
-              </span>
-            </div>
-            <div className="h-4 bg-secondary rounded-md animate-pulse w-48"></div>
-          </div>
-        ) : error ? (
-          <div
-            role="alert"
-            className="flex items-center gap-3 text-destructive p-3 rounded-xl bg-card border border-destructive/30"
+      {loading ? (
+        <div className="py-4 border-y-2 border-foreground flex items-center gap-3">
+          <span className="w-2.5 h-2.5 rounded-full bg-brand-yellow animate-pulse"></span>
+          <span className="text-sm font-semibold text-muted-foreground">
+            Cargando disponibilidad y precio...
+          </span>
+        </div>
+      ) : error ? (
+        <div
+          role="alert"
+          className="flex items-center gap-3 text-destructive p-3 rounded-xl bg-card border border-destructive/30"
+        >
+          <svg
+            className="w-5 h-5 shrink-0"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
           >
-            <svg
-              className="w-5 h-5 shrink-0"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="10" />
-              <line x1="12" y1="8" x2="12" y2="12" />
-              <line x1="12" y1="16" x2="12.01" y2="16" />
-            </svg>
-            <span className="text-sm font-medium">
-              No fue posible cargar el precio o disponibilidad. Intenta recargar la página.
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span className="text-sm font-medium">
+            No fue posible cargar el precio o disponibilidad. Intenta recargar la página.
+          </span>
+        </div>
+      ) : currentVariant && currentAvailability ? (
+        <div className="flex flex-col gap-5">
+          {/* Price line with 2px solid foreground borders and savings badge (M-Detalle original) */}
+          <div className="flex flex-wrap items-center gap-2 sm:gap-3.5 py-5 border-y-2 border-foreground">
+            <span className="text-4xl sm:text-[44px] font-extrabold leading-none tracking-tight text-foreground font-sans">
+              {formatMoneyCop(currentAvailability.price_amount)}
             </span>
+            {currentAvailability.compare_at_price_amount &&
+              currentAvailability.compare_at_price_amount > currentAvailability.price_amount && (
+                <>
+                  <s
+                    aria-label={`Precio anterior: ${formatMoneyCop(
+                      currentAvailability.compare_at_price_amount
+                    )}`}
+                    className="text-lg sm:text-xl font-medium text-muted-foreground"
+                  >
+                    {formatMoneyCop(currentAvailability.compare_at_price_amount)}
+                  </s>
+                  <span className="px-3 py-1 rounded-lg bg-accent text-white text-sm font-bold">
+                    Ahorras{' '}
+                    {formatMoneyCop(
+                      currentAvailability.compare_at_price_amount -
+                        currentAvailability.price_amount
+                    )}
+                  </span>
+                </>
+              )}
           </div>
-        ) : currentVariant && currentAvailability ? (
-          <div className="flex flex-col gap-3">
-            {/* Price line with savings badge */}
-            <div className="flex flex-wrap items-baseline gap-3">
-              <span className="text-4xl font-extrabold tracking-tight text-foreground font-sans">
-                {formatMoneyCop(currentAvailability.price_amount)}
-              </span>
-              {currentAvailability.compare_at_price_amount &&
-                currentAvailability.compare_at_price_amount > currentAvailability.price_amount && (
-                  <>
-                    <s
-                      aria-label={`Precio anterior: ${formatMoneyCop(
-                        currentAvailability.compare_at_price_amount
-                      )}`}
-                      className="text-lg font-medium text-muted-foreground"
-                    >
-                      {formatMoneyCop(currentAvailability.compare_at_price_amount)}
-                    </s>
-                    <span className="px-2.5 py-1 rounded-lg bg-accent text-primary-foreground text-xs font-bold uppercase tracking-wider">
-                      Ahorras{' '}
-                      {formatMoneyCop(
-                        currentAvailability.compare_at_price_amount -
-                          currentAvailability.price_amount
-                      )}
-                    </span>
-                  </>
-                )}
-            </div>
 
-            {/* Roast Date / Lot Production Date */}
-            {currentAvailability.production_date && (
-              <div className="flex items-center gap-3 p-3 bg-secondary rounded-xl text-sm">
-                <svg
-                  className="w-5 h-5 text-foreground shrink-0"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  aria-hidden="true"
-                >
-                  <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-                  <line x1="16" y1="2" x2="16" y2="6"></line>
-                  <line x1="8" y1="2" x2="8" y2="6"></line>
-                  <line x1="3" y1="10" x2="21" y2="10"></line>
-                </svg>
-                <div className="flex flex-col">
-                  <span className="font-bold text-foreground">
-                    Tostado el {formatRoastDateSpanish(currentAvailability.production_date)}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    Lote más antiguo con existencias disponibles para este pedido
-                  </span>
-                </div>
+          {/* Roast Date / Production Date in Warm Arena Box */}
+          {currentAvailability.production_date && (
+            <div className="flex items-center gap-3.5 p-4 bg-secondary rounded-2xl">
+              <svg
+                className="w-6 h-6 text-foreground shrink-0"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                aria-hidden="true"
+              >
+                <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+                <line x1="16" y1="2" x2="16" y2="6"></line>
+                <line x1="8" y1="2" x2="8" y2="6"></line>
+                <line x1="3" y1="10" x2="21" y2="10"></line>
+              </svg>
+              <div className="flex flex-col gap-0.5">
+                <span className="text-[17px] font-extrabold text-foreground leading-tight">
+                  Tostado el {formatRoastDateSpanish(currentAvailability.production_date)}
+                </span>
+                <span className="text-[15px] text-muted-foreground leading-tight">
+                  Lote más antiguo con existencias disponibles para este pedido
+                </span>
               </div>
-            )}
-          </div>
-        ) : (
-          <div className="text-sm text-muted-foreground italic">
-            Combinación no disponible
-          </div>
-        )}
-      </div>
+            </div>
+          )}
+        </div>
+      ) : (
+        <div className="py-4 border-y-2 border-foreground text-sm text-muted-foreground italic">
+          Combinación no disponible
+        </div>
+      )}
 
       {/* Option Matrix / Chips per axis */}
       {optionAxes.map((axis) => {

@@ -30,4 +30,16 @@ test.describe('Screenshots for Visual Verification', () => {
       fullPage: true,
     });
   });
+
+  test('capture /productos/finca-el-mirador visual evidence', async ({ page }, testInfo) => {
+    await page.goto('/productos/finca-el-mirador');
+    await page.waitForSelector('#product-purchase-island-container');
+    await page.waitForLoadState('networkidle');
+
+    const project = testInfo.project.name;
+    await page.screenshot({
+      path: `test-results/screenshots/detalle-${project}.png`,
+      fullPage: true,
+    });
+  });
 });
