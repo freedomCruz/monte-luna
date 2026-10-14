@@ -14,6 +14,9 @@ env:
     sh: bash scripts/setup-worktree.sh --get FRONTEND_PORT
   # Local development only; the password must be URL-safe.
   DATABASE_URL: "postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@127.0.0.1:{{.POSTGRES_PORT}}/{{.WORKTREE_DB}}?sslmode=disable"
+  # Local development only: demo media keys (images/...) resolve to files that the
+  # Astro server serves from frontend/public. Production uses Cloudflare R2.
+  MEDIA_BASE_URL: "http://127.0.0.1:{{.FRONTEND_PORT}}/"
 
 tasks:
   setup:
@@ -46,6 +49,14 @@ tasks:
     cmds:
       - npm run dev -- --host 127.0.0.1 --port "$FRONTEND_PORT"
 
+  frontend:build:api:
+    desc: Build the static storefront from this worktree's running API (start task backend:dev first)
+    dir: frontend
+    env:
+      CATALOG_API_URL: "http://{{.API_ADDR}}"
+    cmds:
+      - npm run build
+
   backend:migrate:
     desc: Apply embedded database migrations to this worktree's database
     dir: backend
@@ -70,17 +81,19 @@ tasks:
       - go tool govulncheck ./...
 
   frontend:verify:
-    desc: Clean-install and verify npm dependencies, generated API types, tests, and static build
+    desc: Clean-install and verify npm dependencies, generated API types, tests, static build, and end-to-end checks
     dir: frontend
     cmds:
       - npm ci --no-fund
       - npm audit signatures
       - npm audit --audit-level=high
       - npm run types:generate
-      - git diff --exit-code -- src/generated/platform.ts
+      - git diff --exit-code -- src/generated
       - npm run check
       - npm run test
       - npm run build
+      # Playwright needs Chromium once per machine: npx playwright install chromium
+      - npm run test:e2e
 
   verify:
     desc: Run all local verification gates serially (backend then frontend)
