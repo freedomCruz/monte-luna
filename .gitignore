@@ -10,6 +10,8 @@
 node_modules/
 frontend/dist/
 frontend/.astro/
+frontend/test-results/
+frontend/playwright-report/
 
 # Go build output
 backend/bin/

@@ -17,7 +17,7 @@ export async function mockAvailabilitiesRoute(
     
     // Filter items to requested slugs if query parameters exist
     const filteredItems = requestedSlugs.length > 0
-      ? baseData.items.filter((item) => requestedSlugs.includes(item.product_slug))
+      ? baseData.items.filter((item: { product_slug: string }) => requestedSlugs.includes(item.product_slug))
       : baseData.items;
 
     await route.fulfill({

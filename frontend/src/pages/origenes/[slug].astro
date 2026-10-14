@@ -43,38 +43,38 @@ const heroImageAlt = origin.images[0]?.alt_text || origin.name;
 
 <Layout title={`${origin.name} · Origen Monteluna`} description={origin.story || `Origen ${origin.name}, cultivado por ${origin.producer_name}.`}>
   <!-- Dark Hero Section per M-Origen design canvas -->
-  <section class="bg-brand-forest text-brand-sand overflow-hidden">
+  <section class="bg-brand-green text-primary-foreground overflow-hidden">
     <div class="max-w-[1320px] mx-auto px-6 md:px-12 pt-8 pb-16 md:pb-24 flex flex-col gap-8">
       
       <!-- Breadcrumb -->
-      <nav aria-label="Ruta de navegación" class="flex flex-wrap items-center gap-2 text-sm font-semibold text-brand-sand/70">
-        <a href="/" class="hover:text-brand-sand">Inicio</a>
+      <nav aria-label="Ruta de navegación" class="flex flex-wrap items-center gap-2 text-sm font-semibold text-primary-foreground/70">
+        <a href="/" class="hover:text-primary-foreground">Inicio</a>
         <span aria-hidden="true">/</span>
-        <a href="/tienda" class="hover:text-brand-sand">Tienda</a>
+        <a href="/tienda" class="hover:text-primary-foreground">Tienda</a>
         <span aria-hidden="true">/</span>
-        <span class="text-brand-sand">{origin.name}</span>
+        <span class="text-primary-foreground">{origin.name}</span>
       </nav>
 
       <!-- Grid: Copy & Photo -->
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
         <div class="lg:col-span-7 flex flex-col items-start gap-6">
-          <span class="font-condensed text-base md:text-lg font-bold tracking-widest uppercase text-brand-sand">
+          <span class="font-condensed text-base md:text-lg font-bold tracking-widest uppercase text-brand-yellow">
             Origen y Terroir Colombiano
           </span>
-          <h1 class="text-4xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.95] text-brand-sand">
+          <h1 class="text-4xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.95] text-primary-foreground">
             {origin.name}
           </h1>
-          <p class="text-xl md:text-2xl font-extrabold text-brand-sand">
+          <p class="text-xl md:text-2xl font-extrabold text-brand-yellow">
             Nuestras montañas también cuentan historias.
           </p>
-          <p class="text-base md:text-lg text-brand-sand/90 leading-relaxed max-w-xl">
-            Producido por <strong class="text-brand-sand font-bold">{origin.producer_name}</strong> en {locationText}. Cada cosecha es el fruto del cuidado manual y del respeto profundo por el suelo.
+          <p class="text-base md:text-lg text-primary-foreground/90 leading-relaxed max-w-xl">
+            Producido por <strong class="text-primary-foreground font-bold">{origin.producer_name}</strong> en {locationText}. Cada cosecha es el fruto del cuidado manual y del respeto profundo por el suelo.
           </p>
           
           <div class="flex flex-wrap gap-4 pt-2">
             <a
               href="#productos"
-              class="px-6 py-3.5 rounded-xl bg-brand-sand text-foreground font-bold text-sm uppercase tracking-wider hover:bg-brand-sand/90 transition-colors"
+              class="px-6 py-3.5 rounded-xl bg-primary-foreground text-foreground font-bold text-sm uppercase tracking-wider hover:bg-primary-foreground/90 transition-colors"
             >
               Ver productos ({products.length})
             </a>
@@ -90,7 +90,7 @@ const heroImageAlt = origin.images[0]?.alt_text || origin.name;
         </div>
 
         <div class="lg:col-span-5 relative flex justify-center">
-          <div class="relative w-full max-w-[480px] aspect-[5/5.4] rounded-3xl overflow-hidden shadow-2xl border-4 border-brand-sand/10">
+          <div class="relative w-full max-w-[480px] aspect-[5/5.4] rounded-3xl overflow-hidden shadow-2xl border-4 border-primary-foreground/10">
             <img
               src={heroImage}
               alt={heroImageAlt}
@@ -100,7 +100,7 @@ const heroImageAlt = origin.images[0]?.alt_text || origin.name;
 
           <!-- Altitude Badge if available -->
           {origin.altitude_min_masl && (
-            <div class="absolute -top-4 -right-4 sm:-right-6 w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-brand-yellow text-foreground flex flex-col items-center justify-center p-2 text-center shadow-xl rotate-6 border-2 border-brand-forest">
+            <div class="absolute -top-4 -right-4 sm:-right-6 w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-brand-yellow text-foreground flex flex-col items-center justify-center p-2 text-center shadow-xl rotate-6 border-2 border-brand-green">
               <span class="font-condensed text-xs font-bold uppercase tracking-wider">Altura</span>
               <span class="font-black text-xl sm:text-2xl leading-none my-0.5">
                 {origin.altitude_min_masl}
@@ -160,7 +160,7 @@ const heroImageAlt = origin.images[0]?.alt_text || origin.name;
     <section id="historia" class="py-20 md:py-28 max-w-[1320px] mx-auto px-6 md:px-12">
       <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
         <div class="lg:col-span-5 flex flex-col gap-3">
-          <span class="font-condensed text-sm font-bold uppercase tracking-wider text-brand-forest">
+          <span class="font-condensed text-sm font-bold uppercase tracking-wider text-brand-green">
             La Historia
           </span>
           <h2 class="text-3xl md:text-5xl font-black tracking-tight text-foreground">
@@ -181,20 +181,20 @@ const heroImageAlt = origin.images[0]?.alt_text || origin.name;
     <div class="max-w-[1320px] mx-auto px-6 md:px-12 flex flex-col gap-10">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div>
-          <span class="font-condensed text-xs font-bold uppercase tracking-wider text-brand-burgundy">
+          <span class="font-condensed text-xs font-bold uppercase tracking-wider text-brand-purple">
             Cosecha Disponible
           </span>
           <h2 class="text-3xl md:text-4xl font-black text-foreground">
             Productos de {origin.name}
           </h2>
         </div>
-        <a href="/tienda" class="font-condensed text-sm font-bold uppercase tracking-wider text-foreground hover:text-brand-burgundy transition-colors">
+        <a href="/tienda" class="font-condensed text-sm font-bold uppercase tracking-wider text-foreground hover:text-brand-purple transition-colors">
           Ver todo el catálogo →
         </a>
       </div>
 
       {products.length === 0 ? (
-        <div class="p-12 text-center rounded-2xl bg-brand-sand/50 border border-foreground/10">
+        <div class="p-12 text-center rounded-2xl bg-secondary/50 border border-foreground/10">
           <p class="text-base text-foreground/70">
             No hay productos disponibles actualmente de este origen.
           </p>
@@ -207,7 +207,7 @@ const heroImageAlt = origin.images[0]?.alt_text || origin.name;
 
             return (
               <article class="bg-background rounded-2xl overflow-hidden border border-foreground/10 flex flex-col hover:shadow-lg transition-shadow">
-                <a href={`/productos/${product.slug}`} class="block aspect-[4/3] overflow-hidden bg-brand-sand/50">
+                <a href={`/productos/${product.slug}`} class="block aspect-[4/3] overflow-hidden bg-secondary/50">
                   <img
                     src={coverImage}
                     alt={coverAlt}
@@ -216,7 +216,7 @@ const heroImageAlt = origin.images[0]?.alt_text || origin.name;
                   />
                 </a>
                 <div class="p-6 flex flex-col flex-1 gap-4">
-                  <h3 class="text-xl font-black text-foreground hover:text-brand-burgundy transition-colors">
+                  <h3 class="text-xl font-black text-foreground hover:text-brand-purple transition-colors">
                     <a href={`/productos/${product.slug}`}>{product.title}</a>
                   </h3>
                   {product.description && (

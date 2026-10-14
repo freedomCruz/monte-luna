@@ -33,7 +33,7 @@ const mainImageAlt = product.images[0]?.alt_text || product.title;
 
 <Layout title={`${product.title} · Monteluna`} description={product.description || undefined}>
   <!-- Breadcrumb Navigation -->
-  <nav aria-label="Ruta de navegación" class="bg-brand-sand/50 border-b border-foreground/10 py-3.5">
+  <nav aria-label="Ruta de navegación" class="bg-secondary/50 border-b border-foreground/10 py-3.5">
     <div class="max-w-[1320px] mx-auto px-6 md:px-12 flex flex-wrap items-center gap-2 text-sm font-semibold text-foreground/70">
       <a href="/" class="hover:text-foreground">Inicio</a>
       <span aria-hidden="true">/</span>
@@ -64,7 +64,7 @@ const mainImageAlt = product.images[0]?.alt_text || product.title;
             class="w-full h-full object-cover object-center"
           />
           {product.product_type && (
-            <span class="absolute top-6 left-6 bg-foreground text-brand-sand font-condensed text-sm font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-xl shadow-md">
+            <span class="absolute top-6 left-6 bg-foreground text-primary-foreground font-condensed text-sm font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-xl shadow-md">
               {product.product_type.name}
             </span>
           )}
@@ -88,9 +88,9 @@ const mainImageAlt = product.images[0]?.alt_text || product.title;
 
         <!-- Origin Feature Card (if product has origin) -->
         {product.origin && (
-          <div class="bg-brand-sand rounded-3xl p-8 border border-foreground/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mt-4">
+          <div class="bg-secondary rounded-3xl p-8 border border-foreground/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mt-4">
             <div class="flex flex-col gap-1">
-              <span class="font-condensed text-xs font-bold uppercase tracking-wider text-brand-burgundy">
+              <span class="font-condensed text-xs font-bold uppercase tracking-wider text-brand-purple">
                 Finca & Origen
               </span>
               <h3 class="text-2xl font-black text-foreground">
@@ -102,7 +102,7 @@ const mainImageAlt = product.images[0]?.alt_text || product.title;
             </div>
             <a
               href={`/origenes/${product.origin.slug}`}
-              class="font-condensed text-sm font-bold uppercase tracking-wider px-5 py-3 rounded-xl bg-foreground text-brand-sand hover:bg-brand-burgundy transition-colors shrink-0"
+              class="font-condensed text-sm font-bold uppercase tracking-wider px-5 py-3 rounded-xl bg-foreground text-primary-foreground hover:bg-brand-purple transition-colors shrink-0"
             >
               Conocer el origen →
             </a>
@@ -116,7 +116,7 @@ const mainImageAlt = product.images[0]?.alt_text || product.title;
         <!-- Header Info -->
         <div class="flex flex-col gap-3">
           {product.brand && (
-            <span class="font-condensed text-sm font-bold uppercase tracking-wider text-brand-forest">
+            <span class="font-condensed text-sm font-bold uppercase tracking-wider text-brand-green">
               {product.brand.name}
             </span>
           )}
@@ -124,7 +124,7 @@ const mainImageAlt = product.images[0]?.alt_text || product.title;
             {product.title}
           </h1>
           {tastingNotes && (
-            <p class="text-lg font-medium text-brand-burgundy italic">
+            <p class="text-lg font-medium text-brand-purple italic">
               «{tastingNotes}»
             </p>
           )}

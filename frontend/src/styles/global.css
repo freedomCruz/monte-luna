@@ -22,7 +22,6 @@
   --dashed: #a8997c;
   --success: #1e6b45;
   --destructive: #9b1c1c;
-  --soft-dark: #e9ddc3;
 }
 
 @theme inline {
@@ -46,7 +45,6 @@
   --color-dashed: var(--dashed);
   --color-success: var(--success);
   --color-destructive: var(--destructive);
-  --color-soft-dark: var(--soft-dark);
   --font-sans: "Barlow", sans-serif;
   --font-condensed: "Barlow Condensed", sans-serif;
   --radius-sm: 8px;
