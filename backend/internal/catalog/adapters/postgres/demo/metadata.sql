@@ -4,7 +4,7 @@ INSERT INTO catalog.product_types (name, slug) VALUES
 ON CONFLICT (slug) DO NOTHING;
 
 INSERT INTO catalog.brands (name, slug, description, logo_storage_key, website_url, status)
-VALUES ('Monteluna', 'monteluna', 'Marca comercial demo', 'demo/brands/monteluna.png', NULL, 'active')
+VALUES ('Monteluna', 'monteluna', 'Marca comercial demo', NULL, NULL, 'active')
 ON CONFLICT (slug) DO NOTHING;
 
 INSERT INTO catalog.origins
@@ -20,8 +20,8 @@ ON CONFLICT (slug) DO NOTHING;
 INSERT INTO catalog.origin_images (origin_id, storage_key, alt_text, position)
 SELECT o.id, d.storage_key, d.alt_text, 0
 FROM (VALUES
-  ('finca-el-mirador', 'demo/origins/finca-el-mirador.jpg', 'Paisaje de finca cafetera demo'),
-  ('demo-cacao-origin', 'demo/origins/cacao.jpg', 'Paisaje de finca cacaotera demo')
+  ('finca-el-mirador', 'images/photo-coffee-cherries.jpg', 'Paisaje de finca cafetera demo'),
+  ('demo-cacao-origin', 'images/photo-cacao-pods-trunk.jpg', 'Paisaje de finca cacaotera demo')
 ) AS d(slug, storage_key, alt_text)
 JOIN catalog.origins o ON o.slug=d.slug
 WHERE NOT EXISTS (SELECT 1 FROM catalog.origin_images i WHERE i.origin_id=o.id AND i.storage_key=d.storage_key);

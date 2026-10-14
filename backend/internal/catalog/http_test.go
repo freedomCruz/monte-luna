@@ -151,8 +151,8 @@ func TestEveryCatalogEndpointAndFilters(t *testing.T) {
 		}
 	}
 	images := product["images"].([]any)
-	if images[0].(map[string]any)["url"] != "https://media.example/store/demo/products/finca-el-mirador.jpg" {
-		t.Error("media URL not resolved")
+	if images[0].(map[string]any)["url"] != "https://media.example/store/images/packaging-finca-el-mirador.webp" {
+		t.Errorf("media URL not resolved, got %v", images[0].(map[string]any)["url"])
 	}
 	if images[0].(map[string]any)["alt_text"] != "Empaque de café Finca El Mirador demo" {
 		t.Errorf("image alt_text=%v, want Empaque de café Finca El Mirador demo", images[0].(map[string]any)["alt_text"])
@@ -162,6 +162,10 @@ func TestEveryCatalogEndpointAndFilters(t *testing.T) {
 		if _, exists := origin[key]; exists {
 			t.Errorf("origin leaked product field %s", key)
 		}
+	}
+	originImages := origin["images"].([]any)
+	if len(originImages) == 0 || originImages[0].(map[string]any)["url"] != "https://media.example/store/images/photo-coffee-cherries.jpg" {
+		t.Errorf("origin image URL = %v, want https://media.example/store/images/photo-coffee-cherries.jpg", originImages)
 	}
 	if origin["producer_name"] != "Productor de café demo" {
 		t.Errorf("origin producer_name=%v, want Productor de café demo", origin["producer_name"])

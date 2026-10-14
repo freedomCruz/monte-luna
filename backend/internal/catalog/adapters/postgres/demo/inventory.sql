@@ -60,10 +60,10 @@ ON CONFLICT (product_id, category_id) DO NOTHING;
 INSERT INTO catalog.product_images (product_id, storage_key, alt_text, position)
 SELECT p.id, d.storage_key, d.alt_text, 0
 FROM (VALUES
-  ('finca-el-mirador', 'demo/products/finca-el-mirador.jpg', 'Empaque de café Finca El Mirador demo'),
-  ('finca-la-maria', 'demo/products/finca-la-maria.jpg', 'Empaque de café Finca La María demo'),
-  ('chocolate-70', 'demo/products/chocolate-70.jpg', 'Empaque de barra de chocolate 70 % cacao demo'),
-  ('chocolate-85', 'demo/products/chocolate-85.jpg', 'Empaque de barra de chocolate 85 % cacao demo')
+  ('finca-el-mirador', 'images/packaging-finca-el-mirador.webp', 'Empaque de café Finca El Mirador demo'),
+  ('finca-la-maria', 'images/packaging-finca-la-maria.webp', 'Empaque de café Finca La María demo'),
+  ('chocolate-70', 'images/packaging-chocolate-65.webp', 'Empaque de barra de chocolate 70 % cacao demo'),
+  ('chocolate-85', 'images/packaging-chocolate-75-100.webp', 'Empaque de barra de chocolate 85 % cacao demo')
 ) AS d(slug, storage_key, alt_text)
 JOIN catalog.products p ON p.slug=d.slug
 WHERE NOT EXISTS (SELECT 1 FROM catalog.product_images i WHERE i.product_id=p.id AND i.storage_key=d.storage_key);
