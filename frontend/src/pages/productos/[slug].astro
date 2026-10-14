@@ -436,6 +436,6 @@ const relatedProducts = allProducts.filter((p) => p.slug !== product.slug).slice
 
   <!-- Live price island for the related cards -->
   <div class="hidden">
-    <ListingPriceIsland client:visible productSlugs={relatedProducts.map((p) => p.slug)} />
+    <ListingPriceIsland client:load productSlugs={relatedProducts.map((p) => p.slug)} />
   </div>
 </Layout>
