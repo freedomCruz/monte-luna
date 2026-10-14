@@ -33,11 +33,12 @@ describe('Pre-rendered HTML output invariants', () => {
     expect(fs.existsSync(path.join(fixtureDir, 'origenes/demo-cacao-origin/index.html'))).toBe(true);
   });
 
-  it('tienda.astro renders the listing island with client:visible and live price slots', () => {
+  it('tienda.astro renders the listing island with client:load and live price slots', () => {
     const tiendaHtml = fs.readFileSync(path.join(fixtureDir, 'tienda/index.html'), 'utf-8');
 
-    // Headless island is mounted with client:visible
-    expect(tiendaHtml).toContain('client="visible"');
+    // Headless island is mounted with client:load for deterministic on-load batch fetch
+    expect(tiendaHtml).toContain('client="load"');
+    expect(tiendaHtml).not.toContain('client="visible"');
     expect(tiendaHtml).toContain('<astro-island');
 
     // Price slots are present on every product card in placeholder state (no prices pre-rendered)

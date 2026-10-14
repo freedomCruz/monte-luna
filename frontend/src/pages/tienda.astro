@@ -207,8 +207,9 @@ const allProductSlugs = Array.from(new Set(products.map((p) => p.slug)));
       );
     })}
 
-    <!-- Headless live price hydration island mounted with client:visible -->
-    <ListingPriceIsland client:visible productSlugs={allProductSlugs} />
+    <!-- Headless live price hydration island mounted with client:load:
+         its only job is the on-load batch fetch for card price slots without DOM box/intersection requirements -->
+    <ListingPriceIsland client:load productSlugs={allProductSlugs} />
   </main>
 </Layout>
 
