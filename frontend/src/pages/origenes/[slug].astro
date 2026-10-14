@@ -1,0 +1,246 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCatalogOrigins, getCatalogProductsByOrigin } from '../../lib/catalog';
+import type { Origin, Product } from '../../lib/catalog';
+
+export async function getStaticPaths() {
+  const originsPage = await getCatalogOrigins();
+  return Promise.all(
+    originsPage.items.map(async (origin) => {
+      const products = await getCatalogProductsByOrigin(origin.slug);
+      return {
+        params: { slug: origin.slug },
+        props: { origin, products },
+      };
+    })
+  );
+}
+
+interface Props {
+  origin: Origin;
+  products: Product[];
+}
+
+const { origin, products } = Astro.props;
+
+// Format altitude string
+let altitudeText = 'N/D';
+if (origin.altitude_min_masl && origin.altitude_max_masl) {
+  altitudeText = origin.altitude_min_masl === origin.altitude_max_masl
+    ? `${origin.altitude_min_masl} m s. n. m.`
+    : `${origin.altitude_min_masl} – ${origin.altitude_max_masl} m s. n. m.`;
+} else if (origin.altitude_min_masl) {
+  altitudeText = `${origin.altitude_min_masl} m s. n. m.`;
+}
+
+// Format location
+const locationParts = [origin.municipality_name, origin.department, origin.country_code].filter(Boolean);
+const locationText = locationParts.join(', ');
+
+const heroImage = origin.images[0]?.url || '/images/photo-coffee-cherries.jpg';
+const heroImageAlt = origin.images[0]?.alt_text || origin.name;
+---
+
+<Layout title={`${origin.name} · Origen Monteluna`} description={origin.story || `Origen ${origin.name}, cultivado por ${origin.producer_name}.`}>
+  <!-- Dark Hero Section per M-Origen design canvas -->
+  <section class="bg-brand-forest text-brand-sand overflow-hidden">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 pt-8 pb-16 md:pb-24 flex flex-col gap-8">
+      
+      <!-- Breadcrumb -->
+      <nav aria-label="Ruta de navegación" class="flex flex-wrap items-center gap-2 text-sm font-semibold text-brand-sand/70">
+        <a href="/" class="hover:text-brand-sand">Inicio</a>
+        <span aria-hidden="true">/</span>
+        <a href="/tienda" class="hover:text-brand-sand">Tienda</a>
+        <span aria-hidden="true">/</span>
+        <span class="text-brand-sand">{origin.name}</span>
+      </nav>
+
+      <!-- Grid: Copy & Photo -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
+        <div class="lg:col-span-7 flex flex-col items-start gap-6">
+          <span class="font-condensed text-base md:text-lg font-bold tracking-widest uppercase text-brand-yellow">
+            Origen y Terroir Colombiano
+          </span>
+          <h1 class="text-4xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.95] text-brand-sand">
+            {origin.name}
+          </h1>
+          <p class="text-xl md:text-2xl font-extrabold text-brand-yellow">
+            Nuestras montañas también cuentan historias.
+          </p>
+          <p class="text-base md:text-lg text-brand-sand/90 leading-relaxed max-w-xl">
+            Producido por <strong class="text-brand-sand font-bold">{origin.producer_name}</strong> en {locationText}. Cada cosecha es el fruto del cuidado manual y del respeto profundo por el suelo.
+          </p>
+          
+          <div class="flex flex-wrap gap-4 pt-2">
+            <a
+              href="#productos"
+              class="px-6 py-3.5 rounded-xl bg-brand-sand text-foreground font-bold text-sm uppercase tracking-wider hover:bg-brand-sand/90 transition-colors"
+            >
+              Ver productos ({products.length})
+            </a>
+            {origin.story && (
+              <a
+                href="#historia"
+                class="px-6 py-3.5 rounded-xl bg-brand-yellow text-foreground font-bold text-sm uppercase tracking-wider hover:bg-brand-yellow/90 transition-colors"
+              >
+                Leer la historia
+              </a>
+            )}
+          </div>
+        </div>
+
+        <div class="lg:col-span-5 relative flex justify-center">
+          <div class="relative w-full max-w-[480px] aspect-[5/5.4] rounded-3xl overflow-hidden shadow-2xl border-4 border-brand-sand/10">
+            <img
+              src={heroImage}
+              alt={heroImageAlt}
+              class="w-full h-full object-cover"
+            />
+          </div>
+
+          <!-- Altitude Badge if available -->
+          {origin.altitude_min_masl && (
+            <div class="absolute -top-4 -right-4 sm:-right-6 w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-brand-yellow text-foreground flex flex-col items-center justify-center p-2 text-center shadow-xl rotate-6 border-2 border-brand-forest">
+              <span class="font-condensed text-xs font-bold uppercase tracking-wider">Altura</span>
+              <span class="font-black text-xl sm:text-2xl leading-none my-0.5">
+                {origin.altitude_min_masl}
+              </span>
+              <span class="font-condensed text-[11px] font-bold uppercase">m s. n. m.</span>
+            </div>
+          )}
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- Key Origin Facts Bar (M-Origen facts grid) -->
+  <div class="max-w-[1320px] mx-auto px-6 md:px-12 -mt-8 relative z-10">
+    <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
+      <div class="bg-card p-6 rounded-2xl shadow-md border border-foreground/10 flex flex-col gap-1">
+        <dt class="font-condensed text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Productor / Finca
+        </dt>
+        <dd class="text-xl font-black text-foreground">
+          {origin.producer_name}
+        </dd>
+      </div>
+
+      <div class="bg-card p-6 rounded-2xl shadow-md border border-foreground/10 flex flex-col gap-1">
+        <dt class="font-condensed text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Ubicación
+        </dt>
+        <dd class="text-xl font-black text-foreground">
+          {locationText}
+        </dd>
+      </div>
+
+      <div class="bg-card p-6 rounded-2xl shadow-md border border-foreground/10 flex flex-col gap-1">
+        <dt class="font-condensed text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Altitud
+        </dt>
+        <dd class="text-xl font-black text-foreground">
+          {altitudeText}
+        </dd>
+      </div>
+
+      <div class="bg-card p-6 rounded-2xl shadow-md border border-foreground/10 flex flex-col gap-1">
+        <dt class="font-condensed text-xs font-bold uppercase tracking-wider text-muted-foreground">
+          Lotes Activos
+        </dt>
+        <dd class="text-xl font-black text-foreground">
+          {products.length} {products.length === 1 ? 'Producto' : 'Productos'}
+        </dd>
+      </div>
+    </dl>
+  </div>
+
+  <!-- Story Section (if origin has story) -->
+  {origin.story && (
+    <section id="historia" class="py-20 md:py-28 max-w-[1320px] mx-auto px-6 md:px-12">
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
+        <div class="lg:col-span-5 flex flex-col gap-3">
+          <span class="font-condensed text-sm font-bold uppercase tracking-wider text-brand-forest">
+            La Historia
+          </span>
+          <h2 class="text-3xl md:text-5xl font-black tracking-tight text-foreground">
+            Quién lo cultiva y dónde.
+          </h2>
+        </div>
+        <div class="lg:col-span-7 flex flex-col gap-6 text-base md:text-lg text-foreground/80 leading-relaxed">
+          <p class="font-semibold text-foreground text-xl">
+            {origin.story}
+          </p>
+        </div>
+      </div>
+    </section>
+  )}
+
+  <!-- Products from this Origin (M-Origen products list) -->
+  <section id="productos" class="py-16 md:py-24 bg-card border-t border-foreground/10">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 flex flex-col gap-10">
+      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div>
+          <span class="font-condensed text-xs font-bold uppercase tracking-wider text-brand-burgundy">
+            Cosecha Disponible
+          </span>
+          <h2 class="text-3xl md:text-4xl font-black text-foreground">
+            Productos de {origin.name}
+          </h2>
+        </div>
+        <a href="/tienda" class="font-condensed text-sm font-bold uppercase tracking-wider text-foreground hover:text-brand-burgundy transition-colors">
+          Ver todo el catálogo →
+        </a>
+      </div>
+
+      {products.length === 0 ? (
+        <div class="p-12 text-center rounded-2xl bg-brand-sand/50 border border-foreground/10">
+          <p class="text-base text-foreground/70">
+            No hay productos disponibles actualmente de este origen.
+          </p>
+        </div>
+      ) : (
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
+          {products.map((product) => {
+            const coverImage = product.images[0]?.url || '/images/photo-roasted-beans-pile.jpg';
+            const coverAlt = product.images[0]?.alt_text || product.title;
+
+            return (
+              <article class="bg-background rounded-2xl overflow-hidden border border-foreground/10 flex flex-col hover:shadow-lg transition-shadow">
+                <a href={`/productos/${product.slug}`} class="block aspect-[4/3] overflow-hidden bg-brand-sand/50">
+                  <img
+                    src={coverImage}
+                    alt={coverAlt}
+                    loading="lazy"
+                    class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
+                  />
+                </a>
+                <div class="p-6 flex flex-col flex-1 gap-4">
+                  <h3 class="text-xl font-black text-foreground hover:text-brand-burgundy transition-colors">
+                    <a href={`/productos/${product.slug}`}>{product.title}</a>
+                  </h3>
+                  {product.description && (
+                    <p class="text-sm text-foreground/80 line-clamp-2">
+                      {product.description}
+                    </p>
+                  )}
+                  <div class="pt-4 mt-auto border-t border-foreground/5 flex items-center justify-between">
+                    <span class="text-xs text-foreground/60 italic">
+                      Lote verificado
+                    </span>
+                    <a
+                      href={`/productos/${product.slug}`}
+                      class="font-condensed text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-lg bg-brand-yellow text-foreground hover:bg-brand-yellow/80 transition-colors"
+                    >
+                      Ver producto
+                    </a>
+                  </div>
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  </section>
+</Layout>

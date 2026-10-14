@@ -8,7 +8,7 @@
     "build": "astro build",
     "check": "astro check",
     "test": "vitest run",
-    "types:generate": "openapi-typescript ../contracts/openapi/platform.yaml -o src/generated/platform.ts"
+    "types:generate": "openapi-typescript ../contracts/openapi/platform.yaml -o src/generated/platform.ts && openapi-typescript ../contracts/openapi/catalog.yaml -o src/generated/catalog.ts"
   },
   "devEngines": {
     "packageManager": {
