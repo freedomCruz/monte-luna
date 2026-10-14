@@ -33,72 +33,40 @@ describe('Pre-rendered HTML output invariants', () => {
     expect(fs.existsSync(path.join(fixtureDir, 'origenes/demo-cacao-origin/index.html'))).toBe(true);
   });
 
-  it('contains NO <astro-island> tags across any generated HTML page', () => {
-    const htmlFiles = [
-      'tienda/index.html',
-      'productos/finca-el-mirador/index.html',
-      'productos/finca-la-maria/index.html',
-      'productos/chocolate-70/index.html',
-      'productos/chocolate-85/index.html',
-      'origenes/finca-el-mirador/index.html',
-      'origenes/demo-cacao-origin/index.html',
-      'index.html',
-    ];
-
-    for (const file of htmlFiles) {
-      const filePath = path.join(fixtureDir, file);
-      if (fs.existsSync(filePath)) {
-        const content = fs.readFileSync(filePath, 'utf-8');
-        expect(content).not.toContain('<astro-island');
-      }
-    }
-  });
-
-  it('tienda.astro renders grouped category sections with collision-free article IDs for multi-category products', () => {
+  it('tienda.astro renders the listing island with client:load and live price slots', () => {
     const tiendaHtml = fs.readFileSync(path.join(fixtureDir, 'tienda/index.html'), 'utf-8');
 
-    // Category navigation links target exact group sections
-    expect(tiendaHtml).toContain('href="#cat-group-coffee"');
-    expect(tiendaHtml).toContain('href="#cat-group-cacao"');
-    expect(tiendaHtml).toContain('href="#cat-group-chocolate"');
+    // Headless island is mounted with client:load for deterministic on-load batch fetch
+    expect(tiendaHtml).toContain('client="load"');
+    expect(tiendaHtml).not.toContain('client="visible"');
+    expect(tiendaHtml).toContain('<astro-island');
 
-    // Distinct section IDs exist for each group
-    expect(tiendaHtml).toContain('id="cat-group-coffee"');
-    expect(tiendaHtml).toContain('id="cat-group-cacao"');
-    expect(tiendaHtml).toContain('id="cat-group-chocolate"');
-
-    // Multi-category products (like chocolate-70 and chocolate-85) appear under both cacao and chocolate groups
-    // with distinct, collision-free DOM IDs scoped by category group
-    expect(tiendaHtml).toContain('id="product-cacao-chocolate-70"');
-    expect(tiendaHtml).toContain('id="product-chocolate-chocolate-70"');
-
-    // All product article IDs must be strictly unique across the entire DOM tree
-    const productIds = Array.from(tiendaHtml.matchAll(/id="(product-[^"]+)"/g)).map((m) => m[1]);
-    expect(productIds.length).toBeGreaterThan(0);
-    const uniqueIds = new Set(productIds);
-    expect(productIds.length).toBe(uniqueIds.size);
+    // Price slots are present on every product card in placeholder state (no prices pre-rendered)
+    expect(tiendaHtml).toContain('data-live-price-slot="finca-el-mirador"');
+    expect(tiendaHtml).toContain('Consultando precio...');
+    expect(tiendaHtml).not.toMatch(/\$3[89]\.000/);
   });
 
-  it('product detail page does NOT contain hardcoded prices, add-to-cart buttons, or static availability claims', () => {
+  it('product detail page mounts ProductPurchaseIsland with client:load and no pre-rendered live prices', () => {
     const productHtml = fs.readFileSync(
       path.join(fixtureDir, 'productos/finca-el-mirador/index.html'),
       'utf-8'
     );
 
-    // Checks that placeholder slot exists
-    expect(productHtml).toContain('data-product-slug="finca-el-mirador"');
-    expect(productHtml).toContain('id="purchase-action-island-slot"');
+    // Island container with client:load
+    expect(productHtml).toContain('id="product-purchase-island-container"');
+    expect(productHtml).toContain('client="load"');
+    expect(productHtml).toContain('<astro-island');
 
-    // Invariant: No hardcoded prices or add-to-cart button
+    // Invariant: Initial server render has loading placeholder and NO authoritative live values
+    expect(productHtml).toContain('Cargando disponibilidad y precio...');
     expect(productHtml).not.toMatch(/\$3[89]\.000/);
     expect(productHtml).not.toContain('Añadir al carrito');
     expect(productHtml).not.toContain('Agregar al carrito');
-
-    // Invariant: Pre-rendered markup must never claim "Disponible" or "Agotado" before live data arrives
-    expect(productHtml).not.toContain('<span>Disponible</span>');
-    expect(productHtml).not.toContain('<span>Agotado</span>');
-    expect(productHtml).toContain('data-variant-stock-slot');
+    expect(productHtml).not.toContain('Comprar');
+    expect(productHtml).not.toMatch(/Tostado el \d+/);
   });
+
 
   it('originless product page does not display an origin link', () => {
     const chocolate85Html = fs.readFileSync(

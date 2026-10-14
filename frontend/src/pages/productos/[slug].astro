@@ -2,8 +2,10 @@
 import Layout from '../../layouts/Layout.astro';
 import { getCatalogProducts } from '../../lib/catalog';
 import type { Product } from '../../lib/catalog';
+import { ProductPurchaseIsland } from '../../components/islands/ProductPurchaseIsland';
 
 export async function getStaticPaths() {
+
   const productsPage = await getCatalogProducts();
   return productsPage.items.map((product) => ({
     params: { slug: product.slug },
@@ -128,70 +130,13 @@ const mainImageAlt = product.images[0]?.alt_text || product.title;
           )}
         </div>
 
-        <!-- Live Price & Roast Date Slot (F2 island slot placeholder) -->
-        <div
-          id="product-live-pricing"
-          data-product-slug={product.slug}
-          class="p-6 rounded-2xl bg-brand-sand/70 border border-foreground/10 flex flex-col gap-3 min-h-[120px] justify-center"
-        >
-          <!-- F1 Static Placeholder: No prices, no compare-at, no roast date rendered -->
-          <div class="flex items-baseline gap-4">
-            <span class="text-sm font-bold uppercase text-foreground/60 tracking-wider">
-              Precio actual:
-            </span>
-            <span class="text-base text-foreground/50 italic">
-              Cargando disponibilidad y tueste reciente...
-            </span>
-          </div>
-          <div class="text-xs text-foreground/60 flex items-center gap-2">
-            <span class="w-2 h-2 rounded-full bg-brand-yellow animate-pulse"></span>
-            <span>Verificando lote disponible en bodega central</span>
-          </div>
-        </div>
-
-        <!-- Variants Selection Display (Static Option Matrix) -->
-        <div class="flex flex-col gap-6">
-          <div class="flex flex-col gap-3">
-            <span class="font-condensed text-sm font-bold uppercase tracking-wider text-foreground">
-              Opciones disponibles ({product.variants.length})
-            </span>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
-              {product.variants.map((v) => {
-                const optionsSummary = v.options
-                  .map((opt) => opt.display_value || opt.label)
-                  .join(' · ');
-                return (
-                  <div
-                    data-variant-id={v.id}
-                    class="p-4 rounded-xl border border-foreground/15 bg-card flex flex-col gap-1 transition-colors hover:border-foreground"
-                  >
-                    <span class="font-bold text-sm text-foreground">
-                      {optionsSummary || `${v.weight_grams} g`}
-                    </span>
-                    <span class="font-mono text-xs text-foreground/60">
-                      SKU: {v.sku}
-                    </span>
-                    <!-- Live Stock Slot Placeholder (F2 island slot placeholder: NO static "Disponible" or "Agotado" before live data) -->
-                    <div data-variant-stock-slot={v.id} class="text-xs font-semibold text-foreground/50 mt-1 italic">
-                      <span>Verificando disponibilidad...</span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-
-        <!-- Live Purchase Island Action Slot (F2 island placeholder) -->
-        <div
-          id="purchase-action-island-slot"
-          data-product-slug={product.slug}
-          class="pt-2 flex flex-col gap-3"
-        >
-          <!-- F1 Rule: NO add-to-cart button rendered; reserved marked slot for F2 -->
-          <div class="p-4 rounded-xl border border-dashed border-foreground/20 text-center text-sm text-foreground/60">
-            [Espacio reservado para la isla de compra interactiva]
-          </div>
+        <!-- Live Purchase Island (F2 client:load island) -->
+        <div id="product-purchase-island-container" class="flex flex-col">
+          <ProductPurchaseIsland
+            client:load
+            productSlug={product.slug}
+            variants={product.variants}
+          />
         </div>
 
         <!-- Description -->

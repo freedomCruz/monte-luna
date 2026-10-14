@@ -2,6 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import { getCatalogProducts, getCatalogCategories } from '../lib/catalog';
 import { groupProductsByCategory } from '../lib/catalog-groups';
+import { ListingPriceIsland } from '../components/islands/ListingPriceIsland';
 
 const productsPage = await getCatalogProducts();
 const categoriesPage = await getCatalogCategories();
@@ -10,6 +11,7 @@ const products = productsPage.items;
 const categories = categoriesPage.items;
 
 const categoryGroups = groupProductsByCategory(products, categories);
+const allProductSlugs = Array.from(new Set(products.map((p) => p.slug)));
 ---
 
 <Layout title="Tienda · Monteluna" description="Catálogo de cafés de especialidad y cacaos finos de aroma Monteluna.">
@@ -204,5 +206,10 @@ const categoryGroups = groupProductsByCategory(products, categories);
         </section>
       );
     })}
+
+    <!-- Headless live price hydration island mounted with client:load:
+         its only job is the on-load batch fetch for card price slots without DOM box/intersection requirements -->
+    <ListingPriceIsland client:load productSlugs={allProductSlugs} />
   </main>
 </Layout>
+
