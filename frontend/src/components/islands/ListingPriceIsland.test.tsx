@@ -11,16 +11,19 @@ describe('ListingPriceIsland', () => {
     vi.restoreAllMocks();
     document.body.innerHTML = `
       <article id="product-card-mirador">
+        <div data-live-savings-slot="finca-el-mirador"></div>
         <div data-live-price-slot="finca-el-mirador">
           <span class="static-placeholder">Consultando precio...</span>
         </div>
       </article>
       <article id="product-card-maria">
+        <div data-live-savings-slot="finca-la-maria"></div>
         <div data-live-price-slot="finca-la-maria">
           <span class="static-placeholder">Consultando precio...</span>
         </div>
       </article>
       <article id="product-card-cacao">
+        <div data-live-savings-slot="chocolate-70"></div>
         <div data-live-price-slot="chocolate-70">
           <span class="static-placeholder">Consultando precio...</span>
         </div>
@@ -106,6 +109,110 @@ describe('ListingPriceIsland', () => {
       const slot = document.querySelector('[data-live-price-slot="chocolate-70"]');
       expect(slot?.textContent).toContain('$24.000');
       expect(slot?.textContent).toContain('$28.000');
+    });
+  });
+
+  it('populates savings badge slot with "Ahorras $X.000" when compare-at is greater than price', async () => {
+    const mockResponse: ProductAvailabilityPage = {
+      items: [
+        {
+          product_slug: 'finca-el-mirador',
+          variants: [
+            {
+              variant_id: 'var-1',
+              price_amount: 3800000,
+              compare_at_price_amount: 4500000,
+              availability: 'in_stock',
+              production_date: null,
+            },
+          ],
+        },
+      ],
+      next_cursor: null,
+    };
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockResponse,
+    });
+
+    render(<ListingPriceIsland productSlugs={['finca-el-mirador']} />);
+
+    await waitFor(() => {
+      const savingsSlot = document.querySelector('[data-live-savings-slot="finca-el-mirador"]');
+      expect(savingsSlot?.textContent).toContain('Ahorras $7.000');
+      expect(savingsSlot?.firstElementChild).not.toBeNull();
+    });
+  });
+
+  it('keeps savings badge slot empty when no compare_at price exists or compare_at <= price', async () => {
+    const mockResponse: ProductAvailabilityPage = {
+      items: [
+        {
+          product_slug: 'finca-la-maria',
+          variants: [
+            {
+              variant_id: 'var-1',
+              price_amount: 4200000,
+              compare_at_price_amount: null,
+              availability: 'in_stock',
+              production_date: null,
+            },
+          ],
+        },
+      ],
+      next_cursor: null,
+    };
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockResponse,
+    });
+
+    render(<ListingPriceIsland productSlugs={['finca-la-maria']} />);
+
+    await waitFor(() => {
+      const priceSlot = document.querySelector('[data-live-price-slot="finca-la-maria"]');
+      expect(priceSlot?.textContent).toContain('$42.000');
+      const savingsSlot = document.querySelector('[data-live-savings-slot="finca-la-maria"]');
+      expect(savingsSlot?.innerHTML).toBe('');
+    });
+  });
+
+  it('clears or keeps savings badge empty when product is out of stock', async () => {
+    const mockResponse: ProductAvailabilityPage = {
+      items: [
+        {
+          product_slug: 'finca-la-maria',
+          variants: [
+            {
+              variant_id: 'var-1',
+              price_amount: 4200000,
+              compare_at_price_amount: 5000000,
+              availability: 'out_of_stock',
+              production_date: null,
+            },
+          ],
+        },
+      ],
+      next_cursor: null,
+    };
+
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockResponse,
+    });
+
+    render(<ListingPriceIsland productSlugs={['finca-la-maria']} />);
+
+    await waitFor(() => {
+      const priceSlot = document.querySelector('[data-live-price-slot="finca-la-maria"]');
+      expect(priceSlot?.textContent).toContain('Agotado');
+      const savingsSlot = document.querySelector('[data-live-savings-slot="finca-la-maria"]');
+      expect(savingsSlot?.innerHTML).toBe('');
     });
   });
 

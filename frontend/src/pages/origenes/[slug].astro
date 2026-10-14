@@ -2,6 +2,8 @@
 import Layout from '../../layouts/Layout.astro';
 import { getCatalogOrigins, getCatalogProductsByOrigin } from '../../lib/catalog';
 import type { Origin, Product } from '../../lib/catalog';
+import ProductCard from '../../components/catalog/ProductCard.astro';
+import { ListingPriceIsland } from '../../components/islands/ListingPriceIsland';
 
 export async function getStaticPaths() {
   const originsPage = await getCatalogOrigins();
@@ -200,47 +202,23 @@ const heroImageAlt = origin.images[0]?.alt_text || origin.name;
           </p>
         </div>
       ) : (
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8">
-          {products.map((product) => {
-            const coverImage = product.images[0]?.url || '/images/photo-roasted-beans-pile.jpg';
-            const coverAlt = product.images[0]?.alt_text || product.title;
-
-            return (
-              <article class="bg-background rounded-2xl overflow-hidden border border-foreground/10 flex flex-col hover:shadow-lg transition-shadow">
-                <a href={`/productos/${product.slug}`} class="block aspect-[4/3] overflow-hidden bg-secondary/50">
-                  <img
-                    src={coverImage}
-                    alt={coverAlt}
-                    loading="lazy"
-                    class="w-full h-full object-cover hover:scale-105 transition-transform duration-300"
-                  />
-                </a>
-                <div class="p-6 flex flex-col flex-1 gap-4">
-                  <h3 class="text-xl font-black text-foreground hover:text-brand-purple transition-colors">
-                    <a href={`/productos/${product.slug}`}>{product.title}</a>
-                  </h3>
-                  {product.description && (
-                    <p class="text-sm text-foreground/80 line-clamp-2">
-                      {product.description}
-                    </p>
-                  )}
-                  <div class="pt-4 mt-auto border-t border-foreground/5 flex items-center justify-between">
-                    <span class="text-xs text-foreground/60 italic">
-                      Lote verificado
-                    </span>
-                    <a
-                      href={`/productos/${product.slug}`}
-                      class="font-condensed text-xs font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-lg bg-brand-yellow text-foreground hover:bg-brand-yellow/80 transition-colors"
-                    >
-                      Ver producto
-                    </a>
-                  </div>
-                </div>
-              </article>
-            );
-          })}
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-x-8 sm:gap-y-12">
+          {products.map((product) => (
+            <ProductCard
+              product={product}
+              cardId={`origin-product-${origin.slug}-${product.slug}`}
+            />
+          ))}
         </div>
       )}
     </div>
+
+    <!-- Mount headless ListingPriceIsland to hydrate product card prices on origin page -->
+    {products.length > 0 && (
+      <ListingPriceIsland
+        client:load
+        productSlugs={Array.from(new Set(products.map((p) => p.slug)))}
+      />
+    )}
   </section>
 </Layout>
