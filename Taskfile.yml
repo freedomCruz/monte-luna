@@ -3,6 +3,18 @@ version: "3"
 
 dotenv: [".env"]
 
+# Per-worktree values are derived from the worktree path (scripts/setup-worktree.sh),
+# so the shared .env stays identical in every worktree. They override .env values.
+env:
+  WORKTREE_DB:
+    sh: bash scripts/setup-worktree.sh --get WORKTREE_DB
+  API_ADDR:
+    sh: bash scripts/setup-worktree.sh --get API_ADDR
+  FRONTEND_PORT:
+    sh: bash scripts/setup-worktree.sh --get FRONTEND_PORT
+  # Local development only; the password must be URL-safe.
+  DATABASE_URL: "postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@127.0.0.1:{{.POSTGRES_PORT}}/{{.WORKTREE_DB}}?sslmode=disable"
+
 tasks:
   setup:
     desc: Create this worktree's database in the shared local PostgreSQL container
@@ -21,7 +33,7 @@ tasks:
     dir: backend
     preconditions:
       - sh: test -n "$API_ADDR"
-        msg: "Set API_ADDR using the values from task setup:preview"
+        msg: "API_ADDR is derived by Taskfile; unset any shell override"
     cmds:
       - go run ./cmd/api
 
@@ -30,7 +42,7 @@ tasks:
     dir: frontend
     preconditions:
       - sh: test -n "$FRONTEND_PORT"
-        msg: "Set FRONTEND_PORT using the values from task setup:preview"
+        msg: "FRONTEND_PORT is derived by Taskfile; unset any shell override"
     cmds:
       - npm run dev -- --host 127.0.0.1 --port "$FRONTEND_PORT"
 
