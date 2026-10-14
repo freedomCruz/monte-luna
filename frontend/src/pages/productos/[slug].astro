@@ -1,0 +1,231 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import { getCatalogProducts } from '../../lib/catalog';
+import type { Product } from '../../lib/catalog';
+
+export async function getStaticPaths() {
+  const productsPage = await getCatalogProducts();
+  return productsPage.items.map((product) => ({
+    params: { slug: product.slug },
+    props: { product },
+  }));
+}
+
+interface Props {
+  product: Product;
+}
+
+const { product } = Astro.props;
+
+// Categorize attributes for presentation
+const nonVariantAttributes = product.attributes.filter(
+  (attr) => attr.display_value !== null && attr.display_value !== ''
+);
+
+// Key highlights
+const tastingNotes = product.attributes.find((a) => a.key === 'tasting_notes')?.display_value;
+
+const mainImage = product.images[0]?.url || '/images/photo-roasted-beans-pile.jpg';
+const mainImageAlt = product.images[0]?.alt_text || product.title;
+---
+
+<Layout title={`${product.title} · Monteluna`} description={product.description || undefined}>
+  <!-- Breadcrumb Navigation -->
+  <nav aria-label="Ruta de navegación" class="bg-brand-sand/50 border-b border-foreground/10 py-3.5">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 flex flex-wrap items-center gap-2 text-sm font-semibold text-foreground/70">
+      <a href="/" class="hover:text-foreground">Inicio</a>
+      <span aria-hidden="true">/</span>
+      <a href="/tienda" class="hover:text-foreground">Tienda</a>
+      <span aria-hidden="true">/</span>
+      {product.origin && (
+        <>
+          <a href={`/origenes/${product.origin.slug}`} class="hover:text-foreground">
+            {product.origin.name}
+          </a>
+          <span aria-hidden="true">/</span>
+        </>
+      )}
+      <span class="text-foreground truncate max-w-[200px] sm:max-w-none">{product.title}</span>
+    </div>
+  </nav>
+
+  <!-- Product Detail Section (M-Detalle design layout) -->
+  <main class="max-w-[1320px] mx-auto px-6 md:px-12 py-12 md:py-16">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-start">
+      
+      <!-- Left Column: Gallery / Images -->
+      <div class="lg:col-span-7 flex flex-col gap-6">
+        <div class="aspect-square bg-card rounded-3xl overflow-hidden border border-foreground/10 shadow-sm relative">
+          <img
+            src={mainImage}
+            alt={mainImageAlt}
+            class="w-full h-full object-cover object-center"
+          />
+          {product.product_type && (
+            <span class="absolute top-6 left-6 bg-foreground text-brand-sand font-condensed text-sm font-bold uppercase tracking-wider px-3.5 py-1.5 rounded-xl shadow-md">
+              {product.product_type.name}
+            </span>
+          )}
+        </div>
+
+        <!-- Additional images thumbnails if present -->
+        {product.images.length > 1 && (
+          <div class="grid grid-cols-4 gap-4">
+            {product.images.map((img) => (
+              <div class="aspect-square rounded-2xl overflow-hidden border border-foreground/10 bg-card">
+                <img
+                  src={img.url}
+                  alt={img.alt_text}
+                  loading="lazy"
+                  class="w-full h-full object-cover"
+                />
+              </div>
+            ))}
+          </div>
+        )}
+
+        <!-- Origin Feature Card (if product has origin) -->
+        {product.origin && (
+          <div class="bg-brand-sand rounded-3xl p-8 border border-foreground/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 mt-4">
+            <div class="flex flex-col gap-1">
+              <span class="font-condensed text-xs font-bold uppercase tracking-wider text-brand-burgundy">
+                Finca & Origen
+              </span>
+              <h3 class="text-2xl font-black text-foreground">
+                {product.origin.name}
+              </h3>
+              <p class="text-sm text-foreground/80">
+                Producido con dedicación por {product.origin.producer_name}.
+              </p>
+            </div>
+            <a
+              href={`/origenes/${product.origin.slug}`}
+              class="font-condensed text-sm font-bold uppercase tracking-wider px-5 py-3 rounded-xl bg-foreground text-brand-sand hover:bg-brand-burgundy transition-colors shrink-0"
+            >
+              Conocer el origen →
+            </a>
+          </div>
+        )}
+      </div>
+
+      <!-- Right Column: Product Info & Purchase Island Slot -->
+      <div class="lg:col-span-5 flex flex-col gap-8">
+        
+        <!-- Header Info -->
+        <div class="flex flex-col gap-3">
+          {product.brand && (
+            <span class="font-condensed text-sm font-bold uppercase tracking-wider text-brand-forest">
+              {product.brand.name}
+            </span>
+          )}
+          <h1 class="text-4xl md:text-5xl font-black tracking-tight text-foreground leading-[1.1]">
+            {product.title}
+          </h1>
+          {tastingNotes && (
+            <p class="text-lg font-medium text-brand-burgundy italic">
+              «{tastingNotes}»
+            </p>
+          )}
+        </div>
+
+        <!-- Live Price & Roast Date Slot (F2 island slot placeholder) -->
+        <div
+          id="product-live-pricing"
+          data-product-slug={product.slug}
+          class="p-6 rounded-2xl bg-brand-sand/70 border border-foreground/10 flex flex-col gap-3 min-h-[120px] justify-center"
+        >
+          <!-- F1 Static Placeholder: No prices, no compare-at, no roast date rendered -->
+          <div class="flex items-baseline gap-4">
+            <span class="text-sm font-bold uppercase text-foreground/60 tracking-wider">
+              Precio actual:
+            </span>
+            <span class="text-base text-foreground/50 italic">
+              Cargando disponibilidad y tueste reciente...
+            </span>
+          </div>
+          <div class="text-xs text-foreground/60 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-brand-yellow animate-pulse"></span>
+            <span>Verificando lote disponible en bodega central</span>
+          </div>
+        </div>
+
+        <!-- Variants Selection Display (Static Option Matrix) -->
+        <div class="flex flex-col gap-6">
+          <div class="flex flex-col gap-3">
+            <span class="font-condensed text-sm font-bold uppercase tracking-wider text-foreground">
+              Opciones disponibles ({product.variants.length})
+            </span>
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {product.variants.map((v) => {
+                const optionsSummary = v.options
+                  .map((opt) => opt.display_value || opt.label)
+                  .join(' · ');
+                return (
+                  <div
+                    data-variant-id={v.id}
+                    class="p-4 rounded-xl border border-foreground/15 bg-card flex flex-col gap-1 transition-colors hover:border-foreground"
+                  >
+                    <span class="font-bold text-sm text-foreground">
+                      {optionsSummary || `${v.weight_grams} g`}
+                    </span>
+                    <span class="font-mono text-xs text-foreground/60">
+                      SKU: {v.sku}
+                    </span>
+                    <!-- Live Stock Slot Placeholder (F2 island slot placeholder: NO static "Disponible" or "Agotado" before live data) -->
+                    <div data-variant-stock-slot={v.id} class="text-xs font-semibold text-foreground/50 mt-1 italic">
+                      <span>Verificando disponibilidad...</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+
+        <!-- Live Purchase Island Action Slot (F2 island placeholder) -->
+        <div
+          id="purchase-action-island-slot"
+          data-product-slug={product.slug}
+          class="pt-2 flex flex-col gap-3"
+        >
+          <!-- F1 Rule: NO add-to-cart button rendered; reserved marked slot for F2 -->
+          <div class="p-4 rounded-xl border border-dashed border-foreground/20 text-center text-sm text-foreground/60">
+            [Espacio reservado para la isla de compra interactiva]
+          </div>
+        </div>
+
+        <!-- Description -->
+        {product.description && (
+          <div class="prose prose-stone border-t border-foreground/10 pt-6">
+            <h4 class="font-condensed text-base font-bold uppercase tracking-wider text-foreground mb-2">
+              Descripción
+            </h4>
+            <p class="text-base text-foreground/80 leading-relaxed">
+              {product.description}
+            </p>
+          </div>
+        )}
+
+        <!-- Technical Attributes Table (M-Detalle specs list) -->
+        {nonVariantAttributes.length > 0 && (
+          <div class="border-t border-foreground/10 pt-6 flex flex-col gap-3">
+            <h4 class="font-condensed text-base font-bold uppercase tracking-wider text-foreground">
+              Ficha Técnica
+            </h4>
+            <dl class="divide-y divide-foreground/10 text-sm">
+              {nonVariantAttributes.map((attr) => (
+                <div class="py-2.5 flex justify-between items-center gap-4">
+                  <dt class="font-medium text-foreground/70">{attr.label}</dt>
+                  <dd class="font-bold text-foreground text-right">
+                    {attr.display_value} {attr.unit || ''}
+                  </dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        )}
+
+      </div>
+    </div>
+  </main>
+</Layout>

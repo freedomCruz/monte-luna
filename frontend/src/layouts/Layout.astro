@@ -1,0 +1,91 @@
+---
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description?: string;
+}
+
+const { title, description = 'Monteluna · Café de especialidad y cacao fino de aroma, origen Colombia.' } = Astro.props;
+---
+
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta name="theme-color" content="#FAF3E3" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700;800;900&family=Barlow:wght@400;500;600;700;800;900&display=swap"
+      rel="stylesheet"
+    />
+  </head>
+  <body class="min-h-screen bg-background text-foreground font-sans antialiased selection:bg-brand-yellow selection:text-foreground">
+    <!-- Top banner -->
+    <div class="bg-brand-forest text-brand-sand px-6 py-2.5 text-sm font-medium flex flex-wrap justify-center items-center gap-x-6 gap-y-1 text-center">
+      <span>100 % arábica</span>
+      <span aria-hidden="true" class="text-brand-yellow">•</span>
+      <span>Café tostado en grano y molido</span>
+      <span aria-hidden="true" class="text-brand-yellow">•</span>
+      <span>Cacao fino de aroma, origen Colombia</span>
+    </div>
+
+    <!-- Main Navigation Header -->
+    <header class="bg-brand-yellow border-b border-foreground/10 sticky top-0 z-40">
+      <div class="max-w-[1320px] mx-auto px-6 md:px-12 min-h-[84px] flex flex-wrap items-center justify-between gap-4 py-2">
+        <a href="/" class="font-condensed text-3xl md:text-4xl font-extrabold uppercase tracking-tight text-foreground hover:opacity-90 transition-opacity">
+          Monteluna
+        </a>
+
+        <nav aria-label="Principal" class="flex flex-wrap items-center gap-6 md:gap-10 text-base md:text-lg font-bold uppercase">
+          <a href="/" class="min-h-[44px] inline-flex items-center text-foreground hover:text-brand-burgundy transition-colors">
+            Inicio
+          </a>
+          <a href="/tienda" class="min-h-[44px] inline-flex items-center text-foreground hover:text-brand-burgundy transition-colors underline decoration-foreground decoration-2 underline-offset-4">
+            Tienda
+          </a>
+          <a href="/tienda#origenes" class="min-h-[44px] inline-flex items-center text-foreground hover:text-brand-burgundy transition-colors">
+            Orígenes
+          </a>
+        </nav>
+
+        <div class="flex items-center gap-4">
+          <span class="inline-flex items-center gap-2.5 min-h-[48px] px-5 rounded-xl bg-foreground text-brand-sand text-sm font-bold uppercase">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+              <path d="M5 8h14l-1 12H6L5 8z"></path>
+              <path d="M9 8V6a3 3 0 0 1 6 0v2"></path>
+            </svg>
+            Carrito (0)
+          </span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content Slot -->
+    <slot />
+
+    <!-- Footer -->
+    <footer class="bg-foreground text-brand-sand py-16 mt-24 border-t border-foreground">
+      <div class="max-w-[1320px] mx-auto px-6 md:px-12 flex flex-col md:flex-row justify-between items-start md:items-center gap-8">
+        <div>
+          <span class="font-condensed text-3xl font-black uppercase tracking-tight text-brand-yellow">Monteluna</span>
+          <p class="mt-2 text-sm text-brand-sand/80 max-w-sm">
+            Café de especialidad y cacao fino de aroma cosechados con orgullo campesino en Colombia.
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-8 text-sm font-bold uppercase tracking-wider text-brand-sand/90">
+          <a href="/tienda" class="hover:text-brand-yellow transition-colors">Tienda</a>
+          <a href="/" class="hover:text-brand-yellow transition-colors">Inicio</a>
+        </div>
+      </div>
+      <div class="max-w-[1320px] mx-auto px-6 md:px-12 mt-8 pt-8 border-t border-brand-sand/10 text-xs text-brand-sand/60 flex flex-col sm:flex-row justify-between gap-4">
+        <p>© 2026 Monteluna. Todos los derechos reservados.</p>
+        <p>Hecho con respeto por la tierra y el grano.</p>
+      </div>
+    </footer>
+  </body>
+</html>
