@@ -43,7 +43,7 @@ WITH inserted_stock AS (
   RETURNING variant_id, lot_id, quantity
 )
 INSERT INTO catalog.inventory_movements (variant_id, lot_id, quantity_delta, reason, note)
-SELECT variant_id, lot_id, quantity, 'receipt', 'Initial demo stock; not a production inventory receipt'
+SELECT variant_id, lot_id, quantity, 'receipt', 'Inventario demo inicial; no corresponde a una recepción de producción'
 FROM inserted_stock WHERE quantity>0;
 
 INSERT INTO catalog.product_categories (product_id, category_id)
@@ -60,10 +60,10 @@ ON CONFLICT (product_id, category_id) DO NOTHING;
 INSERT INTO catalog.product_images (product_id, storage_key, alt_text, position)
 SELECT p.id, d.storage_key, d.alt_text, 0
 FROM (VALUES
-  ('finca-el-mirador', 'demo/products/finca-el-mirador.jpg', 'Demo Finca El Mirador coffee packaging'),
-  ('finca-la-maria', 'demo/products/finca-la-maria.jpg', 'Demo Finca La María coffee packaging'),
-  ('chocolate-70', 'demo/products/chocolate-70.jpg', 'Demo 70 percent cacao bar packaging'),
-  ('chocolate-85', 'demo/products/chocolate-85.jpg', 'Demo 85 percent cacao bar packaging')
+  ('finca-el-mirador', 'demo/products/finca-el-mirador.jpg', 'Empaque de café Finca El Mirador demo'),
+  ('finca-la-maria', 'demo/products/finca-la-maria.jpg', 'Empaque de café Finca La María demo'),
+  ('chocolate-70', 'demo/products/chocolate-70.jpg', 'Empaque de barra de chocolate 70 % cacao demo'),
+  ('chocolate-85', 'demo/products/chocolate-85.jpg', 'Empaque de barra de chocolate 85 % cacao demo')
 ) AS d(slug, storage_key, alt_text)
 JOIN catalog.products p ON p.slug=d.slug
 WHERE NOT EXISTS (SELECT 1 FROM catalog.product_images i WHERE i.product_id=p.id AND i.storage_key=d.storage_key);

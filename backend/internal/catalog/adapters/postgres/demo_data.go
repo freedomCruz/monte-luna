@@ -30,27 +30,27 @@ type demoProduct struct {
 // Prices follow the approved design placeholders, not production pricing.
 func demoData() ([]demoDefinition, []demoProduct) {
 	definitions := []demoDefinition{
-		{"coffee", "species", "Species", "option", "product", "", true, []demoOption{{"arabica", "Arabica"}}},
-		{"coffee", "varieties", "Varieties", "multi_option", "product", "", false, []demoOption{{"geisha", "Geisha"}, {"bourbon", "Bourbon"}, {"castillo", "Castillo"}}},
-		{"coffee", "process", "Process", "option", "product", "", true, []demoOption{{"washed", "Washed"}, {"natural", "Natural"}, {"honey", "Honey"}}},
-		{"coffee", "roast_level", "Roast level", "option", "product", "", true, []demoOption{{"light", "Light"}, {"medium", "Medium"}, {"dark", "Dark"}}},
-		{"coffee", "tasting_notes", "Tasting notes", "text", "product", "", false, nil},
-		{"coffee", "cupping_score", "Cupping score", "decimal", "product", "", false, nil},
-		{"coffee", "cupping_protocol", "Assessment protocol", "option", "product", "", false, []demoOption{{"sca", "SCA (demo assessment)"}}},
-		{"coffee", "presentation", "Presentation", "option", "variant", "g", true, []demoOption{{"250_g", "250"}, {"500_g", "500"}}},
-		{"coffee", "grind", "Grind", "option", "variant", "", true, []demoOption{{"whole_bean", "Whole bean"}, {"fine", "Fine"}, {"medium", "Medium"}, {"coarse", "Coarse"}}},
-		{"cacao", "genetic_group", "Genetic group", "option", "product", "", false, []demoOption{{"criollo", "Criollo"}, {"trinitario", "Trinitario"}, {"forastero", "Forastero"}}},
-		{"cacao", "fermentation", "Fermentation", "text", "product", "", false, nil},
-		{"cacao", "drying", "Drying", "text", "product", "", false, nil},
-		{"cacao", "product_form", "Product form", "option", "product", "", true, []demoOption{{"beans", "Beans"}, {"nibs", "Nibs"}, {"paste", "Paste"}, {"table_chocolate", "Table chocolate"}, {"bar", "Bar"}}},
+		{"coffee", "species", "Especie", "option", "product", "", true, []demoOption{{"arabica", "Arábica"}}},
+		{"coffee", "varieties", "Variedades", "multi_option", "product", "", false, []demoOption{{"geisha", "Geisha"}, {"bourbon", "Bourbon"}, {"castillo", "Castillo"}}},
+		{"coffee", "process", "Proceso", "option", "product", "", true, []demoOption{{"washed", "Lavado"}, {"natural", "Natural"}, {"honey", "Honey"}}},
+		{"coffee", "roast_level", "Tostión", "option", "product", "", true, []demoOption{{"light", "Clara"}, {"medium", "Media"}, {"dark", "Oscura"}}},
+		{"coffee", "tasting_notes", "Notas de cata", "text", "product", "", false, nil},
+		{"coffee", "cupping_score", "Puntaje de cata", "decimal", "product", "", false, nil},
+		{"coffee", "cupping_protocol", "Protocolo de evaluación", "option", "product", "", false, []demoOption{{"sca", "SCA (evaluación demo)"}}},
+		{"coffee", "presentation", "Presentación", "option", "variant", "g", true, []demoOption{{"250_g", "250"}, {"500_g", "500"}}},
+		{"coffee", "grind", "Molienda", "option", "variant", "", true, []demoOption{{"whole_bean", "Grano entero"}, {"fine", "Fina"}, {"medium", "Media"}, {"coarse", "Gruesa"}}},
+		{"cacao", "genetic_group", "Grupo genético", "option", "product", "", false, []demoOption{{"criollo", "Criollo"}, {"trinitario", "Trinitario"}, {"forastero", "Forastero"}}},
+		{"cacao", "fermentation", "Fermentación", "text", "product", "", false, nil},
+		{"cacao", "drying", "Secado", "text", "product", "", false, nil},
+		{"cacao", "product_form", "Forma del producto", "option", "product", "", true, []demoOption{{"beans", "Granos"}, {"nibs", "Nibs"}, {"paste", "Pasta"}, {"table_chocolate", "Chocolate de mesa"}, {"bar", "Barra"}}},
 		{"cacao", "cacao_percentage", "Cacao", "integer", "product", "%", false, nil},
-		{"cacao", "fine_or_flavour", "Fine or flavour (merchant declaration)", "boolean", "product", "", false, nil},
-		{"cacao", "presentation", "Presentation", "option", "variant", "g", true, []demoOption{{"80_g", "80"}}},
+		{"cacao", "fine_or_flavour", "Fino o de aroma (declaración del comerciante)", "boolean", "product", "", false, nil},
+		{"cacao", "presentation", "Presentación", "option", "variant", "g", true, []demoOption{{"80_g", "80"}}},
 	}
 	mirador := demoProduct{
 		slug: "finca-el-mirador", title: "Finca El Mirador", productType: "coffee", origin: "finca-el-mirador",
-		description: "Demo washed coffee with a fixed medium roast and independent stock per presentation and grind.",
-		attributes:  map[string]any{"species": "arabica", "varieties": []string{"geisha", "bourbon"}, "process": "washed", "roast_level": "medium", "tasting_notes": "Citrus, panela and chocolate (demo)", "cupping_score": 88.5, "cupping_protocol": "sca"},
+		description: "Café lavado demo con tostión media fija y existencias independientes por presentación y molienda.",
+		attributes:  map[string]any{"species": "arabica", "varieties": []string{"geisha", "bourbon"}, "process": "washed", "roast_level": "medium", "tasting_notes": "Cítricos, panela y chocolate (demo)", "cupping_score": 88.5, "cupping_protocol": "sca"},
 	}
 	for _, weight := range []int{250, 500} {
 		presentation, skuWeight := "250_g", "250"
@@ -69,19 +69,19 @@ func demoData() ([]demoDefinition, []demoProduct) {
 	}
 	maria := demoProduct{
 		slug: "finca-la-maria", title: "Finca La María", productType: "coffee", origin: "finca-el-mirador",
-		description: "Second demo coffee sharing the reusable coffee origin.",
-		attributes:  map[string]any{"species": "arabica", "varieties": []string{"castillo"}, "process": "natural", "roast_level": "light", "tasting_notes": "Red fruit (demo)", "cupping_score": nil, "cupping_protocol": nil},
+		description: "Segundo café demo que comparte el origen de café reutilizable.",
+		attributes:  map[string]any{"species": "arabica", "varieties": []string{"castillo"}, "process": "natural", "roast_level": "light", "tasting_notes": "Frutos rojos (demo)", "cupping_score": nil, "cupping_protocol": nil},
 		variants:    []demoVariant{{sku: "MARIA-250-WHOLE_BEAN", weight: 250, price: 4200000, options: map[string]any{"presentation": "250_g", "grind": "whole_bean"}}},
 	}
 	chocolate := demoProduct{
 		slug: "chocolate-70", title: "Chocolate 70%", productType: "cacao", origin: "demo-cacao-origin",
-		description: "Demo cacao bar; origin facts stay separate from cacao product attributes.",
-		attributes:  map[string]any{"genetic_group": "trinitario", "fermentation": "Six days (demo)", "drying": "Sun-dried (demo)", "product_form": "bar", "cacao_percentage": 70, "fine_or_flavour": true},
+		description: "Barra de cacao demo; los datos de origen se mantienen separados de los atributos del producto de cacao.",
+		attributes:  map[string]any{"genetic_group": "trinitario", "fermentation": "Seis días (demo)", "drying": "Secado al sol (demo)", "product_form": "bar", "cacao_percentage": 70, "fine_or_flavour": true},
 		variants:    []demoVariant{{sku: "CHOCOLATE-70-80", weight: 80, price: 1400000, options: map[string]any{"presentation": "80_g"}}},
 	}
 	noOrigin := demoProduct{
 		slug: "chocolate-85", title: "Chocolate 85%", productType: "cacao",
-		description: "Demo commercial-brand product without an agricultural origin; no origin link is shown.",
+		description: "Producto demo de marca comercial sin origen agrícola; no se muestra enlace de origen.",
 		attributes:  map[string]any{"genetic_group": nil, "fermentation": nil, "drying": nil, "product_form": "bar", "cacao_percentage": 85, "fine_or_flavour": false},
 		variants:    []demoVariant{{sku: "CHOCOLATE-85-80", weight: 80, price: 1600000, options: map[string]any{"presentation": "80_g"}}},
 	}
