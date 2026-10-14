@@ -3,6 +3,68 @@
 Run Go commands from `backend/`. Canonical schema: [Catalog domain](../docs/domain/catalog.md),
 with [data modeling conventions](../docs/architecture/data-modeling.md).
 
+## Run the read API
+
+```sh
+go run ./cmd/api
+```
+
+The API requires `API_ADDR` (unchanged), `DATABASE_URL`, and `MEDIA_BASE_URL`.
+Configuration is validated before listening; missing values produce clear errors,
+and database connection errors never echo the connection string. The catalog pool
+is pinged at startup with a 15-second timeout and closed on shutdown.
+
+`MEDIA_BASE_URL` is the public HTTP(S) base serving media objects, not an S3 API
+endpoint or credential-bearing URL. It may include a path prefix, but no user info,
+query, or fragment. For example, `https://media.example/store/` resolves
+`demo/products/finca-el-mirador.jpg` to
+`https://media.example/store/demo/products/finca-el-mirador.jpg`.
+The backend only resolves URLs: it does not download, upload, or serve images.
+The configured origin must actually serve the relative demo keys to show images.
+The coordinator must wire this value into the root environment example/Taskfile;
+this backend-only task deliberately leaves those files unchanged.
+
+Public GET paths under `/api/v1`:
+
+| Path | Purpose |
+| --- | --- |
+| `/products` | Stable product listing with exact category/type filters |
+| `/products/{slug}` | Stable product detail, without authoritative price/stock |
+| `/categories` | Active categories, including nullable active parent slug |
+| `/origins` | Active origin enumeration for static routes |
+| `/origins/{slug}` | Origin facts only |
+| `/origins/{slug}/products` | Published products linked to an active origin |
+| `/product-availabilities` | One live batch read using repeated `product_slug` |
+
+The approved [catalog contract](../contracts/openapi/catalog.yaml) defines response
+shapes, filters, sorts, and error codes. Collections default to 24 items, maximum
+100; opaque keyset cursors bind endpoint, slug, normalized filter sets, sort, and
+page limit. Follow `next_cursor` with the same query; reordered repeated filter
+values remain equivalent. Invalid/mismatched cursors return `invalid_cursor` (400),
+unknown query parameters return `validation_failed` (422) with `unknown_parameter`.
+
+Stable reads send `public, max-age=60`; live responses **including errors** send
+`no-store`. Stable product composition batches related reads within a read-only
+repeatable-read transaction. Live reads use one SQL statement, so all variant
+prices, summed active-lot stock and earliest positive active-lot production dates
+in a page share one snapshot. Missing/unpublished batch slugs are omitted, not
+misrepresented as sold-out variants; active products with no active variants have
+an empty variants array. No HTTP read allocates or mutates stock.
+
+## Generate catalog queries
+
+```sh
+go tool -modfile=tools.mod sqlc generate
+```
+
+sqlc v1.31.1 is pinned in `tools.mod`. It reads the existing goose migrations plus
+a schema-only prelude (`internal/catalog/adapters/postgres/schema.sql`), because
+the runtime migration runner creates the schema before goose. Generated files live
+only under `internal/catalog/adapters/postgres/sqlc`; never edit them by hand.
+Root consumers import only `internal/catalog`; depguard rejects private-layer and
+generated-model imports outside their allowed surfaces. Migrate/seed command entry
+points use the same root facade, preserving their existing behavior.
+
 ## Apply catalog migrations
 
 ```sh
@@ -73,7 +135,7 @@ no image files are added or uploaded, and media URL resolution remains B2 work.
 ## Verify persistence
 
 ```sh
-go test -count=1 ./internal/catalog/adapters/postgres/...
+go test -count=1 ./internal/catalog/...
 ```
 
 Docker must be running. Every integration test starts its own PostgreSQL 18 container,

@@ -12,7 +12,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/freedomCruz/monte-luna/backend/internal/catalog/adapters/postgres"
+	"github.com/freedomCruz/monte-luna/backend/internal/catalog"
 )
 
 func main() {
@@ -41,10 +41,10 @@ func main() {
 }
 
 func run(ctx context.Context) (err error) {
-	db, err := postgres.Open(ctx, os.Getenv("DATABASE_URL"))
+	db, err := catalog.OpenDatabase(ctx, os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return err
 	}
 	defer func() { err = errors.Join(err, db.Close()) }()
-	return postgres.Seed(ctx, db)
+	return catalog.Seed(ctx, db)
 }
