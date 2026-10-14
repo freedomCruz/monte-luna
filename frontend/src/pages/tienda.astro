@@ -60,7 +60,7 @@ const allProductSlugs = Array.from(new Set(products.map((p) => p.slug)));
       const isForest = group.theme === 'forest';
       const isBurgundy = group.theme === 'burgundy';
       const bannerBg = isForest ? 'bg-brand-forest text-brand-sand' : isBurgundy ? 'bg-brand-burgundy text-brand-sand' : 'bg-brand-sand text-foreground';
-      const labelColor = isForest || isBurgundy ? 'text-brand-yellow' : 'text-brand-burgundy';
+      const labelColor = isForest || isBurgundy ? 'text-brand-sand/90' : 'text-brand-burgundy';
 
       return (
         <section
