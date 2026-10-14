@@ -21,9 +21,15 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Go API health endpoint and shared OpenAPI 3.1 contract with generated frontend types.
 - Static Astro storefront scaffold themed with Monteluna design tokens and a reviewed shadcn/ui button.
 - `task verify` to run backend and frontend checks before review.
+- Read-only Catalog v1 storefront in Spanish: shop listing grouped by category (`/tienda`), product pages with presentation and grind options (`/productos/<slug>`), and origin pages (`/origenes/<slug>`), pre-rendered from the catalog API.
+- Live price, compare-at price, availability, and roast date of the oldest lot in stock, loaded in the browser on every visit; sold-out options are marked "Agotado". There is no add-to-cart button until the cart exists.
+- Public catalog read API: products, categories, origins, and batch product availability, described in `contracts/openapi/catalog.yaml`.
+- Catalog database schema with migrations, and a Spanish demo catalog loaded with `task backend:seed` (never by migrations).
+- End-to-end storefront tests with Playwright and axe-core accessibility scans on desktop and mobile, run by `task verify`.
 
 ### Changed
 
+- `task verify` now checks every generated API type file for drift, not only the platform types.
 - Frontend UI component library changed from Storefront UI to shadcn/ui (Radix primitives) for the storefront and admin panel, styled with Tailwind CSS using the Monteluna design system.
 
 ### Security
