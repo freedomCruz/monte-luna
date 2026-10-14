@@ -12,6 +12,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/freedomCruz/monte-luna/backend/internal/catalog"
 	"github.com/freedomCruz/monte-luna/backend/internal/platform"
 )
 
@@ -26,13 +27,22 @@ func main() {
 // run validates configuration, serves HTTP, and shuts down gracefully on
 // SIGINT or SIGTERM.
 func run(logger *slog.Logger) error {
-	addr := os.Getenv("API_ADDR")
-	if addr == "" {
-		return errors.New("API_ADDR is required (for example 127.0.0.1:8080)")
+	cfg, err := loadConfig()
+	if err != nil {
+		return err
 	}
+	addr := cfg.addr
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+	module, err := catalog.New(ctx, cfg.databaseURL, cfg.mediaBaseURL, logger)
+	if err != nil {
+		return err
+	}
+	defer module.Close()
 
 	mux := http.NewServeMux()
 	platform.RegisterRoutes(mux)
+	module.RegisterRoutes(mux)
 
 	srv := &http.Server{
 		Addr:              addr,
@@ -42,9 +52,6 @@ func run(logger *slog.Logger) error {
 		WriteTimeout:      15 * time.Second,
 		IdleTimeout:       60 * time.Second,
 	}
-
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
 
 	errCh := make(chan error, 1)
 	go func() {
@@ -68,4 +75,22 @@ func run(logger *slog.Logger) error {
 	}
 	logger.Info("api stopped cleanly")
 	return nil
+}
+
+type config struct {
+	addr, databaseURL, mediaBaseURL string
+}
+
+func loadConfig() (config, error) {
+	cfg := config{addr: os.Getenv("API_ADDR"), databaseURL: os.Getenv("DATABASE_URL"), mediaBaseURL: os.Getenv("MEDIA_BASE_URL")}
+	if cfg.addr == "" {
+		return cfg, errors.New("API_ADDR is required (for example 127.0.0.1:8080)")
+	}
+	if err := catalog.ValidateDatabaseURL(cfg.databaseURL); err != nil {
+		return cfg, err
+	}
+	if err := catalog.ValidateMediaBaseURL(cfg.mediaBaseURL); err != nil {
+		return cfg, err
+	}
+	return cfg, nil
 }
