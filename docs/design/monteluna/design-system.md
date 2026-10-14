@@ -109,7 +109,7 @@ Each component is drawn with all its states in the sheet. This list says where t
 | Top bar, header, marquee | Green slogan bar, yellow header with the "Monteluna" wordmark, dark marquee with rotated cream pills |
 | Option chip | Rest, hover, selected (green), focus, sold out, sold out and selected. Sold out shows the "Agotado" label, a dashed border, and a strikethrough |
 | Price, stepper, pills, seal | Stepper has a 2 px `foreground` border. The seal is a rotated circle with a dashed inner outline |
-| Product card | White, radius 20. The product overflows the top by 130 px (mobile value: see section 10). The button opens the product page and never adds to the cart. Roast meter for coffee, percentage meter for cacao |
+| Product card | White, radius 20. The product overflows the top by 130 px on desktop and 120 px on mobile; mobile title is 26 px. Do not clip the protruding product image inside a box. Follow the original shop screen, not the compact component-sheet variant. The button opens the product page and never adds to the cart. Coffee shows the CLARA–OSCURA roast line and a marker for its actual roast level; cacao shows its actual percentage meter. Neither indicator is optional when its catalog value is known |
 | Colour panel | Green for coffee, purple for cacao. Yellow label, title, one paragraph, optional cream button |
 | Numbered step, big figure | Used in the origin page |
 | Cart line | Product pops out of the top-left corner. Compact 44 px stepper, remove icon button |
@@ -174,12 +174,13 @@ Confirm these before building them.
 - Link to purchase terms next to the data policy.
 - Hover colour `#A51F26` for the red button.
 
-## 10. Known inconsistencies in the canvas
+## 10. Reference precedence and visual verification
 
-Resolve these in the canvas before treating either value as final.
-
-- Product card on mobile: the sheet says the product overflows by 72 px and the title is 18 px; the shop screen (`M-Listado-390`) uses 120 px and 26 px.
-- The canvas was never rendered and checked by its author. Heights, wrapping, and animations are unverified.
+- Resolved by the user: the original shop screen (`M-Listado-390`) is authoritative for mobile product cards: 120 px product overflow and 26 px title. The component sheet's 72 px / 18 px variant is superseded; do not implement it. The source canvas itself has not been edited to reconcile this discrepancy.
+- The user-supplied product-card reference confirms the protruding package, white rounded surface, category/origin eyebrow, title, tasting description, CLARA–OSCURA roast line with bean marker, savings badge, and product-detail CTA. Dynamic money still follows the approved API and hybrid-data rules; never hard-code screenshot amounts.
+- Product cards must use one shared component across storefront consumers. Compose small, cohesive components with explicit props or slots rather than copying markup between pages; do not fragment elements without a meaningful responsibility.
+- Verify desktop and mobile screenshots against the original design, including image overflow without clipping, spacing, typography, indicators, badge and CTA placement. Functional tests and axe scans alone do not establish visual fidelity.
+- Heights, wrapping, and animations remain subject to rendered verification. Record any reference mismatch rather than silently substituting a different layout.
 
 ## 11. Placeholder content
 
