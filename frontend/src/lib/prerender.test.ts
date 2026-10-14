@@ -85,7 +85,7 @@ describe('Pre-rendered HTML output invariants', () => {
     );
 
     expect(originHtml).toContain('Finca El Mirador');
-    expect(originHtml).toContain('Demo coffee producer');
+    expect(originHtml).toContain('Productor de café demo');
     expect(originHtml).toContain('1700');
     expect(originHtml).toContain('/productos/finca-el-mirador');
   });

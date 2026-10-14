@@ -16,7 +16,7 @@ test.describe('Origin Detail (/origenes/[slug])', () => {
 
     // 2. Verify Origin Facts
     // Location, producer, altitude
-    await expect(page.locator('dd', { hasText: 'Demo coffee producer' })).toBeVisible();
+    await expect(page.locator('dd', { hasText: 'Productor de café demo' })).toBeVisible();
     await expect(page.locator('dd', { hasText: /San Agustín/i })).toBeVisible();
     await expect(page.locator('dd', { hasText: /Huila/i })).toBeVisible();
     await expect(page.locator('dd', { hasText: /1700 – 1900 m s\. n\. m\./i })).toBeVisible();
@@ -36,8 +36,8 @@ test.describe('Origin Detail (/origenes/[slug])', () => {
   test('demo-cacao-origin: displays cacao origin facts and associated cacao products', async ({ page }) => {
     await page.goto('/origenes/demo-cacao-origin');
 
-    await expect(page).toHaveTitle(/\[Demo cacao origin\] · Origen Monteluna/);
-    await expect(page.getByRole('heading', { level: 1, name: '[Demo cacao origin]' })).toBeVisible();
+    await expect(page).toHaveTitle(/\[Origen de cacao demo\] · Origen Monteluna/);
+    await expect(page.getByRole('heading', { level: 1, name: '[Origen de cacao demo]' })).toBeVisible();
 
     // Cacao terroir / municipality
     await expect(page.locator('dd', { hasText: /San Vicente de Chucurí/i })).toBeVisible();
