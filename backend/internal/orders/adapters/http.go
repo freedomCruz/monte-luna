@@ -16,8 +16,10 @@ import (
 )
 
 type HTTP struct {
-	service *app.Service
-	logger  *slog.Logger
+	service   *app.Service
+	placement *app.Placement
+	guest     domain.GuestReader
+	logger    *slog.Logger
 }
 
 func NewHTTP(service *app.Service, logger *slog.Logger) *HTTP {
@@ -28,6 +30,14 @@ func NewHTTP(service *app.Service, logger *slog.Logger) *HTTP {
 }
 func (h *HTTP) RegisterRoutes(mux *http.ServeMux) {
 	mux.HandleFunc("POST /api/v1/orders/quote", h.quote)
+	if h.placement != nil {
+		mux.Handle("POST /api/v1/orders", http.NewCrossOriginProtection().Handler(http.HandlerFunc(h.place)))
+		mux.HandleFunc("GET /api/v1/orders/track", h.track)
+	}
+}
+func (h *HTTP) EnablePlacement(placement *app.Placement, guest domain.GuestReader) {
+	h.placement = placement
+	h.guest = guest
 }
 func unknown(raw map[string]json.RawMessage, allowed []string, prefix string) error {
 	keys := make([]string, 0, len(raw))
