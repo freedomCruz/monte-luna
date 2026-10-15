@@ -57,10 +57,10 @@ Contract: `contracts/openapi/orders.yaml` (no `shipping.yaml` in this wave, L2).
 | T1 | Feature document and Engram mirror (done) | S1–S6 | coordinator | — | `a1ccf00` |
 | C1 | `orders.yaml` contract → Gate G3 (done; approved L6) | S3, S4, S5 | coordinator draft (L1), backend owns later changes | T1 | `a1ccf00` |
 | D1 | DIVIPOLA snapshot script and data file with attribution (done) | S6 | coordinator | G3 | `91eb4d6` |
-| B1 | Shipping schema, migrations, seed, and quote port | S2 | backend | G3 | — |
+| B1 | Shipping schema, migrations, seed, and quote port; embedded DIVIPOLA copy with equality test | S2, S6 | backend | G3, D1 | — |
 | B2 | Orders schema, migrations, quote endpoint, `TaxCalculator` port | S3 | backend | B1, D1 | — |
 | B3 | Order placement, catalog allocation and release, order number, tracking token, outbox, guest order endpoint | S4, S5 | backend | B2 | — |
-| F1 | Cart store, slide-over panel, `/carrito`, header badge | S1 | frontend | G3 | — |
+| F1 | Install approved Nano Stores packages (L8); cart store, slide-over panel, `/carrito`, header badge | S1 | frontend | G3 | — |
 | F2 | Enable "Agregar al carrito" in purchase island and `ProductCard` | S1 | frontend | F1 | — |
 | F3 | `/checkout` data step and payment shell | S5, S6 | frontend | F1, D1 | — |
 | F4 | Order placement integration and `/pedido` guest view | S4, S5 | frontend | F3 | — |
