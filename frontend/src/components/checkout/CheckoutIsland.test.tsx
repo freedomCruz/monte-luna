@@ -226,6 +226,20 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
           json: async () => mockQuoteResponse,
         });
       }
+      if (typeof url === 'string' && url.endsWith('/api/v1/orders')) {
+        return Promise.resolve({
+          ok: true,
+          status: 201,
+          json: async () => ({
+            order_id: '01928374-abcd-7000-8000-123456789abc',
+            order_number: 'ORD-7K2M9Q4X',
+            status: 'pending_payment',
+            total_amount: 4750000,
+            reservation_expires_at: '2026-10-15T15:30:00Z',
+            tracking_token: 'tok_abc123def456',
+          }),
+        });
+      }
       return Promise.resolve({ ok: false, status: 404 });
     });
 
@@ -272,6 +286,8 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
       expect(screen.getByText('Pagas en la ventana segura de Wompi.')).toBeDefined();
       expect(screen.getByRole('button', { name: /Pagar \$47\.500/i })).toBeDefined();
       expect(screen.getByText('El pago en línea estará disponible pronto.')).toBeDefined();
+      expect(screen.getAllByText(/ORD-7K2M9Q4X/i).length).toBeGreaterThan(0);
+      expect(screen.getByRole('link', { name: /Ver estado del pedido/i })).toBeDefined();
       const payBtn = screen.getByRole('button', { name: /Pagar \$47\.500/i });
       expect(payBtn.getAttribute('aria-disabled')).toBe('true');
       expect((payBtn as HTMLButtonElement).disabled).toBe(true);

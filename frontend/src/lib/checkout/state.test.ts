@@ -5,8 +5,14 @@ import {
   loadCheckoutData,
   saveCheckoutData,
   clearCheckoutData,
+  loadPlacedOrder,
+  savePlacedOrder,
+  clearPlacedOrder,
+  mapFormDataToPlaceOrderRequest,
   type CheckoutFormData,
 } from './state';
+
+
 
 describe('Checkout state and validation (S4, S5)', () => {
   beforeEach(() => {
@@ -153,4 +159,94 @@ describe('Checkout state and validation (S4, S5)', () => {
     clearCheckoutData();
     expect(loadCheckoutData()).toBeNull();
   });
+
+  it('saves, loads, and clears placed order from sessionStorage', () => {
+    const mockPlaced = {
+      order_id: '01923456-789a-7bcd-ef01-23456789abcd',
+      order_number: 'ORD-7K2M9Q4X',
+      status: 'pending_payment',
+      total_amount: 47500,
+      reservation_expires_at: '2026-10-15T15:30:00Z',
+      tracking_token: 'abc123_-xyz456_7890123456789012345678901234',
+    };
+    savePlacedOrder(mockPlaced);
+    expect(loadPlacedOrder()).toEqual(mockPlaced);
+
+    clearPlacedOrder();
+    expect(loadPlacedOrder()).toBeNull();
+  });
+
+  it('maps CheckoutFormData and items to PlaceOrderRequest', () => {
+    const items = [
+      {
+        variant_id: '01912345-6789-7abc-def0-123456789abc',
+        product_slug: 'finca-el-mirador',
+        product_name: 'Finca El Mirador',
+        variant_label: '500 g / Grano entero',
+        origin_name: 'Huila',
+        quantity: 2,
+        product_type: 'coffee' as const,
+      },
+    ];
+
+    const mapped = mapFormDataToPlaceOrderRequest(validForm, items);
+    expect(mapped.items).toEqual([
+      {
+        variant_id: '01912345-6789-7abc-def0-123456789abc',
+        quantity: 2,
+      },
+    ]);
+    expect(mapped.customer).toEqual({
+      email: 'maria.gomez@correo.com',
+      full_name: 'María Gómez',
+      phone: '3001234567',
+    });
+    expect(mapped.shipping_address).toEqual({
+      recipient_name: 'María Gómez',
+      recipient_phone: '3105550142',
+      municipality_code: '41551',
+      address_line1: 'Calle 5 # 12-34',
+      address_line2: 'Apto 302',
+      postal_code: '417030',
+      delivery_notes: 'Portería',
+    });
+    expect(mapped.fiscal_data).toBeNull();
+    expect(mapped.accepts_data_policy).toBe(true);
+  });
+
+  it('maps separate recipient and electronic invoice to PlaceOrderRequest', () => {
+    const items = [
+      {
+        variant_id: '01912345-6789-7abc-def0-123456789abc',
+        product_slug: 'finca-el-mirador',
+        product_name: 'Finca El Mirador',
+        variant_label: '500 g / Grano entero',
+        origin_name: 'Huila',
+        quantity: 1,
+        product_type: 'coffee' as const,
+      },
+    ];
+
+    const separateRecipientForm: CheckoutFormData = {
+      ...validForm,
+      sameRecipient: false,
+      recipientName: 'Carlos Gómez',
+      recipientPhone: '3209876543',
+      wantsInvoice: true,
+      personType: 'legal',
+      documentType: 'NIT',
+      documentNumber: '900.123.456-7',
+    };
+
+    const mapped = mapFormDataToPlaceOrderRequest(separateRecipientForm, items);
+    expect(mapped.shipping_address.recipient_name).toBe('Carlos Gómez');
+    expect(mapped.shipping_address.recipient_phone).toBe('3209876543');
+    expect(mapped.fiscal_data).toEqual({
+      person_type: 'legal',
+      document_type: 'NIT',
+      document_number: '900123456-7',
+    });
+  });
 });
+
+

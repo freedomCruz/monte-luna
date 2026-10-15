@@ -131,9 +131,41 @@ export interface components {
              */
             estimated_days_max: number;
         };
+        /**
+         * @description Shipping summary for checkout quotes. Extends the resolved shipping
+         *     rate with the regular, non-discounted rate amount before the
+         *     free-shipping threshold is applied, so the storefront can render the
+         *     regular rate struck through when free shipping applies.
+         */
+        QuoteShippingSummary: {
+            /** @example Bogotá estándar */
+            rate_name: string;
+            shipping_amount: components["schemas"]["MoneyAmount"];
+            /** @description True when the subtotal reached the rate's free-shipping threshold. */
+            is_free_shipping: boolean;
+            /**
+             * @description Business days.
+             * @example 3
+             */
+            estimated_days_min: number;
+            /**
+             * @description Business days; greater than or equal to estimated_days_min.
+             * @example 5
+             */
+            estimated_days_max: number;
+            /**
+             * @description Regular non-discounted rate amount for the resolved rate before
+             *     the free-shipping threshold is applied. Equals shipping_amount
+             *     when is_free_shipping is false. When is_free_shipping is true,
+             *     shipping_amount is 0 and regular_shipping_amount holds the
+             *     original rate cost.
+             * @example 950000
+             */
+            regular_shipping_amount: components["schemas"]["MoneyAmount"];
+        };
         OrderQuote: {
             lines: components["schemas"]["OrderLine"][];
-            shipping: components["schemas"]["ShippingSummary"];
+            shipping: components["schemas"]["QuoteShippingSummary"];
             subtotal_amount: components["schemas"]["MoneyAmount"];
             shipping_amount: components["schemas"]["MoneyAmount"];
             tax_amount: components["schemas"]["MoneyAmount"];

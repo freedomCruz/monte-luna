@@ -20,6 +20,8 @@ export interface CheckoutDatosStepProps {
   quote: OrderQuoteResponse | null;
   quoteLoading: boolean;
   quoteError: string | null;
+  submitError: string | null;
+  isSubmitting: boolean;
   selectedDept?: DivipolaDepartment;
   selectedMuni?: DivipolaMunicipality;
   items: CartItem[];
@@ -40,6 +42,8 @@ export function CheckoutDatosStep({
   quote,
   quoteLoading,
   quoteError,
+  submitError,
+  isSubmitting,
   selectedDept,
   selectedMuni,
   items,
@@ -88,6 +92,34 @@ export function CheckoutDatosStep({
       <main className="max-w-[1320px] w-full mx-auto px-6 md:px-12 py-8 md:py-12 flex-1 flex flex-col lg:flex-row items-start gap-8 lg:gap-12">
         {/* Form container */}
         <form onSubmit={onSubmit} noValidate className="flex-1 w-full flex flex-col gap-8">
+          {/* Submit Error Banner (e.g. insufficient_stock, variant_unavailable, unsupported_destination) */}
+          {submitError && (
+            <div
+              role="alert"
+              className="flex items-start gap-3.5 p-5 bg-card border-2 border-destructive rounded-2xl"
+            >
+              <svg
+                width="28"
+                height="28"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2.2"
+                aria-hidden="true"
+                className="text-destructive shrink-0 mt-0.5"
+              >
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M12 7.5v5.5M12 16.5v.2"></path>
+              </svg>
+              <div className="flex flex-col gap-1">
+                <span className="text-base font-bold text-destructive">
+                  No se pudo crear el pedido
+                </span>
+                <span className="text-sm text-foreground/80">{submitError}</span>
+              </div>
+            </div>
+          )}
+
           {/* Error Banner when validation fails */}
           {hasErrors && (
             <div
@@ -150,10 +182,11 @@ export function CheckoutDatosStep({
           <div className="hidden lg:flex items-center justify-end pt-4">
             <button
               type="submit"
-              disabled={quoteLoading}
+              disabled={quoteLoading || isSubmitting}
               className="inline-flex items-center justify-center gap-3 min-h-[64px] px-10 rounded-xl bg-accent text-white font-condensed text-2xl font-extrabold uppercase tracking-wide hover:opacity-95 transition-opacity cursor-pointer disabled:opacity-50"
             >
-              Continuar al pago <span aria-hidden="true">→</span>
+              {isSubmitting ? 'Creando pedido…' : 'Continuar al pago'}{' '}
+              <span aria-hidden="true">→</span>
             </button>
           </div>
         </form>
@@ -180,10 +213,11 @@ export function CheckoutDatosStep({
         <button
           type="button"
           onClick={onSubmit}
-          disabled={quoteLoading}
+          disabled={quoteLoading || isSubmitting}
           className="flex-1 flex items-center justify-center gap-2 min-h-[56px] px-6 rounded-xl bg-accent text-white font-condensed text-xl font-extrabold uppercase tracking-wide hover:opacity-95 transition-opacity cursor-pointer disabled:opacity-50"
         >
-          Continuar al pago <span aria-hidden="true">→</span>
+          {isSubmitting ? 'Creando pedido…' : 'Continuar al pago'}{' '}
+          <span aria-hidden="true">→</span>
         </button>
       </div>
     </div>
