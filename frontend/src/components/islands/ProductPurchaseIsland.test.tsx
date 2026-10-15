@@ -124,7 +124,7 @@ describe('ProductPurchaseIsland', () => {
 
     // Initial variant is 250g / Grano entero
     await waitFor(() => {
-      expect(screen.getByText('$38.000')).toBeDefined();
+      expect(screen.getAllByText('$38.000').length).toBeGreaterThan(0);
     });
 
     expect(screen.getByText('$45.000')).toBeDefined();
@@ -152,7 +152,7 @@ describe('ProductPurchaseIsland', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('$38.000')).toBeDefined();
+      expect(screen.getAllByText('$38.000').length).toBeGreaterThan(0);
     });
 
     // Select 500 g
@@ -217,7 +217,7 @@ describe('ProductPurchaseIsland', () => {
     );
 
     await waitFor(() => {
-      expect(screen.getByText('$38.000')).toBeDefined();
+      expect(screen.getAllByText('$38.000').length).toBeGreaterThan(0);
     });
 
     // Select 500 g (current grind was Grano entero).
@@ -256,7 +256,7 @@ describe('ProductPurchaseIsland', () => {
     });
   });
 
-  it('never renders an add-to-cart or purchase button (S4 / Gate G2 invariant)', async () => {
+  it('renders quantity selector and Agregar al carrito button for in-stock variant', async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: true,
       status: 200,
@@ -266,16 +266,96 @@ describe('ProductPurchaseIsland', () => {
     render(
       <ProductPurchaseIsland
         productSlug="finca-el-mirador"
+        productName="Finca El Mirador"
         variants={mockVariants}
       />
     );
 
     await waitFor(() => {
-      expect(screen.getByText('$38.000')).toBeDefined();
+      expect(screen.getAllByText('$38.000').length).toBeGreaterThan(0);
     });
 
-    expect(screen.queryByRole('button', { name: /agregar al carrito/i })).toBeNull();
-    expect(screen.queryByRole('button', { name: /añadir al carrito/i })).toBeNull();
-    expect(screen.queryByRole('button', { name: /comprar/i })).toBeNull();
+    // Quantity selector
+    expect(screen.getByRole('button', { name: /disminuir cantidad/i })).toBeDefined();
+    expect(screen.getByRole('button', { name: /aumentar cantidad/i })).toBeDefined();
+    expect(screen.getByText('1')).toBeDefined();
+
+    // CTA enabled
+    const ctaBtn = screen.getByRole('button', { name: /agregar al carrito/i });
+    expect(ctaBtn).toBeDefined();
+    expect((ctaBtn as HTMLButtonElement).disabled).toBe(false);
+  });
+
+  it('disables Agregar al carrito when variant is out of stock', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockAvailabilityResponse,
+    });
+
+    render(
+      <ProductPurchaseIsland
+        productSlug="finca-el-mirador"
+        productName="Finca El Mirador"
+        variants={mockVariants}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByText('$38.000').length).toBeGreaterThan(0);
+    });
+
+    // Click on 500 g presentation
+    const p500Btn = screen.getByRole('button', { name: '500 g' });
+    fireEvent.click(p500Btn);
+
+    // Click on Fina grind
+    const fineBtn = screen.getByRole('button', { name: /fina/i });
+    fireEvent.click(fineBtn);
+
+    // CTA should now be disabled and text shows Agotado
+    const ctaBtn = screen.getByRole('button', { name: /^agotado$/i });
+    expect(ctaBtn).toBeDefined();
+    expect((ctaBtn as HTMLButtonElement).disabled).toBe(true);
+  });
+
+  it('adds item to cart and opens the cart drawer on clicking Agregar al carrito', async () => {
+    globalThis.fetch = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => mockAvailabilityResponse,
+    });
+
+    render(
+      <ProductPurchaseIsland
+        productSlug="finca-el-mirador"
+        productName="Finca El Mirador"
+        productImage="/images/mirador.jpg"
+        productType="coffee"
+        originName="Huila"
+        variants={mockVariants}
+      />
+    );
+
+    await waitFor(() => {
+      expect(screen.getAllByText('$38.000').length).toBeGreaterThan(0);
+    });
+
+    // Increase quantity to 2
+    const incBtn = screen.getByRole('button', { name: /aumentar cantidad/i });
+    fireEvent.click(incBtn);
+
+    const ctaBtn = screen.getByRole('button', { name: /agregar al carrito/i });
+    fireEvent.click(ctaBtn);
+
+    // Verify cart store has the item and drawer is open
+    const { $cart, $isCartOpen } = await import('../../lib/cart-store');
+    expect($isCartOpen.get()).toBe(true);
+
+    const items = Object.values($cart.get());
+    expect(items.length).toBe(1);
+    expect(items[0]?.variant_id).toBe('var-250-whole');
+    expect(items[0]?.quantity).toBe(2);
+    expect(items[0]?.product_name).toBe('Finca El Mirador');
   });
 });

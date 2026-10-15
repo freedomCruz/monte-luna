@@ -214,6 +214,11 @@ const relatedProducts = allProducts.filter((p) => p.slug !== product.slug).slice
             <ProductPurchaseIsland
               client:load
               productSlug={product.slug}
+              productName={product.title}
+              productImage={product.images[0]?.url}
+              productType={product.product_type?.slug}
+              originSlug={product.origin?.slug}
+              originName={product.origin?.name}
               variants={product.variants}
             />
           </div>

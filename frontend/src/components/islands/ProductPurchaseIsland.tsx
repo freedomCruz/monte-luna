@@ -5,19 +5,31 @@ import {
   type VariantAvailability,
 } from '../../lib/availabilities-client';
 import { formatMoneyCop, formatRoastDateSpanish } from '../../lib/formatters';
+import { addItem, openCart } from '../../lib/cart-store';
 
 export interface ProductPurchaseIslandProps {
   productSlug: string;
   variants: Variant[];
+  productName?: string;
+  productImage?: string;
+  productType?: string;
+  originSlug?: string;
+  originName?: string;
 }
 
 export function ProductPurchaseIsland({
   productSlug,
   variants,
+  productName,
+  productImage,
+  productType,
+  originSlug,
+  originName,
 }: ProductPurchaseIslandProps) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [availabilities, setAvailabilities] = useState<Map<string, VariantAvailability>>(new Map());
+  const [quantity, setQuantity] = useState(1);
 
   // Derive unique option axes (e.g. presentation, grind) from variants
   const optionAxes = useMemo(() => {
@@ -133,6 +145,36 @@ export function ProductPurchaseIsland({
       ...prev,
       [axisKey]: optValue,
     }));
+  };
+
+  const decrementQuantity = () => {
+    setQuantity((prev) => Math.max(1, prev - 1));
+  };
+
+  const incrementQuantity = () => {
+    setQuantity((prev) => prev + 1);
+  };
+
+  const handleAddToCart = () => {
+    if (!currentVariant || isCurrentOutOfStock) return;
+
+    const variantLabel = currentVariant.options
+      .map((o: VariantOption) => o.display_value || o.value)
+      .join(' · ');
+
+    addItem({
+      variant_id: currentVariant.id,
+      quantity,
+      product_slug: productSlug,
+      product_name: productName || productSlug,
+      variant_label: variantLabel,
+      image_url: productImage,
+      product_type: productType,
+      origin_slug: originSlug,
+      origin_name: originName,
+    });
+
+    openCart();
   };
 
   return (
@@ -290,48 +332,127 @@ export function ProductPurchaseIsland({
         );
       })}
 
-      {/* Out of Stock notice & Stock status message */}
-      <div className="flex flex-col gap-2 pt-2">
-        {!currentVariant ? (
-          <div
-            role="status"
-            className="flex items-center gap-2 text-sm font-semibold text-muted-foreground italic"
-          >
-            <span>Selecciona una combinación disponible de opciones</span>
+      {/* Quantity & Add to Cart Controls */}
+      <div className="flex flex-col gap-3 pt-2">
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
+            <span className="sm:hidden font-bold text-foreground text-base">Cantidad</span>
+            <div
+              role="group"
+              aria-label="Cantidad"
+              className="flex items-center h-[54px] sm:h-[60px] border-2 border-foreground rounded-xl bg-card"
+            >
+              <button
+                type="button"
+                aria-label="Disminuir cantidad"
+                onClick={decrementQuantity}
+                disabled={quantity <= 1 || isCurrentOutOfStock}
+                className="w-12 h-full border-0 rounded-l-xl bg-transparent text-foreground text-xl sm:text-2xl font-bold cursor-pointer transition-colors hover:bg-foreground/5 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-foreground"
+              >
+                −
+              </button>
+              <span
+                aria-live="polite"
+                className="min-w-8 text-center text-lg sm:text-xl font-extrabold text-foreground font-sans"
+              >
+                {quantity}
+              </span>
+              <button
+                type="button"
+                aria-label="Aumentar cantidad"
+                onClick={incrementQuantity}
+                disabled={isCurrentOutOfStock}
+                className="w-12 h-full border-0 rounded-r-xl bg-transparent text-foreground text-xl sm:text-2xl font-bold cursor-pointer transition-colors hover:bg-foreground/5 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-foreground"
+              >
+                +
+              </button>
+            </div>
           </div>
-        ) : isCurrentOutOfStock ? (
-          <div
-            role="status"
-            className="flex items-center gap-2 text-sm font-bold text-destructive"
-          >
-            <span className="w-2.5 h-2.5 rounded-full bg-destructive" aria-hidden="true"></span>
-            <span>
-              Sin existencias para{' '}
-              {currentVariant.options
-                .map((o: VariantOption) => o.display_value || o.value)
-                .join(' · ')}
-            </span>
+
+          {/* CTA button (responsive: inline on desktop sm:flex-1, fixed bar on mobile) */}
+          <div className="w-full sm:w-auto sm:flex-1 fixed sm:static bottom-0 left-0 right-0 z-30 sm:z-auto p-3 sm:p-0 bg-card sm:bg-transparent border-t-2 sm:border-t-0 border-foreground flex items-center justify-between sm:justify-start gap-3 shadow-[0_-4px_16px_rgba(0,0,0,0.08)] sm:shadow-none">
+            {/* Mobile-only price & stock status display */}
+            <div className="sm:hidden flex flex-col gap-0.5 min-w-0">
+              <span className="text-xl font-extrabold text-foreground leading-tight tracking-tight">
+                {currentAvailability?.price_amount ? formatMoneyCop(currentAvailability.price_amount) : '...'}
+              </span>
+              <span className={`text-xs font-semibold truncate ${isCurrentOutOfStock ? 'text-destructive' : 'text-success'}`}>
+                {isCurrentOutOfStock ? 'Agotado' : 'Disponible'}
+              </span>
+            </div>
+
+            <button
+              type="button"
+              disabled={isCurrentOutOfStock || !currentVariant || loading}
+              onClick={handleAddToCart}
+              className={`flex-1 sm:min-w-[220px] inline-flex items-center justify-center gap-2.5 h-[54px] sm:h-[60px] px-4 sm:px-6 rounded-xl font-sans text-sm sm:text-[17px] font-bold tracking-wide uppercase transition-colors focus-visible:outline-3 focus-visible:outline-foreground ${
+                isCurrentOutOfStock || !currentVariant
+                  ? 'bg-muted text-muted-foreground border-2 border-muted cursor-not-allowed'
+                  : 'bg-foreground text-primary-foreground hover:bg-foreground/90 cursor-pointer shadow-sm hover:shadow'
+              }`}
+            >
+              {!isCurrentOutOfStock && currentVariant && (
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  aria-hidden="true"
+                >
+                  <path d="M5 8h14l-1 12H6L5 8z"></path>
+                  <path d="M9 8V6a3 3 0 0 1 6 0v2"></path>
+                </svg>
+              )}
+              {isCurrentOutOfStock ? 'Agotado' : !currentVariant ? 'No disponible' : 'Agregar al carrito'}
+            </button>
           </div>
-        ) : (
-          !loading &&
-          currentAvailability && (
+        </div>
+
+        {/* Out of Stock notice & Stock status message */}
+        <div className="flex flex-col gap-2 pt-1">
+          {!currentVariant ? (
             <div
               role="status"
-              className="flex items-center gap-2 text-sm font-semibold text-success"
+              className="flex items-center gap-2 text-sm font-semibold text-muted-foreground italic"
             >
-              <span className="w-2.5 h-2.5 rounded-full bg-success" aria-hidden="true"></span>
+              <span>Selecciona una combinación disponible de opciones</span>
+            </div>
+          ) : isCurrentOutOfStock ? (
+            <div
+              role="status"
+              className="flex items-center gap-2 text-sm font-bold text-destructive"
+            >
+              <span className="w-2.5 h-2.5 rounded-full bg-destructive" aria-hidden="true"></span>
               <span>
-                Disponible en{' '}
+                Sin existencias para{' '}
                 {currentVariant.options
                   .map((o: VariantOption) => o.display_value || o.value)
                   .join(' · ')}
               </span>
             </div>
-          )
-        )}
+          ) : (
+            !loading &&
+            currentAvailability && (
+              <div
+                role="status"
+                className="flex items-center gap-2 text-sm font-semibold text-success"
+              >
+                <span className="w-2.5 h-2.5 rounded-full bg-success" aria-hidden="true"></span>
+                <span>
+                  Disponible en{' '}
+                  {currentVariant.options
+                    .map((o: VariantOption) => o.display_value || o.value)
+                    .join(' · ')}
+                </span>
+              </div>
+            )
+          )}
+        </div>
       </div>
-
-      {/* Invariant Gate G2 / S4: NO add-to-cart button rendered in Catalog v1 */}
     </div>
   );
 }

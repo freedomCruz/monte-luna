@@ -98,4 +98,32 @@ test.describe('Cart and Header Counter E2E', () => {
     const saved = await page.evaluate(() => window.localStorage.getItem('monteluna:cart'));
     expect(saved).toContain('"quantity":3');
   });
+
+  test('adds product to cart from product detail page and opens slide-over drawer', async ({ page }) => {
+    await page.goto('/productos/finca-el-mirador');
+    await page.waitForLoadState('networkidle');
+
+    const island = page.locator('[data-testid="product-purchase-island"]');
+    await expect(island).toBeVisible();
+
+    // Increase quantity to 2
+    const incBtn = island.getByRole('button', { name: /aumentar cantidad/i });
+    await incBtn.click();
+
+    // Click Agregar al carrito
+    const addBtn = island.getByRole('button', { name: /agregar al carrito/i });
+    await addBtn.click();
+
+    // Slide-over cart drawer should automatically open
+    const dialog = page.getByRole('dialog', { name: /Tu carrito/i });
+    await expect(dialog).toBeVisible();
+
+    // Cart drawer shows 2 items of Finca El Mirador
+    await expect(dialog.getByText('Finca El Mirador')).toBeVisible();
+    await expect(dialog.getByText('2 productos')).toBeVisible();
+
+    // Header counter should update to 2
+    const cartBtn = page.locator('header').getByRole('button', { name: /Abrir el carrito \(2 productos\)/i });
+    await expect(cartBtn).toBeVisible();
+  });
 });

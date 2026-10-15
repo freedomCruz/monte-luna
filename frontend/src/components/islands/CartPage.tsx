@@ -337,10 +337,6 @@ export function CartPage() {
                 <span className="font-bold text-foreground">Envío</span>
                 <span className="text-muted-foreground">Se calcula con tu municipio</span>
               </div>
-              <div className="flex justify-between gap-2">
-                <span className="font-bold text-foreground">Cupón</span>
-                <span className="text-muted-foreground">Lo ingresas al pagar</span>
-              </div>
             </div>
 
             <a
