@@ -438,7 +438,8 @@ components:
           $ref: '#/components/schemas/MunicipalityCode'
         municipality_name:
           type: string
-          examples: ['Bogotá, D.C.']
+          description: DIVIPOLA display name snapshotted at placement (contracts/reference/divipola.json).
+          examples: ['Bogotá, D. C.']
         department_name:
           type: string
           examples: ['Bogotá, D. C.']

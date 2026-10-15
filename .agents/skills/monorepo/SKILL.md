@@ -21,6 +21,7 @@ Do not use for Go application logic inside `backend/` (load `backend-go-modules`
   - `frontend/`: Astro application (`package.json` resides here).
   - `deploy/`: production Compose file, deploy, and backup scripts.
   - `contracts/openapi/`: hand-written OpenAPI 3.1 documents, one per module plus `common.yaml`; source of truth for the HTTP API.
+  - `contracts/reference/`: versioned reference data shared by backend and frontend (DIVIPOLA), with source and license in its `README.md`; generators live in `scripts/`.
   - `docs/`, `.agents/skills/`, `odd/`.
   - Root files: `AGENTS.md`, `CHANGELOG.md`, `Taskfile.yml`, `.node-version`, `compose.yaml` (local dev PostgreSQL), `.env.example`, `.gitattributes`, `.editorconfig`.
   - Deferred files: create area-specific files only when scaffolding that area.
