@@ -59,7 +59,8 @@ Canonical requirements and data model for the `orders` module. Conventions in [d
   - `promotions`: to transition reserved coupon redemptions to `confirmed`.
 
 **Guest tracking and security**
-- Every order generates a cryptographically secure random tracking token (at least 32 bytes).
+- Every order gets a 32-byte tracking token derived as `HMAC-SHA256(TRACKING_TOKEN_SECRET, Idempotency-Key)`, encoded base64url without padding (43 characters). The Idempotency-Key is a client-generated random UUID and the secret never leaves the server, so the token is unpredictable; deriving it lets an idempotent retry return the same token without storing it (approved 2026-10-15).
+- `TRACKING_TOKEN_SECRET` is a server secret of at least 32 random bytes, validated at startup. Rotating it does not invalidate existing tokens (only their hashes are stored); it only changes the token an idempotent retry would recompute within the 24-hour window.
 - The raw token is sent to the customer via email in their private order tracking URL.
 - The database stores only the SHA-256 hash (`tracking_token_hash`).
 - When the customer visits the tracking page, the server computes the SHA-256 hash of the supplied token and queries by hash. The order UUID or order number alone never grants access to order details.
@@ -249,7 +250,7 @@ Stores order-placement results so a retried `POST /api/v1/orders` with the same 
 | `request_hash` | `text` | Not null; SHA-256 of the canonical request body; a different body with the same key returns `422 idempotency_key_reused` |
 | `order_id` | `uuid` | Not null; FK → `orders(id)` ON DELETE CASCADE |
 | `response_status` | `integer` | Not null |
-| `response_body` | `jsonb` | Not null; original response body, including the raw tracking token returned once |
+| `response_body` | `jsonb` | Not null; original response body **without** `tracking_token`; a retry recomputes the token from the key (section 2, Guest tracking) |
 | `created_at` | `timestamptz` | Not null, default `now()` |
 | `expires_at` | `timestamptz` | Not null; `created_at + 24 hours`; indexed for cleanup |
 
