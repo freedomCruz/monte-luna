@@ -259,31 +259,37 @@ components:
           examples: [5]
 
     QuoteShippingSummary:
-      allOf:
-        - $ref: '#/components/schemas/ShippingSummary'
-        - type: object
-          additionalProperties: false
-          required: [rate_name, shipping_amount, is_free_shipping, estimated_days_min, estimated_days_max, regular_shipping_amount]
-          properties:
-            rate_name:
-              type: string
-            shipping_amount:
-              $ref: ./common.yaml#/components/schemas/MoneyAmount
-            is_free_shipping:
-              type: boolean
-            estimated_days_min:
-              type: integer
-            estimated_days_max:
-              type: integer
-            regular_shipping_amount:
-              $ref: ./common.yaml#/components/schemas/MoneyAmount
-              description: |
-                Regular non-discounted rate amount for the resolved rate before
-                the free-shipping threshold is applied. Equals shipping_amount
-                when is_free_shipping is false. When is_free_shipping is true,
-                shipping_amount is 0 and regular_shipping_amount holds the
-                original rate cost.
-              examples: [950000]
+      type: object
+      additionalProperties: false
+      required: [rate_name, shipping_amount, is_free_shipping, estimated_days_min, estimated_days_max, regular_shipping_amount]
+      properties:
+        rate_name:
+          type: string
+          examples: ['Bogotá estándar']
+        shipping_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+        is_free_shipping:
+          type: boolean
+          description: True when the subtotal reached the rate's free-shipping threshold.
+        estimated_days_min:
+          type: integer
+          minimum: 1
+          description: Business days.
+          examples: [3]
+        estimated_days_max:
+          type: integer
+          minimum: 1
+          description: Business days; greater than or equal to estimated_days_min.
+          examples: [5]
+        regular_shipping_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+          description: |
+            Regular non-discounted rate amount for the resolved rate before
+            the free-shipping threshold is applied. Equals shipping_amount
+            when is_free_shipping is false. When is_free_shipping is true,
+            shipping_amount is 0 and regular_shipping_amount holds the
+            original rate cost.
+          examples: [950000]
       description: |
         Shipping summary for checkout quotes. Extends the resolved shipping
         rate with the regular, non-discounted rate amount before the
