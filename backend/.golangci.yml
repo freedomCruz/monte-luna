@@ -28,6 +28,24 @@ linters:
               desc: Import only the catalog root facade
             - pkg: github.com/freedomCruz/monte-luna/backend/internal/catalog/adapters
               desc: Import only the catalog root facade
+        shipping-public-surface-only:
+          files:
+            - "$all"
+            - "!**/internal/shipping/**"
+          deny:
+            - pkg: github.com/freedomCruz/monte-luna/backend/internal/shipping/domain
+              desc: Import only the shipping root facade
+            - pkg: github.com/freedomCruz/monte-luna/backend/internal/shipping/app
+              desc: Import only the shipping root facade
+            - pkg: github.com/freedomCruz/monte-luna/backend/internal/shipping/adapters
+              desc: Import only the shipping root facade
+        shipping-generated-only-in-adapters:
+          files:
+            - "$all"
+            - "!**/internal/shipping/adapters/**"
+          deny:
+            - pkg: github.com/freedomCruz/monte-luna/backend/internal/shipping/adapters/postgres/sqlc
+              desc: Generated SQL models belong only in shipping adapters
         catalog-generated-only-in-adapters:
           files:
             - "$all"

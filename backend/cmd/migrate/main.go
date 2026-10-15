@@ -1,4 +1,4 @@
-// Command migrate applies embedded catalog migrations. It never loads demo data.
+// Command migrate applies embedded module migrations. It never loads demo data.
 package main
 
 import (
@@ -13,12 +13,14 @@ import (
 	"time"
 
 	"github.com/freedomCruz/monte-luna/backend/internal/catalog"
+	"github.com/freedomCruz/monte-luna/backend/internal/shipping"
 )
 
 func main() {
 	flags := flag.NewFlagSet("migrate", flag.ContinueOnError)
+	module := flags.String("module", "all", "module to migrate: all, catalog or shipping")
 	flags.Usage = func() {
-		if _, err := fmt.Fprint(flags.Output(), "Usage: migrate\nApply embedded catalog migrations (no demo data).\nEnvironment: DATABASE_URL is required.\n"); err != nil {
+		if _, err := fmt.Fprint(flags.Output(), "Usage: migrate\nApply embedded migrations in order: catalog, shipping (no demo data).\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping (default all).\n"); err != nil {
 			os.Exit(1)
 		}
 	}
@@ -33,18 +35,33 @@ func main() {
 	defer stop()
 	ctx, cancel := context.WithTimeout(ctx, 2*time.Minute)
 	defer cancel()
-	if err := run(ctx); err != nil {
-		logger.Error("catalog migration failed", "error", err)
+	label := *module
+	if label == "all" {
+		label = "catalog and shipping"
+	}
+	if err := runModule(ctx, *module); err != nil {
+		logger.Error(label+" migration failed", "error", err)
 		os.Exit(1)
 	}
-	logger.Info("catalog migrations applied")
+	logger.Info(label + " migrations applied")
 }
 
-func run(ctx context.Context) (err error) {
+func runModule(ctx context.Context, module string) (err error) {
+	if module != "all" && module != "catalog" && module != "shipping" {
+		return errors.New("module must be all, catalog or shipping")
+	}
 	db, err := catalog.OpenDatabase(ctx, os.Getenv("DATABASE_URL"))
 	if err != nil {
 		return err
 	}
 	defer func() { err = errors.Join(err, db.Close()) }()
-	return catalog.Migrate(ctx, db)
+	if module == "all" || module == "catalog" {
+		if err := catalog.Migrate(ctx, db); err != nil {
+			return err
+		}
+	}
+	if module == "all" || module == "shipping" {
+		return shipping.Migrate(ctx, db)
+	}
+	return nil
 }
