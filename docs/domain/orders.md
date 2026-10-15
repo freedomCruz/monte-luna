@@ -239,6 +239,22 @@ Outbox table and consumer tracking follow [data-modeling.md](../architecture/dat
 - **`orders.order_shipped`**: Published when order transitions to `shipped` following shipment dispatch.
   - Attributes: `order_id`, `order_number`, `customer_email`, `shipped_at`.
 
+### 3.7 `idempotency_keys`
+
+Stores order-placement results so a retried `POST /api/v1/orders` with the same `Idempotency-Key` returns the original response for 24 hours ([api-conventions.md](../architecture/api-conventions.md) section 8). Rows are written in the same transaction as the order.
+
+| Column | Type | Rules |
+|---|---|---|
+| `key` | `uuid` | Primary key; client-generated `Idempotency-Key` |
+| `request_hash` | `text` | Not null; SHA-256 of the canonical request body; a different body with the same key returns `422 idempotency_key_reused` |
+| `order_id` | `uuid` | Not null; FK → `orders(id)` ON DELETE CASCADE |
+| `response_status` | `integer` | Not null |
+| `response_body` | `jsonb` | Not null; original response body, including the raw tracking token returned once |
+| `created_at` | `timestamptz` | Not null, default `now()` |
+| `expires_at` | `timestamptz` | Not null; `created_at + 24 hours`; indexed for cleanup |
+
+Only successful placements (`201`) are stored; failed requests store nothing and may be retried with the same key. Expired rows are deleted by a periodic cleanup.
+
 ## 4. Open Items
 
 - **Retention policy for orders:** Commercial and fiscal records in Colombia require long-term preservation (e.g. Código de Comercio art. 60 — 10 years, Estatuto Tributario art. 632). Confirm exact archiving policy with merchant's accountant.

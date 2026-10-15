@@ -38,6 +38,8 @@ Contract: `contracts/openapi/orders.yaml` (no `shipping.yaml` in this wave, L2).
 - Allocates stock oldest lot first; `pending_payment` with `reservation_expires_at = placed_at + 30 minutes`; immutable line, lot allocation, address, fiscal, and shipping snapshots (including `product_slug` and estimated days, L5).
 - Publishes `orders.order_placed` through the outbox; if persistence fails after allocation, the catalog allocation is released immediately.
 - Insufficient stock returns `409 insufficient_stock` and leaves stock and orders unchanged.
+- Idempotency results are stored in `orders.idempotency_keys` (`docs/domain/orders.md` section 3.7).
+- Reservation expiry (L18): a periodic job moves `pending_payment` orders whose `reservation_expires_at <= now()` to `expired`, writes `order_status_history`, releases their catalog allocations (movement reason `release`), and publishes `orders.order_expired`. The in-flight payment grace (up to 2 hours) arrives with the payments module.
 
 ### S5: Checkout and order view UI
 - `/checkout` matches `M-Checkout-Datos` (step 2 of 3): buyer data, recipient ("Lo recibo yo" or another person), department and municipality selectors, address fields, optional invoice section, consent checkbox, live shipping quote state (quoted, free, no coverage), and order summary.
@@ -87,3 +89,4 @@ Contract: `contracts/openapi/orders.yaml` (no `shipping.yaml` in this wave, L2).
 - L15 (coordinator): B2 Orca `task_4b448d81c565` dispatch `ctx_4a28f03dc888` on the backend terminal (branch synced to `5813e0d`). Scope adds an exported catalog in-process read port and a minimal `internal/invoicing` module with the TaxCalculator port (Scenario A), because neither existed.
 - L16 (coordinator answer to B2 question): demo fiscal profile keeps `tax_regime` null (informational, not fixed by Scenario A); zero VAT for all valid categories when `vat_responsible = false`; VAT-responsible profiles fail closed until the tax-inclusive pricing policy is decided.
 - L17 (coordinator, B2): worker_done succeeded (merged `41facbe`). Evidence: `task backend:verify` exit 0 (PostgreSQL 18 up/down/up, HTTP contract success and error codes with field paths, orders/stock/movements unchanged on errors, CLI defaults catalog → shipping → orders, lint 0 issues, govulncheck clean, no sqlc drift); RED to GREEN observed; coverage orders domain 92.6 %, app 91.1 %. `contracttest` gained `DoInvalid` for contract-rejected requests.
+- L18 (user, 2026-10-15): reservation expiry in B3 — "Sí, incluir el vencimiento (Recomendado)". Coordinator also documented `orders.idempotency_keys` (`docs/domain/orders.md` 3.7), required by the contract and api-conventions but not yet modeled.
