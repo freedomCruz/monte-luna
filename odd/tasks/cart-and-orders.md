@@ -74,7 +74,7 @@ Contract: `contracts/openapi/orders.yaml` (no `shipping.yaml` in this wave, L2).
 | F1c | Refactor to the approved folder architecture (L31) and extract shared cart line and quantity stepper components used by `CartPanel`, `CartPage` and `ProductPurchaseIsland` (L30); no visual change | S1 | frontend | F3 | — |
 | F4 | Order placement on "Continuar al pago" (L40) and `/pedido` guest view | S4, S5 | frontend | F1c | done: `df30906` |
 | I1 | Integrate branches, end-to-end checkout against the real API, `task verify` | all | coordinator | B3, F4 | done: `HEAD` |
-| V1 | Verification of every spec, including desktop and mobile visual comparison against canvas | all | verifier | I1 | — |
+| V1 | Verification of every spec, including desktop and mobile visual comparison against canvas | all | verifier | I1 | done: `HEAD` |
 
 ## Log
 
@@ -122,3 +122,11 @@ Contract: `contracts/openapi/orders.yaml` (no `shipping.yaml` in this wave, L2).
 - L42 (2026-10-15): F4 `df30906` accepted and merged. Review: no PII in localStorage (sessionStorage only for minimal placed order info); no hard-coded amounts; order placement on step 2 generates Idempotency-Key per attempt; `/pedido` faithfully replicates M-Pedido and M-Pedido-390 with countdown timer, steps, lines via OrderLineItem, delivery and origin cards; 139 unit tests passed; 54 Playwright e2e tests passed (including WCAG 2 A/AA axe scans). Full frontend:verify passed after mobile test timeout re-run.
 - L43 (2026-10-15): F3c implemented inline on `feat/cart-and-orders`. ShippingQuoteBanner replaces hard-coded `$9.500` with `formatMoneyCop(quote.shipping.regular_shipping_amount)`. Frontend unit tests (139 passed) and astro check (0 errors) verified.
 - L44 (2026-10-15): I1 verified on integrated branch `feat/cart-and-orders`. `task verify` exited 0 (OpenAPI validate, backend unit/integration tests with Testcontainers, npm audit 0 vulnerabilities, types:generate check, astro check 0 errors 0 warnings, vitest 139 tests passed, astro build, playwright 54 passed including WCAG 2 A/AA axe scans on desktop and mobile 390px).
+- L45 (2026-10-15): V1 audit completed by coordinator against S1-S6 specs and canvas references:
+  * S1 (Browser cart): Cart store persists across tabs and reloads in localStorage; header button badge reflects live count; slide-over drawer and /carrito page share OrderLineItem and QuantityStepper (F1c); coupon field omitted per L2; add-to-cart active only in product purchase island per L24; 0 axe violations.
+  * S2 (Shipping zones & rates): PostgreSQL migration 00002 enforces estimated days NOT NULL (min >= 1, max >= min); seed defines 3-5 days; quote port resolves live rates with free shipping threshold; regular_shipping_amount exposed.
+  * S3 (Checkout quote): POST /api/v1/orders/quote recomputes live totals and taxes (minimal Scenario A TaxCalculator); returns standalone QuoteShippingSummary with regular_shipping_amount (Gate G5); does not persist data; validates municipality with DIVIPOLA.
+  * S4 (Order placement & reservation): POST /api/v1/orders places order with 30-min reservation (UUIDv7, Crockford ORD-XXXXXXXX number, HMAC tracking token); stores SHA-256 token hash; handles Idempotency-Key per attempt; allocation and release via catalog port; outbox order_placed event; expiry background job cleanups.
+  * S5 (Storefront UI & visual fidelity): /checkout step 2 matches M-Checkout-Datos (DIVIPOLA selectors, CC BY-SA 4.0, zero coupon fields, live shipping quote, struck-through regular cost); step 3 matches M-Checkout-Pago (Wompi payment methods, disabled CTA with notice, server totals); /pedido?token= matches M-Pedido and M-Pedido-390 (30-min countdown timer, progress steps, OrderDeliveryCard, OrderLineItem, OrderNoticesGrid, OrderOriginCard); 0 WCAG 2 A/AA violations on all routes.
+  * S6 (DIVIPOLA data): Official DANE snapshot (33 depts, 1122 municipalities) with CC BY-SA 4.0 attribution; update script and tests pass.
+  * All 54 Playwright E2E tests and 139 Vitest unit tests pass cleanly. Full 'task verify' exit 0.
