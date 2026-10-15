@@ -92,16 +92,16 @@ func TestCatalogModuleFilter(t *testing.T) {
 func TestMigrateCommand(t *testing.T) {
 	binary := buildCommand(t, "migrate")
 	code, stdout, stderr := command(t, binary, "")
-	assertLog(t, code, stdout, stderr, "ERROR", "catalog and shipping migration failed", "DATABASE_URL is required")
+	assertLog(t, code, stdout, stderr, "ERROR", "catalog, shipping and orders migration failed", "DATABASE_URL is required")
 	code, stdout, stderr = command(t, binary, "", "-h")
-	wantHelp := "Usage: migrate\nApply embedded migrations in order: catalog, shipping (no demo data).\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping (default all).\n"
+	wantHelp := "Usage: migrate\nApply embedded migrations in order: catalog, shipping, orders (no demo data).\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping|orders (default all).\n"
 	if code != 0 || stdout != "" || stderr != wantHelp {
 		t.Fatalf("help exit/stdout/stderr = %d/%q/%q", code, stdout, stderr)
 	}
 	db, url := database(t)
 	for range 2 {
 		code, stdout, stderr = command(t, binary, url)
-		assertLog(t, code, stdout, stderr, "INFO", "catalog and shipping migrations applied", "")
+		assertLog(t, code, stdout, stderr, "INFO", "catalog, shipping and orders migrations applied", "")
 	}
 	if got := scalar[int](t, db, `SELECT count(*) FROM catalog.products`); got != 0 {
 		t.Errorf("migrations loaded %d demo products", got)
@@ -114,5 +114,8 @@ func TestMigrateCommand(t *testing.T) {
 	}
 	if scalar[int](t, db, `SELECT count(*) FROM shipping.shipping_zones`) != 0 {
 		t.Error("migrations loaded demo shipping zones")
+	}
+	if !scalar[bool](t, db, `SELECT to_regclass('orders.goose_db_version') IS NOT NULL`) || scalar[int](t, db, `SELECT count(*) FROM orders.orders`) != 0 {
+		t.Fatal("default migrate did not create empty orders schema")
 	}
 }

@@ -13,14 +13,15 @@ import (
 	"time"
 
 	"github.com/freedomCruz/monte-luna/backend/internal/catalog"
+	"github.com/freedomCruz/monte-luna/backend/internal/orders"
 	"github.com/freedomCruz/monte-luna/backend/internal/shipping"
 )
 
 func main() {
 	flags := flag.NewFlagSet("seed", flag.ContinueOnError)
-	module := flags.String("module", "all", "module to seed: all, catalog or shipping")
+	module := flags.String("module", "all", "module to seed: all, catalog, shipping or orders")
 	flags.Usage = func() {
-		if _, err := fmt.Fprint(flags.Output(), "Usage: seed\nLoad idempotent demo data in order: catalog, shipping, into an already migrated development database.\nNever run against production. Existing rows, prices and stock are not reset.\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping (default all).\n"); err != nil {
+		if _, err := fmt.Fprint(flags.Output(), "Usage: seed\nLoad idempotent demo data in order: catalog, shipping, orders, into an already migrated development database.\nNever run against production. Existing rows, prices and stock are not reset.\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping|orders (default all).\n"); err != nil {
 			os.Exit(1)
 		}
 	}
@@ -37,7 +38,7 @@ func main() {
 	defer cancel()
 	label := *module
 	if label == "all" {
-		label = "catalog and shipping"
+		label = "catalog, shipping and orders"
 	}
 	if err := runModule(ctx, *module); err != nil {
 		logger.Error("demo "+label+" seed failed", "error", err)
@@ -47,8 +48,8 @@ func main() {
 }
 
 func runModule(ctx context.Context, module string) (err error) {
-	if module != "all" && module != "catalog" && module != "shipping" {
-		return errors.New("module must be all, catalog or shipping")
+	if module != "all" && module != "catalog" && module != "shipping" && module != "orders" {
+		return errors.New("module must be all, catalog, shipping or orders")
 	}
 	db, err := catalog.OpenDatabase(ctx, os.Getenv("DATABASE_URL"))
 	if err != nil {
@@ -61,7 +62,12 @@ func runModule(ctx context.Context, module string) (err error) {
 		}
 	}
 	if module == "all" || module == "shipping" {
-		return shipping.Seed(ctx, db)
+		if err := shipping.Seed(ctx, db); err != nil {
+			return err
+		}
+	}
+	if module == "all" || module == "orders" {
+		return orders.Seed(ctx, db)
 	}
 	return nil
 }

@@ -13,7 +13,10 @@ import (
 	"time"
 
 	"github.com/freedomCruz/monte-luna/backend/internal/catalog"
+	"github.com/freedomCruz/monte-luna/backend/internal/invoicing"
+	"github.com/freedomCruz/monte-luna/backend/internal/orders"
 	"github.com/freedomCruz/monte-luna/backend/internal/platform"
+	"github.com/freedomCruz/monte-luna/backend/internal/shipping"
 )
 
 func main() {
@@ -39,10 +42,21 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	defer module.Close()
+	ship, err := shipping.New(ctx, cfg.databaseURL)
+	if err != nil {
+		return err
+	}
+	defer ship.Close()
+	tax, err := invoicing.NewDemo()
+	if err != nil {
+		return err
+	}
+	checkout := orders.New(module, ship, tax, logger)
 
 	mux := http.NewServeMux()
 	platform.RegisterRoutes(mux)
 	module.RegisterRoutes(mux)
+	checkout.RegisterRoutes(mux)
 
 	srv := &http.Server{
 		Addr:              addr,
