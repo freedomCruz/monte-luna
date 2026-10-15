@@ -1,0 +1,8034 @@
+{
+  "source": {
+    "publisher": "Departamento Administrativo Nacional de Estadística (DANE)",
+    "dataset": "DIVIPOLA - Códigos municipios",
+    "url": "https://www.datos.gov.co/d/gdxc-w37w",
+    "license": "CC BY-SA 4.0",
+    "license_url": "https://creativecommons.org/licenses/by-sa/4.0/",
+    "rows_updated_at": "2025-01-24T20:44:32.000Z",
+    "notice": "Display names are derived from the official names by title-casing; official names are unchanged."
+  },
+  "departments": [
+    {
+      "code": "05",
+      "name": "ANTIOQUIA",
+      "display_name": "Antioquia"
+    },
+    {
+      "code": "08",
+      "name": "ATLÁNTICO",
+      "display_name": "Atlántico"
+    },
+    {
+      "code": "11",
+      "name": "BOGOTÁ, D.C.",
+      "display_name": "Bogotá, D. C."
+    },
+    {
+      "code": "13",
+      "name": "BOLÍVAR",
+      "display_name": "Bolívar"
+    },
+    {
+      "code": "15",
+      "name": "BOYACÁ",
+      "display_name": "Boyacá"
+    },
+    {
+      "code": "17",
+      "name": "CALDAS",
+      "display_name": "Caldas"
+    },
+    {
+      "code": "18",
+      "name": "CAQUETÁ",
+      "display_name": "Caquetá"
+    },
+    {
+      "code": "19",
+      "name": "CAUCA",
+      "display_name": "Cauca"
+    },
+    {
+      "code": "20",
+      "name": "CESAR",
+      "display_name": "Cesar"
+    },
+    {
+      "code": "23",
+      "name": "CÓRDOBA",
+      "display_name": "Córdoba"
+    },
+    {
+      "code": "25",
+      "name": "CUNDINAMARCA",
+      "display_name": "Cundinamarca"
+    },
+    {
+      "code": "27",
+      "name": "CHOCÓ",
+      "display_name": "Chocó"
+    },
+    {
+      "code": "41",
+      "name": "HUILA",
+      "display_name": "Huila"
+    },
+    {
+      "code": "44",
+      "name": "LA GUAJIRA",
+      "display_name": "La Guajira"
+    },
+    {
+      "code": "47",
+      "name": "MAGDALENA",
+      "display_name": "Magdalena"
+    },
+    {
+      "code": "50",
+      "name": "META",
+      "display_name": "Meta"
+    },
+    {
+      "code": "52",
+      "name": "NARIÑO",
+      "display_name": "Nariño"
+    },
+    {
+      "code": "54",
+      "name": "NORTE DE SANTANDER",
+      "display_name": "Norte de Santander"
+    },
+    {
+      "code": "63",
+      "name": "QUINDÍO",
+      "display_name": "Quindío"
+    },
+    {
+      "code": "66",
+      "name": "RISARALDA",
+      "display_name": "Risaralda"
+    },
+    {
+      "code": "68",
+      "name": "SANTANDER",
+      "display_name": "Santander"
+    },
+    {
+      "code": "70",
+      "name": "SUCRE",
+      "display_name": "Sucre"
+    },
+    {
+      "code": "73",
+      "name": "TOLIMA",
+      "display_name": "Tolima"
+    },
+    {
+      "code": "76",
+      "name": "VALLE DEL CAUCA",
+      "display_name": "Valle del Cauca"
+    },
+    {
+      "code": "81",
+      "name": "ARAUCA",
+      "display_name": "Arauca"
+    },
+    {
+      "code": "85",
+      "name": "CASANARE",
+      "display_name": "Casanare"
+    },
+    {
+      "code": "86",
+      "name": "PUTUMAYO",
+      "display_name": "Putumayo"
+    },
+    {
+      "code": "88",
+      "name": "ARCHIPIÉLAGO DE SAN ANDRÉS, PROVIDENCIA Y SANTA CATALINA",
+      "display_name": "Archipiélago de San Andrés, Providencia y Santa Catalina"
+    },
+    {
+      "code": "91",
+      "name": "AMAZONAS",
+      "display_name": "Amazonas"
+    },
+    {
+      "code": "94",
+      "name": "GUAINÍA",
+      "display_name": "Guainía"
+    },
+    {
+      "code": "95",
+      "name": "GUAVIARE",
+      "display_name": "Guaviare"
+    },
+    {
+      "code": "97",
+      "name": "VAUPÉS",
+      "display_name": "Vaupés"
+    },
+    {
+      "code": "99",
+      "name": "VICHADA",
+      "display_name": "Vichada"
+    }
+  ],
+  "municipalities": [
+    {
+      "code": "05001",
+      "department_code": "05",
+      "name": "MEDELLÍN",
+      "display_name": "Medellín",
+      "type": "municipality"
+    },
+    {
+      "code": "05002",
+      "department_code": "05",
+      "name": "ABEJORRAL",
+      "display_name": "Abejorral",
+      "type": "municipality"
+    },
+    {
+      "code": "05004",
+      "department_code": "05",
+      "name": "ABRIAQUÍ",
+      "display_name": "Abriaquí",
+      "type": "municipality"
+    },
+    {
+      "code": "05021",
+      "department_code": "05",
+      "name": "ALEJANDRÍA",
+      "display_name": "Alejandría",
+      "type": "municipality"
+    },
+    {
+      "code": "05030",
+      "department_code": "05",
+      "name": "AMAGÁ",
+      "display_name": "Amagá",
+      "type": "municipality"
+    },
+    {
+      "code": "05031",
+      "department_code": "05",
+      "name": "AMALFI",
+      "display_name": "Amalfi",
+      "type": "municipality"
+    },
+    {
+      "code": "05034",
+      "department_code": "05",
+      "name": "ANDES",
+      "display_name": "Andes",
+      "type": "municipality"
+    },
+    {
+      "code": "05036",
+      "department_code": "05",
+      "name": "ANGELÓPOLIS",
+      "display_name": "Angelópolis",
+      "type": "municipality"
+    },
+    {
+      "code": "05038",
+      "department_code": "05",
+      "name": "ANGOSTURA",
+      "display_name": "Angostura",
+      "type": "municipality"
+    },
+    {
+      "code": "05040",
+      "department_code": "05",
+      "name": "ANORÍ",
+      "display_name": "Anorí",
+      "type": "municipality"
+    },
+    {
+      "code": "05042",
+      "department_code": "05",
+      "name": "SANTA FÉ DE ANTIOQUIA",
+      "display_name": "Santa Fé de Antioquia",
+      "type": "municipality"
+    },
+    {
+      "code": "05044",
+      "department_code": "05",
+      "name": "ANZÁ",
+      "display_name": "Anzá",
+      "type": "municipality"
+    },
+    {
+      "code": "05045",
+      "department_code": "05",
+      "name": "APARTADÓ",
+      "display_name": "Apartadó",
+      "type": "municipality"
+    },
+    {
+      "code": "05051",
+      "department_code": "05",
+      "name": "ARBOLETES",
+      "display_name": "Arboletes",
+      "type": "municipality"
+    },
+    {
+      "code": "05055",
+      "department_code": "05",
+      "name": "ARGELIA",
+      "display_name": "Argelia",
+      "type": "municipality"
+    },
+    {
+      "code": "05059",
+      "department_code": "05",
+      "name": "ARMENIA",
+      "display_name": "Armenia",
+      "type": "municipality"
+    },
+    {
+      "code": "05079",
+      "department_code": "05",
+      "name": "BARBOSA",
+      "display_name": "Barbosa",
+      "type": "municipality"
+    },
+    {
+      "code": "05086",
+      "department_code": "05",
+      "name": "BELMIRA",
+      "display_name": "Belmira",
+      "type": "municipality"
+    },
+    {
+      "code": "05088",
+      "department_code": "05",
+      "name": "BELLO",
+      "display_name": "Bello",
+      "type": "municipality"
+    },
+    {
+      "code": "05091",
+      "department_code": "05",
+      "name": "BETANIA",
+      "display_name": "Betania",
+      "type": "municipality"
+    },
+    {
+      "code": "05093",
+      "department_code": "05",
+      "name": "BETULIA",
+      "display_name": "Betulia",
+      "type": "municipality"
+    },
+    {
+      "code": "05101",
+      "department_code": "05",
+      "name": "CIUDAD BOLÍVAR",
+      "display_name": "Ciudad Bolívar",
+      "type": "municipality"
+    },
+    {
+      "code": "05107",
+      "department_code": "05",
+      "name": "BRICEÑO",
+      "display_name": "Briceño",
+      "type": "municipality"
+    },
+    {
+      "code": "05113",
+      "department_code": "05",
+      "name": "BURITICÁ",
+      "display_name": "Buriticá",
+      "type": "municipality"
+    },
+    {
+      "code": "05120",
+      "department_code": "05",
+      "name": "CÁCERES",
+      "display_name": "Cáceres",
+      "type": "municipality"
+    },
+    {
+      "code": "05125",
+      "department_code": "05",
+      "name": "CAICEDO",
+      "display_name": "Caicedo",
+      "type": "municipality"
+    },
+    {
+      "code": "05129",
+      "department_code": "05",
+      "name": "CALDAS",
+      "display_name": "Caldas",
+      "type": "municipality"
+    },
+    {
+      "code": "05134",
+      "department_code": "05",
+      "name": "CAMPAMENTO",
+      "display_name": "Campamento",
+      "type": "municipality"
+    },
+    {
+      "code": "05138",
+      "department_code": "05",
+      "name": "CAÑASGORDAS",
+      "display_name": "Cañasgordas",
+      "type": "municipality"
+    },
+    {
+      "code": "05142",
+      "department_code": "05",
+      "name": "CARACOLÍ",
+      "display_name": "Caracolí",
+      "type": "municipality"
+    },
+    {
+      "code": "05145",
+      "department_code": "05",
+      "name": "CARAMANTA",
+      "display_name": "Caramanta",
+      "type": "municipality"
+    },
+    {
+      "code": "05147",
+      "department_code": "05",
+      "name": "CAREPA",
+      "display_name": "Carepa",
+      "type": "municipality"
+    },
+    {
+      "code": "05148",
+      "department_code": "05",
+      "name": "EL CARMEN DE VIBORAL",
+      "display_name": "El Carmen de Viboral",
+      "type": "municipality"
+    },
+    {
+      "code": "05150",
+      "department_code": "05",
+      "name": "CAROLINA",
+      "display_name": "Carolina",
+      "type": "municipality"
+    },
+    {
+      "code": "05154",
+      "department_code": "05",
+      "name": "CAUCASIA",
+      "display_name": "Caucasia",
+      "type": "municipality"
+    },
+    {
+      "code": "05172",
+      "department_code": "05",
+      "name": "CHIGORODÓ",
+      "display_name": "Chigorodó",
+      "type": "municipality"
+    },
+    {
+      "code": "05190",
+      "department_code": "05",
+      "name": "CISNEROS",
+      "display_name": "Cisneros",
+      "type": "municipality"
+    },
+    {
+      "code": "05197",
+      "department_code": "05",
+      "name": "COCORNÁ",
+      "display_name": "Cocorná",
+      "type": "municipality"
+    },
+    {
+      "code": "05206",
+      "department_code": "05",
+      "name": "CONCEPCIÓN",
+      "display_name": "Concepción",
+      "type": "municipality"
+    },
+    {
+      "code": "05209",
+      "department_code": "05",
+      "name": "CONCORDIA",
+      "display_name": "Concordia",
+      "type": "municipality"
+    },
+    {
+      "code": "05212",
+      "department_code": "05",
+      "name": "COPACABANA",
+      "display_name": "Copacabana",
+      "type": "municipality"
+    },
+    {
+      "code": "05234",
+      "department_code": "05",
+      "name": "DABEIBA",
+      "display_name": "Dabeiba",
+      "type": "municipality"
+    },
+    {
+      "code": "05237",
+      "department_code": "05",
+      "name": "DONMATÍAS",
+      "display_name": "Donmatías",
+      "type": "municipality"
+    },
+    {
+      "code": "05240",
+      "department_code": "05",
+      "name": "EBÉJICO",
+      "display_name": "Ebéjico",
+      "type": "municipality"
+    },
+    {
+      "code": "05250",
+      "department_code": "05",
+      "name": "EL BAGRE",
+      "display_name": "El Bagre",
+      "type": "municipality"
+    },
+    {
+      "code": "05264",
+      "department_code": "05",
+      "name": "ENTRERRÍOS",
+      "display_name": "Entrerríos",
+      "type": "municipality"
+    },
+    {
+      "code": "05266",
+      "department_code": "05",
+      "name": "ENVIGADO",
+      "display_name": "Envigado",
+      "type": "municipality"
+    },
+    {
+      "code": "05282",
+      "department_code": "05",
+      "name": "FREDONIA",
+      "display_name": "Fredonia",
+      "type": "municipality"
+    },
+    {
+      "code": "05284",
+      "department_code": "05",
+      "name": "FRONTINO",
+      "display_name": "Frontino",
+      "type": "municipality"
+    },
+    {
+      "code": "05306",
+      "department_code": "05",
+      "name": "GIRALDO",
+      "display_name": "Giraldo",
+      "type": "municipality"
+    },
+    {
+      "code": "05308",
+      "department_code": "05",
+      "name": "GIRARDOTA",
+      "display_name": "Girardota",
+      "type": "municipality"
+    },
+    {
+      "code": "05310",
+      "department_code": "05",
+      "name": "GÓMEZ PLATA",
+      "display_name": "Gómez Plata",
+      "type": "municipality"
+    },
+    {
+      "code": "05313",
+      "department_code": "05",
+      "name": "GRANADA",
+      "display_name": "Granada",
+      "type": "municipality"
+    },
+    {
+      "code": "05315",
+      "department_code": "05",
+      "name": "GUADALUPE",
+      "display_name": "Guadalupe",
+      "type": "municipality"
+    },
+    {
+      "code": "05318",
+      "department_code": "05",
+      "name": "GUARNE",
+      "display_name": "Guarne",
+      "type": "municipality"
+    },
+    {
+      "code": "05321",
+      "department_code": "05",
+      "name": "GUATAPÉ",
+      "display_name": "Guatapé",
+      "type": "municipality"
+    },
+    {
+      "code": "05347",
+      "department_code": "05",
+      "name": "HELICONIA",
+      "display_name": "Heliconia",
+      "type": "municipality"
+    },
+    {
+      "code": "05353",
+      "department_code": "05",
+      "name": "HISPANIA",
+      "display_name": "Hispania",
+      "type": "municipality"
+    },
+    {
+      "code": "05360",
+      "department_code": "05",
+      "name": "ITAGÜÍ",
+      "display_name": "Itagüí",
+      "type": "municipality"
+    },
+    {
+      "code": "05361",
+      "department_code": "05",
+      "name": "ITUANGO",
+      "display_name": "Ituango",
+      "type": "municipality"
+    },
+    {
+      "code": "05364",
+      "department_code": "05",
+      "name": "JARDÍN",
+      "display_name": "Jardín",
+      "type": "municipality"
+    },
+    {
+      "code": "05368",
+      "department_code": "05",
+      "name": "JERICÓ",
+      "display_name": "Jericó",
+      "type": "municipality"
+    },
+    {
+      "code": "05376",
+      "department_code": "05",
+      "name": "LA CEJA",
+      "display_name": "La Ceja",
+      "type": "municipality"
+    },
+    {
+      "code": "05380",
+      "department_code": "05",
+      "name": "LA ESTRELLA",
+      "display_name": "La Estrella",
+      "type": "municipality"
+    },
+    {
+      "code": "05390",
+      "department_code": "05",
+      "name": "LA PINTADA",
+      "display_name": "La Pintada",
+      "type": "municipality"
+    },
+    {
+      "code": "05400",
+      "department_code": "05",
+      "name": "LA UNIÓN",
+      "display_name": "La Unión",
+      "type": "municipality"
+    },
+    {
+      "code": "05411",
+      "department_code": "05",
+      "name": "LIBORINA",
+      "display_name": "Liborina",
+      "type": "municipality"
+    },
+    {
+      "code": "05425",
+      "department_code": "05",
+      "name": "MACEO",
+      "display_name": "Maceo",
+      "type": "municipality"
+    },
+    {
+      "code": "05440",
+      "department_code": "05",
+      "name": "MARINILLA",
+      "display_name": "Marinilla",
+      "type": "municipality"
+    },
+    {
+      "code": "05467",
+      "department_code": "05",
+      "name": "MONTEBELLO",
+      "display_name": "Montebello",
+      "type": "municipality"
+    },
+    {
+      "code": "05475",
+      "department_code": "05",
+      "name": "MURINDÓ",
+      "display_name": "Murindó",
+      "type": "municipality"
+    },
+    {
+      "code": "05480",
+      "department_code": "05",
+      "name": "MUTATÁ",
+      "display_name": "Mutatá",
+      "type": "municipality"
+    },
+    {
+      "code": "05483",
+      "department_code": "05",
+      "name": "NARIÑO",
+      "display_name": "Nariño",
+      "type": "municipality"
+    },
+    {
+      "code": "05490",
+      "department_code": "05",
+      "name": "NECOCLÍ",
+      "display_name": "Necoclí",
+      "type": "municipality"
+    },
+    {
+      "code": "05495",
+      "department_code": "05",
+      "name": "NECHÍ",
+      "display_name": "Nechí",
+      "type": "municipality"
+    },
+    {
+      "code": "05501",
+      "department_code": "05",
+      "name": "OLAYA",
+      "display_name": "Olaya",
+      "type": "municipality"
+    },
+    {
+      "code": "05541",
+      "department_code": "05",
+      "name": "PEÑOL",
+      "display_name": "Peñol",
+      "type": "municipality"
+    },
+    {
+      "code": "05543",
+      "department_code": "05",
+      "name": "PEQUE",
+      "display_name": "Peque",
+      "type": "municipality"
+    },
+    {
+      "code": "05576",
+      "department_code": "05",
+      "name": "PUEBLORRICO",
+      "display_name": "Pueblorrico",
+      "type": "municipality"
+    },
+    {
+      "code": "05579",
+      "department_code": "05",
+      "name": "PUERTO BERRÍO",
+      "display_name": "Puerto Berrío",
+      "type": "municipality"
+    },
+    {
+      "code": "05585",
+      "department_code": "05",
+      "name": "PUERTO NARE",
+      "display_name": "Puerto Nare",
+      "type": "municipality"
+    },
+    {
+      "code": "05591",
+      "department_code": "05",
+      "name": "PUERTO TRIUNFO",
+      "display_name": "Puerto Triunfo",
+      "type": "municipality"
+    },
+    {
+      "code": "05604",
+      "department_code": "05",
+      "name": "REMEDIOS",
+      "display_name": "Remedios",
+      "type": "municipality"
+    },
+    {
+      "code": "05607",
+      "department_code": "05",
+      "name": "RETIRO",
+      "display_name": "Retiro",
+      "type": "municipality"
+    },
+    {
+      "code": "05615",
+      "department_code": "05",
+      "name": "RIONEGRO",
+      "display_name": "Rionegro",
+      "type": "municipality"
+    },
+    {
+      "code": "05628",
+      "department_code": "05",
+      "name": "SABANALARGA",
+      "display_name": "Sabanalarga",
+      "type": "municipality"
+    },
+    {
+      "code": "05631",
+      "department_code": "05",
+      "name": "SABANETA",
+      "display_name": "Sabaneta",
+      "type": "municipality"
+    },
+    {
+      "code": "05642",
+      "department_code": "05",
+      "name": "SALGAR",
+      "display_name": "Salgar",
+      "type": "municipality"
+    },
+    {
+      "code": "05647",
+      "department_code": "05",
+      "name": "SAN ANDRÉS DE CUERQUÍA",
+      "display_name": "San Andrés de Cuerquía",
+      "type": "municipality"
+    },
+    {
+      "code": "05649",
+      "department_code": "05",
+      "name": "SAN CARLOS",
+      "display_name": "San Carlos",
+      "type": "municipality"
+    },
+    {
+      "code": "05652",
+      "department_code": "05",
+      "name": "SAN FRANCISCO",
+      "display_name": "San Francisco",
+      "type": "municipality"
+    },
+    {
+      "code": "05656",
+      "department_code": "05",
+      "name": "SAN JERÓNIMO",
+      "display_name": "San Jerónimo",
+      "type": "municipality"
+    },
+    {
+      "code": "05658",
+      "department_code": "05",
+      "name": "SAN JOSÉ DE LA MONTAÑA",
+      "display_name": "San José de la Montaña",
+      "type": "municipality"
+    },
+    {
+      "code": "05659",
+      "department_code": "05",
+      "name": "SAN JUAN DE URABÁ",
+      "display_name": "San Juan de Urabá",
+      "type": "municipality"
+    },
+    {
+      "code": "05660",
+      "department_code": "05",
+      "name": "SAN LUIS",
+      "display_name": "San Luis",
+      "type": "municipality"
+    },
+    {
+      "code": "05664",
+      "department_code": "05",
+      "name": "SAN PEDRO DE LOS MILAGROS",
+      "display_name": "San Pedro de los Milagros",
+      "type": "municipality"
+    },
+    {
+      "code": "05665",
+      "department_code": "05",
+      "name": "SAN PEDRO DE URABÁ",
+      "display_name": "San Pedro de Urabá",
+      "type": "municipality"
+    },
+    {
+      "code": "05667",
+      "department_code": "05",
+      "name": "SAN RAFAEL",
+      "display_name": "San Rafael",
+      "type": "municipality"
+    },
+    {
+      "code": "05670",
+      "department_code": "05",
+      "name": "SAN ROQUE",
+      "display_name": "San Roque",
+      "type": "municipality"
+    },
+    {
+      "code": "05674",
+      "department_code": "05",
+      "name": "SAN VICENTE FERRER",
+      "display_name": "San Vicente Ferrer",
+      "type": "municipality"
+    },
+    {
+      "code": "05679",
+      "department_code": "05",
+      "name": "SANTA BÁRBARA",
+      "display_name": "Santa Bárbara",
+      "type": "municipality"
+    },
+    {
+      "code": "05686",
+      "department_code": "05",
+      "name": "SANTA ROSA DE OSOS",
+      "display_name": "Santa Rosa de Osos",
+      "type": "municipality"
+    },
+    {
+      "code": "05690",
+      "department_code": "05",
+      "name": "SANTO DOMINGO",
+      "display_name": "Santo Domingo",
+      "type": "municipality"
+    },
+    {
+      "code": "05697",
+      "department_code": "05",
+      "name": "EL SANTUARIO",
+      "display_name": "El Santuario",
+      "type": "municipality"
+    },
+    {
+      "code": "05736",
+      "department_code": "05",
+      "name": "SEGOVIA",
+      "display_name": "Segovia",
+      "type": "municipality"
+    },
+    {
+      "code": "05756",
+      "department_code": "05",
+      "name": "SONSÓN",
+      "display_name": "Sonsón",
+      "type": "municipality"
+    },
+    {
+      "code": "05761",
+      "department_code": "05",
+      "name": "SOPETRÁN",
+      "display_name": "Sopetrán",
+      "type": "municipality"
+    },
+    {
+      "code": "05789",
+      "department_code": "05",
+      "name": "TÁMESIS",
+      "display_name": "Támesis",
+      "type": "municipality"
+    },
+    {
+      "code": "05790",
+      "department_code": "05",
+      "name": "TARAZÁ",
+      "display_name": "Tarazá",
+      "type": "municipality"
+    },
+    {
+      "code": "05792",
+      "department_code": "05",
+      "name": "TARSO",
+      "display_name": "Tarso",
+      "type": "municipality"
+    },
+    {
+      "code": "05809",
+      "department_code": "05",
+      "name": "TITIRIBÍ",
+      "display_name": "Titiribí",
+      "type": "municipality"
+    },
+    {
+      "code": "05819",
+      "department_code": "05",
+      "name": "TOLEDO",
+      "display_name": "Toledo",
+      "type": "municipality"
+    },
+    {
+      "code": "05837",
+      "department_code": "05",
+      "name": "TURBO",
+      "display_name": "Turbo",
+      "type": "municipality"
+    },
+    {
+      "code": "05842",
+      "department_code": "05",
+      "name": "URAMITA",
+      "display_name": "Uramita",
+      "type": "municipality"
+    },
+    {
+      "code": "05847",
+      "department_code": "05",
+      "name": "URRAO",
+      "display_name": "Urrao",
+      "type": "municipality"
+    },
+    {
+      "code": "05854",
+      "department_code": "05",
+      "name": "VALDIVIA",
+      "display_name": "Valdivia",
+      "type": "municipality"
+    },
+    {
+      "code": "05856",
+      "department_code": "05",
+      "name": "VALPARAÍSO",
+      "display_name": "Valparaíso",
+      "type": "municipality"
+    },
+    {
+      "code": "05858",
+      "department_code": "05",
+      "name": "VEGACHÍ",
+      "display_name": "Vegachí",
+      "type": "municipality"
+    },
+    {
+      "code": "05861",
+      "department_code": "05",
+      "name": "VENECIA",
+      "display_name": "Venecia",
+      "type": "municipality"
+    },
+    {
+      "code": "05873",
+      "department_code": "05",
+      "name": "VIGÍA DEL FUERTE",
+      "display_name": "Vigía del Fuerte",
+      "type": "municipality"
+    },
+    {
+      "code": "05885",
+      "department_code": "05",
+      "name": "YALÍ",
+      "display_name": "Yalí",
+      "type": "municipality"
+    },
+    {
+      "code": "05887",
+      "department_code": "05",
+      "name": "YARUMAL",
+      "display_name": "Yarumal",
+      "type": "municipality"
+    },
+    {
+      "code": "05890",
+      "department_code": "05",
+      "name": "YOLOMBÓ",
+      "display_name": "Yolombó",
+      "type": "municipality"
+    },
+    {
+      "code": "05893",
+      "department_code": "05",
+      "name": "YONDÓ",
+      "display_name": "Yondó",
+      "type": "municipality"
+    },
+    {
+      "code": "05895",
+      "department_code": "05",
+      "name": "ZARAGOZA",
+      "display_name": "Zaragoza",
+      "type": "municipality"
+    },
+    {
+      "code": "08001",
+      "department_code": "08",
+      "name": "BARRANQUILLA",
+      "display_name": "Barranquilla",
+      "type": "municipality"
+    },
+    {
+      "code": "08078",
+      "department_code": "08",
+      "name": "BARANOA",
+      "display_name": "Baranoa",
+      "type": "municipality"
+    },
+    {
+      "code": "08137",
+      "department_code": "08",
+      "name": "CAMPO DE LA CRUZ",
+      "display_name": "Campo de la Cruz",
+      "type": "municipality"
+    },
+    {
+      "code": "08141",
+      "department_code": "08",
+      "name": "CANDELARIA",
+      "display_name": "Candelaria",
+      "type": "municipality"
+    },
+    {
+      "code": "08296",
+      "department_code": "08",
+      "name": "GALAPA",
+      "display_name": "Galapa",
+      "type": "municipality"
+    },
+    {
+      "code": "08372",
+      "department_code": "08",
+      "name": "JUAN DE ACOSTA",
+      "display_name": "Juan de Acosta",
+      "type": "municipality"
+    },
+    {
+      "code": "08421",
+      "department_code": "08",
+      "name": "LURUACO",
+      "display_name": "Luruaco",
+      "type": "municipality"
+    },
+    {
+      "code": "08433",
+      "department_code": "08",
+      "name": "MALAMBO",
+      "display_name": "Malambo",
+      "type": "municipality"
+    },
+    {
+      "code": "08436",
+      "department_code": "08",
+      "name": "MANATÍ",
+      "display_name": "Manatí",
+      "type": "municipality"
+    },
+    {
+      "code": "08520",
+      "department_code": "08",
+      "name": "PALMAR DE VARELA",
+      "display_name": "Palmar de Varela",
+      "type": "municipality"
+    },
+    {
+      "code": "08549",
+      "department_code": "08",
+      "name": "PIOJÓ",
+      "display_name": "Piojó",
+      "type": "municipality"
+    },
+    {
+      "code": "08558",
+      "department_code": "08",
+      "name": "POLONUEVO",
+      "display_name": "Polonuevo",
+      "type": "municipality"
+    },
+    {
+      "code": "08560",
+      "department_code": "08",
+      "name": "PONEDERA",
+      "display_name": "Ponedera",
+      "type": "municipality"
+    },
+    {
+      "code": "08573",
+      "department_code": "08",
+      "name": "PUERTO COLOMBIA",
+      "display_name": "Puerto Colombia",
+      "type": "municipality"
+    },
+    {
+      "code": "08606",
+      "department_code": "08",
+      "name": "REPELÓN",
+      "display_name": "Repelón",
+      "type": "municipality"
+    },
+    {
+      "code": "08634",
+      "department_code": "08",
+      "name": "SABANAGRANDE",
+      "display_name": "Sabanagrande",
+      "type": "municipality"
+    },
+    {
+      "code": "08638",
+      "department_code": "08",
+      "name": "SABANALARGA",
+      "display_name": "Sabanalarga",
+      "type": "municipality"
+    },
+    {
+      "code": "08675",
+      "department_code": "08",
+      "name": "SANTA LUCÍA",
+      "display_name": "Santa Lucía",
+      "type": "municipality"
+    },
+    {
+      "code": "08685",
+      "department_code": "08",
+      "name": "SANTO TOMÁS",
+      "display_name": "Santo Tomás",
+      "type": "municipality"
+    },
+    {
+      "code": "08758",
+      "department_code": "08",
+      "name": "SOLEDAD",
+      "display_name": "Soledad",
+      "type": "municipality"
+    },
+    {
+      "code": "08770",
+      "department_code": "08",
+      "name": "SUAN",
+      "display_name": "Suan",
+      "type": "municipality"
+    },
+    {
+      "code": "08832",
+      "department_code": "08",
+      "name": "TUBARÁ",
+      "display_name": "Tubará",
+      "type": "municipality"
+    },
+    {
+      "code": "08849",
+      "department_code": "08",
+      "name": "USIACURÍ",
+      "display_name": "Usiacurí",
+      "type": "municipality"
+    },
+    {
+      "code": "11001",
+      "department_code": "11",
+      "name": "BOGOTÁ, D.C.",
+      "display_name": "Bogotá, D. C.",
+      "type": "municipality"
+    },
+    {
+      "code": "13001",
+      "department_code": "13",
+      "name": "CARTAGENA DE INDIAS",
+      "display_name": "Cartagena de Indias",
+      "type": "municipality"
+    },
+    {
+      "code": "13006",
+      "department_code": "13",
+      "name": "ACHÍ",
+      "display_name": "Achí",
+      "type": "municipality"
+    },
+    {
+      "code": "13030",
+      "department_code": "13",
+      "name": "ALTOS DEL ROSARIO",
+      "display_name": "Altos del Rosario",
+      "type": "municipality"
+    },
+    {
+      "code": "13042",
+      "department_code": "13",
+      "name": "ARENAL",
+      "display_name": "Arenal",
+      "type": "municipality"
+    },
+    {
+      "code": "13052",
+      "department_code": "13",
+      "name": "ARJONA",
+      "display_name": "Arjona",
+      "type": "municipality"
+    },
+    {
+      "code": "13062",
+      "department_code": "13",
+      "name": "ARROYOHONDO",
+      "display_name": "Arroyohondo",
+      "type": "municipality"
+    },
+    {
+      "code": "13074",
+      "department_code": "13",
+      "name": "BARRANCO DE LOBA",
+      "display_name": "Barranco de Loba",
+      "type": "municipality"
+    },
+    {
+      "code": "13140",
+      "department_code": "13",
+      "name": "CALAMAR",
+      "display_name": "Calamar",
+      "type": "municipality"
+    },
+    {
+      "code": "13160",
+      "department_code": "13",
+      "name": "CANTAGALLO",
+      "display_name": "Cantagallo",
+      "type": "municipality"
+    },
+    {
+      "code": "13188",
+      "department_code": "13",
+      "name": "CICUCO",
+      "display_name": "Cicuco",
+      "type": "municipality"
+    },
+    {
+      "code": "13212",
+      "department_code": "13",
+      "name": "CÓRDOBA",
+      "display_name": "Córdoba",
+      "type": "municipality"
+    },
+    {
+      "code": "13222",
+      "department_code": "13",
+      "name": "CLEMENCIA",
+      "display_name": "Clemencia",
+      "type": "municipality"
+    },
+    {
+      "code": "13244",
+      "department_code": "13",
+      "name": "EL CARMEN DE BOLÍVAR",
+      "display_name": "El Carmen de Bolívar",
+      "type": "municipality"
+    },
+    {
+      "code": "13248",
+      "department_code": "13",
+      "name": "EL GUAMO",
+      "display_name": "El Guamo",
+      "type": "municipality"
+    },
+    {
+      "code": "13268",
+      "department_code": "13",
+      "name": "EL PEÑÓN",
+      "display_name": "El Peñón",
+      "type": "municipality"
+    },
+    {
+      "code": "13300",
+      "department_code": "13",
+      "name": "HATILLO DE LOBA",
+      "display_name": "Hatillo de Loba",
+      "type": "municipality"
+    },
+    {
+      "code": "13430",
+      "department_code": "13",
+      "name": "MAGANGUÉ",
+      "display_name": "Magangué",
+      "type": "municipality"
+    },
+    {
+      "code": "13433",
+      "department_code": "13",
+      "name": "MAHATES",
+      "display_name": "Mahates",
+      "type": "municipality"
+    },
+    {
+      "code": "13440",
+      "department_code": "13",
+      "name": "MARGARITA",
+      "display_name": "Margarita",
+      "type": "municipality"
+    },
+    {
+      "code": "13442",
+      "department_code": "13",
+      "name": "MARÍA LA BAJA",
+      "display_name": "María la Baja",
+      "type": "municipality"
+    },
+    {
+      "code": "13458",
+      "department_code": "13",
+      "name": "MONTECRISTO",
+      "display_name": "Montecristo",
+      "type": "municipality"
+    },
+    {
+      "code": "13468",
+      "department_code": "13",
+      "name": "SANTA CRUZ DE MOMPOX",
+      "display_name": "Santa Cruz de Mompox",
+      "type": "municipality"
+    },
+    {
+      "code": "13473",
+      "department_code": "13",
+      "name": "MORALES",
+      "display_name": "Morales",
+      "type": "municipality"
+    },
+    {
+      "code": "13490",
+      "department_code": "13",
+      "name": "NOROSÍ",
+      "display_name": "Norosí",
+      "type": "municipality"
+    },
+    {
+      "code": "13549",
+      "department_code": "13",
+      "name": "PINILLOS",
+      "display_name": "Pinillos",
+      "type": "municipality"
+    },
+    {
+      "code": "13580",
+      "department_code": "13",
+      "name": "REGIDOR",
+      "display_name": "Regidor",
+      "type": "municipality"
+    },
+    {
+      "code": "13600",
+      "department_code": "13",
+      "name": "RÍO VIEJO",
+      "display_name": "Río Viejo",
+      "type": "municipality"
+    },
+    {
+      "code": "13620",
+      "department_code": "13",
+      "name": "SAN CRISTÓBAL",
+      "display_name": "San Cristóbal",
+      "type": "municipality"
+    },
+    {
+      "code": "13647",
+      "department_code": "13",
+      "name": "SAN ESTANISLAO",
+      "display_name": "San Estanislao",
+      "type": "municipality"
+    },
+    {
+      "code": "13650",
+      "department_code": "13",
+      "name": "SAN FERNANDO",
+      "display_name": "San Fernando",
+      "type": "municipality"
+    },
+    {
+      "code": "13654",
+      "department_code": "13",
+      "name": "SAN JACINTO",
+      "display_name": "San Jacinto",
+      "type": "municipality"
+    },
+    {
+      "code": "13655",
+      "department_code": "13",
+      "name": "SAN JACINTO DEL CAUCA",
+      "display_name": "San Jacinto del Cauca",
+      "type": "municipality"
+    },
+    {
+      "code": "13657",
+      "department_code": "13",
+      "name": "SAN JUAN NEPOMUCENO",
+      "display_name": "San Juan Nepomuceno",
+      "type": "municipality"
+    },
+    {
+      "code": "13667",
+      "department_code": "13",
+      "name": "SAN MARTÍN DE LOBA",
+      "display_name": "San Martín de Loba",
+      "type": "municipality"
+    },
+    {
+      "code": "13670",
+      "department_code": "13",
+      "name": "SAN PABLO",
+      "display_name": "San Pablo",
+      "type": "municipality"
+    },
+    {
+      "code": "13673",
+      "department_code": "13",
+      "name": "SANTA CATALINA",
+      "display_name": "Santa Catalina",
+      "type": "municipality"
+    },
+    {
+      "code": "13683",
+      "department_code": "13",
+      "name": "SANTA ROSA",
+      "display_name": "Santa Rosa",
+      "type": "municipality"
+    },
+    {
+      "code": "13688",
+      "department_code": "13",
+      "name": "SANTA ROSA DEL SUR",
+      "display_name": "Santa Rosa del Sur",
+      "type": "municipality"
+    },
+    {
+      "code": "13744",
+      "department_code": "13",
+      "name": "SIMITÍ",
+      "display_name": "Simití",
+      "type": "municipality"
+    },
+    {
+      "code": "13760",
+      "department_code": "13",
+      "name": "SOPLAVIENTO",
+      "display_name": "Soplaviento",
+      "type": "municipality"
+    },
+    {
+      "code": "13780",
+      "department_code": "13",
+      "name": "TALAIGUA NUEVO",
+      "display_name": "Talaigua Nuevo",
+      "type": "municipality"
+    },
+    {
+      "code": "13810",
+      "department_code": "13",
+      "name": "TIQUISIO",
+      "display_name": "Tiquisio",
+      "type": "municipality"
+    },
+    {
+      "code": "13836",
+      "department_code": "13",
+      "name": "TURBACO",
+      "display_name": "Turbaco",
+      "type": "municipality"
+    },
+    {
+      "code": "13838",
+      "department_code": "13",
+      "name": "TURBANÁ",
+      "display_name": "Turbaná",
+      "type": "municipality"
+    },
+    {
+      "code": "13873",
+      "department_code": "13",
+      "name": "VILLANUEVA",
+      "display_name": "Villanueva",
+      "type": "municipality"
+    },
+    {
+      "code": "13894",
+      "department_code": "13",
+      "name": "ZAMBRANO",
+      "display_name": "Zambrano",
+      "type": "municipality"
+    },
+    {
+      "code": "15001",
+      "department_code": "15",
+      "name": "TUNJA",
+      "display_name": "Tunja",
+      "type": "municipality"
+    },
+    {
+      "code": "15022",
+      "department_code": "15",
+      "name": "ALMEIDA",
+      "display_name": "Almeida",
+      "type": "municipality"
+    },
+    {
+      "code": "15047",
+      "department_code": "15",
+      "name": "AQUITANIA",
+      "display_name": "Aquitania",
+      "type": "municipality"
+    },
+    {
+      "code": "15051",
+      "department_code": "15",
+      "name": "ARCABUCO",
+      "display_name": "Arcabuco",
+      "type": "municipality"
+    },
+    {
+      "code": "15087",
+      "department_code": "15",
+      "name": "BELÉN",
+      "display_name": "Belén",
+      "type": "municipality"
+    },
+    {
+      "code": "15090",
+      "department_code": "15",
+      "name": "BERBEO",
+      "display_name": "Berbeo",
+      "type": "municipality"
+    },
+    {
+      "code": "15092",
+      "department_code": "15",
+      "name": "BETÉITIVA",
+      "display_name": "Betéitiva",
+      "type": "municipality"
+    },
+    {
+      "code": "15097",
+      "department_code": "15",
+      "name": "BOAVITA",
+      "display_name": "Boavita",
+      "type": "municipality"
+    },
+    {
+      "code": "15104",
+      "department_code": "15",
+      "name": "BOYACÁ",
+      "display_name": "Boyacá",
+      "type": "municipality"
+    },
+    {
+      "code": "15106",
+      "department_code": "15",
+      "name": "BRICEÑO",
+      "display_name": "Briceño",
+      "type": "municipality"
+    },
+    {
+      "code": "15109",
+      "department_code": "15",
+      "name": "BUENAVISTA",
+      "display_name": "Buenavista",
+      "type": "municipality"
+    },
+    {
+      "code": "15114",
+      "department_code": "15",
+      "name": "BUSBANZÁ",
+      "display_name": "Busbanzá",
+      "type": "municipality"
+    },
+    {
+      "code": "15131",
+      "department_code": "15",
+      "name": "CALDAS",
+      "display_name": "Caldas",
+      "type": "municipality"
+    },
+    {
+      "code": "15135",
+      "department_code": "15",
+      "name": "CAMPOHERMOSO",
+      "display_name": "Campohermoso",
+      "type": "municipality"
+    },
+    {
+      "code": "15162",
+      "department_code": "15",
+      "name": "CERINZA",
+      "display_name": "Cerinza",
+      "type": "municipality"
+    },
+    {
+      "code": "15172",
+      "department_code": "15",
+      "name": "CHINAVITA",
+      "display_name": "Chinavita",
+      "type": "municipality"
+    },
+    {
+      "code": "15176",
+      "department_code": "15",
+      "name": "CHIQUINQUIRÁ",
+      "display_name": "Chiquinquirá",
+      "type": "municipality"
+    },
+    {
+      "code": "15180",
+      "department_code": "15",
+      "name": "CHISCAS",
+      "display_name": "Chiscas",
+      "type": "municipality"
+    },
+    {
+      "code": "15183",
+      "department_code": "15",
+      "name": "CHITA",
+      "display_name": "Chita",
+      "type": "municipality"
+    },
+    {
+      "code": "15185",
+      "department_code": "15",
+      "name": "CHITARAQUE",
+      "display_name": "Chitaraque",
+      "type": "municipality"
+    },
+    {
+      "code": "15187",
+      "department_code": "15",
+      "name": "CHIVATÁ",
+      "display_name": "Chivatá",
+      "type": "municipality"
+    },
+    {
+      "code": "15189",
+      "department_code": "15",
+      "name": "CIÉNEGA",
+      "display_name": "Ciénega",
+      "type": "municipality"
+    },
+    {
+      "code": "15204",
+      "department_code": "15",
+      "name": "CÓMBITA",
+      "display_name": "Cómbita",
+      "type": "municipality"
+    },
+    {
+      "code": "15212",
+      "department_code": "15",
+      "name": "COPER",
+      "display_name": "Coper",
+      "type": "municipality"
+    },
+    {
+      "code": "15215",
+      "department_code": "15",
+      "name": "CORRALES",
+      "display_name": "Corrales",
+      "type": "municipality"
+    },
+    {
+      "code": "15218",
+      "department_code": "15",
+      "name": "COVARACHÍA",
+      "display_name": "Covarachía",
+      "type": "municipality"
+    },
+    {
+      "code": "15223",
+      "department_code": "15",
+      "name": "CUBARÁ",
+      "display_name": "Cubará",
+      "type": "municipality"
+    },
+    {
+      "code": "15224",
+      "department_code": "15",
+      "name": "CUCAITA",
+      "display_name": "Cucaita",
+      "type": "municipality"
+    },
+    {
+      "code": "15226",
+      "department_code": "15",
+      "name": "CUÍTIVA",
+      "display_name": "Cuítiva",
+      "type": "municipality"
+    },
+    {
+      "code": "15232",
+      "department_code": "15",
+      "name": "CHÍQUIZA",
+      "display_name": "Chíquiza",
+      "type": "municipality"
+    },
+    {
+      "code": "15236",
+      "department_code": "15",
+      "name": "CHIVOR",
+      "display_name": "Chivor",
+      "type": "municipality"
+    },
+    {
+      "code": "15238",
+      "department_code": "15",
+      "name": "DUITAMA",
+      "display_name": "Duitama",
+      "type": "municipality"
+    },
+    {
+      "code": "15244",
+      "department_code": "15",
+      "name": "EL COCUY",
+      "display_name": "El Cocuy",
+      "type": "municipality"
+    },
+    {
+      "code": "15248",
+      "department_code": "15",
+      "name": "EL ESPINO",
+      "display_name": "El Espino",
+      "type": "municipality"
+    },
+    {
+      "code": "15272",
+      "department_code": "15",
+      "name": "FIRAVITOBA",
+      "display_name": "Firavitoba",
+      "type": "municipality"
+    },
+    {
+      "code": "15276",
+      "department_code": "15",
+      "name": "FLORESTA",
+      "display_name": "Floresta",
+      "type": "municipality"
+    },
+    {
+      "code": "15293",
+      "department_code": "15",
+      "name": "GACHANTIVÁ",
+      "display_name": "Gachantivá",
+      "type": "municipality"
+    },
+    {
+      "code": "15296",
+      "department_code": "15",
+      "name": "GÁMEZA",
+      "display_name": "Gámeza",
+      "type": "municipality"
+    },
+    {
+      "code": "15299",
+      "department_code": "15",
+      "name": "GARAGOA",
+      "display_name": "Garagoa",
+      "type": "municipality"
+    },
+    {
+      "code": "15317",
+      "department_code": "15",
+      "name": "GUACAMAYAS",
+      "display_name": "Guacamayas",
+      "type": "municipality"
+    },
+    {
+      "code": "15322",
+      "department_code": "15",
+      "name": "GUATEQUE",
+      "display_name": "Guateque",
+      "type": "municipality"
+    },
+    {
+      "code": "15325",
+      "department_code": "15",
+      "name": "GUAYATÁ",
+      "display_name": "Guayatá",
+      "type": "municipality"
+    },
+    {
+      "code": "15332",
+      "department_code": "15",
+      "name": "GÜICÁN DE LA SIERRA",
+      "display_name": "Güicán de la Sierra",
+      "type": "municipality"
+    },
+    {
+      "code": "15362",
+      "department_code": "15",
+      "name": "IZA",
+      "display_name": "Iza",
+      "type": "municipality"
+    },
+    {
+      "code": "15367",
+      "department_code": "15",
+      "name": "JENESANO",
+      "display_name": "Jenesano",
+      "type": "municipality"
+    },
+    {
+      "code": "15368",
+      "department_code": "15",
+      "name": "JERICÓ",
+      "display_name": "Jericó",
+      "type": "municipality"
+    },
+    {
+      "code": "15377",
+      "department_code": "15",
+      "name": "LABRANZAGRANDE",
+      "display_name": "Labranzagrande",
+      "type": "municipality"
+    },
+    {
+      "code": "15380",
+      "department_code": "15",
+      "name": "LA CAPILLA",
+      "display_name": "La Capilla",
+      "type": "municipality"
+    },
+    {
+      "code": "15401",
+      "department_code": "15",
+      "name": "LA VICTORIA",
+      "display_name": "La Victoria",
+      "type": "municipality"
+    },
+    {
+      "code": "15403",
+      "department_code": "15",
+      "name": "LA UVITA",
+      "display_name": "La Uvita",
+      "type": "municipality"
+    },
+    {
+      "code": "15407",
+      "department_code": "15",
+      "name": "VILLA DE LEYVA",
+      "display_name": "Villa de Leyva",
+      "type": "municipality"
+    },
+    {
+      "code": "15425",
+      "department_code": "15",
+      "name": "MACANAL",
+      "display_name": "Macanal",
+      "type": "municipality"
+    },
+    {
+      "code": "15442",
+      "department_code": "15",
+      "name": "MARIPÍ",
+      "display_name": "Maripí",
+      "type": "municipality"
+    },
+    {
+      "code": "15455",
+      "department_code": "15",
+      "name": "MIRAFLORES",
+      "display_name": "Miraflores",
+      "type": "municipality"
+    },
+    {
+      "code": "15464",
+      "department_code": "15",
+      "name": "MONGUA",
+      "display_name": "Mongua",
+      "type": "municipality"
+    },
+    {
+      "code": "15466",
+      "department_code": "15",
+      "name": "MONGUÍ",
+      "display_name": "Monguí",
+      "type": "municipality"
+    },
+    {
+      "code": "15469",
+      "department_code": "15",
+      "name": "MONIQUIRÁ",
+      "display_name": "Moniquirá",
+      "type": "municipality"
+    },
+    {
+      "code": "15476",
+      "department_code": "15",
+      "name": "MOTAVITA",
+      "display_name": "Motavita",
+      "type": "municipality"
+    },
+    {
+      "code": "15480",
+      "department_code": "15",
+      "name": "MUZO",
+      "display_name": "Muzo",
+      "type": "municipality"
+    },
+    {
+      "code": "15491",
+      "department_code": "15",
+      "name": "NOBSA",
+      "display_name": "Nobsa",
+      "type": "municipality"
+    },
+    {
+      "code": "15494",
+      "department_code": "15",
+      "name": "NUEVO COLÓN",
+      "display_name": "Nuevo Colón",
+      "type": "municipality"
+    },
+    {
+      "code": "15500",
+      "department_code": "15",
+      "name": "OICATÁ",
+      "display_name": "Oicatá",
+      "type": "municipality"
+    },
+    {
+      "code": "15507",
+      "department_code": "15",
+      "name": "OTANCHE",
+      "display_name": "Otanche",
+      "type": "municipality"
+    },
+    {
+      "code": "15511",
+      "department_code": "15",
+      "name": "PACHAVITA",
+      "display_name": "Pachavita",
+      "type": "municipality"
+    },
+    {
+      "code": "15514",
+      "department_code": "15",
+      "name": "PÁEZ",
+      "display_name": "Páez",
+      "type": "municipality"
+    },
+    {
+      "code": "15516",
+      "department_code": "15",
+      "name": "PAIPA",
+      "display_name": "Paipa",
+      "type": "municipality"
+    },
+    {
+      "code": "15518",
+      "department_code": "15",
+      "name": "PAJARITO",
+      "display_name": "Pajarito",
+      "type": "municipality"
+    },
+    {
+      "code": "15522",
+      "department_code": "15",
+      "name": "PANQUEBA",
+      "display_name": "Panqueba",
+      "type": "municipality"
+    },
+    {
+      "code": "15531",
+      "department_code": "15",
+      "name": "PAUNA",
+      "display_name": "Pauna",
+      "type": "municipality"
+    },
+    {
+      "code": "15533",
+      "department_code": "15",
+      "name": "PAYA",
+      "display_name": "Paya",
+      "type": "municipality"
+    },
+    {
+      "code": "15537",
+      "department_code": "15",
+      "name": "PAZ DE RÍO",
+      "display_name": "Paz de Río",
+      "type": "municipality"
+    },
+    {
+      "code": "15542",
+      "department_code": "15",
+      "name": "PESCA",
+      "display_name": "Pesca",
+      "type": "municipality"
+    },
+    {
+      "code": "15550",
+      "department_code": "15",
+      "name": "PISBA",
+      "display_name": "Pisba",
+      "type": "municipality"
+    },
+    {
+      "code": "15572",
+      "department_code": "15",
+      "name": "PUERTO BOYACÁ",
+      "display_name": "Puerto Boyacá",
+      "type": "municipality"
+    },
+    {
+      "code": "15580",
+      "department_code": "15",
+      "name": "QUÍPAMA",
+      "display_name": "Quípama",
+      "type": "municipality"
+    },
+    {
+      "code": "15599",
+      "department_code": "15",
+      "name": "RAMIRIQUÍ",
+      "display_name": "Ramiriquí",
+      "type": "municipality"
+    },
+    {
+      "code": "15600",
+      "department_code": "15",
+      "name": "RÁQUIRA",
+      "display_name": "Ráquira",
+      "type": "municipality"
+    },
+    {
+      "code": "15621",
+      "department_code": "15",
+      "name": "RONDÓN",
+      "display_name": "Rondón",
+      "type": "municipality"
+    },
+    {
+      "code": "15632",
+      "department_code": "15",
+      "name": "SABOYÁ",
+      "display_name": "Saboyá",
+      "type": "municipality"
+    },
+    {
+      "code": "15638",
+      "department_code": "15",
+      "name": "SÁCHICA",
+      "display_name": "Sáchica",
+      "type": "municipality"
+    },
+    {
+      "code": "15646",
+      "department_code": "15",
+      "name": "SAMACÁ",
+      "display_name": "Samacá",
+      "type": "municipality"
+    },
+    {
+      "code": "15660",
+      "department_code": "15",
+      "name": "SAN EDUARDO",
+      "display_name": "San Eduardo",
+      "type": "municipality"
+    },
+    {
+      "code": "15664",
+      "department_code": "15",
+      "name": "SAN JOSÉ DE PARE",
+      "display_name": "San José de Pare",
+      "type": "municipality"
+    },
+    {
+      "code": "15667",
+      "department_code": "15",
+      "name": "SAN LUIS DE GACENO",
+      "display_name": "San Luis de Gaceno",
+      "type": "municipality"
+    },
+    {
+      "code": "15673",
+      "department_code": "15",
+      "name": "SAN MATEO",
+      "display_name": "San Mateo",
+      "type": "municipality"
+    },
+    {
+      "code": "15676",
+      "department_code": "15",
+      "name": "SAN MIGUEL DE SEMA",
+      "display_name": "San Miguel de Sema",
+      "type": "municipality"
+    },
+    {
+      "code": "15681",
+      "department_code": "15",
+      "name": "SAN PABLO DE BORBUR",
+      "display_name": "San Pablo de Borbur",
+      "type": "municipality"
+    },
+    {
+      "code": "15686",
+      "department_code": "15",
+      "name": "SANTANA",
+      "display_name": "Santana",
+      "type": "municipality"
+    },
+    {
+      "code": "15690",
+      "department_code": "15",
+      "name": "SANTA MARÍA",
+      "display_name": "Santa María",
+      "type": "municipality"
+    },
+    {
+      "code": "15693",
+      "department_code": "15",
+      "name": "SANTA ROSA DE VITERBO",
+      "display_name": "Santa Rosa de Viterbo",
+      "type": "municipality"
+    },
+    {
+      "code": "15696",
+      "department_code": "15",
+      "name": "SANTA SOFÍA",
+      "display_name": "Santa Sofía",
+      "type": "municipality"
+    },
+    {
+      "code": "15720",
+      "department_code": "15",
+      "name": "SATIVANORTE",
+      "display_name": "Sativanorte",
+      "type": "municipality"
+    },
+    {
+      "code": "15723",
+      "department_code": "15",
+      "name": "SATIVASUR",
+      "display_name": "Sativasur",
+      "type": "municipality"
+    },
+    {
+      "code": "15740",
+      "department_code": "15",
+      "name": "SIACHOQUE",
+      "display_name": "Siachoque",
+      "type": "municipality"
+    },
+    {
+      "code": "15753",
+      "department_code": "15",
+      "name": "SOATÁ",
+      "display_name": "Soatá",
+      "type": "municipality"
+    },
+    {
+      "code": "15755",
+      "department_code": "15",
+      "name": "SOCOTÁ",
+      "display_name": "Socotá",
+      "type": "municipality"
+    },
+    {
+      "code": "15757",
+      "department_code": "15",
+      "name": "SOCHA",
+      "display_name": "Socha",
+      "type": "municipality"
+    },
+    {
+      "code": "15759",
+      "department_code": "15",
+      "name": "SOGAMOSO",
+      "display_name": "Sogamoso",
+      "type": "municipality"
+    },
+    {
+      "code": "15761",
+      "department_code": "15",
+      "name": "SOMONDOCO",
+      "display_name": "Somondoco",
+      "type": "municipality"
+    },
+    {
+      "code": "15762",
+      "department_code": "15",
+      "name": "SORA",
+      "display_name": "Sora",
+      "type": "municipality"
+    },
+    {
+      "code": "15763",
+      "department_code": "15",
+      "name": "SOTAQUIRÁ",
+      "display_name": "Sotaquirá",
+      "type": "municipality"
+    },
+    {
+      "code": "15764",
+      "department_code": "15",
+      "name": "SORACÁ",
+      "display_name": "Soracá",
+      "type": "municipality"
+    },
+    {
+      "code": "15774",
+      "department_code": "15",
+      "name": "SUSACÓN",
+      "display_name": "Susacón",
+      "type": "municipality"
+    },
+    {
+      "code": "15776",
+      "department_code": "15",
+      "name": "SUTAMARCHÁN",
+      "display_name": "Sutamarchán",
+      "type": "municipality"
+    },
+    {
+      "code": "15778",
+      "department_code": "15",
+      "name": "SUTATENZA",
+      "display_name": "Sutatenza",
+      "type": "municipality"
+    },
+    {
+      "code": "15790",
+      "department_code": "15",
+      "name": "TASCO",
+      "display_name": "Tasco",
+      "type": "municipality"
+    },
+    {
+      "code": "15798",
+      "department_code": "15",
+      "name": "TENZA",
+      "display_name": "Tenza",
+      "type": "municipality"
+    },
+    {
+      "code": "15804",
+      "department_code": "15",
+      "name": "TIBANÁ",
+      "display_name": "Tibaná",
+      "type": "municipality"
+    },
+    {
+      "code": "15806",
+      "department_code": "15",
+      "name": "TIBASOSA",
+      "display_name": "Tibasosa",
+      "type": "municipality"
+    },
+    {
+      "code": "15808",
+      "department_code": "15",
+      "name": "TINJACÁ",
+      "display_name": "Tinjacá",
+      "type": "municipality"
+    },
+    {
+      "code": "15810",
+      "department_code": "15",
+      "name": "TIPACOQUE",
+      "display_name": "Tipacoque",
+      "type": "municipality"
+    },
+    {
+      "code": "15814",
+      "department_code": "15",
+      "name": "TOCA",
+      "display_name": "Toca",
+      "type": "municipality"
+    },
+    {
+      "code": "15816",
+      "department_code": "15",
+      "name": "TOGÜÍ",
+      "display_name": "Togüí",
+      "type": "municipality"
+    },
+    {
+      "code": "15820",
+      "department_code": "15",
+      "name": "TÓPAGA",
+      "display_name": "Tópaga",
+      "type": "municipality"
+    },
+    {
+      "code": "15822",
+      "department_code": "15",
+      "name": "TOTA",
+      "display_name": "Tota",
+      "type": "municipality"
+    },
+    {
+      "code": "15832",
+      "department_code": "15",
+      "name": "TUNUNGUÁ",
+      "display_name": "Tununguá",
+      "type": "municipality"
+    },
+    {
+      "code": "15835",
+      "department_code": "15",
+      "name": "TURMEQUÉ",
+      "display_name": "Turmequé",
+      "type": "municipality"
+    },
+    {
+      "code": "15837",
+      "department_code": "15",
+      "name": "TUTA",
+      "display_name": "Tuta",
+      "type": "municipality"
+    },
+    {
+      "code": "15839",
+      "department_code": "15",
+      "name": "TUTAZÁ",
+      "display_name": "Tutazá",
+      "type": "municipality"
+    },
+    {
+      "code": "15842",
+      "department_code": "15",
+      "name": "ÚMBITA",
+      "display_name": "Úmbita",
+      "type": "municipality"
+    },
+    {
+      "code": "15861",
+      "department_code": "15",
+      "name": "VENTAQUEMADA",
+      "display_name": "Ventaquemada",
+      "type": "municipality"
+    },
+    {
+      "code": "15879",
+      "department_code": "15",
+      "name": "VIRACACHÁ",
+      "display_name": "Viracachá",
+      "type": "municipality"
+    },
+    {
+      "code": "15897",
+      "department_code": "15",
+      "name": "ZETAQUIRA",
+      "display_name": "Zetaquira",
+      "type": "municipality"
+    },
+    {
+      "code": "17001",
+      "department_code": "17",
+      "name": "MANIZALES",
+      "display_name": "Manizales",
+      "type": "municipality"
+    },
+    {
+      "code": "17013",
+      "department_code": "17",
+      "name": "AGUADAS",
+      "display_name": "Aguadas",
+      "type": "municipality"
+    },
+    {
+      "code": "17042",
+      "department_code": "17",
+      "name": "ANSERMA",
+      "display_name": "Anserma",
+      "type": "municipality"
+    },
+    {
+      "code": "17050",
+      "department_code": "17",
+      "name": "ARANZAZU",
+      "display_name": "Aranzazu",
+      "type": "municipality"
+    },
+    {
+      "code": "17088",
+      "department_code": "17",
+      "name": "BELALCÁZAR",
+      "display_name": "Belalcázar",
+      "type": "municipality"
+    },
+    {
+      "code": "17174",
+      "department_code": "17",
+      "name": "CHINCHINÁ",
+      "display_name": "Chinchiná",
+      "type": "municipality"
+    },
+    {
+      "code": "17272",
+      "department_code": "17",
+      "name": "FILADELFIA",
+      "display_name": "Filadelfia",
+      "type": "municipality"
+    },
+    {
+      "code": "17380",
+      "department_code": "17",
+      "name": "LA DORADA",
+      "display_name": "La Dorada",
+      "type": "municipality"
+    },
+    {
+      "code": "17388",
+      "department_code": "17",
+      "name": "LA MERCED",
+      "display_name": "La Merced",
+      "type": "municipality"
+    },
+    {
+      "code": "17433",
+      "department_code": "17",
+      "name": "MANZANARES",
+      "display_name": "Manzanares",
+      "type": "municipality"
+    },
+    {
+      "code": "17442",
+      "department_code": "17",
+      "name": "MARMATO",
+      "display_name": "Marmato",
+      "type": "municipality"
+    },
+    {
+      "code": "17444",
+      "department_code": "17",
+      "name": "MARQUETALIA",
+      "display_name": "Marquetalia",
+      "type": "municipality"
+    },
+    {
+      "code": "17446",
+      "department_code": "17",
+      "name": "MARULANDA",
+      "display_name": "Marulanda",
+      "type": "municipality"
+    },
+    {
+      "code": "17486",
+      "department_code": "17",
+      "name": "NEIRA",
+      "display_name": "Neira",
+      "type": "municipality"
+    },
+    {
+      "code": "17495",
+      "department_code": "17",
+      "name": "NORCASIA",
+      "display_name": "Norcasia",
+      "type": "municipality"
+    },
+    {
+      "code": "17513",
+      "department_code": "17",
+      "name": "PÁCORA",
+      "display_name": "Pácora",
+      "type": "municipality"
+    },
+    {
+      "code": "17524",
+      "department_code": "17",
+      "name": "PALESTINA",
+      "display_name": "Palestina",
+      "type": "municipality"
+    },
+    {
+      "code": "17541",
+      "department_code": "17",
+      "name": "PENSILVANIA",
+      "display_name": "Pensilvania",
+      "type": "municipality"
+    },
+    {
+      "code": "17614",
+      "department_code": "17",
+      "name": "RIOSUCIO",
+      "display_name": "Riosucio",
+      "type": "municipality"
+    },
+    {
+      "code": "17616",
+      "department_code": "17",
+      "name": "RISARALDA",
+      "display_name": "Risaralda",
+      "type": "municipality"
+    },
+    {
+      "code": "17653",
+      "department_code": "17",
+      "name": "SALAMINA",
+      "display_name": "Salamina",
+      "type": "municipality"
+    },
+    {
+      "code": "17662",
+      "department_code": "17",
+      "name": "SAMANÁ",
+      "display_name": "Samaná",
+      "type": "municipality"
+    },
+    {
+      "code": "17665",
+      "department_code": "17",
+      "name": "SAN JOSÉ",
+      "display_name": "San José",
+      "type": "municipality"
+    },
+    {
+      "code": "17777",
+      "department_code": "17",
+      "name": "SUPÍA",
+      "display_name": "Supía",
+      "type": "municipality"
+    },
+    {
+      "code": "17867",
+      "department_code": "17",
+      "name": "VICTORIA",
+      "display_name": "Victoria",
+      "type": "municipality"
+    },
+    {
+      "code": "17873",
+      "department_code": "17",
+      "name": "VILLAMARÍA",
+      "display_name": "Villamaría",
+      "type": "municipality"
+    },
+    {
+      "code": "17877",
+      "department_code": "17",
+      "name": "VITERBO",
+      "display_name": "Viterbo",
+      "type": "municipality"
+    },
+    {
+      "code": "18001",
+      "department_code": "18",
+      "name": "FLORENCIA",
+      "display_name": "Florencia",
+      "type": "municipality"
+    },
+    {
+      "code": "18029",
+      "department_code": "18",
+      "name": "ALBANIA",
+      "display_name": "Albania",
+      "type": "municipality"
+    },
+    {
+      "code": "18094",
+      "department_code": "18",
+      "name": "BELÉN DE LOS ANDAQUÍES",
+      "display_name": "Belén de los Andaquíes",
+      "type": "municipality"
+    },
+    {
+      "code": "18150",
+      "department_code": "18",
+      "name": "CARTAGENA DEL CHAIRÁ",
+      "display_name": "Cartagena del Chairá",
+      "type": "municipality"
+    },
+    {
+      "code": "18205",
+      "department_code": "18",
+      "name": "CURILLO",
+      "display_name": "Curillo",
+      "type": "municipality"
+    },
+    {
+      "code": "18247",
+      "department_code": "18",
+      "name": "EL DONCELLO",
+      "display_name": "El Doncello",
+      "type": "municipality"
+    },
+    {
+      "code": "18256",
+      "department_code": "18",
+      "name": "EL PAUJÍL",
+      "display_name": "El Paujíl",
+      "type": "municipality"
+    },
+    {
+      "code": "18410",
+      "department_code": "18",
+      "name": "LA MONTAÑITA",
+      "display_name": "La Montañita",
+      "type": "municipality"
+    },
+    {
+      "code": "18460",
+      "department_code": "18",
+      "name": "MILÁN",
+      "display_name": "Milán",
+      "type": "municipality"
+    },
+    {
+      "code": "18479",
+      "department_code": "18",
+      "name": "MORELIA",
+      "display_name": "Morelia",
+      "type": "municipality"
+    },
+    {
+      "code": "18592",
+      "department_code": "18",
+      "name": "PUERTO RICO",
+      "display_name": "Puerto Rico",
+      "type": "municipality"
+    },
+    {
+      "code": "18610",
+      "department_code": "18",
+      "name": "SAN JOSÉ DEL FRAGUA",
+      "display_name": "San José del Fragua",
+      "type": "municipality"
+    },
+    {
+      "code": "18753",
+      "department_code": "18",
+      "name": "SAN VICENTE DEL CAGUÁN",
+      "display_name": "San Vicente del Caguán",
+      "type": "municipality"
+    },
+    {
+      "code": "18756",
+      "department_code": "18",
+      "name": "SOLANO",
+      "display_name": "Solano",
+      "type": "municipality"
+    },
+    {
+      "code": "18785",
+      "department_code": "18",
+      "name": "SOLITA",
+      "display_name": "Solita",
+      "type": "municipality"
+    },
+    {
+      "code": "18860",
+      "department_code": "18",
+      "name": "VALPARAÍSO",
+      "display_name": "Valparaíso",
+      "type": "municipality"
+    },
+    {
+      "code": "19001",
+      "department_code": "19",
+      "name": "POPAYÁN",
+      "display_name": "Popayán",
+      "type": "municipality"
+    },
+    {
+      "code": "19022",
+      "department_code": "19",
+      "name": "ALMAGUER",
+      "display_name": "Almaguer",
+      "type": "municipality"
+    },
+    {
+      "code": "19050",
+      "department_code": "19",
+      "name": "ARGELIA",
+      "display_name": "Argelia",
+      "type": "municipality"
+    },
+    {
+      "code": "19075",
+      "department_code": "19",
+      "name": "BALBOA",
+      "display_name": "Balboa",
+      "type": "municipality"
+    },
+    {
+      "code": "19100",
+      "department_code": "19",
+      "name": "BOLÍVAR",
+      "display_name": "Bolívar",
+      "type": "municipality"
+    },
+    {
+      "code": "19110",
+      "department_code": "19",
+      "name": "BUENOS AIRES",
+      "display_name": "Buenos Aires",
+      "type": "municipality"
+    },
+    {
+      "code": "19130",
+      "department_code": "19",
+      "name": "CAJIBÍO",
+      "display_name": "Cajibío",
+      "type": "municipality"
+    },
+    {
+      "code": "19137",
+      "department_code": "19",
+      "name": "CALDONO",
+      "display_name": "Caldono",
+      "type": "municipality"
+    },
+    {
+      "code": "19142",
+      "department_code": "19",
+      "name": "CALOTO",
+      "display_name": "Caloto",
+      "type": "municipality"
+    },
+    {
+      "code": "19212",
+      "department_code": "19",
+      "name": "CORINTO",
+      "display_name": "Corinto",
+      "type": "municipality"
+    },
+    {
+      "code": "19256",
+      "department_code": "19",
+      "name": "EL TAMBO",
+      "display_name": "El Tambo",
+      "type": "municipality"
+    },
+    {
+      "code": "19290",
+      "department_code": "19",
+      "name": "FLORENCIA",
+      "display_name": "Florencia",
+      "type": "municipality"
+    },
+    {
+      "code": "19300",
+      "department_code": "19",
+      "name": "GUACHENÉ",
+      "display_name": "Guachené",
+      "type": "municipality"
+    },
+    {
+      "code": "19318",
+      "department_code": "19",
+      "name": "GUAPI",
+      "display_name": "Guapi",
+      "type": "municipality"
+    },
+    {
+      "code": "19355",
+      "department_code": "19",
+      "name": "INZÁ",
+      "display_name": "Inzá",
+      "type": "municipality"
+    },
+    {
+      "code": "19364",
+      "department_code": "19",
+      "name": "JAMBALÓ",
+      "display_name": "Jambaló",
+      "type": "municipality"
+    },
+    {
+      "code": "19392",
+      "department_code": "19",
+      "name": "LA SIERRA",
+      "display_name": "La Sierra",
+      "type": "municipality"
+    },
+    {
+      "code": "19397",
+      "department_code": "19",
+      "name": "LA VEGA",
+      "display_name": "La Vega",
+      "type": "municipality"
+    },
+    {
+      "code": "19418",
+      "department_code": "19",
+      "name": "LÓPEZ DE MICAY",
+      "display_name": "López de Micay",
+      "type": "municipality"
+    },
+    {
+      "code": "19450",
+      "department_code": "19",
+      "name": "MERCADERES",
+      "display_name": "Mercaderes",
+      "type": "municipality"
+    },
+    {
+      "code": "19455",
+      "department_code": "19",
+      "name": "MIRANDA",
+      "display_name": "Miranda",
+      "type": "municipality"
+    },
+    {
+      "code": "19473",
+      "department_code": "19",
+      "name": "MORALES",
+      "display_name": "Morales",
+      "type": "municipality"
+    },
+    {
+      "code": "19513",
+      "department_code": "19",
+      "name": "PADILLA",
+      "display_name": "Padilla",
+      "type": "municipality"
+    },
+    {
+      "code": "19517",
+      "department_code": "19",
+      "name": "PÁEZ",
+      "display_name": "Páez",
+      "type": "municipality"
+    },
+    {
+      "code": "19532",
+      "department_code": "19",
+      "name": "PATÍA",
+      "display_name": "Patía",
+      "type": "municipality"
+    },
+    {
+      "code": "19533",
+      "department_code": "19",
+      "name": "PIAMONTE",
+      "display_name": "Piamonte",
+      "type": "municipality"
+    },
+    {
+      "code": "19548",
+      "department_code": "19",
+      "name": "PIENDAMÓ - TUNÍA",
+      "display_name": "Piendamó - Tunía",
+      "type": "municipality"
+    },
+    {
+      "code": "19573",
+      "department_code": "19",
+      "name": "PUERTO TEJADA",
+      "display_name": "Puerto Tejada",
+      "type": "municipality"
+    },
+    {
+      "code": "19585",
+      "department_code": "19",
+      "name": "PURACÉ",
+      "display_name": "Puracé",
+      "type": "municipality"
+    },
+    {
+      "code": "19622",
+      "department_code": "19",
+      "name": "ROSAS",
+      "display_name": "Rosas",
+      "type": "municipality"
+    },
+    {
+      "code": "19693",
+      "department_code": "19",
+      "name": "SAN SEBASTIÁN",
+      "display_name": "San Sebastián",
+      "type": "municipality"
+    },
+    {
+      "code": "19698",
+      "department_code": "19",
+      "name": "SANTANDER DE QUILICHAO",
+      "display_name": "Santander de Quilichao",
+      "type": "municipality"
+    },
+    {
+      "code": "19701",
+      "department_code": "19",
+      "name": "SANTA ROSA",
+      "display_name": "Santa Rosa",
+      "type": "municipality"
+    },
+    {
+      "code": "19743",
+      "department_code": "19",
+      "name": "SILVIA",
+      "display_name": "Silvia",
+      "type": "municipality"
+    },
+    {
+      "code": "19760",
+      "department_code": "19",
+      "name": "SOTARÁ - PAISPAMBA",
+      "display_name": "Sotará - Paispamba",
+      "type": "municipality"
+    },
+    {
+      "code": "19780",
+      "department_code": "19",
+      "name": "SUÁREZ",
+      "display_name": "Suárez",
+      "type": "municipality"
+    },
+    {
+      "code": "19785",
+      "department_code": "19",
+      "name": "SUCRE",
+      "display_name": "Sucre",
+      "type": "municipality"
+    },
+    {
+      "code": "19807",
+      "department_code": "19",
+      "name": "TIMBÍO",
+      "display_name": "Timbío",
+      "type": "municipality"
+    },
+    {
+      "code": "19809",
+      "department_code": "19",
+      "name": "TIMBIQUÍ",
+      "display_name": "Timbiquí",
+      "type": "municipality"
+    },
+    {
+      "code": "19821",
+      "department_code": "19",
+      "name": "TORIBÍO",
+      "display_name": "Toribío",
+      "type": "municipality"
+    },
+    {
+      "code": "19824",
+      "department_code": "19",
+      "name": "TOTORÓ",
+      "display_name": "Totoró",
+      "type": "municipality"
+    },
+    {
+      "code": "19845",
+      "department_code": "19",
+      "name": "VILLA RICA",
+      "display_name": "Villa Rica",
+      "type": "municipality"
+    },
+    {
+      "code": "20001",
+      "department_code": "20",
+      "name": "VALLEDUPAR",
+      "display_name": "Valledupar",
+      "type": "municipality"
+    },
+    {
+      "code": "20011",
+      "department_code": "20",
+      "name": "AGUACHICA",
+      "display_name": "Aguachica",
+      "type": "municipality"
+    },
+    {
+      "code": "20013",
+      "department_code": "20",
+      "name": "AGUSTÍN CODAZZI",
+      "display_name": "Agustín Codazzi",
+      "type": "municipality"
+    },
+    {
+      "code": "20032",
+      "department_code": "20",
+      "name": "ASTREA",
+      "display_name": "Astrea",
+      "type": "municipality"
+    },
+    {
+      "code": "20045",
+      "department_code": "20",
+      "name": "BECERRIL",
+      "display_name": "Becerril",
+      "type": "municipality"
+    },
+    {
+      "code": "20060",
+      "department_code": "20",
+      "name": "BOSCONIA",
+      "display_name": "Bosconia",
+      "type": "municipality"
+    },
+    {
+      "code": "20175",
+      "department_code": "20",
+      "name": "CHIMICHAGUA",
+      "display_name": "Chimichagua",
+      "type": "municipality"
+    },
+    {
+      "code": "20178",
+      "department_code": "20",
+      "name": "CHIRIGUANÁ",
+      "display_name": "Chiriguaná",
+      "type": "municipality"
+    },
+    {
+      "code": "20228",
+      "department_code": "20",
+      "name": "CURUMANÍ",
+      "display_name": "Curumaní",
+      "type": "municipality"
+    },
+    {
+      "code": "20238",
+      "department_code": "20",
+      "name": "EL COPEY",
+      "display_name": "El Copey",
+      "type": "municipality"
+    },
+    {
+      "code": "20250",
+      "department_code": "20",
+      "name": "EL PASO",
+      "display_name": "El Paso",
+      "type": "municipality"
+    },
+    {
+      "code": "20295",
+      "department_code": "20",
+      "name": "GAMARRA",
+      "display_name": "Gamarra",
+      "type": "municipality"
+    },
+    {
+      "code": "20310",
+      "department_code": "20",
+      "name": "GONZÁLEZ",
+      "display_name": "González",
+      "type": "municipality"
+    },
+    {
+      "code": "20383",
+      "department_code": "20",
+      "name": "LA GLORIA",
+      "display_name": "La Gloria",
+      "type": "municipality"
+    },
+    {
+      "code": "20400",
+      "department_code": "20",
+      "name": "LA JAGUA DE IBIRICO",
+      "display_name": "La Jagua de Ibirico",
+      "type": "municipality"
+    },
+    {
+      "code": "20443",
+      "department_code": "20",
+      "name": "MANAURE BALCÓN DEL CESAR",
+      "display_name": "Manaure Balcón del Cesar",
+      "type": "municipality"
+    },
+    {
+      "code": "20517",
+      "department_code": "20",
+      "name": "PAILITAS",
+      "display_name": "Pailitas",
+      "type": "municipality"
+    },
+    {
+      "code": "20550",
+      "department_code": "20",
+      "name": "PELAYA",
+      "display_name": "Pelaya",
+      "type": "municipality"
+    },
+    {
+      "code": "20570",
+      "department_code": "20",
+      "name": "PUEBLO BELLO",
+      "display_name": "Pueblo Bello",
+      "type": "municipality"
+    },
+    {
+      "code": "20614",
+      "department_code": "20",
+      "name": "RÍO DE ORO",
+      "display_name": "Río de Oro",
+      "type": "municipality"
+    },
+    {
+      "code": "20621",
+      "department_code": "20",
+      "name": "LA PAZ",
+      "display_name": "La Paz",
+      "type": "municipality"
+    },
+    {
+      "code": "20710",
+      "department_code": "20",
+      "name": "SAN ALBERTO",
+      "display_name": "San Alberto",
+      "type": "municipality"
+    },
+    {
+      "code": "20750",
+      "department_code": "20",
+      "name": "SAN DIEGO",
+      "display_name": "San Diego",
+      "type": "municipality"
+    },
+    {
+      "code": "20770",
+      "department_code": "20",
+      "name": "SAN MARTÍN",
+      "display_name": "San Martín",
+      "type": "municipality"
+    },
+    {
+      "code": "20787",
+      "department_code": "20",
+      "name": "TAMALAMEQUE",
+      "display_name": "Tamalameque",
+      "type": "municipality"
+    },
+    {
+      "code": "23001",
+      "department_code": "23",
+      "name": "MONTERÍA",
+      "display_name": "Montería",
+      "type": "municipality"
+    },
+    {
+      "code": "23068",
+      "department_code": "23",
+      "name": "AYAPEL",
+      "display_name": "Ayapel",
+      "type": "municipality"
+    },
+    {
+      "code": "23079",
+      "department_code": "23",
+      "name": "BUENAVISTA",
+      "display_name": "Buenavista",
+      "type": "municipality"
+    },
+    {
+      "code": "23090",
+      "department_code": "23",
+      "name": "CANALETE",
+      "display_name": "Canalete",
+      "type": "municipality"
+    },
+    {
+      "code": "23162",
+      "department_code": "23",
+      "name": "CERETÉ",
+      "display_name": "Cereté",
+      "type": "municipality"
+    },
+    {
+      "code": "23168",
+      "department_code": "23",
+      "name": "CHIMÁ",
+      "display_name": "Chimá",
+      "type": "municipality"
+    },
+    {
+      "code": "23182",
+      "department_code": "23",
+      "name": "CHINÚ",
+      "display_name": "Chinú",
+      "type": "municipality"
+    },
+    {
+      "code": "23189",
+      "department_code": "23",
+      "name": "CIÉNAGA DE ORO",
+      "display_name": "Ciénaga de Oro",
+      "type": "municipality"
+    },
+    {
+      "code": "23300",
+      "department_code": "23",
+      "name": "COTORRA",
+      "display_name": "Cotorra",
+      "type": "municipality"
+    },
+    {
+      "code": "23350",
+      "department_code": "23",
+      "name": "LA APARTADA",
+      "display_name": "La Apartada",
+      "type": "municipality"
+    },
+    {
+      "code": "23417",
+      "department_code": "23",
+      "name": "LORICA",
+      "display_name": "Lorica",
+      "type": "municipality"
+    },
+    {
+      "code": "23419",
+      "department_code": "23",
+      "name": "LOS CÓRDOBAS",
+      "display_name": "Los Córdobas",
+      "type": "municipality"
+    },
+    {
+      "code": "23464",
+      "department_code": "23",
+      "name": "MOMIL",
+      "display_name": "Momil",
+      "type": "municipality"
+    },
+    {
+      "code": "23466",
+      "department_code": "23",
+      "name": "MONTELÍBANO",
+      "display_name": "Montelíbano",
+      "type": "municipality"
+    },
+    {
+      "code": "23500",
+      "department_code": "23",
+      "name": "MOÑITOS",
+      "display_name": "Moñitos",
+      "type": "municipality"
+    },
+    {
+      "code": "23555",
+      "department_code": "23",
+      "name": "PLANETA RICA",
+      "display_name": "Planeta Rica",
+      "type": "municipality"
+    },
+    {
+      "code": "23570",
+      "department_code": "23",
+      "name": "PUEBLO NUEVO",
+      "display_name": "Pueblo Nuevo",
+      "type": "municipality"
+    },
+    {
+      "code": "23574",
+      "department_code": "23",
+      "name": "PUERTO ESCONDIDO",
+      "display_name": "Puerto Escondido",
+      "type": "municipality"
+    },
+    {
+      "code": "23580",
+      "department_code": "23",
+      "name": "PUERTO LIBERTADOR",
+      "display_name": "Puerto Libertador",
+      "type": "municipality"
+    },
+    {
+      "code": "23586",
+      "department_code": "23",
+      "name": "PURÍSIMA DE LA CONCEPCIÓN",
+      "display_name": "Purísima de la Concepción",
+      "type": "municipality"
+    },
+    {
+      "code": "23660",
+      "department_code": "23",
+      "name": "SAHAGÚN",
+      "display_name": "Sahagún",
+      "type": "municipality"
+    },
+    {
+      "code": "23670",
+      "department_code": "23",
+      "name": "SAN ANDRÉS DE SOTAVENTO",
+      "display_name": "San Andrés de Sotavento",
+      "type": "municipality"
+    },
+    {
+      "code": "23672",
+      "department_code": "23",
+      "name": "SAN ANTERO",
+      "display_name": "San Antero",
+      "type": "municipality"
+    },
+    {
+      "code": "23675",
+      "department_code": "23",
+      "name": "SAN BERNARDO DEL VIENTO",
+      "display_name": "San Bernardo del Viento",
+      "type": "municipality"
+    },
+    {
+      "code": "23678",
+      "department_code": "23",
+      "name": "SAN CARLOS",
+      "display_name": "San Carlos",
+      "type": "municipality"
+    },
+    {
+      "code": "23682",
+      "department_code": "23",
+      "name": "SAN JOSÉ DE URÉ",
+      "display_name": "San José de Uré",
+      "type": "municipality"
+    },
+    {
+      "code": "23686",
+      "department_code": "23",
+      "name": "SAN PELAYO",
+      "display_name": "San Pelayo",
+      "type": "municipality"
+    },
+    {
+      "code": "23807",
+      "department_code": "23",
+      "name": "TIERRALTA",
+      "display_name": "Tierralta",
+      "type": "municipality"
+    },
+    {
+      "code": "23815",
+      "department_code": "23",
+      "name": "TUCHÍN",
+      "display_name": "Tuchín",
+      "type": "municipality"
+    },
+    {
+      "code": "23855",
+      "department_code": "23",
+      "name": "VALENCIA",
+      "display_name": "Valencia",
+      "type": "municipality"
+    },
+    {
+      "code": "25001",
+      "department_code": "25",
+      "name": "AGUA DE DIOS",
+      "display_name": "Agua de Dios",
+      "type": "municipality"
+    },
+    {
+      "code": "25019",
+      "department_code": "25",
+      "name": "ALBÁN",
+      "display_name": "Albán",
+      "type": "municipality"
+    },
+    {
+      "code": "25035",
+      "department_code": "25",
+      "name": "ANAPOIMA",
+      "display_name": "Anapoima",
+      "type": "municipality"
+    },
+    {
+      "code": "25040",
+      "department_code": "25",
+      "name": "ANOLAIMA",
+      "display_name": "Anolaima",
+      "type": "municipality"
+    },
+    {
+      "code": "25053",
+      "department_code": "25",
+      "name": "ARBELÁEZ",
+      "display_name": "Arbeláez",
+      "type": "municipality"
+    },
+    {
+      "code": "25086",
+      "department_code": "25",
+      "name": "BELTRÁN",
+      "display_name": "Beltrán",
+      "type": "municipality"
+    },
+    {
+      "code": "25095",
+      "department_code": "25",
+      "name": "BITUIMA",
+      "display_name": "Bituima",
+      "type": "municipality"
+    },
+    {
+      "code": "25099",
+      "department_code": "25",
+      "name": "BOJACÁ",
+      "display_name": "Bojacá",
+      "type": "municipality"
+    },
+    {
+      "code": "25120",
+      "department_code": "25",
+      "name": "CABRERA",
+      "display_name": "Cabrera",
+      "type": "municipality"
+    },
+    {
+      "code": "25123",
+      "department_code": "25",
+      "name": "CACHIPAY",
+      "display_name": "Cachipay",
+      "type": "municipality"
+    },
+    {
+      "code": "25126",
+      "department_code": "25",
+      "name": "CAJICÁ",
+      "display_name": "Cajicá",
+      "type": "municipality"
+    },
+    {
+      "code": "25148",
+      "department_code": "25",
+      "name": "CAPARRAPÍ",
+      "display_name": "Caparrapí",
+      "type": "municipality"
+    },
+    {
+      "code": "25151",
+      "department_code": "25",
+      "name": "CÁQUEZA",
+      "display_name": "Cáqueza",
+      "type": "municipality"
+    },
+    {
+      "code": "25154",
+      "department_code": "25",
+      "name": "CARMEN DE CARUPA",
+      "display_name": "Carmen de Carupa",
+      "type": "municipality"
+    },
+    {
+      "code": "25168",
+      "department_code": "25",
+      "name": "CHAGUANÍ",
+      "display_name": "Chaguaní",
+      "type": "municipality"
+    },
+    {
+      "code": "25175",
+      "department_code": "25",
+      "name": "CHÍA",
+      "display_name": "Chía",
+      "type": "municipality"
+    },
+    {
+      "code": "25178",
+      "department_code": "25",
+      "name": "CHIPAQUE",
+      "display_name": "Chipaque",
+      "type": "municipality"
+    },
+    {
+      "code": "25181",
+      "department_code": "25",
+      "name": "CHOACHÍ",
+      "display_name": "Choachí",
+      "type": "municipality"
+    },
+    {
+      "code": "25183",
+      "department_code": "25",
+      "name": "CHOCONTÁ",
+      "display_name": "Chocontá",
+      "type": "municipality"
+    },
+    {
+      "code": "25200",
+      "department_code": "25",
+      "name": "COGUA",
+      "display_name": "Cogua",
+      "type": "municipality"
+    },
+    {
+      "code": "25214",
+      "department_code": "25",
+      "name": "COTA",
+      "display_name": "Cota",
+      "type": "municipality"
+    },
+    {
+      "code": "25224",
+      "department_code": "25",
+      "name": "CUCUNUBÁ",
+      "display_name": "Cucunubá",
+      "type": "municipality"
+    },
+    {
+      "code": "25245",
+      "department_code": "25",
+      "name": "EL COLEGIO",
+      "display_name": "El Colegio",
+      "type": "municipality"
+    },
+    {
+      "code": "25258",
+      "department_code": "25",
+      "name": "EL PEÑÓN",
+      "display_name": "El Peñón",
+      "type": "municipality"
+    },
+    {
+      "code": "25260",
+      "department_code": "25",
+      "name": "EL ROSAL",
+      "display_name": "El Rosal",
+      "type": "municipality"
+    },
+    {
+      "code": "25269",
+      "department_code": "25",
+      "name": "FACATATIVÁ",
+      "display_name": "Facatativá",
+      "type": "municipality"
+    },
+    {
+      "code": "25279",
+      "department_code": "25",
+      "name": "FÓMEQUE",
+      "display_name": "Fómeque",
+      "type": "municipality"
+    },
+    {
+      "code": "25281",
+      "department_code": "25",
+      "name": "FOSCA",
+      "display_name": "Fosca",
+      "type": "municipality"
+    },
+    {
+      "code": "25286",
+      "department_code": "25",
+      "name": "FUNZA",
+      "display_name": "Funza",
+      "type": "municipality"
+    },
+    {
+      "code": "25288",
+      "department_code": "25",
+      "name": "FÚQUENE",
+      "display_name": "Fúquene",
+      "type": "municipality"
+    },
+    {
+      "code": "25290",
+      "department_code": "25",
+      "name": "FUSAGASUGÁ",
+      "display_name": "Fusagasugá",
+      "type": "municipality"
+    },
+    {
+      "code": "25293",
+      "department_code": "25",
+      "name": "GACHALÁ",
+      "display_name": "Gachalá",
+      "type": "municipality"
+    },
+    {
+      "code": "25295",
+      "department_code": "25",
+      "name": "GACHANCIPÁ",
+      "display_name": "Gachancipá",
+      "type": "municipality"
+    },
+    {
+      "code": "25297",
+      "department_code": "25",
+      "name": "GACHETÁ",
+      "display_name": "Gachetá",
+      "type": "municipality"
+    },
+    {
+      "code": "25299",
+      "department_code": "25",
+      "name": "GAMA",
+      "display_name": "Gama",
+      "type": "municipality"
+    },
+    {
+      "code": "25307",
+      "department_code": "25",
+      "name": "GIRARDOT",
+      "display_name": "Girardot",
+      "type": "municipality"
+    },
+    {
+      "code": "25312",
+      "department_code": "25",
+      "name": "GRANADA",
+      "display_name": "Granada",
+      "type": "municipality"
+    },
+    {
+      "code": "25317",
+      "department_code": "25",
+      "name": "GUACHETÁ",
+      "display_name": "Guachetá",
+      "type": "municipality"
+    },
+    {
+      "code": "25320",
+      "department_code": "25",
+      "name": "GUADUAS",
+      "display_name": "Guaduas",
+      "type": "municipality"
+    },
+    {
+      "code": "25322",
+      "department_code": "25",
+      "name": "GUASCA",
+      "display_name": "Guasca",
+      "type": "municipality"
+    },
+    {
+      "code": "25324",
+      "department_code": "25",
+      "name": "GUATAQUÍ",
+      "display_name": "Guataquí",
+      "type": "municipality"
+    },
+    {
+      "code": "25326",
+      "department_code": "25",
+      "name": "GUATAVITA",
+      "display_name": "Guatavita",
+      "type": "municipality"
+    },
+    {
+      "code": "25328",
+      "department_code": "25",
+      "name": "GUAYABAL DE SÍQUIMA",
+      "display_name": "Guayabal de Síquima",
+      "type": "municipality"
+    },
+    {
+      "code": "25335",
+      "department_code": "25",
+      "name": "GUAYABETAL",
+      "display_name": "Guayabetal",
+      "type": "municipality"
+    },
+    {
+      "code": "25339",
+      "department_code": "25",
+      "name": "GUTIÉRREZ",
+      "display_name": "Gutiérrez",
+      "type": "municipality"
+    },
+    {
+      "code": "25368",
+      "department_code": "25",
+      "name": "JERUSALÉN",
+      "display_name": "Jerusalén",
+      "type": "municipality"
+    },
+    {
+      "code": "25372",
+      "department_code": "25",
+      "name": "JUNÍN",
+      "display_name": "Junín",
+      "type": "municipality"
+    },
+    {
+      "code": "25377",
+      "department_code": "25",
+      "name": "LA CALERA",
+      "display_name": "La Calera",
+      "type": "municipality"
+    },
+    {
+      "code": "25386",
+      "department_code": "25",
+      "name": "LA MESA",
+      "display_name": "La Mesa",
+      "type": "municipality"
+    },
+    {
+      "code": "25394",
+      "department_code": "25",
+      "name": "LA PALMA",
+      "display_name": "La Palma",
+      "type": "municipality"
+    },
+    {
+      "code": "25398",
+      "department_code": "25",
+      "name": "LA PEÑA",
+      "display_name": "La Peña",
+      "type": "municipality"
+    },
+    {
+      "code": "25402",
+      "department_code": "25",
+      "name": "LA VEGA",
+      "display_name": "La Vega",
+      "type": "municipality"
+    },
+    {
+      "code": "25407",
+      "department_code": "25",
+      "name": "LENGUAZAQUE",
+      "display_name": "Lenguazaque",
+      "type": "municipality"
+    },
+    {
+      "code": "25426",
+      "department_code": "25",
+      "name": "MACHETÁ",
+      "display_name": "Machetá",
+      "type": "municipality"
+    },
+    {
+      "code": "25430",
+      "department_code": "25",
+      "name": "MADRID",
+      "display_name": "Madrid",
+      "type": "municipality"
+    },
+    {
+      "code": "25436",
+      "department_code": "25",
+      "name": "MANTA",
+      "display_name": "Manta",
+      "type": "municipality"
+    },
+    {
+      "code": "25438",
+      "department_code": "25",
+      "name": "MEDINA",
+      "display_name": "Medina",
+      "type": "municipality"
+    },
+    {
+      "code": "25473",
+      "department_code": "25",
+      "name": "MOSQUERA",
+      "display_name": "Mosquera",
+      "type": "municipality"
+    },
+    {
+      "code": "25483",
+      "department_code": "25",
+      "name": "NARIÑO",
+      "display_name": "Nariño",
+      "type": "municipality"
+    },
+    {
+      "code": "25486",
+      "department_code": "25",
+      "name": "NEMOCÓN",
+      "display_name": "Nemocón",
+      "type": "municipality"
+    },
+    {
+      "code": "25488",
+      "department_code": "25",
+      "name": "NILO",
+      "display_name": "Nilo",
+      "type": "municipality"
+    },
+    {
+      "code": "25489",
+      "department_code": "25",
+      "name": "NIMAIMA",
+      "display_name": "Nimaima",
+      "type": "municipality"
+    },
+    {
+      "code": "25491",
+      "department_code": "25",
+      "name": "NOCAIMA",
+      "display_name": "Nocaima",
+      "type": "municipality"
+    },
+    {
+      "code": "25506",
+      "department_code": "25",
+      "name": "VENECIA",
+      "display_name": "Venecia",
+      "type": "municipality"
+    },
+    {
+      "code": "25513",
+      "department_code": "25",
+      "name": "PACHO",
+      "display_name": "Pacho",
+      "type": "municipality"
+    },
+    {
+      "code": "25518",
+      "department_code": "25",
+      "name": "PAIME",
+      "display_name": "Paime",
+      "type": "municipality"
+    },
+    {
+      "code": "25524",
+      "department_code": "25",
+      "name": "PANDI",
+      "display_name": "Pandi",
+      "type": "municipality"
+    },
+    {
+      "code": "25530",
+      "department_code": "25",
+      "name": "PARATEBUENO",
+      "display_name": "Paratebueno",
+      "type": "municipality"
+    },
+    {
+      "code": "25535",
+      "department_code": "25",
+      "name": "PASCA",
+      "display_name": "Pasca",
+      "type": "municipality"
+    },
+    {
+      "code": "25572",
+      "department_code": "25",
+      "name": "PUERTO SALGAR",
+      "display_name": "Puerto Salgar",
+      "type": "municipality"
+    },
+    {
+      "code": "25580",
+      "department_code": "25",
+      "name": "PULÍ",
+      "display_name": "Pulí",
+      "type": "municipality"
+    },
+    {
+      "code": "25592",
+      "department_code": "25",
+      "name": "QUEBRADANEGRA",
+      "display_name": "Quebradanegra",
+      "type": "municipality"
+    },
+    {
+      "code": "25594",
+      "department_code": "25",
+      "name": "QUETAME",
+      "display_name": "Quetame",
+      "type": "municipality"
+    },
+    {
+      "code": "25596",
+      "department_code": "25",
+      "name": "QUIPILE",
+      "display_name": "Quipile",
+      "type": "municipality"
+    },
+    {
+      "code": "25599",
+      "department_code": "25",
+      "name": "APULO",
+      "display_name": "Apulo",
+      "type": "municipality"
+    },
+    {
+      "code": "25612",
+      "department_code": "25",
+      "name": "RICAURTE",
+      "display_name": "Ricaurte",
+      "type": "municipality"
+    },
+    {
+      "code": "25645",
+      "department_code": "25",
+      "name": "SAN ANTONIO DEL TEQUENDAMA",
+      "display_name": "San Antonio del Tequendama",
+      "type": "municipality"
+    },
+    {
+      "code": "25649",
+      "department_code": "25",
+      "name": "SAN BERNARDO",
+      "display_name": "San Bernardo",
+      "type": "municipality"
+    },
+    {
+      "code": "25653",
+      "department_code": "25",
+      "name": "SAN CAYETANO",
+      "display_name": "San Cayetano",
+      "type": "municipality"
+    },
+    {
+      "code": "25658",
+      "department_code": "25",
+      "name": "SAN FRANCISCO",
+      "display_name": "San Francisco",
+      "type": "municipality"
+    },
+    {
+      "code": "25662",
+      "department_code": "25",
+      "name": "SAN JUAN DE RIOSECO",
+      "display_name": "San Juan de Rioseco",
+      "type": "municipality"
+    },
+    {
+      "code": "25718",
+      "department_code": "25",
+      "name": "SASAIMA",
+      "display_name": "Sasaima",
+      "type": "municipality"
+    },
+    {
+      "code": "25736",
+      "department_code": "25",
+      "name": "SESQUILÉ",
+      "display_name": "Sesquilé",
+      "type": "municipality"
+    },
+    {
+      "code": "25740",
+      "department_code": "25",
+      "name": "SIBATÉ",
+      "display_name": "Sibaté",
+      "type": "municipality"
+    },
+    {
+      "code": "25743",
+      "department_code": "25",
+      "name": "SILVANIA",
+      "display_name": "Silvania",
+      "type": "municipality"
+    },
+    {
+      "code": "25745",
+      "department_code": "25",
+      "name": "SIMIJACA",
+      "display_name": "Simijaca",
+      "type": "municipality"
+    },
+    {
+      "code": "25754",
+      "department_code": "25",
+      "name": "SOACHA",
+      "display_name": "Soacha",
+      "type": "municipality"
+    },
+    {
+      "code": "25758",
+      "department_code": "25",
+      "name": "SOPÓ",
+      "display_name": "Sopó",
+      "type": "municipality"
+    },
+    {
+      "code": "25769",
+      "department_code": "25",
+      "name": "SUBACHOQUE",
+      "display_name": "Subachoque",
+      "type": "municipality"
+    },
+    {
+      "code": "25772",
+      "department_code": "25",
+      "name": "SUESCA",
+      "display_name": "Suesca",
+      "type": "municipality"
+    },
+    {
+      "code": "25777",
+      "department_code": "25",
+      "name": "SUPATÁ",
+      "display_name": "Supatá",
+      "type": "municipality"
+    },
+    {
+      "code": "25779",
+      "department_code": "25",
+      "name": "SUSA",
+      "display_name": "Susa",
+      "type": "municipality"
+    },
+    {
+      "code": "25781",
+      "department_code": "25",
+      "name": "SUTATAUSA",
+      "display_name": "Sutatausa",
+      "type": "municipality"
+    },
+    {
+      "code": "25785",
+      "department_code": "25",
+      "name": "TABIO",
+      "display_name": "Tabio",
+      "type": "municipality"
+    },
+    {
+      "code": "25793",
+      "department_code": "25",
+      "name": "TAUSA",
+      "display_name": "Tausa",
+      "type": "municipality"
+    },
+    {
+      "code": "25797",
+      "department_code": "25",
+      "name": "TENA",
+      "display_name": "Tena",
+      "type": "municipality"
+    },
+    {
+      "code": "25799",
+      "department_code": "25",
+      "name": "TENJO",
+      "display_name": "Tenjo",
+      "type": "municipality"
+    },
+    {
+      "code": "25805",
+      "department_code": "25",
+      "name": "TIBACUY",
+      "display_name": "Tibacuy",
+      "type": "municipality"
+    },
+    {
+      "code": "25807",
+      "department_code": "25",
+      "name": "TIBIRITA",
+      "display_name": "Tibirita",
+      "type": "municipality"
+    },
+    {
+      "code": "25815",
+      "department_code": "25",
+      "name": "TOCAIMA",
+      "display_name": "Tocaima",
+      "type": "municipality"
+    },
+    {
+      "code": "25817",
+      "department_code": "25",
+      "name": "TOCANCIPÁ",
+      "display_name": "Tocancipá",
+      "type": "municipality"
+    },
+    {
+      "code": "25823",
+      "department_code": "25",
+      "name": "TOPAIPÍ",
+      "display_name": "Topaipí",
+      "type": "municipality"
+    },
+    {
+      "code": "25839",
+      "department_code": "25",
+      "name": "UBALÁ",
+      "display_name": "Ubalá",
+      "type": "municipality"
+    },
+    {
+      "code": "25841",
+      "department_code": "25",
+      "name": "UBAQUE",
+      "display_name": "Ubaque",
+      "type": "municipality"
+    },
+    {
+      "code": "25843",
+      "department_code": "25",
+      "name": "VILLA DE SAN DIEGO DE UBATÉ",
+      "display_name": "Villa de San Diego de Ubaté",
+      "type": "municipality"
+    },
+    {
+      "code": "25845",
+      "department_code": "25",
+      "name": "UNE",
+      "display_name": "Une",
+      "type": "municipality"
+    },
+    {
+      "code": "25851",
+      "department_code": "25",
+      "name": "ÚTICA",
+      "display_name": "Útica",
+      "type": "municipality"
+    },
+    {
+      "code": "25862",
+      "department_code": "25",
+      "name": "VERGARA",
+      "display_name": "Vergara",
+      "type": "municipality"
+    },
+    {
+      "code": "25867",
+      "department_code": "25",
+      "name": "VIANÍ",
+      "display_name": "Vianí",
+      "type": "municipality"
+    },
+    {
+      "code": "25871",
+      "department_code": "25",
+      "name": "VILLAGÓMEZ",
+      "display_name": "Villagómez",
+      "type": "municipality"
+    },
+    {
+      "code": "25873",
+      "department_code": "25",
+      "name": "VILLAPINZÓN",
+      "display_name": "Villapinzón",
+      "type": "municipality"
+    },
+    {
+      "code": "25875",
+      "department_code": "25",
+      "name": "VILLETA",
+      "display_name": "Villeta",
+      "type": "municipality"
+    },
+    {
+      "code": "25878",
+      "department_code": "25",
+      "name": "VIOTÁ",
+      "display_name": "Viotá",
+      "type": "municipality"
+    },
+    {
+      "code": "25885",
+      "department_code": "25",
+      "name": "YACOPÍ",
+      "display_name": "Yacopí",
+      "type": "municipality"
+    },
+    {
+      "code": "25898",
+      "department_code": "25",
+      "name": "ZIPACÓN",
+      "display_name": "Zipacón",
+      "type": "municipality"
+    },
+    {
+      "code": "25899",
+      "department_code": "25",
+      "name": "ZIPAQUIRÁ",
+      "display_name": "Zipaquirá",
+      "type": "municipality"
+    },
+    {
+      "code": "27001",
+      "department_code": "27",
+      "name": "QUIBDÓ",
+      "display_name": "Quibdó",
+      "type": "municipality"
+    },
+    {
+      "code": "27006",
+      "department_code": "27",
+      "name": "ACANDÍ",
+      "display_name": "Acandí",
+      "type": "municipality"
+    },
+    {
+      "code": "27025",
+      "department_code": "27",
+      "name": "ALTO BAUDÓ",
+      "display_name": "Alto Baudó",
+      "type": "municipality"
+    },
+    {
+      "code": "27050",
+      "department_code": "27",
+      "name": "ATRATO",
+      "display_name": "Atrato",
+      "type": "municipality"
+    },
+    {
+      "code": "27073",
+      "department_code": "27",
+      "name": "BAGADÓ",
+      "display_name": "Bagadó",
+      "type": "municipality"
+    },
+    {
+      "code": "27075",
+      "department_code": "27",
+      "name": "BAHÍA SOLANO",
+      "display_name": "Bahía Solano",
+      "type": "municipality"
+    },
+    {
+      "code": "27077",
+      "department_code": "27",
+      "name": "BAJO BAUDÓ",
+      "display_name": "Bajo Baudó",
+      "type": "municipality"
+    },
+    {
+      "code": "27099",
+      "department_code": "27",
+      "name": "BOJAYÁ",
+      "display_name": "Bojayá",
+      "type": "municipality"
+    },
+    {
+      "code": "27135",
+      "department_code": "27",
+      "name": "EL CANTÓN DEL SAN PABLO",
+      "display_name": "El Cantón del San Pablo",
+      "type": "municipality"
+    },
+    {
+      "code": "27150",
+      "department_code": "27",
+      "name": "CARMEN DEL DARIÉN",
+      "display_name": "Carmen del Darién",
+      "type": "municipality"
+    },
+    {
+      "code": "27160",
+      "department_code": "27",
+      "name": "CÉRTEGUI",
+      "display_name": "Cértegui",
+      "type": "municipality"
+    },
+    {
+      "code": "27205",
+      "department_code": "27",
+      "name": "CONDOTO",
+      "display_name": "Condoto",
+      "type": "municipality"
+    },
+    {
+      "code": "27245",
+      "department_code": "27",
+      "name": "EL CARMEN DE ATRATO",
+      "display_name": "El Carmen de Atrato",
+      "type": "municipality"
+    },
+    {
+      "code": "27250",
+      "department_code": "27",
+      "name": "EL LITORAL DEL SAN JUAN",
+      "display_name": "El Litoral del San Juan",
+      "type": "municipality"
+    },
+    {
+      "code": "27361",
+      "department_code": "27",
+      "name": "ISTMINA",
+      "display_name": "Istmina",
+      "type": "municipality"
+    },
+    {
+      "code": "27372",
+      "department_code": "27",
+      "name": "JURADÓ",
+      "display_name": "Juradó",
+      "type": "municipality"
+    },
+    {
+      "code": "27413",
+      "department_code": "27",
+      "name": "LLORÓ",
+      "display_name": "Lloró",
+      "type": "municipality"
+    },
+    {
+      "code": "27425",
+      "department_code": "27",
+      "name": "MEDIO ATRATO",
+      "display_name": "Medio Atrato",
+      "type": "municipality"
+    },
+    {
+      "code": "27430",
+      "department_code": "27",
+      "name": "MEDIO BAUDÓ",
+      "display_name": "Medio Baudó",
+      "type": "municipality"
+    },
+    {
+      "code": "27450",
+      "department_code": "27",
+      "name": "MEDIO SAN JUAN",
+      "display_name": "Medio San Juan",
+      "type": "municipality"
+    },
+    {
+      "code": "27491",
+      "department_code": "27",
+      "name": "NÓVITA",
+      "display_name": "Nóvita",
+      "type": "municipality"
+    },
+    {
+      "code": "27493",
+      "department_code": "27",
+      "name": "NUEVO BELÉN DE BAJIRÁ",
+      "display_name": "Nuevo Belén de Bajirá",
+      "type": "municipality"
+    },
+    {
+      "code": "27495",
+      "department_code": "27",
+      "name": "NUQUÍ",
+      "display_name": "Nuquí",
+      "type": "municipality"
+    },
+    {
+      "code": "27580",
+      "department_code": "27",
+      "name": "RÍO IRÓ",
+      "display_name": "Río Iró",
+      "type": "municipality"
+    },
+    {
+      "code": "27600",
+      "department_code": "27",
+      "name": "RÍO QUITO",
+      "display_name": "Río Quito",
+      "type": "municipality"
+    },
+    {
+      "code": "27615",
+      "department_code": "27",
+      "name": "RIOSUCIO",
+      "display_name": "Riosucio",
+      "type": "municipality"
+    },
+    {
+      "code": "27660",
+      "department_code": "27",
+      "name": "SAN JOSÉ DEL PALMAR",
+      "display_name": "San José del Palmar",
+      "type": "municipality"
+    },
+    {
+      "code": "27745",
+      "department_code": "27",
+      "name": "SIPÍ",
+      "display_name": "Sipí",
+      "type": "municipality"
+    },
+    {
+      "code": "27787",
+      "department_code": "27",
+      "name": "TADÓ",
+      "display_name": "Tadó",
+      "type": "municipality"
+    },
+    {
+      "code": "27800",
+      "department_code": "27",
+      "name": "UNGUÍA",
+      "display_name": "Unguía",
+      "type": "municipality"
+    },
+    {
+      "code": "27810",
+      "department_code": "27",
+      "name": "UNIÓN PANAMERICANA",
+      "display_name": "Unión Panamericana",
+      "type": "municipality"
+    },
+    {
+      "code": "41001",
+      "department_code": "41",
+      "name": "NEIVA",
+      "display_name": "Neiva",
+      "type": "municipality"
+    },
+    {
+      "code": "41006",
+      "department_code": "41",
+      "name": "ACEVEDO",
+      "display_name": "Acevedo",
+      "type": "municipality"
+    },
+    {
+      "code": "41013",
+      "department_code": "41",
+      "name": "AGRADO",
+      "display_name": "Agrado",
+      "type": "municipality"
+    },
+    {
+      "code": "41016",
+      "department_code": "41",
+      "name": "AIPE",
+      "display_name": "Aipe",
+      "type": "municipality"
+    },
+    {
+      "code": "41020",
+      "department_code": "41",
+      "name": "ALGECIRAS",
+      "display_name": "Algeciras",
+      "type": "municipality"
+    },
+    {
+      "code": "41026",
+      "department_code": "41",
+      "name": "ALTAMIRA",
+      "display_name": "Altamira",
+      "type": "municipality"
+    },
+    {
+      "code": "41078",
+      "department_code": "41",
+      "name": "BARAYA",
+      "display_name": "Baraya",
+      "type": "municipality"
+    },
+    {
+      "code": "41132",
+      "department_code": "41",
+      "name": "CAMPOALEGRE",
+      "display_name": "Campoalegre",
+      "type": "municipality"
+    },
+    {
+      "code": "41206",
+      "department_code": "41",
+      "name": "COLOMBIA",
+      "display_name": "Colombia",
+      "type": "municipality"
+    },
+    {
+      "code": "41244",
+      "department_code": "41",
+      "name": "ELÍAS",
+      "display_name": "Elías",
+      "type": "municipality"
+    },
+    {
+      "code": "41298",
+      "department_code": "41",
+      "name": "GARZÓN",
+      "display_name": "Garzón",
+      "type": "municipality"
+    },
+    {
+      "code": "41306",
+      "department_code": "41",
+      "name": "GIGANTE",
+      "display_name": "Gigante",
+      "type": "municipality"
+    },
+    {
+      "code": "41319",
+      "department_code": "41",
+      "name": "GUADALUPE",
+      "display_name": "Guadalupe",
+      "type": "municipality"
+    },
+    {
+      "code": "41349",
+      "department_code": "41",
+      "name": "HOBO",
+      "display_name": "Hobo",
+      "type": "municipality"
+    },
+    {
+      "code": "41357",
+      "department_code": "41",
+      "name": "ÍQUIRA",
+      "display_name": "Íquira",
+      "type": "municipality"
+    },
+    {
+      "code": "41359",
+      "department_code": "41",
+      "name": "ISNOS",
+      "display_name": "Isnos",
+      "type": "municipality"
+    },
+    {
+      "code": "41378",
+      "department_code": "41",
+      "name": "LA ARGENTINA",
+      "display_name": "La Argentina",
+      "type": "municipality"
+    },
+    {
+      "code": "41396",
+      "department_code": "41",
+      "name": "LA PLATA",
+      "display_name": "La Plata",
+      "type": "municipality"
+    },
+    {
+      "code": "41483",
+      "department_code": "41",
+      "name": "NÁTAGA",
+      "display_name": "Nátaga",
+      "type": "municipality"
+    },
+    {
+      "code": "41503",
+      "department_code": "41",
+      "name": "OPORAPA",
+      "display_name": "Oporapa",
+      "type": "municipality"
+    },
+    {
+      "code": "41518",
+      "department_code": "41",
+      "name": "PAICOL",
+      "display_name": "Paicol",
+      "type": "municipality"
+    },
+    {
+      "code": "41524",
+      "department_code": "41",
+      "name": "PALERMO",
+      "display_name": "Palermo",
+      "type": "municipality"
+    },
+    {
+      "code": "41530",
+      "department_code": "41",
+      "name": "PALESTINA",
+      "display_name": "Palestina",
+      "type": "municipality"
+    },
+    {
+      "code": "41548",
+      "department_code": "41",
+      "name": "PITAL",
+      "display_name": "Pital",
+      "type": "municipality"
+    },
+    {
+      "code": "41551",
+      "department_code": "41",
+      "name": "PITALITO",
+      "display_name": "Pitalito",
+      "type": "municipality"
+    },
+    {
+      "code": "41615",
+      "department_code": "41",
+      "name": "RIVERA",
+      "display_name": "Rivera",
+      "type": "municipality"
+    },
+    {
+      "code": "41660",
+      "department_code": "41",
+      "name": "SALADOBLANCO",
+      "display_name": "Saladoblanco",
+      "type": "municipality"
+    },
+    {
+      "code": "41668",
+      "department_code": "41",
+      "name": "SAN AGUSTÍN",
+      "display_name": "San Agustín",
+      "type": "municipality"
+    },
+    {
+      "code": "41676",
+      "department_code": "41",
+      "name": "SANTA MARÍA",
+      "display_name": "Santa María",
+      "type": "municipality"
+    },
+    {
+      "code": "41770",
+      "department_code": "41",
+      "name": "SUAZA",
+      "display_name": "Suaza",
+      "type": "municipality"
+    },
+    {
+      "code": "41791",
+      "department_code": "41",
+      "name": "TARQUI",
+      "display_name": "Tarqui",
+      "type": "municipality"
+    },
+    {
+      "code": "41797",
+      "department_code": "41",
+      "name": "TESALIA",
+      "display_name": "Tesalia",
+      "type": "municipality"
+    },
+    {
+      "code": "41799",
+      "department_code": "41",
+      "name": "TELLO",
+      "display_name": "Tello",
+      "type": "municipality"
+    },
+    {
+      "code": "41801",
+      "department_code": "41",
+      "name": "TERUEL",
+      "display_name": "Teruel",
+      "type": "municipality"
+    },
+    {
+      "code": "41807",
+      "department_code": "41",
+      "name": "TIMANÁ",
+      "display_name": "Timaná",
+      "type": "municipality"
+    },
+    {
+      "code": "41872",
+      "department_code": "41",
+      "name": "VILLAVIEJA",
+      "display_name": "Villavieja",
+      "type": "municipality"
+    },
+    {
+      "code": "41885",
+      "department_code": "41",
+      "name": "YAGUARÁ",
+      "display_name": "Yaguará",
+      "type": "municipality"
+    },
+    {
+      "code": "44001",
+      "department_code": "44",
+      "name": "RIOHACHA",
+      "display_name": "Riohacha",
+      "type": "municipality"
+    },
+    {
+      "code": "44035",
+      "department_code": "44",
+      "name": "ALBANIA",
+      "display_name": "Albania",
+      "type": "municipality"
+    },
+    {
+      "code": "44078",
+      "department_code": "44",
+      "name": "BARRANCAS",
+      "display_name": "Barrancas",
+      "type": "municipality"
+    },
+    {
+      "code": "44090",
+      "department_code": "44",
+      "name": "DIBULLA",
+      "display_name": "Dibulla",
+      "type": "municipality"
+    },
+    {
+      "code": "44098",
+      "department_code": "44",
+      "name": "DISTRACCIÓN",
+      "display_name": "Distracción",
+      "type": "municipality"
+    },
+    {
+      "code": "44110",
+      "department_code": "44",
+      "name": "EL MOLINO",
+      "display_name": "El Molino",
+      "type": "municipality"
+    },
+    {
+      "code": "44279",
+      "department_code": "44",
+      "name": "FONSECA",
+      "display_name": "Fonseca",
+      "type": "municipality"
+    },
+    {
+      "code": "44378",
+      "department_code": "44",
+      "name": "HATONUEVO",
+      "display_name": "Hatonuevo",
+      "type": "municipality"
+    },
+    {
+      "code": "44420",
+      "department_code": "44",
+      "name": "LA JAGUA DEL PILAR",
+      "display_name": "La Jagua del Pilar",
+      "type": "municipality"
+    },
+    {
+      "code": "44430",
+      "department_code": "44",
+      "name": "MAICAO",
+      "display_name": "Maicao",
+      "type": "municipality"
+    },
+    {
+      "code": "44560",
+      "department_code": "44",
+      "name": "MANAURE",
+      "display_name": "Manaure",
+      "type": "municipality"
+    },
+    {
+      "code": "44650",
+      "department_code": "44",
+      "name": "SAN JUAN DEL CESAR",
+      "display_name": "San Juan del Cesar",
+      "type": "municipality"
+    },
+    {
+      "code": "44847",
+      "department_code": "44",
+      "name": "URIBIA",
+      "display_name": "Uribia",
+      "type": "municipality"
+    },
+    {
+      "code": "44855",
+      "department_code": "44",
+      "name": "URUMITA",
+      "display_name": "Urumita",
+      "type": "municipality"
+    },
+    {
+      "code": "44874",
+      "department_code": "44",
+      "name": "VILLANUEVA",
+      "display_name": "Villanueva",
+      "type": "municipality"
+    },
+    {
+      "code": "47001",
+      "department_code": "47",
+      "name": "SANTA MARTA",
+      "display_name": "Santa Marta",
+      "type": "municipality"
+    },
+    {
+      "code": "47030",
+      "department_code": "47",
+      "name": "ALGARROBO",
+      "display_name": "Algarrobo",
+      "type": "municipality"
+    },
+    {
+      "code": "47053",
+      "department_code": "47",
+      "name": "ARACATACA",
+      "display_name": "Aracataca",
+      "type": "municipality"
+    },
+    {
+      "code": "47058",
+      "department_code": "47",
+      "name": "ARIGUANÍ",
+      "display_name": "Ariguaní",
+      "type": "municipality"
+    },
+    {
+      "code": "47161",
+      "department_code": "47",
+      "name": "CERRO DE SAN ANTONIO",
+      "display_name": "Cerro de San Antonio",
+      "type": "municipality"
+    },
+    {
+      "code": "47170",
+      "department_code": "47",
+      "name": "CHIVOLO",
+      "display_name": "Chivolo",
+      "type": "municipality"
+    },
+    {
+      "code": "47189",
+      "department_code": "47",
+      "name": "CIÉNAGA",
+      "display_name": "Ciénaga",
+      "type": "municipality"
+    },
+    {
+      "code": "47205",
+      "department_code": "47",
+      "name": "CONCORDIA",
+      "display_name": "Concordia",
+      "type": "municipality"
+    },
+    {
+      "code": "47245",
+      "department_code": "47",
+      "name": "EL BANCO",
+      "display_name": "El Banco",
+      "type": "municipality"
+    },
+    {
+      "code": "47258",
+      "department_code": "47",
+      "name": "EL PIÑÓN",
+      "display_name": "El Piñón",
+      "type": "municipality"
+    },
+    {
+      "code": "47268",
+      "department_code": "47",
+      "name": "EL RETÉN",
+      "display_name": "El Retén",
+      "type": "municipality"
+    },
+    {
+      "code": "47288",
+      "department_code": "47",
+      "name": "FUNDACIÓN",
+      "display_name": "Fundación",
+      "type": "municipality"
+    },
+    {
+      "code": "47318",
+      "department_code": "47",
+      "name": "GUAMAL",
+      "display_name": "Guamal",
+      "type": "municipality"
+    },
+    {
+      "code": "47460",
+      "department_code": "47",
+      "name": "NUEVA GRANADA",
+      "display_name": "Nueva Granada",
+      "type": "municipality"
+    },
+    {
+      "code": "47541",
+      "department_code": "47",
+      "name": "PEDRAZA",
+      "display_name": "Pedraza",
+      "type": "municipality"
+    },
+    {
+      "code": "47545",
+      "department_code": "47",
+      "name": "PIJIÑO DEL CARMEN",
+      "display_name": "Pijiño del Carmen",
+      "type": "municipality"
+    },
+    {
+      "code": "47551",
+      "department_code": "47",
+      "name": "PIVIJAY",
+      "display_name": "Pivijay",
+      "type": "municipality"
+    },
+    {
+      "code": "47555",
+      "department_code": "47",
+      "name": "PLATO",
+      "display_name": "Plato",
+      "type": "municipality"
+    },
+    {
+      "code": "47570",
+      "department_code": "47",
+      "name": "PUEBLOVIEJO",
+      "display_name": "Puebloviejo",
+      "type": "municipality"
+    },
+    {
+      "code": "47605",
+      "department_code": "47",
+      "name": "REMOLINO",
+      "display_name": "Remolino",
+      "type": "municipality"
+    },
+    {
+      "code": "47660",
+      "department_code": "47",
+      "name": "SABANAS DE SAN ÁNGEL",
+      "display_name": "Sabanas de San Ángel",
+      "type": "municipality"
+    },
+    {
+      "code": "47675",
+      "department_code": "47",
+      "name": "SALAMINA",
+      "display_name": "Salamina",
+      "type": "municipality"
+    },
+    {
+      "code": "47692",
+      "department_code": "47",
+      "name": "SAN SEBASTIÁN DE BUENAVISTA",
+      "display_name": "San Sebastián de Buenavista",
+      "type": "municipality"
+    },
+    {
+      "code": "47703",
+      "department_code": "47",
+      "name": "SAN ZENÓN",
+      "display_name": "San Zenón",
+      "type": "municipality"
+    },
+    {
+      "code": "47707",
+      "department_code": "47",
+      "name": "SANTA ANA",
+      "display_name": "Santa Ana",
+      "type": "municipality"
+    },
+    {
+      "code": "47720",
+      "department_code": "47",
+      "name": "SANTA BÁRBARA DE PINTO",
+      "display_name": "Santa Bárbara de Pinto",
+      "type": "municipality"
+    },
+    {
+      "code": "47745",
+      "department_code": "47",
+      "name": "SITIONUEVO",
+      "display_name": "Sitionuevo",
+      "type": "municipality"
+    },
+    {
+      "code": "47798",
+      "department_code": "47",
+      "name": "TENERIFE",
+      "display_name": "Tenerife",
+      "type": "municipality"
+    },
+    {
+      "code": "47960",
+      "department_code": "47",
+      "name": "ZAPAYÁN",
+      "display_name": "Zapayán",
+      "type": "municipality"
+    },
+    {
+      "code": "47980",
+      "department_code": "47",
+      "name": "ZONA BANANERA",
+      "display_name": "Zona Bananera",
+      "type": "municipality"
+    },
+    {
+      "code": "50001",
+      "department_code": "50",
+      "name": "VILLAVICENCIO",
+      "display_name": "Villavicencio",
+      "type": "municipality"
+    },
+    {
+      "code": "50006",
+      "department_code": "50",
+      "name": "ACACÍAS",
+      "display_name": "Acacías",
+      "type": "municipality"
+    },
+    {
+      "code": "50110",
+      "department_code": "50",
+      "name": "BARRANCA DE UPÍA",
+      "display_name": "Barranca de Upía",
+      "type": "municipality"
+    },
+    {
+      "code": "50124",
+      "department_code": "50",
+      "name": "CABUYARO",
+      "display_name": "Cabuyaro",
+      "type": "municipality"
+    },
+    {
+      "code": "50150",
+      "department_code": "50",
+      "name": "CASTILLA LA NUEVA",
+      "display_name": "Castilla la Nueva",
+      "type": "municipality"
+    },
+    {
+      "code": "50223",
+      "department_code": "50",
+      "name": "CUBARRAL",
+      "display_name": "Cubarral",
+      "type": "municipality"
+    },
+    {
+      "code": "50226",
+      "department_code": "50",
+      "name": "CUMARAL",
+      "display_name": "Cumaral",
+      "type": "municipality"
+    },
+    {
+      "code": "50245",
+      "department_code": "50",
+      "name": "EL CALVARIO",
+      "display_name": "El Calvario",
+      "type": "municipality"
+    },
+    {
+      "code": "50251",
+      "department_code": "50",
+      "name": "EL CASTILLO",
+      "display_name": "El Castillo",
+      "type": "municipality"
+    },
+    {
+      "code": "50270",
+      "department_code": "50",
+      "name": "EL DORADO",
+      "display_name": "El Dorado",
+      "type": "municipality"
+    },
+    {
+      "code": "50287",
+      "department_code": "50",
+      "name": "FUENTE DE ORO",
+      "display_name": "Fuente de Oro",
+      "type": "municipality"
+    },
+    {
+      "code": "50313",
+      "department_code": "50",
+      "name": "GRANADA",
+      "display_name": "Granada",
+      "type": "municipality"
+    },
+    {
+      "code": "50318",
+      "department_code": "50",
+      "name": "GUAMAL",
+      "display_name": "Guamal",
+      "type": "municipality"
+    },
+    {
+      "code": "50325",
+      "department_code": "50",
+      "name": "MAPIRIPÁN",
+      "display_name": "Mapiripán",
+      "type": "municipality"
+    },
+    {
+      "code": "50330",
+      "department_code": "50",
+      "name": "MESETAS",
+      "display_name": "Mesetas",
+      "type": "municipality"
+    },
+    {
+      "code": "50350",
+      "department_code": "50",
+      "name": "LA MACARENA",
+      "display_name": "La Macarena",
+      "type": "municipality"
+    },
+    {
+      "code": "50370",
+      "department_code": "50",
+      "name": "URIBE",
+      "display_name": "Uribe",
+      "type": "municipality"
+    },
+    {
+      "code": "50400",
+      "department_code": "50",
+      "name": "LEJANÍAS",
+      "display_name": "Lejanías",
+      "type": "municipality"
+    },
+    {
+      "code": "50450",
+      "department_code": "50",
+      "name": "PUERTO CONCORDIA",
+      "display_name": "Puerto Concordia",
+      "type": "municipality"
+    },
+    {
+      "code": "50568",
+      "department_code": "50",
+      "name": "PUERTO GAITÁN",
+      "display_name": "Puerto Gaitán",
+      "type": "municipality"
+    },
+    {
+      "code": "50573",
+      "department_code": "50",
+      "name": "PUERTO LÓPEZ",
+      "display_name": "Puerto López",
+      "type": "municipality"
+    },
+    {
+      "code": "50577",
+      "department_code": "50",
+      "name": "PUERTO LLERAS",
+      "display_name": "Puerto Lleras",
+      "type": "municipality"
+    },
+    {
+      "code": "50590",
+      "department_code": "50",
+      "name": "PUERTO RICO",
+      "display_name": "Puerto Rico",
+      "type": "municipality"
+    },
+    {
+      "code": "50606",
+      "department_code": "50",
+      "name": "RESTREPO",
+      "display_name": "Restrepo",
+      "type": "municipality"
+    },
+    {
+      "code": "50680",
+      "department_code": "50",
+      "name": "SAN CARLOS DE GUAROA",
+      "display_name": "San Carlos de Guaroa",
+      "type": "municipality"
+    },
+    {
+      "code": "50683",
+      "department_code": "50",
+      "name": "SAN JUAN DE ARAMA",
+      "display_name": "San Juan de Arama",
+      "type": "municipality"
+    },
+    {
+      "code": "50686",
+      "department_code": "50",
+      "name": "SAN JUANITO",
+      "display_name": "San Juanito",
+      "type": "municipality"
+    },
+    {
+      "code": "50689",
+      "department_code": "50",
+      "name": "SAN MARTÍN",
+      "display_name": "San Martín",
+      "type": "municipality"
+    },
+    {
+      "code": "50711",
+      "department_code": "50",
+      "name": "VISTAHERMOSA",
+      "display_name": "Vistahermosa",
+      "type": "municipality"
+    },
+    {
+      "code": "52001",
+      "department_code": "52",
+      "name": "PASTO",
+      "display_name": "Pasto",
+      "type": "municipality"
+    },
+    {
+      "code": "52019",
+      "department_code": "52",
+      "name": "ALBÁN",
+      "display_name": "Albán",
+      "type": "municipality"
+    },
+    {
+      "code": "52022",
+      "department_code": "52",
+      "name": "ALDANA",
+      "display_name": "Aldana",
+      "type": "municipality"
+    },
+    {
+      "code": "52036",
+      "department_code": "52",
+      "name": "ANCUYA",
+      "display_name": "Ancuya",
+      "type": "municipality"
+    },
+    {
+      "code": "52051",
+      "department_code": "52",
+      "name": "ARBOLEDA",
+      "display_name": "Arboleda",
+      "type": "municipality"
+    },
+    {
+      "code": "52079",
+      "department_code": "52",
+      "name": "BARBACOAS",
+      "display_name": "Barbacoas",
+      "type": "municipality"
+    },
+    {
+      "code": "52083",
+      "department_code": "52",
+      "name": "BELÉN",
+      "display_name": "Belén",
+      "type": "municipality"
+    },
+    {
+      "code": "52110",
+      "department_code": "52",
+      "name": "BUESACO",
+      "display_name": "Buesaco",
+      "type": "municipality"
+    },
+    {
+      "code": "52203",
+      "department_code": "52",
+      "name": "COLÓN",
+      "display_name": "Colón",
+      "type": "municipality"
+    },
+    {
+      "code": "52207",
+      "department_code": "52",
+      "name": "CONSACÁ",
+      "display_name": "Consacá",
+      "type": "municipality"
+    },
+    {
+      "code": "52210",
+      "department_code": "52",
+      "name": "CONTADERO",
+      "display_name": "Contadero",
+      "type": "municipality"
+    },
+    {
+      "code": "52215",
+      "department_code": "52",
+      "name": "CÓRDOBA",
+      "display_name": "Córdoba",
+      "type": "municipality"
+    },
+    {
+      "code": "52224",
+      "department_code": "52",
+      "name": "CUASPUD CARLOSAMA",
+      "display_name": "Cuaspud Carlosama",
+      "type": "municipality"
+    },
+    {
+      "code": "52227",
+      "department_code": "52",
+      "name": "CUMBAL",
+      "display_name": "Cumbal",
+      "type": "municipality"
+    },
+    {
+      "code": "52233",
+      "department_code": "52",
+      "name": "CUMBITARA",
+      "display_name": "Cumbitara",
+      "type": "municipality"
+    },
+    {
+      "code": "52240",
+      "department_code": "52",
+      "name": "CHACHAGÜÍ",
+      "display_name": "Chachagüí",
+      "type": "municipality"
+    },
+    {
+      "code": "52250",
+      "department_code": "52",
+      "name": "EL CHARCO",
+      "display_name": "El Charco",
+      "type": "municipality"
+    },
+    {
+      "code": "52254",
+      "department_code": "52",
+      "name": "EL PEÑOL",
+      "display_name": "El Peñol",
+      "type": "municipality"
+    },
+    {
+      "code": "52256",
+      "department_code": "52",
+      "name": "EL ROSARIO",
+      "display_name": "El Rosario",
+      "type": "municipality"
+    },
+    {
+      "code": "52258",
+      "department_code": "52",
+      "name": "EL TABLÓN DE GÓMEZ",
+      "display_name": "El Tablón de Gómez",
+      "type": "municipality"
+    },
+    {
+      "code": "52260",
+      "department_code": "52",
+      "name": "EL TAMBO",
+      "display_name": "El Tambo",
+      "type": "municipality"
+    },
+    {
+      "code": "52287",
+      "department_code": "52",
+      "name": "FUNES",
+      "display_name": "Funes",
+      "type": "municipality"
+    },
+    {
+      "code": "52317",
+      "department_code": "52",
+      "name": "GUACHUCAL",
+      "display_name": "Guachucal",
+      "type": "municipality"
+    },
+    {
+      "code": "52320",
+      "department_code": "52",
+      "name": "GUAITARILLA",
+      "display_name": "Guaitarilla",
+      "type": "municipality"
+    },
+    {
+      "code": "52323",
+      "department_code": "52",
+      "name": "GUALMATÁN",
+      "display_name": "Gualmatán",
+      "type": "municipality"
+    },
+    {
+      "code": "52352",
+      "department_code": "52",
+      "name": "ILES",
+      "display_name": "Iles",
+      "type": "municipality"
+    },
+    {
+      "code": "52354",
+      "department_code": "52",
+      "name": "IMUÉS",
+      "display_name": "Imués",
+      "type": "municipality"
+    },
+    {
+      "code": "52356",
+      "department_code": "52",
+      "name": "IPIALES",
+      "display_name": "Ipiales",
+      "type": "municipality"
+    },
+    {
+      "code": "52378",
+      "department_code": "52",
+      "name": "LA CRUZ",
+      "display_name": "La Cruz",
+      "type": "municipality"
+    },
+    {
+      "code": "52381",
+      "department_code": "52",
+      "name": "LA FLORIDA",
+      "display_name": "La Florida",
+      "type": "municipality"
+    },
+    {
+      "code": "52385",
+      "department_code": "52",
+      "name": "LA LLANADA",
+      "display_name": "La Llanada",
+      "type": "municipality"
+    },
+    {
+      "code": "52390",
+      "department_code": "52",
+      "name": "LA TOLA",
+      "display_name": "La Tola",
+      "type": "municipality"
+    },
+    {
+      "code": "52399",
+      "department_code": "52",
+      "name": "LA UNIÓN",
+      "display_name": "La Unión",
+      "type": "municipality"
+    },
+    {
+      "code": "52405",
+      "department_code": "52",
+      "name": "LEIVA",
+      "display_name": "Leiva",
+      "type": "municipality"
+    },
+    {
+      "code": "52411",
+      "department_code": "52",
+      "name": "LINARES",
+      "display_name": "Linares",
+      "type": "municipality"
+    },
+    {
+      "code": "52418",
+      "department_code": "52",
+      "name": "LOS ANDES",
+      "display_name": "Los Andes",
+      "type": "municipality"
+    },
+    {
+      "code": "52427",
+      "department_code": "52",
+      "name": "MAGÜÍ",
+      "display_name": "Magüí",
+      "type": "municipality"
+    },
+    {
+      "code": "52435",
+      "department_code": "52",
+      "name": "MALLAMA",
+      "display_name": "Mallama",
+      "type": "municipality"
+    },
+    {
+      "code": "52473",
+      "department_code": "52",
+      "name": "MOSQUERA",
+      "display_name": "Mosquera",
+      "type": "municipality"
+    },
+    {
+      "code": "52480",
+      "department_code": "52",
+      "name": "NARIÑO",
+      "display_name": "Nariño",
+      "type": "municipality"
+    },
+    {
+      "code": "52490",
+      "department_code": "52",
+      "name": "OLAYA HERRERA",
+      "display_name": "Olaya Herrera",
+      "type": "municipality"
+    },
+    {
+      "code": "52506",
+      "department_code": "52",
+      "name": "OSPINA",
+      "display_name": "Ospina",
+      "type": "municipality"
+    },
+    {
+      "code": "52520",
+      "department_code": "52",
+      "name": "FRANCISCO PIZARRO",
+      "display_name": "Francisco Pizarro",
+      "type": "municipality"
+    },
+    {
+      "code": "52540",
+      "department_code": "52",
+      "name": "POLICARPA",
+      "display_name": "Policarpa",
+      "type": "municipality"
+    },
+    {
+      "code": "52560",
+      "department_code": "52",
+      "name": "POTOSÍ",
+      "display_name": "Potosí",
+      "type": "municipality"
+    },
+    {
+      "code": "52565",
+      "department_code": "52",
+      "name": "PROVIDENCIA",
+      "display_name": "Providencia",
+      "type": "municipality"
+    },
+    {
+      "code": "52573",
+      "department_code": "52",
+      "name": "PUERRES",
+      "display_name": "Puerres",
+      "type": "municipality"
+    },
+    {
+      "code": "52585",
+      "department_code": "52",
+      "name": "PUPIALES",
+      "display_name": "Pupiales",
+      "type": "municipality"
+    },
+    {
+      "code": "52612",
+      "department_code": "52",
+      "name": "RICAURTE",
+      "display_name": "Ricaurte",
+      "type": "municipality"
+    },
+    {
+      "code": "52621",
+      "department_code": "52",
+      "name": "ROBERTO PAYÁN",
+      "display_name": "Roberto Payán",
+      "type": "municipality"
+    },
+    {
+      "code": "52678",
+      "department_code": "52",
+      "name": "SAMANIEGO",
+      "display_name": "Samaniego",
+      "type": "municipality"
+    },
+    {
+      "code": "52683",
+      "department_code": "52",
+      "name": "SANDONÁ",
+      "display_name": "Sandoná",
+      "type": "municipality"
+    },
+    {
+      "code": "52685",
+      "department_code": "52",
+      "name": "SAN BERNARDO",
+      "display_name": "San Bernardo",
+      "type": "municipality"
+    },
+    {
+      "code": "52687",
+      "department_code": "52",
+      "name": "SAN LORENZO",
+      "display_name": "San Lorenzo",
+      "type": "municipality"
+    },
+    {
+      "code": "52693",
+      "department_code": "52",
+      "name": "SAN PABLO",
+      "display_name": "San Pablo",
+      "type": "municipality"
+    },
+    {
+      "code": "52694",
+      "department_code": "52",
+      "name": "SAN PEDRO DE CARTAGO",
+      "display_name": "San Pedro de Cartago",
+      "type": "municipality"
+    },
+    {
+      "code": "52696",
+      "department_code": "52",
+      "name": "SANTA BÁRBARA",
+      "display_name": "Santa Bárbara",
+      "type": "municipality"
+    },
+    {
+      "code": "52699",
+      "department_code": "52",
+      "name": "SANTACRUZ",
+      "display_name": "Santacruz",
+      "type": "municipality"
+    },
+    {
+      "code": "52720",
+      "department_code": "52",
+      "name": "SAPUYES",
+      "display_name": "Sapuyes",
+      "type": "municipality"
+    },
+    {
+      "code": "52786",
+      "department_code": "52",
+      "name": "TAMINANGO",
+      "display_name": "Taminango",
+      "type": "municipality"
+    },
+    {
+      "code": "52788",
+      "department_code": "52",
+      "name": "TANGUA",
+      "display_name": "Tangua",
+      "type": "municipality"
+    },
+    {
+      "code": "52835",
+      "department_code": "52",
+      "name": "SAN ANDRÉS DE TUMACO",
+      "display_name": "San Andrés de Tumaco",
+      "type": "municipality"
+    },
+    {
+      "code": "52838",
+      "department_code": "52",
+      "name": "TÚQUERRES",
+      "display_name": "Túquerres",
+      "type": "municipality"
+    },
+    {
+      "code": "52885",
+      "department_code": "52",
+      "name": "YACUANQUER",
+      "display_name": "Yacuanquer",
+      "type": "municipality"
+    },
+    {
+      "code": "54001",
+      "department_code": "54",
+      "name": "SAN JOSÉ DE CÚCUTA",
+      "display_name": "San José de Cúcuta",
+      "type": "municipality"
+    },
+    {
+      "code": "54003",
+      "department_code": "54",
+      "name": "ÁBREGO",
+      "display_name": "Ábrego",
+      "type": "municipality"
+    },
+    {
+      "code": "54051",
+      "department_code": "54",
+      "name": "ARBOLEDAS",
+      "display_name": "Arboledas",
+      "type": "municipality"
+    },
+    {
+      "code": "54099",
+      "department_code": "54",
+      "name": "BOCHALEMA",
+      "display_name": "Bochalema",
+      "type": "municipality"
+    },
+    {
+      "code": "54109",
+      "department_code": "54",
+      "name": "BUCARASICA",
+      "display_name": "Bucarasica",
+      "type": "municipality"
+    },
+    {
+      "code": "54125",
+      "department_code": "54",
+      "name": "CÁCOTA",
+      "display_name": "Cácota",
+      "type": "municipality"
+    },
+    {
+      "code": "54128",
+      "department_code": "54",
+      "name": "CÁCHIRA",
+      "display_name": "Cáchira",
+      "type": "municipality"
+    },
+    {
+      "code": "54172",
+      "department_code": "54",
+      "name": "CHINÁCOTA",
+      "display_name": "Chinácota",
+      "type": "municipality"
+    },
+    {
+      "code": "54174",
+      "department_code": "54",
+      "name": "CHITAGÁ",
+      "display_name": "Chitagá",
+      "type": "municipality"
+    },
+    {
+      "code": "54206",
+      "department_code": "54",
+      "name": "CONVENCIÓN",
+      "display_name": "Convención",
+      "type": "municipality"
+    },
+    {
+      "code": "54223",
+      "department_code": "54",
+      "name": "CUCUTILLA",
+      "display_name": "Cucutilla",
+      "type": "municipality"
+    },
+    {
+      "code": "54239",
+      "department_code": "54",
+      "name": "DURANIA",
+      "display_name": "Durania",
+      "type": "municipality"
+    },
+    {
+      "code": "54245",
+      "department_code": "54",
+      "name": "EL CARMEN",
+      "display_name": "El Carmen",
+      "type": "municipality"
+    },
+    {
+      "code": "54250",
+      "department_code": "54",
+      "name": "EL TARRA",
+      "display_name": "El Tarra",
+      "type": "municipality"
+    },
+    {
+      "code": "54261",
+      "department_code": "54",
+      "name": "EL ZULIA",
+      "display_name": "El Zulia",
+      "type": "municipality"
+    },
+    {
+      "code": "54313",
+      "department_code": "54",
+      "name": "GRAMALOTE",
+      "display_name": "Gramalote",
+      "type": "municipality"
+    },
+    {
+      "code": "54344",
+      "department_code": "54",
+      "name": "HACARÍ",
+      "display_name": "Hacarí",
+      "type": "municipality"
+    },
+    {
+      "code": "54347",
+      "department_code": "54",
+      "name": "HERRÁN",
+      "display_name": "Herrán",
+      "type": "municipality"
+    },
+    {
+      "code": "54377",
+      "department_code": "54",
+      "name": "LABATECA",
+      "display_name": "Labateca",
+      "type": "municipality"
+    },
+    {
+      "code": "54385",
+      "department_code": "54",
+      "name": "LA ESPERANZA",
+      "display_name": "La Esperanza",
+      "type": "municipality"
+    },
+    {
+      "code": "54398",
+      "department_code": "54",
+      "name": "LA PLAYA",
+      "display_name": "La Playa",
+      "type": "municipality"
+    },
+    {
+      "code": "54405",
+      "department_code": "54",
+      "name": "LOS PATIOS",
+      "display_name": "Los Patios",
+      "type": "municipality"
+    },
+    {
+      "code": "54418",
+      "department_code": "54",
+      "name": "LOURDES",
+      "display_name": "Lourdes",
+      "type": "municipality"
+    },
+    {
+      "code": "54480",
+      "department_code": "54",
+      "name": "MUTISCUA",
+      "display_name": "Mutiscua",
+      "type": "municipality"
+    },
+    {
+      "code": "54498",
+      "department_code": "54",
+      "name": "OCAÑA",
+      "display_name": "Ocaña",
+      "type": "municipality"
+    },
+    {
+      "code": "54518",
+      "department_code": "54",
+      "name": "PAMPLONA",
+      "display_name": "Pamplona",
+      "type": "municipality"
+    },
+    {
+      "code": "54520",
+      "department_code": "54",
+      "name": "PAMPLONITA",
+      "display_name": "Pamplonita",
+      "type": "municipality"
+    },
+    {
+      "code": "54553",
+      "department_code": "54",
+      "name": "PUERTO SANTANDER",
+      "display_name": "Puerto Santander",
+      "type": "municipality"
+    },
+    {
+      "code": "54599",
+      "department_code": "54",
+      "name": "RAGONVALIA",
+      "display_name": "Ragonvalia",
+      "type": "municipality"
+    },
+    {
+      "code": "54660",
+      "department_code": "54",
+      "name": "SALAZAR",
+      "display_name": "Salazar",
+      "type": "municipality"
+    },
+    {
+      "code": "54670",
+      "department_code": "54",
+      "name": "SAN CALIXTO",
+      "display_name": "San Calixto",
+      "type": "municipality"
+    },
+    {
+      "code": "54673",
+      "department_code": "54",
+      "name": "SAN CAYETANO",
+      "display_name": "San Cayetano",
+      "type": "municipality"
+    },
+    {
+      "code": "54680",
+      "department_code": "54",
+      "name": "SANTIAGO",
+      "display_name": "Santiago",
+      "type": "municipality"
+    },
+    {
+      "code": "54720",
+      "department_code": "54",
+      "name": "SARDINATA",
+      "display_name": "Sardinata",
+      "type": "municipality"
+    },
+    {
+      "code": "54743",
+      "department_code": "54",
+      "name": "SILOS",
+      "display_name": "Silos",
+      "type": "municipality"
+    },
+    {
+      "code": "54800",
+      "department_code": "54",
+      "name": "TEORAMA",
+      "display_name": "Teorama",
+      "type": "municipality"
+    },
+    {
+      "code": "54810",
+      "department_code": "54",
+      "name": "TIBÚ",
+      "display_name": "Tibú",
+      "type": "municipality"
+    },
+    {
+      "code": "54820",
+      "department_code": "54",
+      "name": "TOLEDO",
+      "display_name": "Toledo",
+      "type": "municipality"
+    },
+    {
+      "code": "54871",
+      "department_code": "54",
+      "name": "VILLA CARO",
+      "display_name": "Villa Caro",
+      "type": "municipality"
+    },
+    {
+      "code": "54874",
+      "department_code": "54",
+      "name": "VILLA DEL ROSARIO",
+      "display_name": "Villa del Rosario",
+      "type": "municipality"
+    },
+    {
+      "code": "63001",
+      "department_code": "63",
+      "name": "ARMENIA",
+      "display_name": "Armenia",
+      "type": "municipality"
+    },
+    {
+      "code": "63111",
+      "department_code": "63",
+      "name": "BUENAVISTA",
+      "display_name": "Buenavista",
+      "type": "municipality"
+    },
+    {
+      "code": "63130",
+      "department_code": "63",
+      "name": "CALARCÁ",
+      "display_name": "Calarcá",
+      "type": "municipality"
+    },
+    {
+      "code": "63190",
+      "department_code": "63",
+      "name": "CIRCASIA",
+      "display_name": "Circasia",
+      "type": "municipality"
+    },
+    {
+      "code": "63212",
+      "department_code": "63",
+      "name": "CÓRDOBA",
+      "display_name": "Córdoba",
+      "type": "municipality"
+    },
+    {
+      "code": "63272",
+      "department_code": "63",
+      "name": "FILANDIA",
+      "display_name": "Filandia",
+      "type": "municipality"
+    },
+    {
+      "code": "63302",
+      "department_code": "63",
+      "name": "GÉNOVA",
+      "display_name": "Génova",
+      "type": "municipality"
+    },
+    {
+      "code": "63401",
+      "department_code": "63",
+      "name": "LA TEBAIDA",
+      "display_name": "La Tebaida",
+      "type": "municipality"
+    },
+    {
+      "code": "63470",
+      "department_code": "63",
+      "name": "MONTENEGRO",
+      "display_name": "Montenegro",
+      "type": "municipality"
+    },
+    {
+      "code": "63548",
+      "department_code": "63",
+      "name": "PIJAO",
+      "display_name": "Pijao",
+      "type": "municipality"
+    },
+    {
+      "code": "63594",
+      "department_code": "63",
+      "name": "QUIMBAYA",
+      "display_name": "Quimbaya",
+      "type": "municipality"
+    },
+    {
+      "code": "63690",
+      "department_code": "63",
+      "name": "SALENTO",
+      "display_name": "Salento",
+      "type": "municipality"
+    },
+    {
+      "code": "66001",
+      "department_code": "66",
+      "name": "PEREIRA",
+      "display_name": "Pereira",
+      "type": "municipality"
+    },
+    {
+      "code": "66045",
+      "department_code": "66",
+      "name": "APÍA",
+      "display_name": "Apía",
+      "type": "municipality"
+    },
+    {
+      "code": "66075",
+      "department_code": "66",
+      "name": "BALBOA",
+      "display_name": "Balboa",
+      "type": "municipality"
+    },
+    {
+      "code": "66088",
+      "department_code": "66",
+      "name": "BELÉN DE UMBRÍA",
+      "display_name": "Belén de Umbría",
+      "type": "municipality"
+    },
+    {
+      "code": "66170",
+      "department_code": "66",
+      "name": "DOSQUEBRADAS",
+      "display_name": "Dosquebradas",
+      "type": "municipality"
+    },
+    {
+      "code": "66318",
+      "department_code": "66",
+      "name": "GUÁTICA",
+      "display_name": "Guática",
+      "type": "municipality"
+    },
+    {
+      "code": "66383",
+      "department_code": "66",
+      "name": "LA CELIA",
+      "display_name": "La Celia",
+      "type": "municipality"
+    },
+    {
+      "code": "66400",
+      "department_code": "66",
+      "name": "LA VIRGINIA",
+      "display_name": "La Virginia",
+      "type": "municipality"
+    },
+    {
+      "code": "66440",
+      "department_code": "66",
+      "name": "MARSELLA",
+      "display_name": "Marsella",
+      "type": "municipality"
+    },
+    {
+      "code": "66456",
+      "department_code": "66",
+      "name": "MISTRATÓ",
+      "display_name": "Mistrató",
+      "type": "municipality"
+    },
+    {
+      "code": "66572",
+      "department_code": "66",
+      "name": "PUEBLO RICO",
+      "display_name": "Pueblo Rico",
+      "type": "municipality"
+    },
+    {
+      "code": "66594",
+      "department_code": "66",
+      "name": "QUINCHÍA",
+      "display_name": "Quinchía",
+      "type": "municipality"
+    },
+    {
+      "code": "66682",
+      "department_code": "66",
+      "name": "SANTA ROSA DE CABAL",
+      "display_name": "Santa Rosa de Cabal",
+      "type": "municipality"
+    },
+    {
+      "code": "66687",
+      "department_code": "66",
+      "name": "SANTUARIO",
+      "display_name": "Santuario",
+      "type": "municipality"
+    },
+    {
+      "code": "68001",
+      "department_code": "68",
+      "name": "BUCARAMANGA",
+      "display_name": "Bucaramanga",
+      "type": "municipality"
+    },
+    {
+      "code": "68013",
+      "department_code": "68",
+      "name": "AGUADA",
+      "display_name": "Aguada",
+      "type": "municipality"
+    },
+    {
+      "code": "68020",
+      "department_code": "68",
+      "name": "ALBANIA",
+      "display_name": "Albania",
+      "type": "municipality"
+    },
+    {
+      "code": "68051",
+      "department_code": "68",
+      "name": "ARATOCA",
+      "display_name": "Aratoca",
+      "type": "municipality"
+    },
+    {
+      "code": "68077",
+      "department_code": "68",
+      "name": "BARBOSA",
+      "display_name": "Barbosa",
+      "type": "municipality"
+    },
+    {
+      "code": "68079",
+      "department_code": "68",
+      "name": "BARICHARA",
+      "display_name": "Barichara",
+      "type": "municipality"
+    },
+    {
+      "code": "68081",
+      "department_code": "68",
+      "name": "BARRANCABERMEJA",
+      "display_name": "Barrancabermeja",
+      "type": "municipality"
+    },
+    {
+      "code": "68092",
+      "department_code": "68",
+      "name": "BETULIA",
+      "display_name": "Betulia",
+      "type": "municipality"
+    },
+    {
+      "code": "68101",
+      "department_code": "68",
+      "name": "BOLÍVAR",
+      "display_name": "Bolívar",
+      "type": "municipality"
+    },
+    {
+      "code": "68121",
+      "department_code": "68",
+      "name": "CABRERA",
+      "display_name": "Cabrera",
+      "type": "municipality"
+    },
+    {
+      "code": "68132",
+      "department_code": "68",
+      "name": "CALIFORNIA",
+      "display_name": "California",
+      "type": "municipality"
+    },
+    {
+      "code": "68147",
+      "department_code": "68",
+      "name": "CAPITANEJO",
+      "display_name": "Capitanejo",
+      "type": "municipality"
+    },
+    {
+      "code": "68152",
+      "department_code": "68",
+      "name": "CARCASÍ",
+      "display_name": "Carcasí",
+      "type": "municipality"
+    },
+    {
+      "code": "68160",
+      "department_code": "68",
+      "name": "CEPITÁ",
+      "display_name": "Cepitá",
+      "type": "municipality"
+    },
+    {
+      "code": "68162",
+      "department_code": "68",
+      "name": "CERRITO",
+      "display_name": "Cerrito",
+      "type": "municipality"
+    },
+    {
+      "code": "68167",
+      "department_code": "68",
+      "name": "CHARALÁ",
+      "display_name": "Charalá",
+      "type": "municipality"
+    },
+    {
+      "code": "68169",
+      "department_code": "68",
+      "name": "CHARTA",
+      "display_name": "Charta",
+      "type": "municipality"
+    },
+    {
+      "code": "68176",
+      "department_code": "68",
+      "name": "CHIMA",
+      "display_name": "Chima",
+      "type": "municipality"
+    },
+    {
+      "code": "68179",
+      "department_code": "68",
+      "name": "CHIPATÁ",
+      "display_name": "Chipatá",
+      "type": "municipality"
+    },
+    {
+      "code": "68190",
+      "department_code": "68",
+      "name": "CIMITARRA",
+      "display_name": "Cimitarra",
+      "type": "municipality"
+    },
+    {
+      "code": "68207",
+      "department_code": "68",
+      "name": "CONCEPCIÓN",
+      "display_name": "Concepción",
+      "type": "municipality"
+    },
+    {
+      "code": "68209",
+      "department_code": "68",
+      "name": "CONFINES",
+      "display_name": "Confines",
+      "type": "municipality"
+    },
+    {
+      "code": "68211",
+      "department_code": "68",
+      "name": "CONTRATACIÓN",
+      "display_name": "Contratación",
+      "type": "municipality"
+    },
+    {
+      "code": "68217",
+      "department_code": "68",
+      "name": "COROMORO",
+      "display_name": "Coromoro",
+      "type": "municipality"
+    },
+    {
+      "code": "68229",
+      "department_code": "68",
+      "name": "CURITÍ",
+      "display_name": "Curití",
+      "type": "municipality"
+    },
+    {
+      "code": "68235",
+      "department_code": "68",
+      "name": "EL CARMEN DE CHUCURÍ",
+      "display_name": "El Carmen de Chucurí",
+      "type": "municipality"
+    },
+    {
+      "code": "68245",
+      "department_code": "68",
+      "name": "EL GUACAMAYO",
+      "display_name": "El Guacamayo",
+      "type": "municipality"
+    },
+    {
+      "code": "68250",
+      "department_code": "68",
+      "name": "EL PEÑÓN",
+      "display_name": "El Peñón",
+      "type": "municipality"
+    },
+    {
+      "code": "68255",
+      "department_code": "68",
+      "name": "EL PLAYÓN",
+      "display_name": "El Playón",
+      "type": "municipality"
+    },
+    {
+      "code": "68264",
+      "department_code": "68",
+      "name": "ENCINO",
+      "display_name": "Encino",
+      "type": "municipality"
+    },
+    {
+      "code": "68266",
+      "department_code": "68",
+      "name": "ENCISO",
+      "display_name": "Enciso",
+      "type": "municipality"
+    },
+    {
+      "code": "68271",
+      "department_code": "68",
+      "name": "FLORIÁN",
+      "display_name": "Florián",
+      "type": "municipality"
+    },
+    {
+      "code": "68276",
+      "department_code": "68",
+      "name": "FLORIDABLANCA",
+      "display_name": "Floridablanca",
+      "type": "municipality"
+    },
+    {
+      "code": "68296",
+      "department_code": "68",
+      "name": "GALÁN",
+      "display_name": "Galán",
+      "type": "municipality"
+    },
+    {
+      "code": "68298",
+      "department_code": "68",
+      "name": "GÁMBITA",
+      "display_name": "Gámbita",
+      "type": "municipality"
+    },
+    {
+      "code": "68307",
+      "department_code": "68",
+      "name": "GIRÓN",
+      "display_name": "Girón",
+      "type": "municipality"
+    },
+    {
+      "code": "68318",
+      "department_code": "68",
+      "name": "GUACA",
+      "display_name": "Guaca",
+      "type": "municipality"
+    },
+    {
+      "code": "68320",
+      "department_code": "68",
+      "name": "GUADALUPE",
+      "display_name": "Guadalupe",
+      "type": "municipality"
+    },
+    {
+      "code": "68322",
+      "department_code": "68",
+      "name": "GUAPOTÁ",
+      "display_name": "Guapotá",
+      "type": "municipality"
+    },
+    {
+      "code": "68324",
+      "department_code": "68",
+      "name": "GUAVATÁ",
+      "display_name": "Guavatá",
+      "type": "municipality"
+    },
+    {
+      "code": "68327",
+      "department_code": "68",
+      "name": "GÜEPSA",
+      "display_name": "Güepsa",
+      "type": "municipality"
+    },
+    {
+      "code": "68344",
+      "department_code": "68",
+      "name": "HATO",
+      "display_name": "Hato",
+      "type": "municipality"
+    },
+    {
+      "code": "68368",
+      "department_code": "68",
+      "name": "JESÚS MARÍA",
+      "display_name": "Jesús María",
+      "type": "municipality"
+    },
+    {
+      "code": "68370",
+      "department_code": "68",
+      "name": "JORDÁN",
+      "display_name": "Jordán",
+      "type": "municipality"
+    },
+    {
+      "code": "68377",
+      "department_code": "68",
+      "name": "LA BELLEZA",
+      "display_name": "La Belleza",
+      "type": "municipality"
+    },
+    {
+      "code": "68385",
+      "department_code": "68",
+      "name": "LANDÁZURI",
+      "display_name": "Landázuri",
+      "type": "municipality"
+    },
+    {
+      "code": "68397",
+      "department_code": "68",
+      "name": "LA PAZ",
+      "display_name": "La Paz",
+      "type": "municipality"
+    },
+    {
+      "code": "68406",
+      "department_code": "68",
+      "name": "LEBRIJA",
+      "display_name": "Lebrija",
+      "type": "municipality"
+    },
+    {
+      "code": "68418",
+      "department_code": "68",
+      "name": "LOS SANTOS",
+      "display_name": "Los Santos",
+      "type": "municipality"
+    },
+    {
+      "code": "68425",
+      "department_code": "68",
+      "name": "MACARAVITA",
+      "display_name": "Macaravita",
+      "type": "municipality"
+    },
+    {
+      "code": "68432",
+      "department_code": "68",
+      "name": "MÁLAGA",
+      "display_name": "Málaga",
+      "type": "municipality"
+    },
+    {
+      "code": "68444",
+      "department_code": "68",
+      "name": "MATANZA",
+      "display_name": "Matanza",
+      "type": "municipality"
+    },
+    {
+      "code": "68464",
+      "department_code": "68",
+      "name": "MOGOTES",
+      "display_name": "Mogotes",
+      "type": "municipality"
+    },
+    {
+      "code": "68468",
+      "department_code": "68",
+      "name": "MOLAGAVITA",
+      "display_name": "Molagavita",
+      "type": "municipality"
+    },
+    {
+      "code": "68498",
+      "department_code": "68",
+      "name": "OCAMONTE",
+      "display_name": "Ocamonte",
+      "type": "municipality"
+    },
+    {
+      "code": "68500",
+      "department_code": "68",
+      "name": "OIBA",
+      "display_name": "Oiba",
+      "type": "municipality"
+    },
+    {
+      "code": "68502",
+      "department_code": "68",
+      "name": "ONZAGA",
+      "display_name": "Onzaga",
+      "type": "municipality"
+    },
+    {
+      "code": "68522",
+      "department_code": "68",
+      "name": "PALMAR",
+      "display_name": "Palmar",
+      "type": "municipality"
+    },
+    {
+      "code": "68524",
+      "department_code": "68",
+      "name": "PALMAS DEL SOCORRO",
+      "display_name": "Palmas del Socorro",
+      "type": "municipality"
+    },
+    {
+      "code": "68533",
+      "department_code": "68",
+      "name": "PÁRAMO",
+      "display_name": "Páramo",
+      "type": "municipality"
+    },
+    {
+      "code": "68547",
+      "department_code": "68",
+      "name": "PIEDECUESTA",
+      "display_name": "Piedecuesta",
+      "type": "municipality"
+    },
+    {
+      "code": "68549",
+      "department_code": "68",
+      "name": "PINCHOTE",
+      "display_name": "Pinchote",
+      "type": "municipality"
+    },
+    {
+      "code": "68572",
+      "department_code": "68",
+      "name": "PUENTE NACIONAL",
+      "display_name": "Puente Nacional",
+      "type": "municipality"
+    },
+    {
+      "code": "68573",
+      "department_code": "68",
+      "name": "PUERTO PARRA",
+      "display_name": "Puerto Parra",
+      "type": "municipality"
+    },
+    {
+      "code": "68575",
+      "department_code": "68",
+      "name": "PUERTO WILCHES",
+      "display_name": "Puerto Wilches",
+      "type": "municipality"
+    },
+    {
+      "code": "68615",
+      "department_code": "68",
+      "name": "RIONEGRO",
+      "display_name": "Rionegro",
+      "type": "municipality"
+    },
+    {
+      "code": "68655",
+      "department_code": "68",
+      "name": "SABANA DE TORRES",
+      "display_name": "Sabana de Torres",
+      "type": "municipality"
+    },
+    {
+      "code": "68669",
+      "department_code": "68",
+      "name": "SAN ANDRÉS",
+      "display_name": "San Andrés",
+      "type": "municipality"
+    },
+    {
+      "code": "68673",
+      "department_code": "68",
+      "name": "SAN BENITO",
+      "display_name": "San Benito",
+      "type": "municipality"
+    },
+    {
+      "code": "68679",
+      "department_code": "68",
+      "name": "SAN GIL",
+      "display_name": "San Gil",
+      "type": "municipality"
+    },
+    {
+      "code": "68682",
+      "department_code": "68",
+      "name": "SAN JOAQUÍN",
+      "display_name": "San Joaquín",
+      "type": "municipality"
+    },
+    {
+      "code": "68684",
+      "department_code": "68",
+      "name": "SAN JOSÉ DE MIRANDA",
+      "display_name": "San José de Miranda",
+      "type": "municipality"
+    },
+    {
+      "code": "68686",
+      "department_code": "68",
+      "name": "SAN MIGUEL",
+      "display_name": "San Miguel",
+      "type": "municipality"
+    },
+    {
+      "code": "68689",
+      "department_code": "68",
+      "name": "SAN VICENTE DE CHUCURÍ",
+      "display_name": "San Vicente de Chucurí",
+      "type": "municipality"
+    },
+    {
+      "code": "68705",
+      "department_code": "68",
+      "name": "SANTA BÁRBARA",
+      "display_name": "Santa Bárbara",
+      "type": "municipality"
+    },
+    {
+      "code": "68720",
+      "department_code": "68",
+      "name": "SANTA HELENA DEL OPÓN",
+      "display_name": "Santa Helena del Opón",
+      "type": "municipality"
+    },
+    {
+      "code": "68745",
+      "department_code": "68",
+      "name": "SIMACOTA",
+      "display_name": "Simacota",
+      "type": "municipality"
+    },
+    {
+      "code": "68755",
+      "department_code": "68",
+      "name": "SOCORRO",
+      "display_name": "Socorro",
+      "type": "municipality"
+    },
+    {
+      "code": "68770",
+      "department_code": "68",
+      "name": "SUAITA",
+      "display_name": "Suaita",
+      "type": "municipality"
+    },
+    {
+      "code": "68773",
+      "department_code": "68",
+      "name": "SUCRE",
+      "display_name": "Sucre",
+      "type": "municipality"
+    },
+    {
+      "code": "68780",
+      "department_code": "68",
+      "name": "SURATÁ",
+      "display_name": "Suratá",
+      "type": "municipality"
+    },
+    {
+      "code": "68820",
+      "department_code": "68",
+      "name": "TONA",
+      "display_name": "Tona",
+      "type": "municipality"
+    },
+    {
+      "code": "68855",
+      "department_code": "68",
+      "name": "VALLE DE SAN JOSÉ",
+      "display_name": "Valle de San José",
+      "type": "municipality"
+    },
+    {
+      "code": "68861",
+      "department_code": "68",
+      "name": "VÉLEZ",
+      "display_name": "Vélez",
+      "type": "municipality"
+    },
+    {
+      "code": "68867",
+      "department_code": "68",
+      "name": "VETAS",
+      "display_name": "Vetas",
+      "type": "municipality"
+    },
+    {
+      "code": "68872",
+      "department_code": "68",
+      "name": "VILLANUEVA",
+      "display_name": "Villanueva",
+      "type": "municipality"
+    },
+    {
+      "code": "68895",
+      "department_code": "68",
+      "name": "ZAPATOCA",
+      "display_name": "Zapatoca",
+      "type": "municipality"
+    },
+    {
+      "code": "70001",
+      "department_code": "70",
+      "name": "SINCELEJO",
+      "display_name": "Sincelejo",
+      "type": "municipality"
+    },
+    {
+      "code": "70110",
+      "department_code": "70",
+      "name": "BUENAVISTA",
+      "display_name": "Buenavista",
+      "type": "municipality"
+    },
+    {
+      "code": "70124",
+      "department_code": "70",
+      "name": "CAIMITO",
+      "display_name": "Caimito",
+      "type": "municipality"
+    },
+    {
+      "code": "70204",
+      "department_code": "70",
+      "name": "COLOSÓ",
+      "display_name": "Colosó",
+      "type": "municipality"
+    },
+    {
+      "code": "70215",
+      "department_code": "70",
+      "name": "COROZAL",
+      "display_name": "Corozal",
+      "type": "municipality"
+    },
+    {
+      "code": "70221",
+      "department_code": "70",
+      "name": "COVEÑAS",
+      "display_name": "Coveñas",
+      "type": "municipality"
+    },
+    {
+      "code": "70230",
+      "department_code": "70",
+      "name": "CHALÁN",
+      "display_name": "Chalán",
+      "type": "municipality"
+    },
+    {
+      "code": "70233",
+      "department_code": "70",
+      "name": "EL ROBLE",
+      "display_name": "El Roble",
+      "type": "municipality"
+    },
+    {
+      "code": "70235",
+      "department_code": "70",
+      "name": "GALERAS",
+      "display_name": "Galeras",
+      "type": "municipality"
+    },
+    {
+      "code": "70265",
+      "department_code": "70",
+      "name": "GUARANDA",
+      "display_name": "Guaranda",
+      "type": "municipality"
+    },
+    {
+      "code": "70400",
+      "department_code": "70",
+      "name": "LA UNIÓN",
+      "display_name": "La Unión",
+      "type": "municipality"
+    },
+    {
+      "code": "70418",
+      "department_code": "70",
+      "name": "LOS PALMITOS",
+      "display_name": "Los Palmitos",
+      "type": "municipality"
+    },
+    {
+      "code": "70429",
+      "department_code": "70",
+      "name": "MAJAGUAL",
+      "display_name": "Majagual",
+      "type": "municipality"
+    },
+    {
+      "code": "70473",
+      "department_code": "70",
+      "name": "MORROA",
+      "display_name": "Morroa",
+      "type": "municipality"
+    },
+    {
+      "code": "70508",
+      "department_code": "70",
+      "name": "OVEJAS",
+      "display_name": "Ovejas",
+      "type": "municipality"
+    },
+    {
+      "code": "70523",
+      "department_code": "70",
+      "name": "PALMITO",
+      "display_name": "Palmito",
+      "type": "municipality"
+    },
+    {
+      "code": "70670",
+      "department_code": "70",
+      "name": "SAMPUÉS",
+      "display_name": "Sampués",
+      "type": "municipality"
+    },
+    {
+      "code": "70678",
+      "department_code": "70",
+      "name": "SAN BENITO ABAD",
+      "display_name": "San Benito Abad",
+      "type": "municipality"
+    },
+    {
+      "code": "70702",
+      "department_code": "70",
+      "name": "SAN JUAN DE BETULIA",
+      "display_name": "San Juan de Betulia",
+      "type": "municipality"
+    },
+    {
+      "code": "70708",
+      "department_code": "70",
+      "name": "SAN MARCOS",
+      "display_name": "San Marcos",
+      "type": "municipality"
+    },
+    {
+      "code": "70713",
+      "department_code": "70",
+      "name": "SAN ONOFRE",
+      "display_name": "San Onofre",
+      "type": "municipality"
+    },
+    {
+      "code": "70717",
+      "department_code": "70",
+      "name": "SAN PEDRO",
+      "display_name": "San Pedro",
+      "type": "municipality"
+    },
+    {
+      "code": "70742",
+      "department_code": "70",
+      "name": "SAN LUIS DE SINCÉ",
+      "display_name": "San Luis de Sincé",
+      "type": "municipality"
+    },
+    {
+      "code": "70771",
+      "department_code": "70",
+      "name": "SUCRE",
+      "display_name": "Sucre",
+      "type": "municipality"
+    },
+    {
+      "code": "70820",
+      "department_code": "70",
+      "name": "SANTIAGO DE TOLÚ",
+      "display_name": "Santiago de Tolú",
+      "type": "municipality"
+    },
+    {
+      "code": "70823",
+      "department_code": "70",
+      "name": "SAN JOSÉ DE TOLUVIEJO",
+      "display_name": "San José de Toluviejo",
+      "type": "municipality"
+    },
+    {
+      "code": "73001",
+      "department_code": "73",
+      "name": "IBAGUÉ",
+      "display_name": "Ibagué",
+      "type": "municipality"
+    },
+    {
+      "code": "73024",
+      "department_code": "73",
+      "name": "ALPUJARRA",
+      "display_name": "Alpujarra",
+      "type": "municipality"
+    },
+    {
+      "code": "73026",
+      "department_code": "73",
+      "name": "ALVARADO",
+      "display_name": "Alvarado",
+      "type": "municipality"
+    },
+    {
+      "code": "73030",
+      "department_code": "73",
+      "name": "AMBALEMA",
+      "display_name": "Ambalema",
+      "type": "municipality"
+    },
+    {
+      "code": "73043",
+      "department_code": "73",
+      "name": "ANZOÁTEGUI",
+      "display_name": "Anzoátegui",
+      "type": "municipality"
+    },
+    {
+      "code": "73055",
+      "department_code": "73",
+      "name": "ARMERO",
+      "display_name": "Armero",
+      "type": "municipality"
+    },
+    {
+      "code": "73067",
+      "department_code": "73",
+      "name": "ATACO",
+      "display_name": "Ataco",
+      "type": "municipality"
+    },
+    {
+      "code": "73124",
+      "department_code": "73",
+      "name": "CAJAMARCA",
+      "display_name": "Cajamarca",
+      "type": "municipality"
+    },
+    {
+      "code": "73148",
+      "department_code": "73",
+      "name": "CARMEN DE APICALÁ",
+      "display_name": "Carmen de Apicalá",
+      "type": "municipality"
+    },
+    {
+      "code": "73152",
+      "department_code": "73",
+      "name": "CASABIANCA",
+      "display_name": "Casabianca",
+      "type": "municipality"
+    },
+    {
+      "code": "73168",
+      "department_code": "73",
+      "name": "CHAPARRAL",
+      "display_name": "Chaparral",
+      "type": "municipality"
+    },
+    {
+      "code": "73200",
+      "department_code": "73",
+      "name": "COELLO",
+      "display_name": "Coello",
+      "type": "municipality"
+    },
+    {
+      "code": "73217",
+      "department_code": "73",
+      "name": "COYAIMA",
+      "display_name": "Coyaima",
+      "type": "municipality"
+    },
+    {
+      "code": "73226",
+      "department_code": "73",
+      "name": "CUNDAY",
+      "display_name": "Cunday",
+      "type": "municipality"
+    },
+    {
+      "code": "73236",
+      "department_code": "73",
+      "name": "DOLORES",
+      "display_name": "Dolores",
+      "type": "municipality"
+    },
+    {
+      "code": "73268",
+      "department_code": "73",
+      "name": "ESPINAL",
+      "display_name": "Espinal",
+      "type": "municipality"
+    },
+    {
+      "code": "73270",
+      "department_code": "73",
+      "name": "FALAN",
+      "display_name": "Falan",
+      "type": "municipality"
+    },
+    {
+      "code": "73275",
+      "department_code": "73",
+      "name": "FLANDES",
+      "display_name": "Flandes",
+      "type": "municipality"
+    },
+    {
+      "code": "73283",
+      "department_code": "73",
+      "name": "FRESNO",
+      "display_name": "Fresno",
+      "type": "municipality"
+    },
+    {
+      "code": "73319",
+      "department_code": "73",
+      "name": "GUAMO",
+      "display_name": "Guamo",
+      "type": "municipality"
+    },
+    {
+      "code": "73347",
+      "department_code": "73",
+      "name": "HERVEO",
+      "display_name": "Herveo",
+      "type": "municipality"
+    },
+    {
+      "code": "73349",
+      "department_code": "73",
+      "name": "HONDA",
+      "display_name": "Honda",
+      "type": "municipality"
+    },
+    {
+      "code": "73352",
+      "department_code": "73",
+      "name": "ICONONZO",
+      "display_name": "Icononzo",
+      "type": "municipality"
+    },
+    {
+      "code": "73408",
+      "department_code": "73",
+      "name": "LÉRIDA",
+      "display_name": "Lérida",
+      "type": "municipality"
+    },
+    {
+      "code": "73411",
+      "department_code": "73",
+      "name": "LÍBANO",
+      "display_name": "Líbano",
+      "type": "municipality"
+    },
+    {
+      "code": "73443",
+      "department_code": "73",
+      "name": "SAN SEBASTIÁN DE MARIQUITA",
+      "display_name": "San Sebastián de Mariquita",
+      "type": "municipality"
+    },
+    {
+      "code": "73449",
+      "department_code": "73",
+      "name": "MELGAR",
+      "display_name": "Melgar",
+      "type": "municipality"
+    },
+    {
+      "code": "73461",
+      "department_code": "73",
+      "name": "MURILLO",
+      "display_name": "Murillo",
+      "type": "municipality"
+    },
+    {
+      "code": "73483",
+      "department_code": "73",
+      "name": "NATAGAIMA",
+      "display_name": "Natagaima",
+      "type": "municipality"
+    },
+    {
+      "code": "73504",
+      "department_code": "73",
+      "name": "ORTEGA",
+      "display_name": "Ortega",
+      "type": "municipality"
+    },
+    {
+      "code": "73520",
+      "department_code": "73",
+      "name": "PALOCABILDO",
+      "display_name": "Palocabildo",
+      "type": "municipality"
+    },
+    {
+      "code": "73547",
+      "department_code": "73",
+      "name": "PIEDRAS",
+      "display_name": "Piedras",
+      "type": "municipality"
+    },
+    {
+      "code": "73555",
+      "department_code": "73",
+      "name": "PLANADAS",
+      "display_name": "Planadas",
+      "type": "municipality"
+    },
+    {
+      "code": "73563",
+      "department_code": "73",
+      "name": "PRADO",
+      "display_name": "Prado",
+      "type": "municipality"
+    },
+    {
+      "code": "73585",
+      "department_code": "73",
+      "name": "PURIFICACIÓN",
+      "display_name": "Purificación",
+      "type": "municipality"
+    },
+    {
+      "code": "73616",
+      "department_code": "73",
+      "name": "RIOBLANCO",
+      "display_name": "Rioblanco",
+      "type": "municipality"
+    },
+    {
+      "code": "73622",
+      "department_code": "73",
+      "name": "RONCESVALLES",
+      "display_name": "Roncesvalles",
+      "type": "municipality"
+    },
+    {
+      "code": "73624",
+      "department_code": "73",
+      "name": "ROVIRA",
+      "display_name": "Rovira",
+      "type": "municipality"
+    },
+    {
+      "code": "73671",
+      "department_code": "73",
+      "name": "SALDAÑA",
+      "display_name": "Saldaña",
+      "type": "municipality"
+    },
+    {
+      "code": "73675",
+      "department_code": "73",
+      "name": "SAN ANTONIO",
+      "display_name": "San Antonio",
+      "type": "municipality"
+    },
+    {
+      "code": "73678",
+      "department_code": "73",
+      "name": "SAN LUIS",
+      "display_name": "San Luis",
+      "type": "municipality"
+    },
+    {
+      "code": "73686",
+      "department_code": "73",
+      "name": "SANTA ISABEL",
+      "display_name": "Santa Isabel",
+      "type": "municipality"
+    },
+    {
+      "code": "73770",
+      "department_code": "73",
+      "name": "SUÁREZ",
+      "display_name": "Suárez",
+      "type": "municipality"
+    },
+    {
+      "code": "73854",
+      "department_code": "73",
+      "name": "VALLE DE SAN JUAN",
+      "display_name": "Valle de San Juan",
+      "type": "municipality"
+    },
+    {
+      "code": "73861",
+      "department_code": "73",
+      "name": "VENADILLO",
+      "display_name": "Venadillo",
+      "type": "municipality"
+    },
+    {
+      "code": "73870",
+      "department_code": "73",
+      "name": "VILLAHERMOSA",
+      "display_name": "Villahermosa",
+      "type": "municipality"
+    },
+    {
+      "code": "73873",
+      "department_code": "73",
+      "name": "VILLARRICA",
+      "display_name": "Villarrica",
+      "type": "municipality"
+    },
+    {
+      "code": "76001",
+      "department_code": "76",
+      "name": "SANTIAGO DE CALI",
+      "display_name": "Santiago de Cali",
+      "type": "municipality"
+    },
+    {
+      "code": "76020",
+      "department_code": "76",
+      "name": "ALCALÁ",
+      "display_name": "Alcalá",
+      "type": "municipality"
+    },
+    {
+      "code": "76036",
+      "department_code": "76",
+      "name": "ANDALUCÍA",
+      "display_name": "Andalucía",
+      "type": "municipality"
+    },
+    {
+      "code": "76041",
+      "department_code": "76",
+      "name": "ANSERMANUEVO",
+      "display_name": "Ansermanuevo",
+      "type": "municipality"
+    },
+    {
+      "code": "76054",
+      "department_code": "76",
+      "name": "ARGELIA",
+      "display_name": "Argelia",
+      "type": "municipality"
+    },
+    {
+      "code": "76100",
+      "department_code": "76",
+      "name": "BOLÍVAR",
+      "display_name": "Bolívar",
+      "type": "municipality"
+    },
+    {
+      "code": "76109",
+      "department_code": "76",
+      "name": "BUENAVENTURA",
+      "display_name": "Buenaventura",
+      "type": "municipality"
+    },
+    {
+      "code": "76111",
+      "department_code": "76",
+      "name": "GUADALAJARA DE BUGA",
+      "display_name": "Guadalajara de Buga",
+      "type": "municipality"
+    },
+    {
+      "code": "76113",
+      "department_code": "76",
+      "name": "BUGALAGRANDE",
+      "display_name": "Bugalagrande",
+      "type": "municipality"
+    },
+    {
+      "code": "76122",
+      "department_code": "76",
+      "name": "CAICEDONIA",
+      "display_name": "Caicedonia",
+      "type": "municipality"
+    },
+    {
+      "code": "76126",
+      "department_code": "76",
+      "name": "CALIMA",
+      "display_name": "Calima",
+      "type": "municipality"
+    },
+    {
+      "code": "76130",
+      "department_code": "76",
+      "name": "CANDELARIA",
+      "display_name": "Candelaria",
+      "type": "municipality"
+    },
+    {
+      "code": "76147",
+      "department_code": "76",
+      "name": "CARTAGO",
+      "display_name": "Cartago",
+      "type": "municipality"
+    },
+    {
+      "code": "76233",
+      "department_code": "76",
+      "name": "DAGUA",
+      "display_name": "Dagua",
+      "type": "municipality"
+    },
+    {
+      "code": "76243",
+      "department_code": "76",
+      "name": "EL ÁGUILA",
+      "display_name": "El Águila",
+      "type": "municipality"
+    },
+    {
+      "code": "76246",
+      "department_code": "76",
+      "name": "EL CAIRO",
+      "display_name": "El Cairo",
+      "type": "municipality"
+    },
+    {
+      "code": "76248",
+      "department_code": "76",
+      "name": "EL CERRITO",
+      "display_name": "El Cerrito",
+      "type": "municipality"
+    },
+    {
+      "code": "76250",
+      "department_code": "76",
+      "name": "EL DOVIO",
+      "display_name": "El Dovio",
+      "type": "municipality"
+    },
+    {
+      "code": "76275",
+      "department_code": "76",
+      "name": "FLORIDA",
+      "display_name": "Florida",
+      "type": "municipality"
+    },
+    {
+      "code": "76306",
+      "department_code": "76",
+      "name": "GINEBRA",
+      "display_name": "Ginebra",
+      "type": "municipality"
+    },
+    {
+      "code": "76318",
+      "department_code": "76",
+      "name": "GUACARÍ",
+      "display_name": "Guacarí",
+      "type": "municipality"
+    },
+    {
+      "code": "76364",
+      "department_code": "76",
+      "name": "JAMUNDÍ",
+      "display_name": "Jamundí",
+      "type": "municipality"
+    },
+    {
+      "code": "76377",
+      "department_code": "76",
+      "name": "LA CUMBRE",
+      "display_name": "La Cumbre",
+      "type": "municipality"
+    },
+    {
+      "code": "76400",
+      "department_code": "76",
+      "name": "LA UNIÓN",
+      "display_name": "La Unión",
+      "type": "municipality"
+    },
+    {
+      "code": "76403",
+      "department_code": "76",
+      "name": "LA VICTORIA",
+      "display_name": "La Victoria",
+      "type": "municipality"
+    },
+    {
+      "code": "76497",
+      "department_code": "76",
+      "name": "OBANDO",
+      "display_name": "Obando",
+      "type": "municipality"
+    },
+    {
+      "code": "76520",
+      "department_code": "76",
+      "name": "PALMIRA",
+      "display_name": "Palmira",
+      "type": "municipality"
+    },
+    {
+      "code": "76563",
+      "department_code": "76",
+      "name": "PRADERA",
+      "display_name": "Pradera",
+      "type": "municipality"
+    },
+    {
+      "code": "76606",
+      "department_code": "76",
+      "name": "RESTREPO",
+      "display_name": "Restrepo",
+      "type": "municipality"
+    },
+    {
+      "code": "76616",
+      "department_code": "76",
+      "name": "RIOFRÍO",
+      "display_name": "Riofrío",
+      "type": "municipality"
+    },
+    {
+      "code": "76622",
+      "department_code": "76",
+      "name": "ROLDANILLO",
+      "display_name": "Roldanillo",
+      "type": "municipality"
+    },
+    {
+      "code": "76670",
+      "department_code": "76",
+      "name": "SAN PEDRO",
+      "display_name": "San Pedro",
+      "type": "municipality"
+    },
+    {
+      "code": "76736",
+      "department_code": "76",
+      "name": "SEVILLA",
+      "display_name": "Sevilla",
+      "type": "municipality"
+    },
+    {
+      "code": "76823",
+      "department_code": "76",
+      "name": "TORO",
+      "display_name": "Toro",
+      "type": "municipality"
+    },
+    {
+      "code": "76828",
+      "department_code": "76",
+      "name": "TRUJILLO",
+      "display_name": "Trujillo",
+      "type": "municipality"
+    },
+    {
+      "code": "76834",
+      "department_code": "76",
+      "name": "TULUÁ",
+      "display_name": "Tuluá",
+      "type": "municipality"
+    },
+    {
+      "code": "76845",
+      "department_code": "76",
+      "name": "ULLOA",
+      "display_name": "Ulloa",
+      "type": "municipality"
+    },
+    {
+      "code": "76863",
+      "department_code": "76",
+      "name": "VERSALLES",
+      "display_name": "Versalles",
+      "type": "municipality"
+    },
+    {
+      "code": "76869",
+      "department_code": "76",
+      "name": "VIJES",
+      "display_name": "Vijes",
+      "type": "municipality"
+    },
+    {
+      "code": "76890",
+      "department_code": "76",
+      "name": "YOTOCO",
+      "display_name": "Yotoco",
+      "type": "municipality"
+    },
+    {
+      "code": "76892",
+      "department_code": "76",
+      "name": "YUMBO",
+      "display_name": "Yumbo",
+      "type": "municipality"
+    },
+    {
+      "code": "76895",
+      "department_code": "76",
+      "name": "ZARZAL",
+      "display_name": "Zarzal",
+      "type": "municipality"
+    },
+    {
+      "code": "81001",
+      "department_code": "81",
+      "name": "ARAUCA",
+      "display_name": "Arauca",
+      "type": "municipality"
+    },
+    {
+      "code": "81065",
+      "department_code": "81",
+      "name": "ARAUQUITA",
+      "display_name": "Arauquita",
+      "type": "municipality"
+    },
+    {
+      "code": "81220",
+      "department_code": "81",
+      "name": "CRAVO NORTE",
+      "display_name": "Cravo Norte",
+      "type": "municipality"
+    },
+    {
+      "code": "81300",
+      "department_code": "81",
+      "name": "FORTUL",
+      "display_name": "Fortul",
+      "type": "municipality"
+    },
+    {
+      "code": "81591",
+      "department_code": "81",
+      "name": "PUERTO RONDÓN",
+      "display_name": "Puerto Rondón",
+      "type": "municipality"
+    },
+    {
+      "code": "81736",
+      "department_code": "81",
+      "name": "SARAVENA",
+      "display_name": "Saravena",
+      "type": "municipality"
+    },
+    {
+      "code": "81794",
+      "department_code": "81",
+      "name": "TAME",
+      "display_name": "Tame",
+      "type": "municipality"
+    },
+    {
+      "code": "85001",
+      "department_code": "85",
+      "name": "YOPAL",
+      "display_name": "Yopal",
+      "type": "municipality"
+    },
+    {
+      "code": "85010",
+      "department_code": "85",
+      "name": "AGUAZUL",
+      "display_name": "Aguazul",
+      "type": "municipality"
+    },
+    {
+      "code": "85015",
+      "department_code": "85",
+      "name": "CHÁMEZA",
+      "display_name": "Chámeza",
+      "type": "municipality"
+    },
+    {
+      "code": "85125",
+      "department_code": "85",
+      "name": "HATO COROZAL",
+      "display_name": "Hato Corozal",
+      "type": "municipality"
+    },
+    {
+      "code": "85136",
+      "department_code": "85",
+      "name": "LA SALINA",
+      "display_name": "La Salina",
+      "type": "municipality"
+    },
+    {
+      "code": "85139",
+      "department_code": "85",
+      "name": "MANÍ",
+      "display_name": "Maní",
+      "type": "municipality"
+    },
+    {
+      "code": "85162",
+      "department_code": "85",
+      "name": "MONTERREY",
+      "display_name": "Monterrey",
+      "type": "municipality"
+    },
+    {
+      "code": "85225",
+      "department_code": "85",
+      "name": "NUNCHÍA",
+      "display_name": "Nunchía",
+      "type": "municipality"
+    },
+    {
+      "code": "85230",
+      "department_code": "85",
+      "name": "OROCUÉ",
+      "display_name": "Orocué",
+      "type": "municipality"
+    },
+    {
+      "code": "85250",
+      "department_code": "85",
+      "name": "PAZ DE ARIPORO",
+      "display_name": "Paz de Ariporo",
+      "type": "municipality"
+    },
+    {
+      "code": "85263",
+      "department_code": "85",
+      "name": "PORE",
+      "display_name": "Pore",
+      "type": "municipality"
+    },
+    {
+      "code": "85279",
+      "department_code": "85",
+      "name": "RECETOR",
+      "display_name": "Recetor",
+      "type": "municipality"
+    },
+    {
+      "code": "85300",
+      "department_code": "85",
+      "name": "SABANALARGA",
+      "display_name": "Sabanalarga",
+      "type": "municipality"
+    },
+    {
+      "code": "85315",
+      "department_code": "85",
+      "name": "SÁCAMA",
+      "display_name": "Sácama",
+      "type": "municipality"
+    },
+    {
+      "code": "85325",
+      "department_code": "85",
+      "name": "SAN LUIS DE PALENQUE",
+      "display_name": "San Luis de Palenque",
+      "type": "municipality"
+    },
+    {
+      "code": "85400",
+      "department_code": "85",
+      "name": "TÁMARA",
+      "display_name": "Támara",
+      "type": "municipality"
+    },
+    {
+      "code": "85410",
+      "department_code": "85",
+      "name": "TAURAMENA",
+      "display_name": "Tauramena",
+      "type": "municipality"
+    },
+    {
+      "code": "85430",
+      "department_code": "85",
+      "name": "TRINIDAD",
+      "display_name": "Trinidad",
+      "type": "municipality"
+    },
+    {
+      "code": "85440",
+      "department_code": "85",
+      "name": "VILLANUEVA",
+      "display_name": "Villanueva",
+      "type": "municipality"
+    },
+    {
+      "code": "86001",
+      "department_code": "86",
+      "name": "MOCOA",
+      "display_name": "Mocoa",
+      "type": "municipality"
+    },
+    {
+      "code": "86219",
+      "department_code": "86",
+      "name": "COLÓN",
+      "display_name": "Colón",
+      "type": "municipality"
+    },
+    {
+      "code": "86320",
+      "department_code": "86",
+      "name": "ORITO",
+      "display_name": "Orito",
+      "type": "municipality"
+    },
+    {
+      "code": "86568",
+      "department_code": "86",
+      "name": "PUERTO ASÍS",
+      "display_name": "Puerto Asís",
+      "type": "municipality"
+    },
+    {
+      "code": "86569",
+      "department_code": "86",
+      "name": "PUERTO CAICEDO",
+      "display_name": "Puerto Caicedo",
+      "type": "municipality"
+    },
+    {
+      "code": "86571",
+      "department_code": "86",
+      "name": "PUERTO GUZMÁN",
+      "display_name": "Puerto Guzmán",
+      "type": "municipality"
+    },
+    {
+      "code": "86573",
+      "department_code": "86",
+      "name": "PUERTO LEGUÍZAMO",
+      "display_name": "Puerto Leguízamo",
+      "type": "municipality"
+    },
+    {
+      "code": "86749",
+      "department_code": "86",
+      "name": "SIBUNDOY",
+      "display_name": "Sibundoy",
+      "type": "municipality"
+    },
+    {
+      "code": "86755",
+      "department_code": "86",
+      "name": "SAN FRANCISCO",
+      "display_name": "San Francisco",
+      "type": "municipality"
+    },
+    {
+      "code": "86757",
+      "department_code": "86",
+      "name": "SAN MIGUEL",
+      "display_name": "San Miguel",
+      "type": "municipality"
+    },
+    {
+      "code": "86760",
+      "department_code": "86",
+      "name": "SANTIAGO",
+      "display_name": "Santiago",
+      "type": "municipality"
+    },
+    {
+      "code": "86865",
+      "department_code": "86",
+      "name": "VALLE DEL GUAMUEZ",
+      "display_name": "Valle del Guamuez",
+      "type": "municipality"
+    },
+    {
+      "code": "86885",
+      "department_code": "86",
+      "name": "VILLAGARZÓN",
+      "display_name": "Villagarzón",
+      "type": "municipality"
+    },
+    {
+      "code": "88001",
+      "department_code": "88",
+      "name": "SAN ANDRÉS",
+      "display_name": "San Andrés",
+      "type": "island"
+    },
+    {
+      "code": "88564",
+      "department_code": "88",
+      "name": "PROVIDENCIA",
+      "display_name": "Providencia",
+      "type": "municipality"
+    },
+    {
+      "code": "91001",
+      "department_code": "91",
+      "name": "LETICIA",
+      "display_name": "Leticia",
+      "type": "municipality"
+    },
+    {
+      "code": "91263",
+      "department_code": "91",
+      "name": "EL ENCANTO",
+      "display_name": "El Encanto",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "91405",
+      "department_code": "91",
+      "name": "LA CHORRERA",
+      "display_name": "La Chorrera",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "91407",
+      "department_code": "91",
+      "name": "LA PEDRERA",
+      "display_name": "La Pedrera",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "91430",
+      "department_code": "91",
+      "name": "LA VICTORIA",
+      "display_name": "La Victoria",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "91460",
+      "department_code": "91",
+      "name": "MIRITÍ - PARANÁ",
+      "display_name": "Mirití - Paraná",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "91530",
+      "department_code": "91",
+      "name": "PUERTO ALEGRÍA",
+      "display_name": "Puerto Alegría",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "91536",
+      "department_code": "91",
+      "name": "PUERTO ARICA",
+      "display_name": "Puerto Arica",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "91540",
+      "department_code": "91",
+      "name": "PUERTO NARIÑO",
+      "display_name": "Puerto Nariño",
+      "type": "municipality"
+    },
+    {
+      "code": "91669",
+      "department_code": "91",
+      "name": "PUERTO SANTANDER",
+      "display_name": "Puerto Santander",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "91798",
+      "department_code": "91",
+      "name": "TARAPACÁ",
+      "display_name": "Tarapacá",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "94001",
+      "department_code": "94",
+      "name": "INÍRIDA",
+      "display_name": "Inírida",
+      "type": "municipality"
+    },
+    {
+      "code": "94343",
+      "department_code": "94",
+      "name": "BARRANCOMINAS",
+      "display_name": "Barrancominas",
+      "type": "municipality"
+    },
+    {
+      "code": "94883",
+      "department_code": "94",
+      "name": "SAN FELIPE",
+      "display_name": "San Felipe",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "94884",
+      "department_code": "94",
+      "name": "PUERTO COLOMBIA",
+      "display_name": "Puerto Colombia",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "94885",
+      "department_code": "94",
+      "name": "LA GUADALUPE",
+      "display_name": "La Guadalupe",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "94886",
+      "department_code": "94",
+      "name": "CACAHUAL",
+      "display_name": "Cacahual",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "94887",
+      "department_code": "94",
+      "name": "PANA PANA",
+      "display_name": "Pana Pana",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "94888",
+      "department_code": "94",
+      "name": "MORICHAL",
+      "display_name": "Morichal",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "95001",
+      "department_code": "95",
+      "name": "SAN JOSÉ DEL GUAVIARE",
+      "display_name": "San José del Guaviare",
+      "type": "municipality"
+    },
+    {
+      "code": "95015",
+      "department_code": "95",
+      "name": "CALAMAR",
+      "display_name": "Calamar",
+      "type": "municipality"
+    },
+    {
+      "code": "95025",
+      "department_code": "95",
+      "name": "EL RETORNO",
+      "display_name": "El Retorno",
+      "type": "municipality"
+    },
+    {
+      "code": "95200",
+      "department_code": "95",
+      "name": "MIRAFLORES",
+      "display_name": "Miraflores",
+      "type": "municipality"
+    },
+    {
+      "code": "97001",
+      "department_code": "97",
+      "name": "MITÚ",
+      "display_name": "Mitú",
+      "type": "municipality"
+    },
+    {
+      "code": "97161",
+      "department_code": "97",
+      "name": "CARURÚ",
+      "display_name": "Carurú",
+      "type": "municipality"
+    },
+    {
+      "code": "97511",
+      "department_code": "97",
+      "name": "PACOA",
+      "display_name": "Pacoa",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "97666",
+      "department_code": "97",
+      "name": "TARAIRA",
+      "display_name": "Taraira",
+      "type": "municipality"
+    },
+    {
+      "code": "97777",
+      "department_code": "97",
+      "name": "PAPUNAHUA",
+      "display_name": "Papunahua",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "97889",
+      "department_code": "97",
+      "name": "YAVARATÉ",
+      "display_name": "Yavaraté",
+      "type": "non_municipalized_area"
+    },
+    {
+      "code": "99001",
+      "department_code": "99",
+      "name": "PUERTO CARREÑO",
+      "display_name": "Puerto Carreño",
+      "type": "municipality"
+    },
+    {
+      "code": "99524",
+      "department_code": "99",
+      "name": "LA PRIMAVERA",
+      "display_name": "La Primavera",
+      "type": "municipality"
+    },
+    {
+      "code": "99624",
+      "department_code": "99",
+      "name": "SANTA ROSALÍA",
+      "display_name": "Santa Rosalía",
+      "type": "municipality"
+    },
+    {
+      "code": "99773",
+      "department_code": "99",
+      "name": "CUMARIBO",
+      "display_name": "Cumaribo",
+      "type": "municipality"
+    }
+  ]
+}

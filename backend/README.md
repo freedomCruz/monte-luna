@@ -56,7 +56,62 @@ in a page share one snapshot. Missing/unpublished batch slugs are omitted, not
 misrepresented as sold-out variants; active products with no active variants have
 an empty variants array. No HTTP read allocates or mutates stock.
 
-## Generate catalog queries
+## Shipping quotes (in-process only)
+
+The `internal/shipping` root package exposes `QuotePort`, `QuoteInput`, `Quote`,
+`New`, and `LookupMunicipality`. Construct the module with a database URL, call
+`Quote(ctx, input)` from a consumer-side orders adapter, and close it on shutdown.
+There is no shipping HTTP endpoint. Amounts are `int64` COP minor units; weight is
+positive grams. Unknown DIVIPOLA codes return `*UnknownMunicipalityError`;
+no active zone or matching weight band returns `*UnsupportedDestinationError`.
+Both support `errors.As`, including through wrapped errors.
+
+An active municipality zone wins over an active department zone **before** weight
+resolution. Missing rates in a specific zone do not trigger department fallback.
+Bands include both endpoints, with null maximum meaning unbounded. A subtotal
+at or above the configured threshold produces amount zero and `FreeShipping=true`.
+Estimated days remain nullable, as in the canonical model.
+
+`LookupMunicipality` returns department/municipality display names for snapshots.
+The backend embeds `internal/shipping/domain/divipola.json`, byte-identical to
+`contracts/reference/divipola.json`. The test checks bytes and all 33 departments /
+1,122 municipalities. DANE attribution and CC BY-SA 4.0 license metadata are retained;
+see [reference attribution](../contracts/reference/README.md). Update both snapshots
+after running the repository's `task divipola:update`.
+
+### Shipping persistence and fictional demo data
+
+```sh
+# From backend/, with DATABASE_URL supplied by the environment:
+go run ./cmd/migrate -module shipping
+go run ./cmd/seed -module shipping
+```
+
+Without flags, both commands process all modules in dependency order: catalog,
+then shipping. This also applies to `task backend:migrate` / `task backend:seed`.
+`-module` accepts `all` (the default), `catalog`, or `shipping` as an optional filter;
+unknown modules fail before connecting. The shipping migration creates only zones, zone areas and
+rates, with its own `shipping.goose_db_version`. Fulfillment, orders and HTTP
+checkout are outside this work unit. Both commands retain catalog's logging,
+configuration, cancellation and help conventions. Use a development database only.
+Each module commits independently; if a later module fails, earlier completed
+modules are preserved and the command fails. Fix the cause and rerun safely.
+Direct commands above select only shipping; `-module catalog` selects only catalog.
+
+The seed inserts three explicitly fictional zones: Demo Bogotá (`11001`), Demo
+Medellín (`05001`), and Demo Antioquia (department `05`). Standard rates cover 0–1,000 g
+and heavy rates 1,001 g upward. Standard demo amounts are 800000, 1000000 and 1500000
+COP minor units respectively; heavy parcels add 500000. Every demo rate has a
+15000000 threshold. Demo estimates are 1–2, 2–3 and 3–5 days respectively.
+These are fixtures, not production pricing or coverage commitments.
+
+Seeding is transactional, repeatable, preserves existing rows/prices/status/timestamps,
+and does not reset merchant edits. Existing geographic mappings are not reassigned.
+Rate creation and the seed validate inclusive bands under a zone-row lock; area
+writes validate existing department/municipality codes and their association against
+DIVIPOLA before insertion. Raw SQL imports must not bypass those write boundaries.
+
+## Generate module queries
 
 ```sh
 go tool -modfile=tools.mod sqlc generate
@@ -65,12 +120,15 @@ go tool -modfile=tools.mod sqlc generate
 sqlc v1.31.1 is pinned in `tools.mod`. It reads the existing goose migrations plus
 a schema-only prelude (`internal/catalog/adapters/postgres/schema.sql`), because
 the runtime migration runner creates the schema before goose. Generated files live
-only under `internal/catalog/adapters/postgres/sqlc`; never edit them by hand.
+under each module's `internal/<module>/adapters/postgres/sqlc`; never edit them by hand.
+The shipping entry uses the same goose/prelude pattern. Regenerate both modules and
+check for generated-file drift before committing.
 Root consumers import only `internal/catalog`; depguard rejects private-layer and
 generated-model imports outside their allowed surfaces. Migrate/seed command entry
-points use the same root facade, preserving their existing behavior.
+points use the same root facades, preserving catalog behavior while also running
+shipping by default.
 
-## Apply catalog migrations
+## Apply module migrations
 
 ```sh
 go run ./cmd/migrate
@@ -81,15 +139,15 @@ go run ./cmd/migrate
 - `DATABASE_URL` must be supplied by the environment. Commands do not load `.env`.
 - Missing configuration fails immediately with `DATABASE_URL is required` and exit code 1.
 - `go run ./cmd/migrate -h` prints help without connecting to a database.
-- SQL migrations are embedded from `internal/catalog/adapters/postgres/migrations/`.
-- The runner creates the `catalog` schema before goose creates `catalog.goose_db_version`.
+- SQL migrations are embedded from each module's `internal/<module>/adapters/postgres/migrations/`.
+- Each runner creates its module schema before goose creates `<module>.goose_db_version`.
 - Re-running migrate applies only pending versions; migrations contain no demo rows.
 - The command writes JSON `slog` records to stderr, leaves stdout empty, and exits 0 on success.
 - Work is cancelled on SIGINT/SIGTERM or after two minutes; connection strings are never logged.
 - Rollback is deliberately not a command-line operation. Integration tests exercise `postgres.Down`
   only on disposable databases, leaving the module schema and goose version history intact.
 
-## Load the demo catalog
+## Load demo data
 
 ```sh
 go run ./cmd/seed
@@ -102,9 +160,10 @@ The seed does not run automatically with migrations. `go run ./cmd/seed -h` prin
 help without connecting. Configuration, logging, cancellation, and exit codes follow
 migrate's conventions above.
 
-The seed validates product attributes and variant options in Go against stored
-attribute definitions, then inserts everything in one transaction. A failure rolls
-back metadata, products, and stock together. Natural-key conflicts preserve existing
+The catalog seed validates product attributes and variant options in Go against
+stored attribute definitions, then inserts its data in one transaction. A failure
+rolls back catalog metadata, products, and stock together. The shipping seed runs
+next in a separate transaction, using its own validation and rollback. Natural-key conflicts preserve existing
 records; repeat runs do not change prices, timestamps, sold stock, or the movement
 ledger. This is an initial fixture loader, not a catalog reset tool. Use a fresh,
 migrated development database to obtain the complete unmodified demo fixture.
@@ -142,7 +201,7 @@ files are added or uploaded, and the brand logo storage key is `NULL`.
 ## Verify persistence
 
 ```sh
-go test -count=1 ./internal/catalog/...
+go test -count=1 -cover ./internal/catalog/... ./internal/shipping/...
 ```
 
 Docker must be running. Every integration test starts its own PostgreSQL 18 container,
@@ -152,4 +211,8 @@ reference-price rejection, and nonnegative stock; seed tests assert complete fix
 coverage, identical persisted data on repeat runs (including after a sale), agreement
 between counters and receipts, and full rollback after a rejected variant. CLI tests
 exercise exit codes, stdout, JSON stderr, help, repeated migrate/seed runs, and the
-absence of demo rows after migration alone.
+absence of demo rows after migration alone. Shipping adapter tests exercise the same
+PostgreSQL 18 up/down/up cycle, schema constraints and geographic uniqueness, domain
+validation before persistence, inclusive rate boundaries, active-zone precedence,
+free-shipping threshold, unsupported destinations, seed preservation and rollback,
+and the in-process public facade. No worktree database or `.env` values are read.

@@ -20,3 +20,18 @@ sql:
             go_type:
               type: string
               pointer: true
+  - engine: postgresql
+    schema:
+      - internal/shipping/adapters/postgres/schema.sql
+      - internal/shipping/adapters/postgres/migrations
+    queries: internal/shipping/adapters/postgres/queries
+    gen:
+      go:
+        package: shippingsql
+        out: internal/shipping/adapters/postgres/sqlc
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        emit_pointers_for_null_types: true
+        overrides:
+          - db_type: uuid
+            go_type: string
