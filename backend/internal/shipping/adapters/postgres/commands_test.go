@@ -68,12 +68,31 @@ func assertLog(t *testing.T, code int, stdout, stderr, msg, errorText string) {
 		t.Fatalf("unexpected error=%v", record["error"])
 	}
 }
+func TestOrdersModuleFilter(t *testing.T) {
+	db, url := database(t)
+	migrate, seed := buildCommand(t, "migrate"), buildCommand(t, "seed")
+	code, out, errout := command(t, migrate, url, "-module", "orders")
+	assertLog(t, code, out, errout, "orders migrations applied", "")
+	for range 2 {
+		code, out, errout = command(t, seed, url, "-module", "orders")
+		assertLog(t, code, out, errout, "demo orders seeded", "")
+	}
+	if scalar[int](t, db, `SELECT count(*) FROM orders.orders`) != 0 || scalar[int](t, db, `SELECT count(*) FROM orders.outbox`) != 0 {
+		t.Fatal("orders seed wrote data")
+	}
+	for _, table := range []string{"catalog.goose_db_version", "shipping.goose_db_version"} {
+		if scalar[bool](t, db, `SELECT to_regclass($1) IS NOT NULL`, table) {
+			t.Fatalf("orders filter touched %s", table)
+		}
+	}
+}
+
 func TestShippingCommands(t *testing.T) {
 	db, url := database(t)
 	migrate, seed := buildCommand(t, "migrate"), buildCommand(t, "seed")
 	for _, tc := range []struct{ binary, name, success, failure, help string }{
-		{migrate, "migrate", "shipping migrations applied", "shipping migration failed", "Usage: migrate\nApply embedded migrations in order: catalog, shipping (no demo data).\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping (default all).\n"},
-		{seed, "seed", "demo shipping seeded", "demo shipping seed failed", "Usage: seed\nLoad idempotent demo data in order: catalog, shipping, into an already migrated development database.\nNever run against production. Existing rows, prices and stock are not reset.\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping (default all).\n"},
+		{migrate, "migrate", "shipping migrations applied", "shipping migration failed", "Usage: migrate\nApply embedded migrations in order: catalog, shipping, orders (no demo data).\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping|orders (default all).\n"},
+		{seed, "seed", "demo shipping seeded", "demo shipping seed failed", "Usage: seed\nLoad idempotent demo data in order: catalog, shipping, orders, into an already migrated development database.\nNever run against production. Existing rows, prices and stock are not reset.\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping|orders (default all).\n"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			code, out, errout := command(t, tc.binary, "", "-module", "shipping")
@@ -83,7 +102,7 @@ func TestShippingCommands(t *testing.T) {
 			if tc.name == "seed" {
 				failure = "demo unknown seed failed"
 			}
-			assertLog(t, code, out, errout, failure, "module must be all, catalog or shipping")
+			assertLog(t, code, out, errout, failure, "module must be all, catalog, shipping or orders")
 			code, out, errout = command(t, tc.binary, "", "-h")
 			if code != 0 || out != "" || errout != tc.help {
 				t.Fatalf("help exit/stdout/stderr = %d/%q/%q", code, out, errout)
@@ -102,7 +121,7 @@ func TestShippingCommands(t *testing.T) {
 	}
 	before := snapshot(t, db)
 	code, out, errout := command(t, seed, url, "-module", "unknown")
-	assertLog(t, code, out, errout, "demo unknown seed failed", "module must be all, catalog or shipping")
+	assertLog(t, code, out, errout, "demo unknown seed failed", "module must be all, catalog, shipping or orders")
 	if snapshot(t, db) != before {
 		t.Fatal("rejected module changed stored data")
 	}

@@ -35,3 +35,23 @@ sql:
         overrides:
           - db_type: uuid
             go_type: string
+  - engine: postgresql
+    schema:
+      - internal/orders/adapters/postgres/schema.sql
+      - internal/orders/adapters/postgres/migrations
+    queries: internal/orders/adapters/postgres/queries
+    gen:
+      go:
+        package: orderssql
+        out: internal/orders/adapters/postgres/sqlc
+        sql_package: pgx/v5
+        emit_empty_slices: true
+        emit_pointers_for_null_types: true
+        overrides:
+          - db_type: uuid
+            go_type: string
+          - db_type: uuid
+            nullable: true
+            go_type:
+              type: string
+              pointer: true

@@ -56,6 +56,57 @@ in a page share one snapshot. Missing/unpublished batch slugs are omitted, not
 misrepresented as sold-out variants; active products with no active variants have
 an empty variants array. No HTTP read allocates or mutates stock.
 
+## Read-only checkout quotes
+
+`POST /api/v1/orders/quote` implements `calculateOrderQuote` in the approved
+[orders contract](../contracts/openapi/orders.yaml). Send `items` (one unique
+UUIDv7 `variant_id` and integer quantity 1–99 per line, 1–50 lines) and a five-digit
+DIVIPOLA `municipality_code`. Unknown fields, including client-supplied prices,
+are rejected with 422. Duplicates are rejected at the repeated line's variant field.
+Malformed JSON returns 400. Every response, including errors, sends `no-store`.
+
+The orders application calls consumer-side ports in this order: catalog for live
+price, published/active state, weight, tax category and stock; shipping for coverage
+and business-day estimates; invoicing for taxes. Catalog's new root-facade
+`CheckoutVariants(ctx, ids)` reads all live values and ordered, human-readable
+variant labels in a read-only repeatable-read snapshot; missing IDs are omitted.
+Consumers never query catalog tables or import its private packages.
+
+Quotes return verified lines, shipping details, subtotal, shipping, tax and total.
+`unknown_municipality` / `unsupported_destination` identify `municipality_code`;
+`variant_unavailable` (422) identifies `items[n].variant_id`;
+`insufficient_stock` (409) identifies `items[n].quantity`. Validation failures
+identify the exact request path. Internal failures expose no provider or SQL details.
+The quote does not write orders, reserve stock, or publish events; order placement,
+tracking and stock allocation are B3 and are not registered as HTTP routes here.
+The quote is recomputed from current data every time, never cached as an authority.
+
+### Scenario A tax calculation
+
+`internal/invoicing` exposes `TaxCalculator`. Its explicit demo configuration is
+`internal/invoicing/demo-profile.json`: CO, natural person, VAT responsibility false,
+and unknown (`null`) tax regime (coordinator-approved; no ordinary/simple guess).
+Every valid catalog tax category resolves to excluded with zero VAT under this
+profile. The configured profile and each returned snapshot are isolated copies.
+Only invoicing computes tax; orders retains the result for later snapshots.
+
+This minimal implementation contains no statutory rates, UVT values, thresholds,
+fiscal documents or provider integration. VAT-responsible profiles fail closed
+because their pricing policy and dated data are not implemented or approved for
+B2. They must not silently receive Scenario A treatment. `New(profile)` accepts
+explicit profile configuration; `NewDemo()` is the approved demo-only default.
+
+### Orders schema
+
+`internal/orders/adapters/postgres/migrations/00001_orders.sql` creates the isolated
+`orders` schema tables: orders, order_lines, order_line_lot_allocations,
+order_shipping_addresses, order_status_history and outbox. `product_slug` and
+required shipping-day snapshots are included. There are no cross-schema foreign
+keys or joins. Orders' goose history lives in `orders.goose_db_version`; sqlc read
+queries stay in orders adapters. The outbox is prepared for B3 but never written
+or relayed in B2. The orders seed intentionally inserts nothing and only verifies
+that its schema exists; it never invents customer orders or events.
+
 ## Shipping quotes (in-process only)
 
 The `internal/shipping` root package exposes `QuotePort`, `QuoteInput`, `Quote`,
@@ -89,8 +140,8 @@ go run ./cmd/seed -module shipping
 ```
 
 Without flags, both commands process all modules in dependency order: catalog,
-then shipping. This also applies to `task backend:migrate` / `task backend:seed`.
-`-module` accepts `all` (the default), `catalog`, or `shipping` as an optional filter;
+then shipping, then orders. This also applies to `task backend:migrate` / `task backend:seed`.
+`-module` accepts `all` (the default), `catalog`, `shipping`, or `orders` as an optional filter;
 unknown modules fail before connecting. The shipping migration creates only zones, zone areas and
 rates, with its own `shipping.goose_db_version`. Fulfillment, orders and HTTP
 checkout are outside this work unit. Both commands retain catalog's logging,
@@ -136,7 +187,7 @@ check for generated-file drift before committing.
 Root consumers import only `internal/catalog`; depguard rejects private-layer and
 generated-model imports outside their allowed surfaces. Migrate/seed command entry
 points use the same root facades, preserving catalog behavior while also running
-shipping by default.
+shipping and orders by default.
 
 ## Apply module migrations
 
@@ -211,7 +262,7 @@ files are added or uploaded, and the brand logo storage key is `NULL`.
 ## Verify persistence
 
 ```sh
-go test -count=1 -cover ./internal/catalog/... ./internal/shipping/...
+go test -count=1 -cover ./internal/catalog/... ./internal/shipping/... ./internal/orders/... ./internal/invoicing/...
 ```
 
 Docker must be running. Every integration test starts its own PostgreSQL 18 container,

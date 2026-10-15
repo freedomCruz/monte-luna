@@ -14,6 +14,7 @@ import (
 	"github.com/freedomCruz/monte-luna/backend/internal/catalog/adapters"
 	"github.com/freedomCruz/monte-luna/backend/internal/catalog/adapters/postgres"
 	"github.com/freedomCruz/monte-luna/backend/internal/catalog/app"
+	"github.com/freedomCruz/monte-luna/backend/internal/catalog/domain"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
@@ -56,6 +57,14 @@ func New(ctx context.Context, databaseURL, mediaBaseURL string, logger *slog.Log
 	service := app.NewService(postgres.NewRepository(pool), media)
 	return &Module{pool: pool, http: adapters.NewHTTP(service, logger)}, nil
 }
+
+type CheckoutVariant = domain.CheckoutVariant
+
+// CheckoutVariants is the catalog's live, read-only in-process checkout port.
+func (m *Module) CheckoutVariants(ctx context.Context, ids []string) ([]CheckoutVariant, error) {
+	return postgres.NewRepository(m.pool).CheckoutVariants(ctx, ids)
+}
+
 func (m *Module) Close()                            { m.pool.Close() }
 func (m *Module) RegisterRoutes(mux *http.ServeMux) { m.http.RegisterRoutes(mux) }
 
