@@ -1,0 +1,234 @@
+---
+import type { components } from '../../generated/catalog';
+
+export type Product = components['schemas']['Product'];
+
+export interface Props {
+  product: Product;
+  cardId?: string;
+  categorySlug?: string;
+  className?: string;
+}
+
+const {
+  product,
+  cardId = `product-${product.slug}`,
+  categorySlug,
+  className = '',
+} = Astro.props;
+
+// Packaging images mapping based on product slug or product image
+const coverImage = product.images[0]?.url || '/images/photo-roasted-beans-pile.jpg';
+const coverAlt = product.images[0]?.alt_text || product.title;
+
+// Derive attributes
+const roastAttr = product.attributes.find((a) => a.key === 'roast_level');
+const cacaoAttr = product.attributes.find((a) => a.key === 'cacao_percentage');
+const tastingNotes = product.attributes.find((a) => a.key === 'tasting_notes')?.display_value;
+const weightAttr = product.attributes.find((a) => a.key === 'weight' || a.key === 'presentation')?.display_value;
+
+// Category detection
+const primaryCategorySlug = categorySlug || product.categories[0]?.slug;
+const isCoffee = product.product_type?.slug === 'coffee' || primaryCategorySlug === 'coffee';
+const isCacao = product.product_type?.slug === 'cacao' || primaryCategorySlug === 'cacao' || primaryCategorySlug === 'chocolate';
+
+// Eyebrow label formatting
+let eyebrowText = '';
+let eyebrowColorClass = 'text-brand-green';
+
+if (isCoffee) {
+  eyebrowColorClass = 'text-brand-green';
+  // If product has origin, we display Café · [Origin name] e.g. Café · Huila / Café · Finca El Mirador
+  if (product.origin?.name) {
+    eyebrowText = `Café · ${product.origin.name}`;
+  } else {
+    eyebrowText = 'Café';
+  }
+} else if (isCacao) {
+  eyebrowColorClass = 'text-brand-purple';
+  if (weightAttr) {
+    eyebrowText = `Cacao · ${weightAttr}`;
+  } else {
+    eyebrowText = 'Cacao';
+  }
+} else if (product.product_type?.name) {
+  eyebrowText = product.product_type.name;
+}
+
+// Indicator computations
+// 1. Coffee Roast indicator
+let roastPositionPercent = '50%';
+let roastLabel = 'Tostión media';
+
+if (roastAttr) {
+  const roastVal = (roastAttr.value || roastAttr.display_value || '').toString().toLowerCase();
+  if (roastVal.includes('light') || roastVal.includes('clara')) {
+    roastPositionPercent = '15%';
+    roastLabel = 'Tostión clara';
+  } else if (roastVal.includes('dark') || roastVal.includes('oscura')) {
+    roastPositionPercent = '85%';
+    roastLabel = 'Tostión oscura';
+  } else {
+    roastPositionPercent = '50%';
+    roastLabel = 'Tostión media';
+  }
+}
+
+// 2. Cacao Percentage indicator
+// Can have 1 or 2 dots (e.g. 65% single dot at 30%, or 75% + 100% two dots)
+interface CacaoDot {
+  percentPos: string;
+  value: number;
+}
+
+const cacaoDots: CacaoDot[] = [];
+let cacaoAriaLabel = '';
+
+if (cacaoAttr) {
+  const numVal = typeof cacaoAttr.value === 'number' ? cacaoAttr.value : parseInt(String(cacaoAttr.value), 10);
+  if (!isNaN(numVal)) {
+    // Map 50% -> 0%, 100% -> 100% linearly: pos = (val - 50) / 50 * 100
+    const clamped = Math.max(50, Math.min(100, numVal));
+    const pos = Math.round(((clamped - 50) / 50) * 100);
+    cacaoDots.push({ percentPos: `${pos}%`, value: numVal });
+    cacaoAriaLabel = `${numVal} % de cacao`;
+  }
+}
+---
+
+<article
+  id={cardId}
+  data-category={primaryCategorySlug}
+  data-product-type={product.product_type?.slug}
+  class={`relative flex flex-col items-center gap-2.5 sm:gap-3 mt-[120px] sm:mt-[130px] px-4 pb-4 sm:px-[18px] sm:pb-[18px] bg-card rounded-[20px] text-center border border-foreground/5 shadow-sm transition-all hover:shadow-md ${className}`}
+>
+  <!-- Protruding Packaging Image (no clipping box, canvas overflow: -120px mobile / -130px desktop) -->
+  <a
+    href={`/productos/${product.slug}`}
+    class="block focus-visible:outline-2 focus-visible:outline-foreground rounded-xl"
+    tabindex="-1"
+    aria-hidden="true"
+  >
+    <img
+      src={coverImage}
+      alt={coverAlt}
+      loading="lazy"
+      class="h-[300px] sm:h-[340px] w-auto max-w-none -mt-[120px] sm:-mt-[130px] drop-shadow-[0_18px_14px_rgba(27,21,16,0.24)] object-contain transition-transform duration-300 hover:scale-[1.02]"
+    />
+  </a>
+
+  <!-- Live Savings Pill Slot (Positioned top-right per canvas specs) -->
+  <div
+    data-live-savings-slot={product.slug}
+    class="absolute top-3 right-3 sm:top-3.5 sm:right-3.5 z-10 pointer-events-none"
+  ></div>
+
+  <!-- Eyebrow: Category or Origin -->
+  {eyebrowText && (
+    <span
+      class={`font-condensed text-base font-bold tracking-wider uppercase ${eyebrowColorClass}`}
+    >
+      {eyebrowText}
+    </span>
+  )}
+
+  <!-- Title: 26px Bold (Authoritative original design specs) -->
+  <h3 class="m-0 text-[26px] font-extrabold leading-[1.1] text-foreground tracking-tight">
+    <a
+      href={`/productos/${product.slug}`}
+      class="text-foreground hover:text-brand-purple transition-colors focus-visible:outline-2 focus-visible:outline-foreground rounded-sm"
+    >
+      {product.title}
+    </a>
+  </h3>
+
+  <!-- Description / Tasting notes -->
+  {tastingNotes ? (
+    <p class="m-0 text-[16px] sm:text-[17px] leading-[1.45] text-foreground/85 line-clamp-2">
+      {tastingNotes}
+    </p>
+  ) : product.description ? (
+    <p class="m-0 text-[16px] sm:text-[17px] leading-[1.45] text-foreground/85 line-clamp-2">
+      {product.description}
+    </p>
+  ) : null}
+
+  <!-- Data-driven indicator (Coffee Roast or Cacao percentage) -->
+  {isCoffee && roastAttr && (
+    <div
+      class="flex items-center gap-2.5 self-stretch mt-auto pt-2 text-sm font-semibold uppercase text-foreground"
+    >
+      <span>Clara</span>
+      <div
+        role="img"
+        aria-label={roastLabel}
+        class="relative flex-1 h-6"
+      >
+        <div class="absolute left-0 right-0 top-[11px] h-[2px] bg-foreground"></div>
+        <svg
+          width="24"
+          height="24"
+          viewBox="0 0 24 24"
+          class="absolute top-0 -ml-3 transition-all"
+          style={`left: ${roastPositionPercent};`}
+          aria-hidden="true"
+        >
+          <ellipse
+            cx="12"
+            cy="12"
+            rx="6.5"
+            ry="9.5"
+            transform="rotate(35 12 12)"
+            fill="#6B3E1E"
+          ></ellipse>
+          <path
+            d="M8 17C13 14 11 10 16 7"
+            stroke="#F3E6C4"
+            stroke-width="1.6"
+            fill="none"
+            stroke-linecap="round"
+          ></path>
+        </svg>
+      </div>
+      <span>Oscura</span>
+    </div>
+  )}
+
+  {isCacao && cacaoDots.length > 0 && (
+    <div
+      class="flex items-center gap-2.5 self-stretch mt-auto pt-2 text-sm font-semibold uppercase text-foreground"
+    >
+      <span>50 %</span>
+      <div
+        role="img"
+        aria-label={cacaoAriaLabel}
+        class="relative flex-1 h-6"
+      >
+        <div class="absolute left-0 right-0 top-[11px] h-[2px] bg-foreground"></div>
+        {cacaoDots.map((dot) => (
+          <span
+            class="absolute top-[3px] w-[18px] h-[18px] -ml-[9px] box-border rounded-full bg-brand-purple border-[3px] border-card outline-2 outline-brand-purple"
+            style={`left: ${dot.percentPos};`}
+            aria-hidden="true"
+          ></span>
+        ))}
+      </div>
+      <span>100 %</span>
+    </div>
+  )}
+
+  <!-- Primary Detail CTA Button with live price slot (No add-to-cart button per S4/G2) -->
+  <a
+    href={`/productos/${product.slug}`}
+    class="flex items-center justify-center gap-2 self-stretch min-h-[54px] px-3 rounded-xl bg-foreground text-primary-foreground text-base font-bold uppercase tracking-wide hover:bg-foreground/90 transition-colors focus-visible:outline-2 focus-visible:outline-foreground mt-2"
+  >
+    <span>Ver producto</span>
+    <span aria-hidden="true">·</span>
+    <div
+      data-live-price-slot={product.slug}
+      class="inline-flex items-center font-bold"
+    >
+      <span class="text-xs font-normal opacity-70 italic">Consultando precio...</span>
+    </div>
+  </a>
+</article>

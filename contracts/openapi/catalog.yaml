@@ -1,0 +1,719 @@
+openapi: 3.1.0
+info:
+  title: Monteluna catalog storefront API
+  version: 1.0.0
+  description: |
+    Read-only Catalog v1 contract, proposed for approval at gate G2.
+    Stable content is fetched at build time; current prices, availability, and
+    next-lot production dates are fetched in the browser, never pre-rendered
+    as authoritative values. Only published products and active variants,
+    origins, categories, and brands are exposed. Hidden single resources
+    return the same 404 as missing resources; hidden related resources are
+    omitted from arrays or represented as null in nullable relationships.
+    Coffee and cacao are merchant-defined product types, not fixed enums.
+    There are no administration, cart, checkout, or allocation operations.
+
+    Every collection uses the shared limit (default 24, maximum 100) and cursor
+    parameters and items/next_cursor envelope. Cursors are bound to the endpoint,
+    filters, and sort; reuse the same query when following next_cursor. Invalid
+    or mismatched cursors return 400. Pagination is not a snapshot across requests;
+    builds should run against unchanged catalog content. Repeated filter values
+    match ANY value within a filter and ALL supplied filters across filters.
+    Unrecognized query parameters and invalid filter/sort values return 422;
+    well-formed unknown filter slugs match no items. Clients must tolerate future
+    enum values. Descriptions and stories are plain text, not trusted HTML.
+
+    Stable reads send Cache-Control: public, max-age=60. All responses, including
+    errors, from product-availabilities send Cache-Control: no-store.
+    Availability is informational and neither reserves stock nor authorizes a
+    purchase. An out_of_stock variant must display an out-of-stock label and
+    cannot enable add-to-cart. Whether Catalog v1 hides add-to-cart entirely or
+    renders it disabled even for in-stock variants remains a UI approval decision.
+
+    Stable RFC 9457 problem codes (shared response schemas):
+    400 malformed_request, invalid_cursor;
+    404 product_not_found, origin_not_found;
+    422 validation_failed;
+    500 internal_error.
+    Validation errors use invalid_parameter or unknown_parameter in errors[].code.
+    Clients branch on these codes, never on human-readable messages.
+security: []
+tags:
+  - name: catalog
+    description: Anonymous storefront catalog reads.
+paths:
+  /api/v1/products:
+    get:
+      operationId: listCatalogProducts
+      tags: [catalog]
+      summary: Enumerate stable products for shop cards and static product routes
+      description: >-
+        Lists published products with stable detail content only. Filter categories
+        by exact active category slug (no implicit descendants) and product types
+        by their merchant-defined slug. Default and only sort is -created_at,
+        with slug ascending as a deterministic tie-breaker. Iterate every page to
+        enumerate static routes. No current price or stock is included.
+      parameters:
+        - $ref: ./common.yaml#/components/parameters/Limit
+        - $ref: ./common.yaml#/components/parameters/Cursor
+        - name: category
+          in: query
+          required: false
+          description: Active category slugs; repeat the parameter for multiple values.
+          style: form
+          explode: true
+          schema:
+            type: array
+            minItems: 1
+            uniqueItems: true
+            items:
+              $ref: ./common.yaml#/components/schemas/Slug
+        - name: product_type
+          in: query
+          required: false
+          description: Product type slugs; repeat the parameter for multiple values.
+          style: form
+          explode: true
+          schema:
+            type: array
+            minItems: 1
+            uniqueItems: true
+            items:
+              $ref: ./common.yaml#/components/schemas/Slug
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [-created_at]
+            default: -created_at
+      responses:
+        "200":
+          description: Stable published products, including products with no available stock.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/StableCacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPage'
+        "400":
+          $ref: ./common.yaml#/components/responses/BadRequest
+        "422":
+          $ref: ./common.yaml#/components/responses/ValidationFailed
+        "500":
+          $ref: ./common.yaml#/components/responses/InternalError
+
+  /api/v1/products/{slug}:
+    get:
+      operationId: getCatalogProduct
+      tags: [catalog]
+      summary: Read stable product detail by slug
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        "200":
+          description: Published product with active variants and stable content only.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/StableCacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Product'
+        "400":
+          $ref: ./common.yaml#/components/responses/BadRequest
+        "404":
+          $ref: ./common.yaml#/components/responses/NotFound
+        "422":
+          $ref: ./common.yaml#/components/responses/ValidationFailed
+        "500":
+          $ref: ./common.yaml#/components/responses/InternalError
+
+  /api/v1/categories:
+    get:
+      operationId: listCatalogCategories
+      tags: [catalog]
+      summary: Enumerate active categories for shop filters
+      description: >-
+        Flat category list with nullable parent_slug for reconstructing the tree.
+        An inactive parent is represented as null. Default and only sort is
+        position ascending, then slug ascending. Empty active categories remain
+        visible. Follow every cursor to retrieve the complete tree.
+      parameters:
+        - $ref: ./common.yaml#/components/parameters/Limit
+        - $ref: ./common.yaml#/components/parameters/Cursor
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [position]
+            default: position
+      responses:
+        "200":
+          description: Active categories.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/StableCacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryPage'
+        "400":
+          $ref: ./common.yaml#/components/responses/BadRequest
+        "422":
+          $ref: ./common.yaml#/components/responses/ValidationFailed
+        "500":
+          $ref: ./common.yaml#/components/responses/InternalError
+
+  /api/v1/origins:
+    get:
+      operationId: listCatalogOrigins
+      tags: [catalog]
+      summary: Enumerate active origins for static origin routes
+      description: >-
+        Lists origin facts only, including active origins with no published
+        products. Default and only sort is name ascending, then slug ascending.
+        Product attributes never appear here. This enumeration endpoint does not
+        require an origins-index storefront screen.
+      parameters:
+        - $ref: ./common.yaml#/components/parameters/Limit
+        - $ref: ./common.yaml#/components/parameters/Cursor
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [name]
+            default: name
+      responses:
+        "200":
+          description: Active origin facts.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/StableCacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OriginPage'
+        "400":
+          $ref: ./common.yaml#/components/responses/BadRequest
+        "422":
+          $ref: ./common.yaml#/components/responses/ValidationFailed
+        "500":
+          $ref: ./common.yaml#/components/responses/InternalError
+
+  /api/v1/origins/{slug}:
+    get:
+      operationId: getCatalogOrigin
+      tags: [catalog]
+      summary: Read origin facts by slug
+      description: >-
+        Origin facts only: no variety, process, tasting notes, cupping score,
+        or roast. Fetch the separate origins/{slug}/products collection to render
+        the published products referencing this origin.
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+      responses:
+        "200":
+          description: Active origin facts.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/StableCacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Origin'
+        "400":
+          $ref: ./common.yaml#/components/responses/BadRequest
+        "404":
+          $ref: ./common.yaml#/components/responses/NotFound
+        "422":
+          $ref: ./common.yaml#/components/responses/ValidationFailed
+        "500":
+          $ref: ./common.yaml#/components/responses/InternalError
+
+  /api/v1/origins/{slug}/products:
+    get:
+      operationId: listCatalogOriginProducts
+      tags: [catalog]
+      summary: Enumerate published products referencing an active origin
+      description: >-
+        Same stable product representation and -created_at sort (slug ascending
+        tie-breaker) as the shop listing. An active origin with no published
+        products returns an empty page; a missing or inactive origin returns 404.
+        Products with no origin cannot appear in this collection.
+      parameters:
+        - $ref: '#/components/parameters/Slug'
+        - $ref: ./common.yaml#/components/parameters/Limit
+        - $ref: ./common.yaml#/components/parameters/Cursor
+        - name: sort
+          in: query
+          required: false
+          schema:
+            type: string
+            enum: [-created_at]
+            default: -created_at
+      responses:
+        "200":
+          description: Published products referencing this active origin.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/StableCacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductPage'
+        "400":
+          $ref: ./common.yaml#/components/responses/BadRequest
+        "404":
+          $ref: ./common.yaml#/components/responses/NotFound
+        "422":
+          $ref: ./common.yaml#/components/responses/ValidationFailed
+        "500":
+          $ref: ./common.yaml#/components/responses/InternalError
+
+  /api/v1/product-availabilities:
+    get:
+      operationId: listCatalogProductAvailabilities
+      tags: [catalog]
+      summary: Batch-read live prices, availability, and next-lot production dates
+      description: |
+        Repeat product_slug to request 1 to 100 distinct product slugs, for example
+        ?product_slug=finca-el-mirador&product_slug=cacao-nibs&limit=100.
+        This avoids one request per listing card. A product detail island uses
+        the same endpoint with one slug; no separate per-product live read is needed.
+        Pagination counts products, not variants: each item's variants array
+        contains every active variant for that product. Items sort by slug ascending.
+        Use limit=100 for a listing of up to 100 products in one request, or follow
+        next_cursor with the identical product_slug set and limit. The shared default
+        is 24 products. Requests with more than 100 slugs must be split into batches.
+        Missing, draft, or archived products are omitted without revealing their
+        existence; no matches returns items: [] and next_cursor: null. A requested
+        slug absent from the complete result is unavailable content, not an
+        out-of-stock variant; clients must not enable purchase controls for it.
+        A published product with no active variants has variants: [].
+        Each page reads prices and stock in one consistent database snapshot;
+        subsequent pages may observe later changes. No stock counts, internal lot
+        identifiers, or allocation details are exposed. Every response, including
+        errors, sends Cache-Control: no-store.
+      parameters:
+        - $ref: ./common.yaml#/components/parameters/Limit
+        - $ref: ./common.yaml#/components/parameters/Cursor
+        - name: product_slug
+          in: query
+          required: true
+          description: Distinct product slugs, encoded as repeated query parameters.
+          style: form
+          explode: true
+          schema:
+            type: array
+            minItems: 1
+            maxItems: 100
+            uniqueItems: true
+            items:
+              $ref: ./common.yaml#/components/schemas/Slug
+      responses:
+        "200":
+          description: Current variant data for matching published products.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/LiveCacheControl'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ProductAvailabilityPage'
+        "400":
+          $ref: ./common.yaml#/components/responses/BadRequest
+        "422":
+          $ref: ./common.yaml#/components/responses/ValidationFailed
+        "500":
+          $ref: ./common.yaml#/components/responses/InternalError
+
+components:
+  parameters:
+    Slug:
+      name: slug
+      in: path
+      required: true
+      description: Public resource slug, never an internal identifier.
+      schema:
+        $ref: ./common.yaml#/components/schemas/Slug
+  headers:
+    StableCacheControl:
+      description: Short cache lifetime for stable build-time content.
+      required: true
+      schema:
+        type: string
+        const: public, max-age=60
+    LiveCacheControl:
+      description: Live variant data must not be stored by browser or intermediary caches.
+      required: true
+      schema:
+        type: string
+        const: no-store
+  schemas:
+    ProductPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Product'
+        next_cursor:
+          $ref: ./common.yaml#/components/schemas/NextCursor
+    CategoryPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Category'
+        next_cursor:
+          $ref: ./common.yaml#/components/schemas/NextCursor
+    OriginPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/Origin'
+        next_cursor:
+          $ref: ./common.yaml#/components/schemas/NextCursor
+    ProductAvailabilityPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductAvailability'
+        next_cursor:
+          $ref: ./common.yaml#/components/schemas/NextCursor
+    NamedResource:
+      type: object
+      additionalProperties: false
+      required: [slug, name]
+      properties:
+        slug:
+          $ref: ./common.yaml#/components/schemas/Slug
+        name:
+          type: string
+    Category:
+      type: object
+      additionalProperties: false
+      required: [slug, name, parent_slug, position]
+      properties:
+        slug:
+          $ref: ./common.yaml#/components/schemas/Slug
+        name:
+          type: string
+        parent_slug:
+          anyOf:
+            - $ref: ./common.yaml#/components/schemas/Slug
+            - type: 'null'
+        position:
+          type: integer
+    Image:
+      type: object
+      additionalProperties: false
+      description: Resolved public media URL, never a storage key; array order is display order.
+      required: [url, alt_text]
+      properties:
+        url:
+          type: string
+          format: uri
+        alt_text:
+          type: string
+    ProductImage:
+      type: object
+      additionalProperties: false
+      description: >-
+        Array order follows image position, then image id ascending. Images tied
+        to inactive variants are omitted. Null variant_id means a product-wide image.
+      required: [url, alt_text, variant_id]
+      properties:
+        url:
+          type: string
+          format: uri
+        alt_text:
+          type: string
+        variant_id:
+          anyOf:
+            - $ref: ./common.yaml#/components/schemas/Id
+            - type: 'null'
+    DisplayAttribute:
+      type: object
+      additionalProperties: false
+      description: |
+        Merchant-defined attribute with buyer-facing metadata, ordered by definition
+        position then key. Unknown values and units are explicit nulls. Value types
+        follow data_type: text/option string, integer integer, decimal number,
+        boolean boolean, multi_option string array. Option values are stable keys;
+        display_value is the resolved buyer-facing text (including multi-option
+        labels), without a unit suffix. Clients render label, display_value, and
+        unit rather than exposing machine keys. Null value implies null display_value.
+      required: [key, label, data_type, unit, value, display_value]
+      allOf:
+        - if:
+            properties:
+              data_type: {enum: [text, option]}
+          then:
+            properties:
+              value: {type: [string, 'null']}
+        - if:
+            properties:
+              data_type: {const: integer}
+          then:
+            properties:
+              value: {type: [integer, 'null']}
+        - if:
+            properties:
+              data_type: {const: decimal}
+          then:
+            properties:
+              value: {type: [number, 'null']}
+        - if:
+            properties:
+              data_type: {const: boolean}
+          then:
+            properties:
+              value: {type: [boolean, 'null']}
+        - if:
+            properties:
+              data_type: {const: multi_option}
+          then:
+            properties:
+              value:
+                type: [array, 'null']
+                items: {type: string}
+        - if:
+            properties:
+              value: {type: 'null'}
+          then:
+            properties:
+              display_value: {type: 'null'}
+          else:
+            properties:
+              display_value: {type: string}
+      properties:
+        key:
+          type: string
+          pattern: '^[a-z][a-z0-9_]*$'
+        label:
+          type: string
+        data_type:
+          type: string
+          enum: [text, integer, decimal, boolean, option, multi_option]
+        unit:
+          type: [string, 'null']
+        value:
+          anyOf:
+            - type: string
+            - type: integer
+            - type: number
+            - type: boolean
+            - type: array
+              items:
+                type: string
+            - type: 'null'
+        display_value:
+          type: [string, 'null']
+    Variant:
+      type: object
+      additionalProperties: false
+      description: >-
+        Stable active variant; ordered by variant position then id ascending.
+        No price, stock, or lot dates belong in this representation.
+      required: [id, sku, weight_grams, options]
+      properties:
+        id:
+          $ref: ./common.yaml#/components/schemas/Id
+        sku:
+          type: string
+        weight_grams:
+          type: integer
+          minimum: 1
+        options:
+          type: array
+          description: >-
+            Only variant-axis definitions (is_variant_option), with known non-null
+            values: presentation and grind for configured coffee products, and any
+            merchant-defined axes for other types. Roast level is never an option.
+            The presentation agrees with the typed weight_grams value.
+          items:
+            allOf:
+              - $ref: '#/components/schemas/DisplayAttribute'
+              - properties:
+                  value:
+                    not: {type: 'null'}
+    Product:
+      type: object
+      additionalProperties: false
+      required: [slug, title, description, created_at, product_type, brand, origin, categories, images, attributes, variants]
+      properties:
+        slug:
+          $ref: ./common.yaml#/components/schemas/Slug
+        title:
+          type: string
+        description:
+          type: [string, 'null']
+        created_at:
+          $ref: ./common.yaml#/components/schemas/Timestamp
+        product_type:
+          $ref: '#/components/schemas/NamedResource'
+        brand:
+          description: Active commercial brand summary, or null if absent or archived.
+          anyOf:
+            - $ref: '#/components/schemas/NamedResource'
+            - type: 'null'
+        origin:
+          description: >-
+            Active origin summary, or null if absent or archived. When null, render
+            no origin link. This field is always present; null expresses absence.
+          anyOf:
+            - $ref: '#/components/schemas/OriginSummary'
+            - type: 'null'
+        categories:
+          type: array
+          description: Active categories ordered by position then slug ascending.
+          items:
+            $ref: '#/components/schemas/Category'
+        images:
+          type: array
+          items:
+            $ref: '#/components/schemas/ProductImage'
+        attributes:
+          type: array
+          description: >-
+            Product-scope attributes only, including configured species, varieties,
+            process, tasting notes, cupping score and protocol, roast level, or cacao
+            percentage. They never become origin facts. Includes definitions with
+            unknown values as null. No coffee or cacao keys are hard-coded by the API.
+          items:
+            $ref: '#/components/schemas/DisplayAttribute'
+        variants:
+          type: array
+          items:
+            $ref: '#/components/schemas/Variant'
+    OriginSummary:
+      type: object
+      additionalProperties: false
+      required: [slug, name, producer_name]
+      properties:
+        slug:
+          $ref: ./common.yaml#/components/schemas/Slug
+        name:
+          type: string
+        producer_name:
+          type: string
+    Origin:
+      type: object
+      additionalProperties: false
+      description: >-
+        Origin facts only. No generic attributes bag is allowed. Product attributes
+        are available exclusively through the separate published-products collection.
+        The public slug is required for routing even though the canonical origin
+        table description currently omits its slug column; this requires coordinator
+        clarification before implementing the schema at gate G2.
+      required: [slug, name, producer_name, country_code, department, municipality_code, municipality_name, altitude_min_masl, altitude_max_masl, story, images]
+      properties:
+        slug:
+          $ref: ./common.yaml#/components/schemas/Slug
+        name:
+          type: string
+        producer_name:
+          type: string
+        country_code:
+          type: string
+          pattern: '^[A-Z]{2}$'
+        department:
+          type: [string, 'null']
+        municipality_code:
+          type: [string, 'null']
+          pattern: '^[0-9]{5}$'
+          description: Colombian DANE municipality code, preserving leading zeros.
+        municipality_name:
+          type: [string, 'null']
+        altitude_min_masl:
+          type: [integer, 'null']
+          minimum: 1
+        altitude_max_masl:
+          type: [integer, 'null']
+          minimum: 1
+          description: When both bounds are known, maximum is at least minimum.
+        story:
+          type: [string, 'null']
+        images:
+          type: array
+          description: Ordered by image position then image id ascending.
+          items:
+            $ref: '#/components/schemas/Image'
+    ProductAvailability:
+      type: object
+      additionalProperties: false
+      required: [product_slug, variants]
+      properties:
+        product_slug:
+          $ref: ./common.yaml#/components/schemas/Slug
+        variants:
+          type: array
+          description: All active variants, ordered by position then id ascending.
+          items:
+            $ref: '#/components/schemas/VariantAvailability'
+    VariantAvailability:
+      type: object
+      additionalProperties: false
+      description: >-
+        Fresh data matched to a stable variant by variant_id. Currency is the
+        configured store currency (COP), not repeated per amount. A non-null
+        compare_at_price_amount must be strictly greater than price_amount.
+        No internal inventory count or lot identifier is exposed.
+      required: [variant_id, price_amount, compare_at_price_amount, availability, production_date]
+      allOf:
+        - if:
+            properties:
+              availability: {const: out_of_stock}
+          then:
+            properties:
+              production_date: {type: 'null'}
+          else:
+            properties:
+              production_date:
+                $ref: ./common.yaml#/components/schemas/CalendarDate
+      properties:
+        variant_id:
+          $ref: ./common.yaml#/components/schemas/Id
+        price_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+          minimum: 1
+          examples: [3800000]
+        compare_at_price_amount:
+          anyOf:
+            - $ref: ./common.yaml#/components/schemas/MoneyAmount
+            - type: 'null'
+          examples: [4500000, null]
+        availability:
+          type: string
+          enum: [in_stock, out_of_stock]
+          description: >-
+            in_stock means summed available variant_lot_stock quantity in active
+            lots is positive; otherwise out_of_stock. Reserved stock has already
+            been deducted from the available counters. Out-of-stock variants stay
+            visible so the UI can label their option combinations as sold out.
+        production_date:
+          description: >-
+            Production date of the oldest active lot with positive available stock
+            for this variant, ordered by production_date then lot id ascending.
+            For coffee this is the roast date. Null exactly when out_of_stock.
+          anyOf:
+            - $ref: ./common.yaml#/components/schemas/CalendarDate
+            - type: 'null'

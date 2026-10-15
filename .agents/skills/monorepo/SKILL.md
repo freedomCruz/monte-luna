@@ -42,6 +42,7 @@ Do not use for Go application logic inside `backend/` (load `backend-go-modules`
   - Tools with a large dependency graph (`golangci-lint`) live in a separate `backend/tools.mod`: pin with `go get -modfile=tools.mod -tool <module>@vX.Y.Z`, run with `go tool -modfile=tools.mod <name>`.
 - Environment configuration:
   - Root `.env.example` committed with safe placeholders; real `.env` files are never committed.
+  - One shared `.env` is identical in every worktree (Orca copies it through `.worktreeinclude`). `WORKTREE_DB`, `API_ADDR`, `FRONTEND_PORT`, and `DATABASE_URL` are derived per worktree by `Taskfile.yml` from the worktree path and override `.env`; `task setup:preview` shows them.
   - Go backend reads strictly from environment, validates on startup, and fails fast.
   - Production VPS env file lives outside git with restrictive permissions and is loaded by Docker Compose.
   - Astro static builds expose only `PUBLIC_`-prefixed variables to client code. Secret management tooling is pending.

@@ -2,12 +2,13 @@
   "extends": "astro/tsconfigs/strict",
   "compilerOptions": {
     "baseUrl": ".",
+    "types": ["node", "vite/client"],
     "paths": {
       "@/*": ["src/*"]
     },
     "jsx": "react-jsx",
     "jsxImportSource": "react"
   },
-  "include": [".astro/types.d.ts", "**/*"],
-  "exclude": ["dist"]
+  "include": [".astro/types.d.ts", "src/**/*"],
+  "exclude": ["dist", "**/*.test.ts", "**/*.test.tsx", "e2e/**/*", "playwright.config.ts"]
 }

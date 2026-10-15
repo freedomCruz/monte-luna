@@ -6,9 +6,10 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "check": "astro check",
+    "check": "astro check && tsc --project e2e/tsconfig.json",
     "test": "vitest run",
-    "types:generate": "openapi-typescript ../contracts/openapi/platform.yaml -o src/generated/platform.ts"
+    "test:e2e": "playwright test",
+    "types:generate": "openapi-typescript ../contracts/openapi/platform.yaml -o src/generated/platform.ts && openapi-typescript ../contracts/openapi/catalog.yaml -o src/generated/catalog.ts"
   },
   "devEngines": {
     "packageManager": {
@@ -37,6 +38,8 @@
   },
   "devDependencies": {
     "@astrojs/check": "0.9.10",
+    "@axe-core/playwright": "4.13.0",
+    "@playwright/test": "1.64.0",
     "@testing-library/dom": "10.4.2",
     "@testing-library/react": "16.3.3",
     "@types/react": "19.3.0",

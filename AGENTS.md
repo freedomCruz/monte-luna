@@ -36,6 +36,15 @@ The exclusive sources of truth for physical hardware, known limits, and active s
 4. **Maintain the canonical source:** When the user approves a pending choice or alters an existing decision, update `docs/architecture/infrastructure.md` immediately to reflect the agreed state. Store authoritative decisions in the canonical document rather than duplicating them in memory or prompt instructions.
 5. **Do not duplicate specifications:** Do not duplicate hardware specifications across agent instructions, and do not invent unvalidated operational procedures. Reference `docs/architecture/infrastructure.md` directly.
 
+## Frontend Component Design and Review
+
+- Build cohesive components with a single responsibility and explicit props or slots. Reuse shared UI instead of copying markup across pages; do not split trivial markup without a meaningful responsibility.
+- Product cards must share one implementation across the storefront. Product-type differences (coffee roast indicator or cacao percentage) belong in explicit component composition, not duplicated page templates.
+- Before implementing or reviewing any storefront screen, read its original desktop and mobile HTML references under `docs/design/monteluna/canvas/`, their CSS, and the approved design tokens. A prose summary or screenshot alone is not enough. Follow the resolved reference precedence in `docs/design/monteluna/design-system.md`.
+- Replicate the approved composition, product-image overflow, indicators, typography, spacing, and CTA placement; do not independently redesign, omit elements, or substitute approximate layouts. Ask the user about conflicting references or unsupported data/behavior before deviating. Preserve explicitly approved scope exceptions, such as no add-to-cart in Catalog v1.
+- Visual acceptance requires comparison of rendered desktop and mobile views against the original references. Passing functional tests or accessibility scans is not proof of visual fidelity. Report missing design elements as failures.
+- Keep volatile prices and availability client-fetched, and never invent catalog attributes or hard-code amounts from design screenshots.
+
 ## 4. Project Skills
 
 Before working in an area, read every matching skill's `SKILL.md`. Skills define how to build and verify; the canonical documents above define what was decided. When a change touches several areas, load all matching skills.

@@ -17,7 +17,7 @@ Do not use alone for: repository layout, root files, or Taskfile tasks (`monorep
 
 - Read `docs/architecture/system-architecture.md` sections 3–6 before structural changes.
 - Layout: `go.mod` and `go.sum` reside in `backend/`, never at the repository root. `backend/cmd/server/main.go` wires dependencies; business code lives in `backend/internal/<module>/{domain,app,adapters}`; shared infrastructure only in `backend/internal/platform`.
-- Go developer tools: tools such as `goose` and `sqlc` are pinned via the `tool` directive in `backend/go.mod` and run with `go tool <name>` from `backend/`; never installed globally.
+- Go developer tools are never installed globally. `govulncheck` is pinned via the `tool` directive in `backend/go.mod` (`go tool govulncheck`); tools with a large dependency graph (`golangci-lint`, `sqlc`) live in `backend/tools.mod` (`go tool -modfile=tools.mod <name>`). `goose` is not a tool: it is a library used by `backend/cmd/migrate` to apply embedded SQL migrations.
 - Configuration: read strictly from environment variables, validated at application startup, and fails fast on missing or invalid settings. Do not embed dotenv libraries in Go code (Taskfile handles dotenv for local development).
 - `domain`: pure Go entities, invariants, and port interfaces. Never import `net/http`, `pgx`, sqlc output, `platform`, or another module.
 - `app`: use cases that depend only on `domain` types and ports.

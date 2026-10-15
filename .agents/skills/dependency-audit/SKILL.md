@@ -38,7 +38,7 @@ Do not install or update dependencies autonomously. Installing or updating depen
   - Run `npm audit signatures` post-install to verify provenance.
 - Pinning, Go:
   - `go get module@vX.Y.Z` with explicit version (never `@latest`).
-  - Go developer tools (`goose`, `sqlc`): pin in `backend/go.mod` using the `tool` directive (`go get -tool <module>/cmd/<tool>@vX.Y.Z`). Run via `go tool <name>` from `backend/`; never install globally; audit per standard criteria. Tools with a large dependency graph (`golangci-lint`) are pinned in a separate `backend/tools.mod` (`go get -modfile=tools.mod -tool ...`) and run with `go tool -modfile=tools.mod <name>`.
+  - Go developer tools (for example `govulncheck`): pin in `backend/go.mod` using the `tool` directive (`go get -tool <module>/cmd/<tool>@vX.Y.Z`). Run via `go tool <name>` from `backend/`; never install globally; audit per standard criteria. Tools with a large dependency graph (`golangci-lint`, `sqlc`) are pinned in a separate `backend/tools.mod` (`go get -modfile=tools.mod -tool ...`) and run with `go tool -modfile=tools.mod <name>`.
   - Commit `go.mod` and `go.sum`; verify with `go mod verify`.
   - Build with `-mod=readonly`.
   - Pin the Go version with the `toolchain` line per Go toolchain policy in `docs/architecture/system-architecture.md`.
@@ -56,8 +56,8 @@ Do not install or update dependencies autonomously. Installing or updating depen
 | Known vulnerabilities found | Reject or find patched version; cite advisory data |
 | Multiple viable alternatives | Compare options in a table (size, deps, health) |
 | Package requires install scripts | Blocked by npm 12 `allowScripts`; audit scripts, stop and ask user; if approved, record pinned approval with `npm approve-scripts <pkg>` in `package.json` |
-| Go developer tool needed (goose, sqlc) | Audit package; pin via `tool` directive in `backend/go.mod`; run with `go tool` |
-| Go tool with a large dependency graph (golangci-lint) | Audit package; pin via `tool` directive in `backend/tools.mod`; run with `go tool -modfile=tools.mod` |
+| Go developer tool needed (govulncheck) | Audit package; pin via `tool` directive in `backend/go.mod`; run with `go tool` |
+| Go tool with a large dependency graph (golangci-lint, sqlc) | Audit package; pin via `tool` directive in `backend/tools.mod`; run with `go tool -modfile=tools.mod` |
 | Node runtime or npm version change | Audit release age and status; pin in `.node-version` or `devEngines.packageManager` |
 | Task runner update | Audit release age (>7 days); install exact pinned version |
 | Native platform binaries needed (esbuild, sharp) | Include optional dependencies; do not use `--omit=optional` |

@@ -1,0 +1,2 @@
+# Untracked files Orca copies into every new worktree (shared local configuration).
+.env

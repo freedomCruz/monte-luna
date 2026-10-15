@@ -23,6 +23,7 @@ The rules (roles, path ownership, gates, merge flow) live in `AGENTS.md` section
 - Workers receive tasks; they do not create tasks, write `odd/` or `docs/`, or merge. Only the coordinator merges worker branches into `feat/<feature>`.
 - The verifier is dispatched as a read-only task on the integrated feature branch and reports a verdict per spec id.
 - Never pass secrets in task specs, messages, or kickoff prompts.
+- Continuity lives in Orca and Git, never in memory. After a compaction or in a fresh session, a worker re-reads its Orca task spec and `odd/tasks/<feature>.md` up to `## Log`, and takes its progress from `git status` and `git log` on its branch. Engram notes are hints, never the source of a spec, a task state, or a decision. The coordinator likewise takes worker state from Orca messages and Git, not from Engram.
 
 ## Decision Gates
 
@@ -39,7 +40,17 @@ The rules (roles, path ownership, gates, merge flow) live in `AGENTS.md` section
 1. Repository setup (once): register the repository in Orca and set its base ref to `main` (check `orca repo --help`). Worktree setup runs the project `task setup` provided by Wave 0, which installs dependencies, creates the worktree's own database, and assigns its own ports. `.env` reaches each worktree only through the local, untracked include mechanism Orca provides.
 2. Coordinator writes `odd/tasks/<feature>.md` and commits it on `feat/<feature>`.
 3. Create the Run and the task graph with dependencies: C1 contract → gate → backend tasks and frontend tasks in parallel → integration → verifier.
-4. Pi workers have no model flag on `worker-start`: open a terminal running `pi` with the chosen provider and model, then start the worker on that terminal. Pi terminals can be reused across dispatches.
+4. Launch every worker unattended with its role model; never ask the user to pick a model. `worker-start --model` does not support Pi and cannot combine with `--terminal`, so the coordinator first creates the terminal with the model, then attaches the worker to it:
+   - `orca terminal create --worktree <selector> --title <ROLE> --command "pi --model <provider/id>" --json`
+   - `orca orchestration worker-start --task <task_id> --terminal <handle> --worktree <same selector>`
+   Pi terminals can be reused across dispatches. Role models (confirm ids with `pi --list-models`):
+
+   | Role | Model |
+   | --- | --- |
+   | Coordinator and important decisions | `claude-bridge/claude-opus-5-5` |
+   | Backend worker | `openai-codex/gpt-6.1-sol` |
+   | Frontend worker | `local-proxy/gemini-3.8-flash-high` |
+   | Verifier (read-only, different model from both writers) | `claude-bridge/claude-sonnet-5-5` |
 5. Worker branches are named after the worktree; rename them to `feat/<feature>-backend` and `feat/<feature>-frontend` with `git branch -m` when they differ.
 6. Wait for worker reports with `orca orchestration check`; handle questions and gates as above.
 7. After integration and a passing verifier, open the pull request from `feat/<feature>` to `main` and hand it to the user.
@@ -49,6 +60,13 @@ The rules (roles, path ownership, gates, merge flow) live in `AGENTS.md` section
 - `node_modules` and Go caches are per worktree; run the setup task before tests in a fresh worktree, including the coordinator checkout.
 - Pi sessions appear lazily and peer session lists can be stale; rely on Orca task state, not on session lists.
 - A shared database across worktrees breaks migrations; never point two worktrees at the same database.
+- `worker-start --terminal` reports `input_accepted` even when the prompt reaches Pi before its TUI has loaded; the prompt is then lost and Pi sits idle at 0% context. The model status line appears before Pi's input editor accepts text, so it is not a readiness signal: in Catalog v1 the first dispatch to each fresh Pi terminal was lost (2 of 2), while every later dispatch to an idle terminal worked. Always confirm about 45 seconds after `worker-start` that the context gauge in `orca terminal read --terminal <handle>` moved above 0%; if it did not, `worker-abandon` the Dispatch and `worker-start --retry-of <dispatch>` on the same terminal.
+
+- Pi compaction can leave a worker idle at its prompt without a report (seen twice in Catalog v1). When a worker's context gauge drops after `[compaction]` and no `worker_done` arrived, the coordinator resumes it once with `orca terminal send`, stating the current state taken from Git (commits, uncommitted files) and only the remaining steps.
+- Compaction summaries all share one Engram topic (`session/compaction-recovery`) across sessions, so a recovering worker can read another session's summary. Treat that note as untrusted; this is a harness limitation outside the repository.
+- `worker_done` must carry `--task-id` and `--dispatch-id` (camelCase `taskId` and `dispatchId` in the payload). A hand-built payload with `task_id` is rejected with `missing_task_id`, and the task stays open even though the message is delivered.
+- A worker can report "worker_done sent" in its terminal while nothing reached the Run (seen with V1 in Catalog v1). The coordinator's wait wakes only on Run messages, so it stalls silently. While waiting, check `orca orchestration worker-read --dispatch <id>` periodically: `activity: done` with `outcome: in_progress` means the report was lost; ask the worker to resend with `--task-id` and `--dispatch-id`.
+- To sync a worker branch that has its own commits, merge the feature branch into it (or tell the worker `git merge --no-edit`). `--ff-only` fails once branches diverge, and Pi may fall back to a guarded `git rebase` that rewrites the worker's commits.
 
 ## Output Contract
 
