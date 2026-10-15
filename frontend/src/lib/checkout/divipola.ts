@@ -1,7 +1,7 @@
 // Helper module for DIVIPOLA dataset loaded on the checkout page.
 // Dataset is derived from DANE (datos.gov.co) under CC BY-SA 4.0.
 
-import divipolaData from '../generated/divipola.json';
+import divipolaData from '../../generated/divipola.json';
 
 export interface DivipolaDepartment {
   code: string;

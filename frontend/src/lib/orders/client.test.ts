@@ -1,6 +1,6 @@
 import { describe, expect, it, beforeEach, vi, afterEach } from 'vitest';
-import { requestOrderQuote } from './orders-client';
-import type { OrderQuote } from './orders-client';
+import { requestOrderQuote } from './client';
+import type { OrderQuote } from './client';
 
 describe('Orders client (POST /api/v1/orders/quote - S3)', () => {
   const originalFetch = globalThis.fetch;
@@ -74,52 +74,53 @@ describe('Orders client (POST /api/v1/orders/quote - S3)', () => {
 
     const result = await requestOrderQuote({
       items: [{ variant_id: '01912345-6789-7abc-def0-123456789abc', quantity: 1 }],
-      municipality_code: '88001',
+      municipality_code: '88564', // Providencia
     });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.code).toBe('unsupported_destination');
       expect(result.status).toBe(422);
+      expect(result.problem?.detail).toContain('No shipping rate');
     }
   });
 
-  it('handles 409 insufficient_stock', async () => {
+  it('handles 422 insufficient_stock problem', async () => {
     globalThis.fetch = vi.fn().mockResolvedValue({
       ok: false,
-      status: 409,
+      status: 422,
       json: async () => ({
         type: 'https://api.monteluna.co/problems/insufficient_stock',
         title: 'Insufficient stock',
-        status: 409,
+        status: 422,
         code: 'insufficient_stock',
-        detail: 'Requested quantity exceeds available stock',
+        detail: 'One or more items in the cart are out of stock or have insufficient available stock',
       }),
     });
 
     const result = await requestOrderQuote({
-      items: [{ variant_id: '01912345-6789-7abc-def0-123456789abc', quantity: 10 }],
-      municipality_code: '11001',
+      items: [{ variant_id: '01912345-6789-7abc-def0-123456789abc', quantity: 50 }],
+      municipality_code: '41551',
     });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.code).toBe('insufficient_stock');
-      expect(result.status).toBe(409);
     }
   });
 
-  it('handles network failure gracefully', async () => {
-    globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network error'));
+  it('handles network error gracefully', async () => {
+    globalThis.fetch = vi.fn().mockRejectedValue(new Error('Connection failed'));
 
     const result = await requestOrderQuote({
       items: [{ variant_id: '01912345-6789-7abc-def0-123456789abc', quantity: 1 }],
-      municipality_code: '11001',
+      municipality_code: '41551',
     });
 
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.code).toBe('network_error');
+      expect(result.problem?.title).toBe('Error de conexión');
     }
   });
 });

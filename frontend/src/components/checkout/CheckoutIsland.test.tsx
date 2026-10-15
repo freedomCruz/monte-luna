@@ -95,13 +95,15 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
 
     render(<CheckoutIsland />);
 
-    expect(screen.getAllByText('Paso 2 de 3')[0]).toBeDefined();
+    expect(screen.getByText('Paso 2 de 3')).toBeDefined();
     expect(screen.getByText('¿A dónde lo enviamos?')).toBeDefined();
-    expect(screen.getByLabelText(/Correo/i)).toBeDefined();
-    expect(screen.getByLabelText(/Nombre completo/i)).toBeDefined();
+    expect(screen.getByText(/Tus datos de contacto/i)).toBeDefined();
+    expect(screen.getByText(/Dirección de entrega/i)).toBeDefined();
+    expect(screen.getByLabelText(/Correo electrónico/i)).toBeDefined();
+    expect(screen.getByLabelText(/Nombre y apellido completos/i)).toBeDefined();
     expect(screen.getByLabelText(/Departamento/i)).toBeDefined();
-    expect(screen.getByLabelText(/Municipio/i)).toBeDefined();
-    expect(screen.getByLabelText(/Dirección/i)).toBeDefined();
+    expect(screen.getByLabelText(/Municipio o ciudad/i)).toBeDefined();
+    expect(screen.getByLabelText(/Dirección principal/i)).toBeDefined();
     expect(screen.getByText(/CC BY-SA 4.0/i)).toBeDefined();
   });
 
@@ -125,7 +127,7 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
     fireEvent.click(submitBtn);
 
     await waitFor(() => {
-      expect(screen.getByRole('alert')).toBeDefined();
+      expect(screen.getAllByRole('alert').length).toBeGreaterThan(0);
       expect(screen.getByText(/Faltan datos requeridos para continuar/i)).toBeDefined();
       expect(screen.getByText('Escribe tu correo')).toBeDefined();
       expect(screen.getByText('Escribe tu nombre completo')).toBeDefined();
@@ -135,7 +137,7 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
   it('populates municipalities when department is selected and fetches quote', async () => {
     addItem(mockItem);
 
-    globalThis.fetch = vi.fn().mockImplementation((url: string, init?: RequestInit) => {
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
       if (typeof url === 'string' && url.includes('/api/v1/product-availabilities')) {
         return Promise.resolve({
           ok: true,
@@ -158,7 +160,7 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
     fireEvent.change(deptSelect, { target: { value: '41' } });
 
     // Municipality select should now have Huila municipalities (like Pitalito '41551')
-    const muniSelect = screen.getByLabelText(/Municipio/i) as HTMLSelectElement;
+    const muniSelect = screen.getByLabelText(/Municipio o ciudad/i) as HTMLSelectElement;
     expect(muniSelect.disabled).toBe(false);
 
     fireEvent.change(muniSelect, { target: { value: '41551' } });
@@ -199,7 +201,7 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
     // San Andrés code '88'
     fireEvent.change(deptSelect, { target: { value: '88' } });
 
-    const muniSelect = screen.getByLabelText(/Municipio/i);
+    const muniSelect = screen.getByLabelText(/Municipio o ciudad/i);
     // Providencia code '88564'
     fireEvent.change(muniSelect, { target: { value: '88564' } });
 
@@ -208,7 +210,7 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
     });
   });
 
-  it('transitions to Step 3 (Revisa y paga) on valid form submission', async () => {
+  it('transitions to Step 3 (Pago seguro) on valid form submission', async () => {
     addItem(mockItem);
 
     globalThis.fetch = vi.fn().mockImplementation((url: string) => {
@@ -230,10 +232,10 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
     render(<CheckoutIsland />);
 
     // Fill valid form
-    fireEvent.change(screen.getByLabelText(/Correo/i), {
+    fireEvent.change(screen.getByLabelText(/Correo electrónico/i), {
       target: { value: 'maria.gomez@correo.com' },
     });
-    fireEvent.change(screen.getByLabelText(/Nombre completo/i), {
+    fireEvent.change(screen.getByLabelText(/Nombre y apellido completos/i), {
       target: { value: 'María Gómez' },
     });
     fireEvent.change(screen.getByLabelText(/Celular de quien recibe/i), {
@@ -242,10 +244,10 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
     fireEvent.change(screen.getByLabelText(/Departamento/i), {
       target: { value: '41' },
     });
-    fireEvent.change(screen.getByLabelText(/Municipio/i), {
+    fireEvent.change(screen.getByLabelText(/Municipio o ciudad/i), {
       target: { value: '41551' },
     });
-    fireEvent.change(screen.getByLabelText(/Dirección/i), {
+    fireEvent.change(screen.getByLabelText(/Dirección principal/i), {
       target: { value: 'Calle 5 # 12-34' },
     });
 
@@ -272,7 +274,7 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
     });
   });
 
-  it('supports separate recipient info when "Lo recibo yo" is unchecked', async () => {
+  it('supports separate recipient info when radio is changed', async () => {
     addItem(mockItem);
 
     globalThis.fetch = vi.fn().mockImplementation((url: string) => {
@@ -287,9 +289,9 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
 
     render(<CheckoutIsland />);
 
-    // Toggle off "Lo recibo yo"
-    const recipientCheckbox = screen.getByRole('checkbox', { name: /Lo recibo yo/i });
-    fireEvent.click(recipientCheckbox);
+    // Select "Recibe otra persona"
+    const radioOther = screen.getByLabelText(/Recibe otra persona/i);
+    fireEvent.click(radioOther);
 
     // "Nombre de quien recibe" should now appear
     expect(screen.getByLabelText(/Nombre de quien recibe/i)).toBeDefined();
@@ -312,20 +314,21 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
     render(<CheckoutIsland />);
 
     // Check invoice checkbox
-    const invoiceCheckbox = screen.getByRole('checkbox', {
-      name: /Necesito factura electrónica con datos fiscales/i,
-    });
+    const invoiceCheckbox = screen.getByLabelText(
+      /Necesito factura electrónica a nombre de empresa o documento específico/i
+    );
     fireEvent.click(invoiceCheckbox);
 
     // Document type and number should now appear
     expect(screen.getByLabelText(/Tipo de documento/i)).toBeDefined();
     expect(screen.getByLabelText(/Número de documento/i)).toBeDefined();
 
-    // Switch to Empresa
-    const empresaBtn = screen.getByRole('button', { name: /Empresa/i });
-    fireEvent.click(empresaBtn);
+    // Switch to Empresa (Persona jurídica)
+    const personaJuridicaRadio = screen.getByLabelText(/Persona jurídica \(empresa\)/i);
+    fireEvent.click(personaJuridicaRadio);
 
-    expect(screen.getByLabelText(/NIT de la empresa/i)).toBeDefined();
+    expect(
+      screen.getByLabelText(/Número de NIT \(con dígito de verificación\)/i)
+    ).toBeDefined();
   });
 });
-

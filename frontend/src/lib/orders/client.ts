@@ -1,4 +1,4 @@
-import type { components } from '../generated/orders';
+import type { components } from '../../generated/orders';
 
 export type OrderQuoteRequest = components['schemas']['OrderQuoteRequest'];
 export type OrderQuote = components['schemas']['OrderQuote'];

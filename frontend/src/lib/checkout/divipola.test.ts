@@ -19,7 +19,7 @@ describe('DIVIPOLA trimmed dataset (S6)', () => {
   });
 
   it('verifies generated divipola.json matches canonical reference data', () => {
-    const refPath = path.resolve(__dirname, '../../../contracts/reference/divipola.json');
+    const refPath = path.resolve(__dirname, '../../../../contracts/reference/divipola.json');
     const canonical = JSON.parse(fs.readFileSync(refPath, 'utf-8'));
     const data = getDivipolaData();
 

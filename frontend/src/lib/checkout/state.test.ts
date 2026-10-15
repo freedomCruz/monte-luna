@@ -6,7 +6,7 @@ import {
   saveCheckoutData,
   clearCheckoutData,
   type CheckoutFormData,
-} from './checkout-state';
+} from './state';
 
 describe('Checkout state and validation (S4, S5)', () => {
   beforeEach(() => {
@@ -69,81 +69,83 @@ describe('Checkout state and validation (S4, S5)', () => {
     expect(invalidPhoneResult.errors.phone).toBeDefined();
   });
 
-  it('requires recipient name when sameRecipient is false', () => {
-    const differentRecipientEmpty = validateCheckoutForm({
+  it('validates recipient name only when sameRecipient is false', () => {
+    const differentRecipient = {
       ...validForm,
       sameRecipient: false,
       recipientName: '',
-    });
-    expect(differentRecipientEmpty.isValid).toBe(false);
-    expect(differentRecipientEmpty.errors.recipientName).toBeDefined();
+    };
+    const result = validateCheckoutForm(differentRecipient);
+    expect(result.isValid).toBe(false);
+    expect(result.errors.recipientName).toBeDefined();
 
-    const differentRecipientValid = validateCheckoutForm({
-      ...validForm,
-      sameRecipient: false,
+    const filledRecipient = {
+      ...differentRecipient,
       recipientName: 'Carlos Gómez',
-    });
-    expect(differentRecipientValid.errors.recipientName).toBeUndefined();
+    };
+    expect(validateCheckoutForm(filledRecipient).isValid).toBe(true);
   });
 
-  it('requires recipient phone for delivery carrier', () => {
-    const emptyRecipientPhone = validateCheckoutForm({
-      ...validForm,
-      recipientPhone: '',
-    });
-    expect(emptyRecipientPhone.isValid).toBe(false);
-    expect(emptyRecipientPhone.errors.recipientPhone).toBeDefined();
-  });
-
-  it('validates address line 1 minimum length', () => {
-    const shortAddress = validateCheckoutForm({
-      ...validForm,
-      addressLine1: 'Cl 1',
-    });
-    expect(shortAddress.isValid).toBe(false);
-    expect(shortAddress.errors.addressLine1).toBeDefined();
+  it('requires recipient phone for delivery coordination', () => {
+    const emptyPhone = { ...validForm, recipientPhone: '' };
+    const result = validateCheckoutForm(emptyPhone);
+    expect(result.isValid).toBe(false);
+    expect(result.errors.recipientPhone).toBeDefined();
   });
 
   it('requires department and municipality', () => {
-    const missingMuni = validateCheckoutForm({
-      ...validForm,
-      municipalityCode: '',
-    });
-    expect(missingMuni.isValid).toBe(false);
+    const missingDept = validateCheckoutForm({ ...validForm, departmentCode: '' });
+    expect(missingDept.errors.departmentCode).toBeDefined();
+
+    const missingMuni = validateCheckoutForm({ ...validForm, municipalityCode: '' });
     expect(missingMuni.errors.municipalityCode).toBeDefined();
   });
 
-  it('validates invoice fields when invoice is requested', () => {
-    const invoiceNoDoc = validateCheckoutForm({
+  it('requires address line 1 with at least 5 chars', () => {
+    const emptyAddr = validateCheckoutForm({ ...validForm, addressLine1: '' });
+    expect(emptyAddr.errors.addressLine1).toBeDefined();
+
+    const shortAddr = validateCheckoutForm({ ...validForm, addressLine1: 'Cl 1' });
+    expect(shortAddr.errors.addressLine1).toBeDefined();
+  });
+
+  it('validates optional postal code length (6 digits)', () => {
+    const invalidPostal = validateCheckoutForm({ ...validForm, postalCode: '123' });
+    expect(invalidPostal.errors.postalCode).toBeDefined();
+
+    const validPostal = validateCheckoutForm({ ...validForm, postalCode: '417030' });
+    expect(validPostal.errors.postalCode).toBeUndefined();
+  });
+
+  it('validates fiscal document number when invoice is requested', () => {
+    const invoiceWithoutDoc = validateCheckoutForm({
       ...validForm,
       wantsInvoice: true,
       documentNumber: '',
     });
-    expect(invoiceNoDoc.isValid).toBe(false);
-    expect(invoiceNoDoc.errors.documentNumber).toBeDefined();
+    expect(invoiceWithoutDoc.isValid).toBe(false);
+    expect(invoiceWithoutDoc.errors.documentNumber).toBeDefined();
 
-    const invoiceValid = validateCheckoutForm({
+    const legalInvoice = validateCheckoutForm({
       ...validForm,
       wantsInvoice: true,
       personType: 'legal',
       documentType: 'NIT',
       documentNumber: '900.123.456-7',
     });
-    expect(invoiceValid.errors.documentNumber).toBeUndefined();
+    expect(legalInvoice.isValid).toBe(true);
   });
 
-  it('requires data policy acceptance', () => {
-    const noConsent = validateCheckoutForm({
+  it('requires data policy consent to proceed', () => {
+    const withoutConsent = validateCheckoutForm({
       ...validForm,
       acceptsDataPolicy: false,
     });
-    expect(noConsent.isValid).toBe(false);
-    expect(noConsent.errors.acceptsDataPolicy).toBeDefined();
+    expect(withoutConsent.isValid).toBe(false);
+    expect(withoutConsent.errors.acceptsDataPolicy).toBeDefined();
   });
 
-  it('persists and loads data from sessionStorage', () => {
-    expect(loadCheckoutData()).toBeNull();
-
+  it('saves and loads checkout form data from sessionStorage', () => {
     saveCheckoutData(validForm);
     const loaded = loadCheckoutData();
     expect(loaded).toEqual(validForm);

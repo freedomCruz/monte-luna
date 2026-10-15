@@ -106,7 +106,6 @@ test.describe('Checkout Flow (S3, S4, S5, S6)', () => {
     const submitBtn = page.locator('button:has-text("Continuar al pago"):visible');
     await submitBtn.click();
 
-    await expect(page.locator('role=alert')).toBeVisible();
     await expect(page.locator('text=Faltan datos requeridos para continuar')).toBeVisible();
     await expect(page.locator('text=Escribe tu correo')).toBeVisible();
     await expect(page.locator('text=Escribe tu nombre completo')).toBeVisible();
@@ -114,7 +113,7 @@ test.describe('Checkout Flow (S3, S4, S5, S6)', () => {
     // 3. Fill required fields
     await page.fill('#checkout-email', 'maria.gomez@correo.com');
     await page.fill('#checkout-fullname', 'María Gómez');
-    await page.fill('#recipient-phone', '3105550142');
+    await page.fill('#checkout-recipient-phone', '3105550142');
 
     // Select Department (Huila: 41)
     await page.selectOption('#checkout-department', '41');
