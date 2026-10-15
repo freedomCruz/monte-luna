@@ -57,10 +57,10 @@ Contract: `contracts/openapi/orders.yaml` (no `shipping.yaml` in this wave, L2).
 | T1 | Feature document and Engram mirror (done) | S1–S6 | coordinator | — | `a1ccf00` |
 | C1 | `orders.yaml` contract → Gate G3 (done; approved L6) | S3, S4, S5 | coordinator draft (L1), backend owns later changes | T1 | `a1ccf00` |
 | D1 | DIVIPOLA snapshot script and data file with attribution (done) | S6 | coordinator | G3 | `91eb4d6` |
-| B1 | Shipping schema, migrations, seed, and quote port; embedded DIVIPOLA copy with equality test | S2, S6 | backend | G3, D1 | — |
+| B1 | Shipping schema, migrations, seed, and quote port; embedded DIVIPOLA copy with equality test (in progress) | S2, S6 | backend | G3, D1 | — |
 | B2 | Orders schema, migrations, quote endpoint, `TaxCalculator` port | S3 | backend | B1, D1 | — |
 | B3 | Order placement, catalog allocation and release, order number, tracking token, outbox, guest order endpoint | S4, S5 | backend | B2 | — |
-| F1 | Install approved Nano Stores packages (L8); cart store, slide-over panel, `/carrito`, header badge | S1 | frontend | G3 | — |
+| F1 | Install approved Nano Stores packages (L8); cart store, slide-over panel, `/carrito`, header badge (in progress) | S1 | frontend | G3 | — |
 | F2 | Enable "Agregar al carrito" in purchase island and `ProductCard` | S1 | frontend | F1 | — |
 | F3 | `/checkout` data step and payment shell | S5, S6 | frontend | F1, D1 | — |
 | F4 | Order placement integration and `/pedido` guest view | S4, S5 | frontend | F3 | — |
@@ -77,3 +77,4 @@ Contract: `contracts/openapi/orders.yaml` (no `shipping.yaml` in this wave, L2).
 - L6 (user, 2026-10-15): "Listo, apruebo contrato y también el script de Divi Pola." Gate G3 passed.
 - L7 (coordinator, D1): `scripts/divipola/` (pure `divipola.mjs`, network-only `update-divipola.mjs`, `node --test` suite: RED on missing module, then 3 passing); tasks `scripts:test` (added to `verify`) and `divipola:update`; generated `contracts/reference/divipola.json` (DANE rows updated 2025-01-24) with `README.md` attribution. Contract change limited to the `municipality_name` description and the `Bogotá, D. C.` examples (non-normative).
 - L8 (user, 2026-10-15): dependencies "nanostores + react + persistent (Recomendado)" — `nanostores@1.5.5`, `@nanostores/react@2.0.1`, `@nanostores/persistent@1.3.5`, exact versions, installed by the frontend worker in F1 (audit: MIT, 0 transitive dependencies, no install scripts, OSV clean, provenance attestations, older than 7 days). Orca run: "Sí, lanzar B1 y F1 (Recomendado)".
+- L9 (coordinator, 2026-10-15): Orca run `run_d798699b028e`. B1 `task_684a4d33ecf8` dispatch `ctx_a8e949d37aa4` (openai-codex/gpt-6.1-sol, worktree `cart-and-orders-backend`, branch `feat/cart-and-orders-backend`); F1 `task_ee4594ad6616` dispatch `ctx_d25a2a5b815d` (local-proxy/gemini-3.8-flash-high, worktree `cart-and-orders-frontend`, branch `feat/cart-and-orders-frontend`). Pi folder trust: "Confiar solo en esta sesión" (user). Remaining Orca tasks are created when their dependencies settle.
