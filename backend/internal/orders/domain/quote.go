@@ -90,6 +90,10 @@ type Shipping struct {
 	EstimatedDaysMin int32  `json:"estimated_days_min"`
 	EstimatedDaysMax int32  `json:"estimated_days_max"`
 }
+type QuoteShipping struct {
+	Shipping
+	RegularShippingAmount int64 `json:"regular_shipping_amount"`
+}
 type TaxLine struct {
 	Category   string
 	BaseAmount int64
@@ -125,7 +129,7 @@ type Line struct {
 }
 type Quote struct {
 	Lines          []Line        `json:"lines"`
-	Shipping       Shipping      `json:"shipping"`
+	Shipping       QuoteShipping `json:"shipping"`
 	SubtotalAmount int64         `json:"subtotal_amount"`
 	ShippingAmount int64         `json:"shipping_amount"`
 	TaxAmount      int64         `json:"tax_amount"`
@@ -136,7 +140,7 @@ type CatalogPort interface {
 	CheckoutVariants(context.Context, []string) ([]Variant, error)
 }
 type ShippingPort interface {
-	ShippingQuote(context.Context, string, int32, int64) (Shipping, error)
+	ShippingQuote(context.Context, string, int32, int64) (QuoteShipping, error)
 }
 type TaxCalculator interface {
 	CalculateTax(context.Context, []TaxLine, string) (TaxResult, error)

@@ -16,7 +16,7 @@ type dependencies struct {
 	variant  domain.Variant
 	missing  bool
 	fail     string
-	shipping domain.Shipping
+	shipping domain.QuoteShipping
 	weight   int32
 	subtotal int64
 }
@@ -31,11 +31,11 @@ func (d *dependencies) CheckoutVariants(_ context.Context, _ []string) ([]domain
 	}
 	return []domain.Variant{d.variant}, nil
 }
-func (d *dependencies) ShippingQuote(_ context.Context, code string, weight int32, subtotal int64) (domain.Shipping, error) {
+func (d *dependencies) ShippingQuote(_ context.Context, code string, weight int32, subtotal int64) (domain.QuoteShipping, error) {
 	d.calls = append(d.calls, "shipping")
 	d.weight, d.subtotal = weight, subtotal
 	if d.fail == "shipping" {
-		return domain.Shipping{}, domain.FieldProblem(422, "unsupported_destination", "municipality_code")
+		return domain.QuoteShipping{}, domain.FieldProblem(422, "unsupported_destination", "municipality_code")
 	}
 	return d.shipping, nil
 }
@@ -51,7 +51,7 @@ func (d *dependencies) CalculateTax(_ context.Context, lines []domain.TaxLine, _
 	return result, nil
 }
 func fixture() *dependencies {
-	return &dependencies{variant: domain.Variant{ID: id, ProductID: id, ProductSlug: "demo", ProductTitle: "Demo", VariantLabel: "250 g", SKU: "DEMO", PriceAmount: 3800000, Currency: "COP", ProductStatus: "published", Status: "active", WeightGrams: 250, TaxCategory: "excluded", AvailableStock: 5}, shipping: domain.Shipping{RateName: "Standard", Amount: 800000, EstimatedDaysMin: 3, EstimatedDaysMax: 5}}
+	return &dependencies{variant: domain.Variant{ID: id, ProductID: id, ProductSlug: "demo", ProductTitle: "Demo", VariantLabel: "250 g", SKU: "DEMO", PriceAmount: 3800000, Currency: "COP", ProductStatus: "published", Status: "active", WeightGrams: 250, TaxCategory: "excluded", AvailableStock: 5}, shipping: domain.QuoteShipping{Shipping: domain.Shipping{RateName: "Standard", Amount: 800000, EstimatedDaysMin: 3, EstimatedDaysMax: 5}, RegularShippingAmount: 800000}}
 }
 func TestQuoteComposesLivePorts(t *testing.T) {
 	d := fixture()
@@ -63,14 +63,15 @@ func TestQuoteComposesLivePorts(t *testing.T) {
 	if !reflect.DeepEqual(d.calls, []string{"catalog", "shipping", "tax"}) || d.weight != 500 || d.subtotal != 7600000 {
 		t.Fatalf("calls=%v weight=%d subtotal=%d", d.calls, d.weight, d.subtotal)
 	}
-	if got.SubtotalAmount != 7600000 || got.ShippingAmount != 800000 || got.TaxAmount != 0 || got.TotalAmount != 8400000 || got.Shipping.EstimatedDaysMin != 3 || got.Shipping.EstimatedDaysMax != 5 || len(got.Lines) != 1 || got.Lines[0].LineTotalAmount != 7600000 || got.Lines[0].ProductSlug != "demo" {
+	if got.SubtotalAmount != 7600000 || got.ShippingAmount != 800000 || got.TaxAmount != 0 || got.TotalAmount != 8400000 || got.Shipping.EstimatedDaysMin != 3 || got.Shipping.EstimatedDaysMax != 5 || got.Shipping.RegularShippingAmount != 800000 || len(got.Lines) != 1 || got.Lines[0].LineTotalAmount != 7600000 || got.Lines[0].ProductSlug != "demo" {
 		t.Fatalf("quote=%+v", got)
 	}
 	d.variant.PriceAmount = 3900000
 	d.shipping.Amount = 0
 	d.shipping.IsFreeShipping = true
+	d.shipping.RegularShippingAmount = 800000
 	second, err := service.Quote(t.Context(), domain.QuoteRequest{MunicipalityCode: "11001", Items: []domain.Item{{VariantID: id, Quantity: 2}}})
-	if err != nil || second.TotalAmount != 7800000 || !second.Shipping.IsFreeShipping {
+	if err != nil || second.TotalAmount != 7800000 || !second.Shipping.IsFreeShipping || second.Shipping.RegularShippingAmount != 800000 {
 		t.Fatalf("stale quote=%+v/%v", second, err)
 	}
 }
