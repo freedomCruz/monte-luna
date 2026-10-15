@@ -21,7 +21,7 @@ Contract: `contracts/openapi/orders.yaml` (no `shipping.yaml` in this wave, L2).
 - Schema `shipping` with `shipping_zones`, `shipping_zone_areas`, `shipping_rates` per `docs/domain/shipping.md`.
 - Quote resolution is an in-process port consumed by `internal/orders`; no public HTTP endpoint (L2).
 - Input: `municipality_code` (5-digit DIVIPOLA), `total_weight_grams`, `order_subtotal`. A municipality match wins over a department match (`left(municipality_code, 2)`); rate by weight band; cost `0` when the subtotal reaches the rate's free-shipping threshold.
-- Output: rate name, shipping amount, free-shipping flag, estimated delivery days min and max. No matching zone or rate means the destination is unsupported.
+- Output: rate name, shipping amount, free-shipping flag, estimated delivery business days min and max. Estimated days are always present on every rate (`min >= 1`, `max >= min`); demo rates use 3 to 5 business days until a carrier integration exists (L12). No matching zone or rate means the destination is unsupported.
 - Seed: demo zones and rates.
 
 ### S3: Checkout quote (`POST /api/v1/orders/quote`)
@@ -58,7 +58,8 @@ Contract: `contracts/openapi/orders.yaml` (no `shipping.yaml` in this wave, L2).
 | C1 | `orders.yaml` contract → Gate G3 (done; approved L6) | S3, S4, S5 | coordinator draft (L1), backend owns later changes | T1 | `a1ccf00` |
 | D1 | DIVIPOLA snapshot script and data file with attribution (done) | S6 | coordinator | G3 | `91eb4d6` |
 | B1 | Shipping schema, migrations, seed, and quote port; embedded DIVIPOLA copy with equality test (done) | S2, S6 | backend | G3, D1 | `778124a`, `4310496`; merged `5386207` |
-| B2 | Orders schema, migrations, quote endpoint, `TaxCalculator` port | S3 | backend | B1, D1 | — |
+| B1b | New shipping migration making estimated days NOT NULL (`min >= 1`, `max >= min`), domain validation, demo rates 3 to 5 business days (L12) | S2 | backend | B1 | — |
+| B2 | Orders schema, migrations, quote endpoint, `TaxCalculator` port | S3 | backend | B1b, D1 | — |
 | B3 | Order placement, catalog allocation and release, order number, tracking token, outbox, guest order endpoint | S4, S5 | backend | B2 | — |
 | F1 | Install approved Nano Stores packages (L8); cart store, slide-over panel, `/carrito`, header badge (in progress) | S1 | frontend | G3 | — |
 | F2 | Enable "Agregar al carrito" in purchase island and `ProductCard` | S1 | frontend | F1 | — |
@@ -80,3 +81,4 @@ Contract: `contracts/openapi/orders.yaml` (no `shipping.yaml` in this wave, L2).
 - L9 (coordinator, 2026-10-15): Orca run `run_d798699b028e`. B1 `task_684a4d33ecf8` dispatch `ctx_a8e949d37aa4` (openai-codex/gpt-6.1-sol, worktree `cart-and-orders-backend`, branch `feat/cart-and-orders-backend`); F1 `task_ee4594ad6616` dispatch `ctx_d25a2a5b815d` (local-proxy/gemini-3.8-flash-high, worktree `cart-and-orders-frontend`, branch `feat/cart-and-orders-frontend`). Pi folder trust: "Confiar solo en esta sesión" (user). Remaining Orca tasks are created when their dependencies settle.
 - L10 (coordinator, B1): worker_done succeeded (`778124a`, `4310496`, merged `5386207`). Evidence: `task backend:verify` exit 0 (build, tests incl. PostgreSQL 18 migrations up/down/up and CLI regressions, vet, lint 0 issues, govulncheck clean, no sqlc drift), RED to GREEN observed, coverage domain 92.9 %, app 91.7 %. First final run failed on a transient Testcontainers Docker-provider discovery error on Windows; one rerun authorized by the coordinator passed. Coordinator follow-up applied: `migrate` and `seed` without flags run catalog then shipping; `-module` is an optional filter. Minor: commit subjects omit the `(shipping)` scope.
 - L11 (coordinator finding): `docs/domain/shipping.md` defines `estimated_days_min/max` as nullable and `>= 0`, but the approved contract `ShippingSummary` requires integers `>= 1` and `docs/domain/orders.md` snapshots them `NOT NULL`. B1 correctly follows `shipping.md`. Contract change needed before B2 (gate G4).
+- L12 (user, gate G4, 2026-10-15): "los días de entrega normalamente es de 3 días nunca menor a eso" then "podemos usar entonces de 3 a 5 días. Lo que pasa es que tendríamos que definir de acuerdo a las entragas aquí en colombia de acuerdo a la ciudad y la transportadora eso. Pero como por  ahora no vamos a conectar ninguna api externa de trasporte puede se de 3 a 5 días hábiles". Resolution: estimated days required on every rate (`min >= 1`, `max >= min`), demo rates 3 to 5 business days; `docs/domain/shipping.md` updated; contract unchanged except examples (3, 5) and descriptions; task B1b added.

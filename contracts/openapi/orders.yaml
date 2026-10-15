@@ -250,11 +250,13 @@ components:
         estimated_days_min:
           type: integer
           minimum: 1
-          examples: [2]
+          description: Business days.
+          examples: [3]
         estimated_days_max:
           type: integer
           minimum: 1
-          examples: [4]
+          description: Business days; greater than or equal to estimated_days_min.
+          examples: [5]
 
     OrderQuote:
       type: object

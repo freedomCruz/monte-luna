@@ -111,12 +111,12 @@ Weight-based price tiers within a shipping zone.
 | `min_weight_grams` | `integer` | Not null, default `0`; `CHECK (min_weight_grams >= 0)` |
 | `max_weight_grams` | `integer` | Nullable; open-ended upper limit when null; `CHECK (max_weight_grams IS NULL OR max_weight_grams > min_weight_grams)` |
 | `free_shipping_threshold_amount` | `bigint` | Nullable; `CHECK (free_shipping_threshold_amount IS NULL OR free_shipping_threshold_amount > 0)` |
-| `estimated_days_min` | `integer` | Nullable; `CHECK (estimated_days_min IS NULL OR estimated_days_min >= 0)` |
-| `estimated_days_max` | `integer` | Nullable; `CHECK (estimated_days_max IS NULL OR estimated_days_max >= 0)` |
+| `estimated_days_min` | `integer` | Not null; business days; `CHECK (estimated_days_min >= 1)` |
+| `estimated_days_max` | `integer` | Not null; business days; `CHECK (estimated_days_max >= estimated_days_min)` |
 | `status` | `text` | Not null, default `'active'`; `CHECK (status IN ('active','archived'))` |
 
 Table constraints:
-- `CHECK (estimated_days_max IS NULL OR estimated_days_min IS NULL OR estimated_days_max >= estimated_days_min)`
+- Estimated delivery days are always present (approved 2026-10-15). Each rate defines its own values; they will depend on the city and carrier. Until a carrier integration exists, demo rates use 3 to 5 business days.
 
 Domain invariants:
 - Overlapping weight ranges for the same zone and active status are validated and rejected in the Go domain logic.
