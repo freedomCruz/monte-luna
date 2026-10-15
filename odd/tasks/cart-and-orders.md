@@ -59,7 +59,7 @@ Contract: `contracts/openapi/orders.yaml` (no `shipping.yaml` in this wave, L2).
 | D1 | DIVIPOLA snapshot script and data file with attribution (done) | S6 | coordinator | G3 | `91eb4d6` |
 | B1 | Shipping schema, migrations, seed, and quote port; embedded DIVIPOLA copy with equality test (done) | S2, S6 | backend | G3, D1 | `778124a`, `4310496`; merged `5386207` |
 | B1b | New shipping migration making estimated days NOT NULL (`min >= 1`, `max >= min`), domain validation, demo rates 3 to 5 business days (L12) (done) | S2 | backend | B1 | `05f655a`; merged a262de6 |
-| B2 | Orders schema, migrations, quote endpoint, `TaxCalculator` port | S3 | backend | B1b, D1 | — |
+| B2 | Orders schema, migrations, catalog read port, minimal `invoicing` TaxCalculator, quote endpoint (in progress) | S3 | backend | B1b, D1 | — |
 | B3 | Order placement, catalog allocation and release, order number, tracking token, outbox, guest order endpoint | S4, S5 | backend | B2 | — |
 | F1 | Install approved Nano Stores packages (L8); cart store, slide-over panel, `/carrito`, header badge (in progress) | S1 | frontend | G3 | — |
 | F2 | Enable "Agregar al carrito" in purchase island and `ProductCard` | S1 | frontend | F1 | — |
@@ -84,3 +84,4 @@ Contract: `contracts/openapi/orders.yaml` (no `shipping.yaml` in this wave, L2).
 - L12 (user, gate G4, 2026-10-15): "los días de entrega normalamente es de 3 días nunca menor a eso" then "podemos usar entonces de 3 a 5 días. Lo que pasa es que tendríamos que definir de acuerdo a las entragas aquí en colombia de acuerdo a la ciudad y la transportadora eso. Pero como por  ahora no vamos a conectar ninguna api externa de trasporte puede se de 3 a 5 días hábiles". Resolution: estimated days required on every rate (`min >= 1`, `max >= min`), demo rates 3 to 5 business days; `docs/domain/shipping.md` updated; contract unchanged except examples (3, 5) and descriptions; task B1b added.
 - L13 (coordinator): B1b Orca `task_a0fe870643a3` dispatch `ctx_18c6f1e468bc` on the backend terminal (worker branch synced to `ec309cb`).
 - L14 (coordinator, B1b): worker_done succeeded (`05f655a`, merged `a262de6`). Evidence: `task backend:verify` exit 0 (PostgreSQL 18 up/down/up, rejected rows leave data unchanged, lint 0 issues, govulncheck clean, no sqlc drift); RED to GREEN observed; coverage domain 92.9 %, app 91.7 %, adapter 76.1 %. Migration 00002 has no backfill: rates with null or zero estimates block it until corrected.
+- L15 (coordinator): B2 Orca `task_4b448d81c565` dispatch `ctx_4a28f03dc888` on the backend terminal (branch synced to `5813e0d`). Scope adds an exported catalog in-process read port and a minimal `internal/invoicing` module with the TaxCalculator port (Scenario A), because neither existed.
