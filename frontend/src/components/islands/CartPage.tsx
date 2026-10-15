@@ -13,6 +13,7 @@ import {
 } from '../../lib/cart-pricing';
 import type { VariantAvailability } from '../../lib/availabilities-client';
 import { formatMoneyCop, formatRoastDateSpanish } from '../../lib/formatters';
+import { PurchaseSteps } from '../ui/purchase-steps';
 
 export function CartPage() {
   const totalCount = useStore($totalItems);
@@ -81,32 +82,7 @@ export function CartPage() {
             </div>
           </div>
 
-          <ol
-            aria-label="Pasos de compra"
-            className="list-none m-0 p-0 flex-1 max-w-[520px] flex items-center gap-2 md:gap-3 text-sm md:text-[17px] font-bold"
-          >
-            <li aria-current="step" className="flex items-center gap-2 md:gap-2.5 text-foreground">
-              <span className="inline-flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full bg-foreground text-primary-foreground font-condensed text-lg md:text-[22px] font-extrabold">
-                1
-              </span>
-              <span>Carrito</span>
-            </li>
-            <li aria-hidden="true" className="flex-1 h-0.5 bg-foreground" />
-            <li className="flex items-center gap-2 md:gap-2.5 text-muted-foreground">
-              <span className="inline-flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-muted-foreground bg-card text-muted-foreground font-condensed text-lg md:text-[22px] font-extrabold">
-                2
-              </span>
-              <span className="hidden sm:inline">Datos y envío</span>
-              <span className="sm:hidden">Datos</span>
-            </li>
-            <li aria-hidden="true" className="flex-1 h-0.5 bg-muted-foreground/40" />
-            <li className="flex items-center gap-2 md:gap-2.5 text-muted-foreground">
-              <span className="inline-flex items-center justify-center w-8 h-8 md:w-10 md:h-10 rounded-full border-2 border-muted-foreground bg-card text-muted-foreground font-condensed text-lg md:text-[22px] font-extrabold">
-                3
-              </span>
-              <span>Pago</span>
-            </li>
-          </ol>
+          <PurchaseSteps currentStep={1} />
         </div>
       </div>
 
