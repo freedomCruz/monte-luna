@@ -64,7 +64,7 @@ Contract: `contracts/openapi/orders.yaml` (no `shipping.yaml` in this wave, L2).
 | B2 | Orders schema, migrations, catalog read port, minimal `invoicing` TaxCalculator, quote endpoint (done) | S3 | backend | B1b, D1 | `e495270`, `7a65578`, `b0bd5b8`, `f5a012f`; merged `41facbe` |
 | B3 | Order placement, catalog allocation and release, order number, HMAC tracking token, idempotency, outbox, guest order endpoint, reservation expiry (in progress) | S4, S5 | backend | B2 | — |
 | F1 | Install approved Nano Stores packages (L8); cart store, slide-over panel, `/carrito`, header badge (done; visual acceptance in V1) | S1 | frontend | G3 | `ac538fe`, `e676dce`; merged `b1d78f5` |
-| F2 | Enable "Agregar al carrito" in the purchase island; remove coupon copy (L22) (in progress) | S1 | frontend | F1 | — |
+| F2 | Enable "Agregar al carrito" in the purchase island; remove coupon copy (L22) (done; visual acceptance in V1) | S1 | frontend | F1 | `25d1540`; merged `0d8a1fc` |
 | F3 | `/checkout` data step and payment shell | S5, S6 | frontend | F1, D1 | — |
 | F4 | Order placement integration and `/pedido` guest view | S4, S5 | frontend | F3 | — |
 | I1 | Integrate branches, end-to-end checkout against the real API, `task verify` | all | coordinator | B3, F4 | — |
@@ -97,3 +97,4 @@ Contract: `contracts/openapi/orders.yaml` (no `shipping.yaml` in this wave, L2).
 - L23 (coordinator): F2 Orca `task_b7ad214ca143` dispatch `ctx_446901784bcf` on the frontend terminal (branch synced to `74fa622`).
 - L24 (coordinator answer to F2 question): the M-Listado, M-Listado-390 and M-Origen canvases have no add-to-cart on product cards, only the link to the detail page. Following AGENTS.md (replicate the approved composition, do not invent elements), cards keep that link and add-to-cart lives only in the product detail purchase island. S1 corrected; the original card wording was the coordinator's, not a user requirement.
 - L25 (coordinator answer to B3 question): the contract's `GuestOrder.shipping.is_free_shipping` had no stored snapshot (coordinator omission). Added `orders.shipping_is_free_shipping boolean NOT NULL DEFAULT false` to `docs/domain/orders.md` 3.1; B3 adds it in orders migration 00002.
+- L26 (coordinator, F2): worker_done succeeded (merged `0d8a1fc`). Worker evidence: `task frontend:verify` passed (0 audit vulnerabilities, no type drift, 0 check errors, 83/83 Vitest, 38/38 Playwright with axe desktop and 390 px, add-to-cart E2E). Coordinator review: frontend-only diff, coupon wording gone, ProductCard unchanged, prerender test still forbids prices and roast dates (only the obsolete no-add-to-cart assertion was removed). Visual fidelity pending V1.
