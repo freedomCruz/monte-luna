@@ -171,17 +171,18 @@ func TestQuoteResolutionThroughPublicPort(t *testing.T) {
 		name, code, rate string
 		weight           int32
 		subtotal, amount int64
+		regular          int64
 		free             bool
 		min, max         int32
 		unsupported      bool
 	}{
-		{"municipality wins", "05001", "Demo standard parcel", 1000, 0, 1000000, false, 3, 5, false},
-		{"department fallback", "05002", "Demo standard parcel", 1, 0, 1500000, false, 3, 5, false},
-		{"next band", "05002", "Demo heavy parcel", 1001, 0, 2000000, false, 3, 5, false},
-		{"unbounded band", "05001", "Demo heavy parcel", 2147483647, 0, 1500000, false, 3, 5, false},
-		{"threshold", "11001", "Demo standard parcel", 1000, 15000000, 0, true, 3, 5, false},
-		{"below threshold", "11001", "Demo standard parcel", 1000, 14999999, 800000, false, 3, 5, false},
-		{"unsupported destination", "76001", "", 1, 0, 0, false, 0, 0, true},
+		{"municipality wins", "05001", "Demo standard parcel", 1000, 0, 1000000, 1000000, false, 3, 5, false},
+		{"department fallback", "05002", "Demo standard parcel", 1, 0, 1500000, 1500000, false, 3, 5, false},
+		{"next band", "05002", "Demo heavy parcel", 1001, 0, 2000000, 2000000, false, 3, 5, false},
+		{"unbounded band", "05001", "Demo heavy parcel", 2147483647, 0, 1500000, 1500000, false, 3, 5, false},
+		{"threshold", "11001", "Demo standard parcel", 1000, 15000000, 0, 800000, true, 3, 5, false},
+		{"below threshold", "11001", "Demo standard parcel", 1000, 14999999, 800000, 800000, false, 3, 5, false},
+		{"unsupported destination", "76001", "", 1, 0, 0, 0, false, 0, 0, true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			before := snapshot(t, db)
@@ -191,7 +192,7 @@ func TestQuoteResolutionThroughPublicPort(t *testing.T) {
 				if !errors.As(err, &target) {
 					t.Fatalf("error = %v", err)
 				}
-			} else if err != nil || got.RateName != tc.rate || got.Amount != tc.amount || got.Currency != "COP" || got.FreeShipping != tc.free || got.EstimatedDaysMin != tc.min || got.EstimatedDaysMax != tc.max {
+			} else if err != nil || got.RateName != tc.rate || got.Amount != tc.amount || got.RegularAmount != tc.regular || got.Currency != "COP" || got.FreeShipping != tc.free || got.EstimatedDaysMin != tc.min || got.EstimatedDaysMax != tc.max {
 				t.Fatalf("quote = %+v, error = %v", got, err)
 			}
 			if snapshot(t, db) != before {

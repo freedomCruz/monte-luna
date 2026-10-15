@@ -48,7 +48,7 @@ func TestQuote(t *testing.T) {
 			got, err := service.Quote(t.Context(), domain.QuoteInput{MunicipalityCode: tc.code, TotalWeightGrams: tc.weight, OrderSubtotal: tc.subtotal})
 			switch tc.failure {
 			case "":
-				if err != nil || got.Amount != 100 || got.RateName != "Parcel" || got.EstimatedDaysMin != 3 || got.EstimatedDaysMax != 5 {
+				if err != nil || got.Amount != 100 || got.RegularAmount != 100 || got.RateName != "Parcel" || got.EstimatedDaysMin != 3 || got.EstimatedDaysMax != 5 {
 					t.Fatalf("%+v / %v", got, err)
 				}
 			case "unknown":

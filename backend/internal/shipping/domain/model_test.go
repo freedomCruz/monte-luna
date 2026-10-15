@@ -36,7 +36,7 @@ func TestRateQuote(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if got.RateName != "Standard" || got.Amount != tc.amount || got.FreeShipping != tc.free || got.Currency != "COP" || got.EstimatedDaysMin != 2 || got.EstimatedDaysMax != 4 {
+			if got.RateName != "Standard" || got.Amount != tc.amount || got.RegularAmount != 1200000 || got.FreeShipping != tc.free || got.Currency != "COP" || got.EstimatedDaysMin != 2 || got.EstimatedDaysMax != 4 {
 				t.Fatalf("quote = %+v", got)
 			}
 		})

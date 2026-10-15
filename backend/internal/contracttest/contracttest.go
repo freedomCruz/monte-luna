@@ -25,6 +25,11 @@ type Contract struct {
 	router routers.Router
 }
 
+// Doc returns the loaded raw OpenAPI specification document.
+func (c *Contract) Doc() *openapi3.T {
+	return c.doc
+}
+
 // contractsDir returns the absolute path of contracts/openapi.
 func contractsDir() string {
 	_, file, _, _ := runtime.Caller(0)
