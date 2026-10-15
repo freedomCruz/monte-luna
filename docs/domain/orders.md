@@ -256,6 +256,8 @@ Stores order-placement results so a retried `POST /api/v1/orders` with the same 
 
 Only successful placements (`201`) are stored; failed requests store nothing and may be retried with the same key. Expired rows are deleted by a periodic cleanup.
 
+The key is normalized to canonical lowercase UUID text before hashing, HMAC derivation, and locking. Because the tracking token is derived from the key, a key whose idempotency row has expired can never place a second order: its reuse returns `422 idempotency_key_reused` (detected through the retained `tracking_token_hash`). Clients generate a fresh UUID key for every new checkout attempt.
+
 ## 4. Open Items
 
 - **Retention policy for orders:** Commercial and fiscal records in Colombia require long-term preservation (e.g. Código de Comercio art. 60 — 10 years, Estatuto Tributario art. 632). Confirm exact archiving policy with merchant's accountant.
