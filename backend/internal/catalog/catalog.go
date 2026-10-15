@@ -59,6 +59,17 @@ func New(ctx context.Context, databaseURL, mediaBaseURL string, logger *slog.Log
 }
 
 type CheckoutVariant = domain.CheckoutVariant
+type StockRequest = domain.StockRequest
+type Allocation = domain.Allocation
+type InsufficientStockError = domain.InsufficientStockError
+type VariantUnavailableError = domain.VariantUnavailableError
+
+func (m *Module) Allocate(ctx context.Context, reference string, items []StockRequest) ([]Allocation, error) {
+	return postgres.NewRepository(m.pool).Allocate(ctx, reference, items)
+}
+func (m *Module) Release(ctx context.Context, reference string) error {
+	return postgres.NewRepository(m.pool).Release(ctx, reference)
+}
 
 // CheckoutVariants is the catalog's live, read-only in-process checkout port.
 func (m *Module) CheckoutVariants(ctx context.Context, ids []string) ([]CheckoutVariant, error) {
