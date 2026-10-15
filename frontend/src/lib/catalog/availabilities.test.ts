@@ -1,6 +1,6 @@
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
-import { fetchProductAvailabilities } from './availabilities-client';
-import type { ProductAvailabilityPage } from './catalog';
+import { fetchProductAvailabilities } from './availabilities';
+import type { ProductAvailabilityPage } from './availabilities';
 
 describe('fetchProductAvailabilities', () => {
   const originalFetch = globalThis.fetch;

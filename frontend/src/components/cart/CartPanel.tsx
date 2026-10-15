@@ -8,13 +8,15 @@ import {
   incrementItem,
   decrementItem,
   removeItem,
-} from '../../lib/cart-store';
+} from '../../lib/cart/store';
 import {
   fetchCartAvailabilities,
   computeCartTotals,
-} from '../../lib/cart-pricing';
-import type { VariantAvailability } from '../../lib/availabilities-client';
-import { formatMoneyCop, formatRoastDateSpanish } from '../../lib/formatters';
+} from '../../lib/cart/pricing';
+import type { VariantAvailability } from '../../lib/catalog/availabilities';
+import { formatRoastDateSpanish } from '../../lib/shared/formatters';
+import { OrderLineItem } from '../ui/order-line-item';
+import { QuantityStepper } from '../ui/quantity-stepper';
 
 export function CartPanel() {
   const isOpen = useStore($isCartOpen);
@@ -150,128 +152,41 @@ export function CartPanel() {
                 const availability = prices.get(item.variant_id);
                 const unitPrice = availability?.price_amount;
                 const compareAt = availability?.compare_at_price_amount;
-                const lineTotal = unitPrice ? unitPrice * item.quantity : null;
-                const lineCompareTotal = compareAt ? compareAt * item.quantity : null;
-
                 const isCoffee = item.product_type === 'coffee';
 
                 return (
-                  <article
+                  <OrderLineItem
                     key={item.variant_id}
-                    className="relative flex flex-col gap-2 pt-4 pb-4 pr-3 pl-28 md:pl-32 bg-card rounded-[20px] shadow-sm border border-foreground/5 mt-4"
-                  >
-                    {item.image_url && (
-                      <img
-                        src={item.image_url}
-                        alt={item.product_name}
-                        className="absolute left-1 md:left-2 -top-5 h-36 md:h-40 object-contain -rotate-6 drop-shadow-md pointer-events-none"
+                    id={item.variant_id}
+                    variant="panel"
+                    image={item.image_url}
+                    title={item.product_name}
+                    titleHref={`/productos/${item.product_slug}`}
+                    onTitleClick={closeCart}
+                    variantLabel={item.variant_label}
+                    quantity={item.quantity}
+                    amountMinor={unitPrice}
+                    compareAtAmountMinor={compareAt}
+                    productionDate={
+                      isCoffee && availability?.production_date
+                        ? formatRoastDateSpanish(availability.production_date)
+                        : null
+                    }
+                    originSlug={item.origin_slug}
+                    onOriginClick={closeCart}
+                    isCoffee={isCoffee}
+                    onRemove={() => removeItem(item.variant_id)}
+                    controlsSlot={
+                      <QuantityStepper
+                        size="sm"
+                        label={`Cantidad de ${item.product_name}`}
+                        quantity={item.quantity}
+                        min={1}
+                        onIncrement={() => incrementItem(item.variant_id)}
+                        onDecrement={() => decrementItem(item.variant_id, true)}
                       />
-                    )}
-
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="flex flex-col gap-0.5 min-w-0">
-                        <h3 className="m-0 text-lg md:text-[21px] font-extrabold leading-tight text-foreground truncate">
-                          <a
-                            href={`/productos/${item.product_slug}`}
-                            onClick={closeCart}
-                            className="hover:text-accent transition-colors no-underline text-foreground"
-                          >
-                            {item.product_name}
-                          </a>
-                        </h3>
-                        {item.variant_label && (
-                          <span className="text-sm md:text-[15px] font-medium text-muted-foreground">
-                            {item.variant_label}
-                          </span>
-                        )}
-                      </div>
-
-                      <button
-                        type="button"
-                        aria-label={`Quitar ${item.product_name} del carrito`}
-                        onClick={() => removeItem(item.variant_id)}
-                        className="flex-none inline-flex items-center justify-center w-10 h-10 -mr-1 -mt-1 rounded-xl bg-transparent text-muted-foreground hover:text-accent cursor-pointer transition-colors focus-visible:outline-3 focus-visible:outline-foreground"
-                      >
-                        <svg
-                          width="20"
-                          height="20"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          aria-hidden="true"
-                        >
-                          <path d="M4 7h16M9 7V4h6v3M6 7l1 13h10l1-13" />
-                        </svg>
-                      </button>
-                    </div>
-
-                    {/* Metadata tags: roast date or origin if coffee */}
-                    <div className="flex flex-wrap items-center gap-1.5 md:gap-2">
-                      {isCoffee && availability?.production_date && (
-                        <span className="px-2.5 py-1 rounded-lg bg-secondary text-foreground text-xs md:text-sm font-semibold">
-                          Tostado el {formatRoastDateSpanish(availability.production_date)}
-                        </span>
-                      )}
-                      {item.origin_slug && (
-                        <a
-                          href={`/origenes/${item.origin_slug}`}
-                          onClick={closeCart}
-                          className="text-xs md:text-sm font-bold uppercase underline decoration-2 underline-offset-4 text-foreground hover:text-accent"
-                        >
-                          Su origen →
-                        </a>
-                      )}
-                    </div>
-
-                    {/* Quantity controls and Line price */}
-                    <div className="flex items-center justify-between gap-3 pt-1">
-                      <div
-                        role="group"
-                        aria-label={`Cantidad de ${item.product_name}`}
-                        className="flex items-center h-10 md:h-11 border-2 border-foreground rounded-xl bg-card"
-                      >
-                        <button
-                          type="button"
-                          aria-label="Quitar una unidad"
-                          onClick={() => decrementItem(item.variant_id, true)}
-                          className="w-10 h-full border-0 rounded-l-lg bg-transparent text-foreground font-sans text-xl font-bold cursor-pointer hover:bg-secondary/40 transition-colors focus-visible:outline-2 focus-visible:outline-foreground"
-                        >
-                          −
-                        </button>
-                        <span
-                          aria-live="polite"
-                          className="min-w-6 text-center text-sm md:text-base font-extrabold text-foreground"
-                        >
-                          {item.quantity}
-                        </span>
-                        <button
-                          type="button"
-                          aria-label="Agregar una unidad"
-                          onClick={() => incrementItem(item.variant_id)}
-                          className="w-10 h-full border-0 rounded-r-lg bg-transparent text-foreground font-sans text-xl font-bold cursor-pointer hover:bg-secondary/40 transition-colors focus-visible:outline-2 focus-visible:outline-foreground"
-                        >
-                          +
-                        </button>
-                      </div>
-
-                      <div className="flex flex-col items-end gap-0.5">
-                        {lineCompareTotal && (
-                          <s
-                            aria-label="Precio anterior"
-                            className="text-xs md:text-sm font-medium text-muted-foreground"
-                          >
-                            {formatMoneyCop(lineCompareTotal)}
-                          </s>
-                        )}
-                        <span className="text-lg md:text-[22px] font-extrabold tracking-tight text-foreground leading-none">
-                          {lineTotal ? formatMoneyCop(lineTotal) : '...'}
-                        </span>
-                      </div>
-                    </div>
-                  </article>
+                    }
+                  />
                 );
               })}
             </div>

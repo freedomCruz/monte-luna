@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { getCatalogProducts, getCatalogProductBySlug, getCatalogOrigins, getCatalogOriginBySlug, getCatalogCategories } from './catalog';
-import { mockCatalogData, mockCoffeeProduct } from '../mocks/catalog';
+import { mockCatalogData, mockCoffeeProduct } from '../../mocks/catalog';
 
 describe('Catalog Data Source', () => {
   const getGlobalEnv = () =>

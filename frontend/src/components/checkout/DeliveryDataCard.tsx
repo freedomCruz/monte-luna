@@ -1,7 +1,7 @@
 import type { CheckoutFormData } from '../../lib/checkout/state';
 import type { OrderQuoteResponse } from '../../lib/orders/client';
 import type { DivipolaDepartment, DivipolaMunicipality } from '../../lib/checkout/divipola';
-import { formatMoneyCop } from '../../lib/formatters';
+import { formatMoneyCop } from '../../lib/shared/formatters';
 
 export interface DeliveryDataCardProps {
   formData: CheckoutFormData;

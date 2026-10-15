@@ -1,5 +1,5 @@
 import { useStore } from '@nanostores/react';
-import { $totalItems, openCart } from '../../lib/cart-store';
+import { $totalItems, openCart } from '../../lib/cart/store';
 
 export function HeaderCartButton() {
   const total = useStore($totalItems);

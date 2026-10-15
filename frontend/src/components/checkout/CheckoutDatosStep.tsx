@@ -1,6 +1,6 @@
 import type { FormEvent } from 'react';
-import type { CartItem } from '../../lib/cart-store';
-import type { VariantAvailability } from '../../lib/availabilities-client';
+import type { CartItem } from '../../lib/cart/store';
+import type { VariantAvailability } from '../../lib/catalog/availabilities';
 import type { OrderQuoteResponse } from '../../lib/orders/client';
 import type { DivipolaDepartment, DivipolaMunicipality } from '../../lib/checkout/divipola';
 import type { CheckoutFormData, CheckoutFormErrors } from '../../lib/checkout/state';

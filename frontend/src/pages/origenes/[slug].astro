@@ -1,9 +1,9 @@
 ---
 import Layout from '../../layouts/Layout.astro';
-import { getCatalogOrigins, getCatalogProductsByOrigin } from '../../lib/catalog';
-import type { Origin, Product } from '../../lib/catalog';
+import { getCatalogOrigins, getCatalogProductsByOrigin } from '../../lib/catalog/catalog';
+import type { Origin, Product } from '../../lib/catalog/catalog';
 import ProductCard from '../../components/catalog/ProductCard.astro';
-import { ListingPriceIsland } from '../../components/islands/ListingPriceIsland';
+import { ListingPriceIsland } from '../../components/catalog/ListingPriceIsland';
 
 export async function getStaticPaths() {
   const originsPage = await getCatalogOrigins();

@@ -1,11 +1,12 @@
 import { useEffect, useState, useMemo } from 'react';
-import type { Variant, VariantOption } from '../../lib/catalog';
+import type { Variant, VariantOption } from '../../lib/catalog/catalog';
 import {
   fetchProductAvailabilities,
   type VariantAvailability,
-} from '../../lib/availabilities-client';
-import { formatMoneyCop, formatRoastDateSpanish } from '../../lib/formatters';
-import { addItem, openCart } from '../../lib/cart-store';
+} from '../../lib/catalog/availabilities';
+import { formatMoneyCop, formatRoastDateSpanish } from '../../lib/shared/formatters';
+import { addItem, openCart } from '../../lib/cart/store';
+import { QuantityStepper } from '../ui/quantity-stepper';
 
 export interface ProductPurchaseIslandProps {
   productSlug: string;
@@ -337,36 +338,20 @@ export function ProductPurchaseIsland({
         <div className="flex flex-wrap items-center gap-3">
           <div className="flex items-center justify-between sm:justify-start gap-3 w-full sm:w-auto">
             <span className="sm:hidden font-bold text-foreground text-base">Cantidad</span>
-            <div
-              role="group"
-              aria-label="Cantidad"
-              className="flex items-center h-[54px] sm:h-[60px] border-2 border-foreground rounded-xl bg-card"
-            >
-              <button
-                type="button"
-                aria-label="Disminuir cantidad"
-                onClick={decrementQuantity}
-                disabled={quantity <= 1 || isCurrentOutOfStock}
-                className="w-12 h-full border-0 rounded-l-xl bg-transparent text-foreground text-xl sm:text-2xl font-bold cursor-pointer transition-colors hover:bg-foreground/5 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-foreground"
-              >
-                −
-              </button>
-              <span
-                aria-live="polite"
-                className="min-w-8 text-center text-lg sm:text-xl font-extrabold text-foreground font-sans"
-              >
-                {quantity}
-              </span>
-              <button
-                type="button"
-                aria-label="Aumentar cantidad"
-                onClick={incrementQuantity}
-                disabled={isCurrentOutOfStock}
-                className="w-12 h-full border-0 rounded-r-xl bg-transparent text-foreground text-xl sm:text-2xl font-bold cursor-pointer transition-colors hover:bg-foreground/5 disabled:opacity-40 disabled:cursor-not-allowed focus-visible:outline-2 focus-visible:outline-foreground"
-              >
-                +
-              </button>
-            </div>
+            <QuantityStepper
+              size="lg"
+              label="Cantidad"
+              decrementLabel="Disminuir cantidad"
+              incrementLabel="Aumentar cantidad"
+              quantity={quantity}
+              min={1}
+              onIncrement={incrementQuantity}
+              onDecrement={decrementQuantity}
+              disabled={isCurrentOutOfStock}
+              decrementButtonClassName="rounded-l-xl text-xl sm:text-2xl hover:bg-foreground/5"
+              incrementButtonClassName="rounded-r-xl text-xl sm:text-2xl hover:bg-foreground/5"
+              valueClassName="text-lg sm:text-xl font-sans"
+            />
           </div>
 
           {/* CTA button (responsive: inline on desktop sm:flex-1, fixed bar on mobile) */}

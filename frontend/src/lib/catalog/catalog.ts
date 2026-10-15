@@ -1,7 +1,7 @@
-import type { components } from '../generated/catalog';
+import type { components } from '../../generated/catalog';
 import {
   mockCatalogData,
-} from '../mocks/catalog';
+} from '../../mocks/catalog';
 
 export type Product = components['schemas']['Product'];
 export type Variant = Product['variants'][number];

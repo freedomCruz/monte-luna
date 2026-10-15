@@ -2,8 +2,8 @@ import { cleanup, render, screen, waitFor, fireEvent } from '@testing-library/re
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { ProductPurchaseIsland } from './ProductPurchaseIsland';
-import type { Variant } from '../../lib/catalog';
-import type { ProductAvailabilityPage } from '../../lib/availabilities-client';
+import type { Variant } from '../../lib/catalog/catalog';
+import type { ProductAvailabilityPage } from '../../lib/catalog/availabilities';
 
 describe('ProductPurchaseIsland', () => {
   const originalFetch = globalThis.fetch;
@@ -349,7 +349,7 @@ describe('ProductPurchaseIsland', () => {
     fireEvent.click(ctaBtn);
 
     // Verify cart store has the item and drawer is open
-    const { $cart, $isCartOpen } = await import('../../lib/cart-store');
+    const { $cart, $isCartOpen } = await import('../../lib/cart/store');
     expect($isCartOpen.get()).toBe(true);
 
     const items = Object.values($cart.get());

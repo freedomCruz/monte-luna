@@ -3,8 +3,8 @@ import {
   fetchProductAvailabilities,
   type ProductAvailability,
   type VariantAvailability,
-} from '../../lib/availabilities-client';
-import { formatMoneyCop } from '../../lib/formatters';
+} from '../../lib/catalog/availabilities';
+import { formatMoneyCop } from '../../lib/shared/formatters';
 
 export interface ListingPriceIslandProps {
   productSlugs: string[];
