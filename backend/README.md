@@ -78,8 +78,53 @@ Quotes return verified lines, shipping details, subtotal, shipping, tax and tota
 `insufficient_stock` (409) identifies `items[n].quantity`. Validation failures
 identify the exact request path. Internal failures expose no provider or SQL details.
 The quote does not write orders, reserve stock, or publish events; order placement,
-tracking and stock allocation are B3 and are not registered as HTTP routes here.
+tracking and stock allocation are described below.
 The quote is recomputed from current data every time, never cached as an authority.
+
+## Order placement and guest tracking
+
+`POST /api/v1/orders` implements `placeOrder` in the approved
+[orders contract](../contracts/openapi/orders.yaml). The endpoint requires an
+`Idempotency-Key` header (normalized to canonical lowercase UUID format) and a
+JSON body containing `items`, `customer`, `shipping_address`, `fiscal_data` (or null),
+and `accepts_data_policy: true`. Client-supplied amounts and unknown root or nested
+fields are strictly rejected with 422.
+
+Order placement performs the following atomic orchestration:
+1. Locks the idempotency key row within PostgreSQL. If a matching unexpired record exists,
+   the identical 201 response is replayed without re-allocating stock or inserting records.
+2. If the idempotency key was previously used with a different payload or after its 24-hour
+   expiry, the request is rejected with 422 `idempotency_key_reused`.
+3. Validates recipient municipality against DIVIPOLA via the shipping reference catalog.
+4. Atomically allocates stock from `catalog` using oldest active lot first (FIFO). If any
+   variant has insufficient stock or is unavailable, the whole cart allocation is rolled back
+   and rejected with 409 `insufficient_stock` or 422 `variant_unavailable`.
+5. Recomputes the authoritative quote snapshot (subtotal, shipping amount and business-day
+   estimates, taxes, and total).
+6. Derives an HMAC-SHA256 tracking token from `TRACKING_TOKEN_SECRET` and stores only its
+   SHA-256 hash in `orders.orders.tracking_token_hash`. The raw token is returned once in the
+   201 response payload and `Location` header (`/api/v1/orders/track?token=...`).
+7. Persists order header, lines, lot allocation snapshots, address, status history, outbox
+   event `orders.order_placed`, and the 24-hour idempotency result within a single transaction.
+   If persistence fails, catalog stock is automatically compensated via idempotent release.
+
+`GET /api/v1/orders/track?token=...` implements `trackGuestOrder`. The endpoint verifies
+the raw token format (43-character base64url string), hashes it with SHA-256, and queries
+the order snapshot. The response excludes sensitive buyer data (phone, document numbers,
+and fiscal profiles) and sends `Cache-Control: no-store`.
+
+### Background reservation expiry and maintenance
+
+Orders in `pending_payment` status expire after 30 minutes. A background worker periodically:
+- Finds expired reservations using `FOR UPDATE SKIP LOCKED`.
+- Transitions order status to `expired` and logs status history.
+- Idempotently releases reserved stock back to `catalog` active lot inventory.
+- Emits outbox event `orders.order_expired`.
+- Deletes idempotency key records older than 24 hours.
+
+Configuration parameters in `cmd/api`:
+- `TRACKING_TOKEN_SECRET`: Base64-encoded secret containing at least 32 bytes (required).
+- `ORDER_MAINTENANCE_INTERVAL`: Polling interval for expiry and cleanup (default: 1m).
 
 ### Scenario A tax calculation
 

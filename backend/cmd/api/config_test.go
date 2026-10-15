@@ -1,6 +1,10 @@
 package main
 
-import "testing"
+import (
+ "testing"
+ "encoding/base64"
+ "strings"
+)
 
 func TestAPIConfiguration(t *testing.T) {
 	for _, tc := range []struct{ name, addr, database, media, want string }{
@@ -15,6 +19,8 @@ func TestAPIConfiguration(t *testing.T) {
 			t.Setenv("API_ADDR", tc.addr)
 			t.Setenv("DATABASE_URL", tc.database)
 			t.Setenv("MEDIA_BASE_URL", tc.media)
+ t.Setenv("TRACKING_TOKEN_SECRET",base64.StdEncoding.EncodeToString([]byte(strings.Repeat("s",32))))
+ t.Setenv("ORDER_MAINTENANCE_INTERVAL","")
 			cfg, err := loadConfig()
 			if tc.want != "" {
 				if err == nil || err.Error() != tc.want {

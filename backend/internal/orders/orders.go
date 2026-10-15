@@ -12,9 +12,15 @@ import (
 	"github.com/freedomCruz/monte-luna/backend/internal/orders/adapters/postgres"
 	"github.com/freedomCruz/monte-luna/backend/internal/orders/app"
 	"github.com/freedomCruz/monte-luna/backend/internal/shipping"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Module struct{ http *adapters.HTTP }
+type Module struct {
+	http        *adapters.HTTP
+	pool        *pgxpool.Pool
+	maintenance *app.Maintenance
+	logger      *slog.Logger
+}
 type CatalogReader = adapters.CatalogReader
 
 func New(catalog CatalogReader, shipping shipping.QuotePort, tax invoicing.TaxCalculator, logger *slog.Logger) *Module {

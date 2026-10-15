@@ -12,7 +12,7 @@ import (
 )
 
 const getOrderByTrackingHash = `-- name: GetOrderByTrackingHash :one
-SELECT id, order_number, status, currency, subtotal_amount, discount_amount, shipping_amount, shipping_discount_amount, tax_amount, total_amount, coupon_code, shipping_rate_name, shipping_estimated_days_min, shipping_estimated_days_max, customer_email, customer_name, customer_phone, buyer_person_type, buyer_document_type, buyer_document_number, fiscal_profile_snapshot, tracking_token_hash, reservation_expires_at, placed_at, paid_at, cancelled_at, version, created_at, updated_at FROM orders.orders WHERE tracking_token_hash = $1
+SELECT id, order_number, status, currency, subtotal_amount, discount_amount, shipping_amount, shipping_discount_amount, tax_amount, total_amount, coupon_code, shipping_rate_name, shipping_estimated_days_min, shipping_estimated_days_max, customer_email, customer_name, customer_phone, buyer_person_type, buyer_document_type, buyer_document_number, fiscal_profile_snapshot, tracking_token_hash, reservation_expires_at, placed_at, paid_at, cancelled_at, version, created_at, updated_at, shipping_is_free_shipping FROM orders.orders WHERE tracking_token_hash = $1
 `
 
 func (q *Queries) GetOrderByTrackingHash(ctx context.Context, trackingTokenHash string) (OrdersOrder, error) {
@@ -48,6 +48,7 @@ func (q *Queries) GetOrderByTrackingHash(ctx context.Context, trackingTokenHash 
 		&i.Version,
 		&i.CreatedAt,
 		&i.UpdatedAt,
+		&i.ShippingIsFreeShipping,
 	)
 	return i, err
 }
