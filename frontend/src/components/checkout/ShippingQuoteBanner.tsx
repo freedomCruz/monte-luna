@@ -60,7 +60,7 @@ export function ShippingQuoteBanner({
             {quote.shipping.is_free_shipping ? (
               <>
                 <s aria-label="Costo normal" className="text-base text-primary-foreground/70">
-                  $9.500
+                  {formatMoneyCop(quote.shipping.regular_shipping_amount)}
                 </s>
                 <span className="text-3xl md:text-4xl font-extrabold tracking-tight">Gratis</span>
               </>
