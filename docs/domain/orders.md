@@ -134,6 +134,7 @@ orders ✎ ──< order_lines ──< order_line_lot_allocations
 | `shipping_rate_name` | `text` | Not null; snapshot of applied shipping rate name |
 | `shipping_estimated_days_min` | `integer` | Not null; snapshot of the rate's minimum delivery days; `CHECK (shipping_estimated_days_min >= 1)` |
 | `shipping_estimated_days_max` | `integer` | Not null; snapshot of the rate's maximum delivery days; `CHECK (shipping_estimated_days_max >= shipping_estimated_days_min)` |
+| `shipping_is_free_shipping` | `boolean` | Not null, default `false`; snapshot of whether the rate's free-shipping threshold was reached (distinguishes threshold-free shipping from a zero-price rate) |
 | `customer_email` | `text` | Not null; `CHECK (customer_email = lower(customer_email))` |
 | `customer_name` | `text` | Not null |
 | `customer_phone` | `text` | Nullable |
