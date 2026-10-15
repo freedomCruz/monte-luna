@@ -131,6 +131,8 @@ orders ✎ ──< order_lines ──< order_line_lot_allocations
 | `total_amount` | `bigint` | Not null; `CHECK (total_amount >= 0)` |
 | `coupon_code` | `text` | Nullable; snapshot of applied coupon code |
 | `shipping_rate_name` | `text` | Not null; snapshot of applied shipping rate name |
+| `shipping_estimated_days_min` | `integer` | Not null; snapshot of the rate's minimum delivery days; `CHECK (shipping_estimated_days_min >= 1)` |
+| `shipping_estimated_days_max` | `integer` | Not null; snapshot of the rate's maximum delivery days; `CHECK (shipping_estimated_days_max >= shipping_estimated_days_min)` |
 | `customer_email` | `text` | Not null; `CHECK (customer_email = lower(customer_email))` |
 | `customer_name` | `text` | Not null |
 | `customer_phone` | `text` | Nullable |
@@ -162,6 +164,7 @@ Immutable snapshot of purchased items. No `updated_at`.
 | `product_id` | `uuid` | Not null; plain catalog product identifier (no cross-schema FK) |
 | `variant_id` | `uuid` | Not null; plain catalog variant identifier (no cross-schema FK) |
 | `sku` | `text` | Not null; snapshot of SKU |
+| `product_slug` | `text` | Not null; snapshot of product slug, used by the guest order view to read image and origin from the catalog |
 | `product_title` | `text` | Not null; snapshot of product name |
 | `variant_label` | `text` | Not null; snapshot of variant options (e.g. "250 g / Whole Bean") |
 | `unit_price_amount` | `bigint` | Not null; `CHECK (unit_price_amount > 0)` |
