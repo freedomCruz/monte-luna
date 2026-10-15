@@ -1,3 +1,6 @@
+import type { CartItem } from '../cart/store';
+import type { PlaceOrderRequest } from '../orders/client';
+
 export interface CheckoutFormData {
   // Buyer
   email: string;
@@ -190,3 +193,91 @@ export function clearCheckoutData(): void {
     // ignore
   }
 }
+
+export const PLACED_ORDER_STORAGE_KEY = 'monteluna:placed-order';
+
+export interface StoredPlacedOrder {
+  order_id: string;
+  order_number: string;
+  status: string;
+  total_amount: number;
+  reservation_expires_at: string;
+  tracking_token: string;
+}
+
+export function loadPlacedOrder(): StoredPlacedOrder | null {
+  if (typeof window === 'undefined' || !window.sessionStorage) return null;
+  try {
+    const raw = window.sessionStorage.getItem(PLACED_ORDER_STORAGE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as StoredPlacedOrder;
+  } catch {
+    return null;
+  }
+}
+
+export function savePlacedOrder(order: StoredPlacedOrder): void {
+  if (typeof window === 'undefined' || !window.sessionStorage) return;
+  try {
+    window.sessionStorage.setItem(PLACED_ORDER_STORAGE_KEY, JSON.stringify(order));
+  } catch {
+    // ignore
+  }
+}
+
+export function clearPlacedOrder(): void {
+  if (typeof window === 'undefined' || !window.sessionStorage) return;
+  try {
+    window.sessionStorage.removeItem(PLACED_ORDER_STORAGE_KEY);
+  } catch {
+    // ignore
+  }
+}
+
+export function mapFormDataToPlaceOrderRequest(
+  formData: CheckoutFormData,
+  items: CartItem[]
+): PlaceOrderRequest {
+  const cleanPhone = (p: string) => {
+    const cleaned = cleanDigits(p);
+    return cleaned ? cleaned : null;
+  };
+
+  const recipientName = formData.sameRecipient
+    ? formData.fullName.trim()
+    : formData.recipientName.trim();
+  const recipientPhone = cleanDigits(formData.recipientPhone);
+
+  const fiscalData = formData.wantsInvoice
+    ? {
+        person_type: formData.personType,
+        document_type: formData.documentType,
+        document_number: formData.documentNumber.trim().replace(/[\s.]/g, ''),
+      }
+    : null;
+
+  return {
+    items: items.map((i) => ({
+      variant_id: i.variant_id,
+      quantity: i.quantity,
+    })),
+    customer: {
+      email: formData.email.trim().toLowerCase(),
+      full_name: formData.fullName.trim(),
+      phone: cleanPhone(formData.phone),
+    },
+    shipping_address: {
+      recipient_name: recipientName,
+      recipient_phone: recipientPhone,
+      municipality_code: formData.municipalityCode.trim(),
+      address_line1: formData.addressLine1.trim(),
+      address_line2: formData.addressLine2.trim() ? formData.addressLine2.trim() : null,
+      postal_code: cleanDigits(formData.postalCode) || null,
+      delivery_notes: formData.deliveryNotes.trim() ? formData.deliveryNotes.trim() : null,
+    },
+    fiscal_data: fiscalData,
+    accepts_data_policy: true,
+  };
+}
+
+

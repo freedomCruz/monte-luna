@@ -1,18 +1,38 @@
 export interface PaymentCtaBlockProps {
   totalDisplay: string;
+  orderNumber?: string;
+  trackingToken?: string;
   onBackToDatos: () => void;
 }
 
-export function PaymentCtaBlock({ totalDisplay, onBackToDatos }: PaymentCtaBlockProps) {
+export function PaymentCtaBlock({
+  totalDisplay,
+  orderNumber,
+  trackingToken,
+  onBackToDatos,
+}: PaymentCtaBlockProps) {
   return (
     <div className="flex flex-col gap-4">
       {/* Informative notice that online payment is coming soon (S5) */}
       <div
         role="status"
         aria-live="polite"
-        className="flex items-center justify-center p-3 rounded-xl bg-hero/20 border border-hero/40 text-sm font-semibold text-hero text-center"
+        className="flex flex-col items-center justify-center p-4 rounded-xl bg-hero/20 border border-hero/40 text-center gap-1.5"
       >
-        <span>El pago en línea estará disponible pronto.</span>
+        <span className="text-sm font-semibold text-hero">
+          El pago en línea estará disponible pronto.
+        </span>
+        {orderNumber && trackingToken && (
+          <span className="text-xs text-primary-foreground/90">
+            Tu pedido <strong className="font-mono text-hero">{orderNumber}</strong> ha sido apartado por 30 minutos.{' '}
+            <a
+              href={`/pedido?token=${encodeURIComponent(trackingToken)}`}
+              className="font-bold underline underline-offset-2 text-brand-yellow hover:opacity-80"
+            >
+              Ver estado del pedido →
+            </a>
+          </span>
+        )}
       </div>
 
       <button
@@ -37,6 +57,15 @@ export function PaymentCtaBlock({ totalDisplay, onBackToDatos }: PaymentCtaBlock
         </svg>
         Pagar {totalDisplay}
       </button>
+
+      {trackingToken && (
+        <a
+          href={`/pedido?token=${encodeURIComponent(trackingToken)}`}
+          className="self-center min-h-[44px] inline-flex items-center text-sm font-bold uppercase text-brand-yellow hover:underline underline-offset-4 cursor-pointer text-center"
+        >
+          Ir a seguimiento de pedido ({orderNumber}) →
+        </a>
+      )}
 
       <button
         type="button"

@@ -18,6 +18,8 @@ export interface CheckoutPaymentStepProps {
   items: CartItem[];
   availabilities: Map<string, VariantAvailability>;
   totalDisplay: string;
+  orderNumber?: string;
+  trackingToken?: string;
   onBackToDatos: () => void;
 }
 
@@ -31,6 +33,8 @@ export function CheckoutPaymentStep({
   items,
   availabilities,
   totalDisplay,
+  orderNumber,
+  trackingToken,
   onBackToDatos,
 }: CheckoutPaymentStepProps) {
   return (
@@ -117,7 +121,12 @@ export function CheckoutPaymentStep({
           />
 
           {/* Wompi Payment Information Section */}
-          <PaymentMethodsSection totalDisplay={totalDisplay} onBackToDatos={onBackToDatos} />
+          <PaymentMethodsSection
+            totalDisplay={totalDisplay}
+            orderNumber={orderNumber}
+            trackingToken={trackingToken}
+            onBackToDatos={onBackToDatos}
+          />
         </div>
 
         {/* Sticky Summary Aside */}

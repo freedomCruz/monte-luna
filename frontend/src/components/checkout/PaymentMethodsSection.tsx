@@ -3,11 +3,15 @@ import { PaymentCtaBlock } from './PaymentCtaBlock';
 
 export interface PaymentMethodsSectionProps {
   totalDisplay: string;
+  orderNumber?: string;
+  trackingToken?: string;
   onBackToDatos: () => void;
 }
 
 export function PaymentMethodsSection({
   totalDisplay,
+  orderNumber,
+  trackingToken,
   onBackToDatos,
 }: PaymentMethodsSectionProps) {
   return (
@@ -75,7 +79,12 @@ export function PaymentMethodsSection({
       </ol>
 
       {/* Disabled CTA block with notice */}
-      <PaymentCtaBlock totalDisplay={totalDisplay} onBackToDatos={onBackToDatos} />
+      <PaymentCtaBlock
+        totalDisplay={totalDisplay}
+        orderNumber={orderNumber}
+        trackingToken={trackingToken}
+        onBackToDatos={onBackToDatos}
+      />
     </section>
   );
 }
