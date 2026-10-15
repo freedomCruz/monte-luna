@@ -1,5 +1,7 @@
 ---
 import '../styles/global.css';
+import { HeaderCartButton } from '../components/islands/HeaderCartButton';
+import { CartPanel } from '../components/islands/CartPanel';
 
 interface Props {
   title: string;
@@ -54,19 +56,16 @@ const { title, description = 'Monteluna · Café de especialidad y cacao fino de
         </nav>
 
         <div class="flex items-center gap-4">
-          <span class="inline-flex items-center gap-2.5 min-h-[48px] px-5 rounded-xl bg-foreground text-primary-foreground text-sm font-bold uppercase">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M5 8h14l-1 12H6L5 8z"></path>
-              <path d="M9 8V6a3 3 0 0 1 6 0v2"></path>
-            </svg>
-            Carrito (0)
-          </span>
+          <HeaderCartButton client:load />
         </div>
       </div>
     </header>
 
     <!-- Page Content Slot -->
     <slot />
+
+    <!-- Slide-over Cart Panel Island -->
+    <CartPanel client:load />
 
     <!-- Footer -->
     <footer class="bg-foreground text-primary-foreground py-16 mt-24 border-t border-foreground">

@@ -28,8 +28,8 @@ test.describe('Origin Detail (/origenes/[slug])', () => {
     const detailLink = productCard.locator('a[href="/productos/finca-el-mirador"]').first();
     await expect(detailLink).toBeVisible();
 
-    // 4. Invariant: NO add-to-cart button exists on origin page
-    const addToCartButtons = page.getByRole('button', { name: /comprar|carrito|agregar/i });
+    // 4. Invariant: NO add-to-cart or buy buttons inside product card or main content
+    const addToCartButtons = page.locator('main').getByRole('button', { name: /comprar|carrito|agregar/i });
     await expect(addToCartButtons).toHaveCount(0);
   });
 

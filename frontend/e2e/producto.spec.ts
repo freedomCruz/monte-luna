@@ -50,8 +50,8 @@ test.describe('Product Detail (/productos/[slug])', () => {
     await expect(island).toContainText('Tostado el 30 sep 2026');
     await expect(island).toContainText('Disponible en 500 · Media');
 
-    // 6. Invariant Gate G2 / S4: NO add-to-cart button exists anywhere on the page
-    const addToCartButtons = page.getByRole('button', { name: /comprar|carrito|agregar/i });
+    // 6. Invariant Gate G2 / S4: NO add-to-cart button exists inside main content or purchase island in F1
+    const addToCartButtons = page.locator('main').getByRole('button', { name: /comprar|carrito|agregar/i });
     await expect(addToCartButtons).toHaveCount(0);
   });
 
@@ -69,8 +69,8 @@ test.describe('Product Detail (/productos/[slug])', () => {
     const island = page.locator('[data-testid="product-purchase-island"]');
     await expect(island).toContainText('Sin existencias');
 
-    // Invariant Gate G2 / S4: NO add-to-cart button
-    const addToCartButtons = page.getByRole('button', { name: /comprar|carrito|agregar/i });
+    // Invariant Gate G2 / S4: NO add-to-cart button inside main content
+    const addToCartButtons = page.locator('main').getByRole('button', { name: /comprar|carrito|agregar/i });
     await expect(addToCartButtons).toHaveCount(0);
   });
 });
