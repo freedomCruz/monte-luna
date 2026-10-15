@@ -28,6 +28,7 @@ type QuoteInput struct {
 type Quote struct {
 	RateName         string
 	Amount           int64
+	RegularAmount    int64
 	Currency         string
 	FreeShipping     bool
 	EstimatedDaysMin int32
@@ -79,7 +80,7 @@ func ResolveRate(rates []Rate, weight int32, subtotal int64) (Quote, error) {
 		if free {
 			amount = 0
 		}
-		return Quote{RateName: rate.Name, Amount: amount, Currency: rate.Currency, FreeShipping: free, EstimatedDaysMin: rate.EstimatedDaysMin, EstimatedDaysMax: rate.EstimatedDaysMax}, nil
+		return Quote{RateName: rate.Name, Amount: amount, RegularAmount: rate.PriceAmount, Currency: rate.Currency, FreeShipping: free, EstimatedDaysMin: rate.EstimatedDaysMin, EstimatedDaysMax: rate.EstimatedDaysMax}, nil
 	}
 	return Quote{}, &UnsupportedDestinationError{}
 }

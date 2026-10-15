@@ -151,7 +151,7 @@ func TestQuoteHTTPUsesLiveCatalogAndStoresNothing(t *testing.T) {
 		t.Fatalf("line=%v", line)
 	}
 	ship := quote["shipping"].(map[string]any)
-	if ship["estimated_days_min"] != float64(3) || ship["estimated_days_max"] != float64(5) || ship["is_free_shipping"] != false {
+	if ship["estimated_days_min"] != float64(3) || ship["estimated_days_max"] != float64(5) || ship["is_free_shipping"] != false || ship["regular_shipping_amount"] != float64(800000) {
 		t.Fatalf("shipping=%v", ship)
 	}
 	execSQL(t, db, `UPDATE catalog.product_variants SET price_amount=3900000 WHERE id=$1`, id)
@@ -160,7 +160,8 @@ func TestQuoteHTTPUsesLiveCatalogAndStoresNothing(t *testing.T) {
 		t.Fatalf("stale amount=%v", updated)
 	}
 	free := exchange(t, db, mux, c, payload(id, 4, "11001"), false, 200, "", "")
-	if free["shipping_amount"] != float64(0) || free["shipping"].(map[string]any)["is_free_shipping"] != true || free["total_amount"] != float64(15600000) {
+	freeShip := free["shipping"].(map[string]any)
+	if free["shipping_amount"] != float64(0) || freeShip["is_free_shipping"] != true || freeShip["shipping_amount"] != float64(0) || freeShip["regular_shipping_amount"] != float64(800000) || free["total_amount"] != float64(15600000) {
 		t.Fatalf("free=%v", free)
 	}
 }

@@ -82,21 +82,30 @@ func (g Gateways) CheckoutVariants(ctx context.Context, ids []string) ([]domain.
 	}
 	return result, nil
 }
-func (g Gateways) ShippingQuote(ctx context.Context, code string, weight int32, subtotal int64) (domain.Shipping, error) {
+func (g Gateways) ShippingQuote(ctx context.Context, code string, weight int32, subtotal int64) (domain.QuoteShipping, error) {
 	quote, err := g.Shipping.Quote(ctx, shipping.QuoteInput{MunicipalityCode: code, TotalWeightGrams: weight, OrderSubtotal: subtotal})
 	if err != nil {
 		var unknown *shipping.UnknownMunicipalityError
 		var unsupported *shipping.UnsupportedDestinationError
 		switch {
 		case errors.As(err, &unknown):
-			return domain.Shipping{}, domain.FieldProblem(422, "unknown_municipality", "municipality_code")
+			return domain.QuoteShipping{}, domain.FieldProblem(422, "unknown_municipality", "municipality_code")
 		case errors.As(err, &unsupported):
-			return domain.Shipping{}, domain.FieldProblem(422, "unsupported_destination", "municipality_code")
+			return domain.QuoteShipping{}, domain.FieldProblem(422, "unsupported_destination", "municipality_code")
 		default:
-			return domain.Shipping{}, err
+			return domain.QuoteShipping{}, err
 		}
 	}
-	return domain.Shipping{RateName: quote.RateName, Amount: quote.Amount, IsFreeShipping: quote.FreeShipping, EstimatedDaysMin: quote.EstimatedDaysMin, EstimatedDaysMax: quote.EstimatedDaysMax}, nil
+	return domain.QuoteShipping{
+		Shipping: domain.Shipping{
+			RateName:         quote.RateName,
+			Amount:           quote.Amount,
+			IsFreeShipping:   quote.FreeShipping,
+			EstimatedDaysMin: quote.EstimatedDaysMin,
+			EstimatedDaysMax: quote.EstimatedDaysMax,
+		},
+		RegularShippingAmount: quote.RegularAmount,
+	}, nil
 }
 func (g Gateways) CalculateTax(ctx context.Context, lines []domain.TaxLine, code string) (domain.TaxResult, error) {
 	request := invoicing.TaxRequest{MunicipalityCode: code, Lines: make([]invoicing.Line, 0, len(lines))}
