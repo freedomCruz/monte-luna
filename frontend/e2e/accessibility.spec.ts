@@ -8,6 +8,7 @@ const pagesToScan = [
   { name: 'Product Detail (Cacao without origin)', path: '/productos/chocolate-85' },
   { name: 'Origin Detail (Coffee)', path: '/origenes/finca-el-mirador' },
   { name: 'Origin Detail (Cacao)', path: '/origenes/demo-cacao-origin' },
+  { name: 'Cart Page', path: '/carrito' },
 ];
 
 test.describe('WCAG 2 A/AA Accessibility Scans (axe-core)', () => {

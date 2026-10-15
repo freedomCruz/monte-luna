@@ -129,8 +129,12 @@ describe('Design tokens invariant in islands (S8 / Finding 4)', () => {
         const fullClass = uMatch[0];
         let tokenName = uMatch[1];
 
-        // Strip numbers from border widths like border-2, border-4, border-t, border-b, ring-2, etc.
-        if (/^\d+$/.test(tokenName) || /^(t|b|l|r|x|y)(-\d+)?$/.test(tokenName)) {
+        // Strip numbers from border widths like border-2, border-4, border-t, border-b, ring-2, outline-offset-*, etc.
+        if (
+          /^\d+$/.test(tokenName) ||
+          /^(t|b|l|r|x|y)(-\d+)?$/.test(tokenName) ||
+          /^offset(-\d+)?$/.test(tokenName)
+        ) {
           continue;
         }
 
