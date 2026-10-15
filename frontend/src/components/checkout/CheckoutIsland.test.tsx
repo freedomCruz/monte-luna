@@ -271,6 +271,10 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
       expect(screen.getByText('Revisa y paga')).toBeDefined();
       expect(screen.getByText('Pagas en la ventana segura de Wompi.')).toBeDefined();
       expect(screen.getByRole('button', { name: /Pagar \$47\.500/i })).toBeDefined();
+      expect(screen.getByText('El pago en línea estará disponible pronto.')).toBeDefined();
+      const payBtn = screen.getByRole('button', { name: /Pagar \$47\.500/i });
+      expect(payBtn.getAttribute('aria-disabled')).toBe('true');
+      expect((payBtn as HTMLButtonElement).disabled).toBe(true);
     });
   });
 
@@ -315,7 +319,7 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
 
     // Check invoice checkbox
     const invoiceCheckbox = screen.getByLabelText(
-      /Necesito factura electrónica a nombre de empresa o documento específico/i
+      /Necesito la factura con mi documento o a nombre de empresa/i
     );
     fireEvent.click(invoiceCheckbox);
 

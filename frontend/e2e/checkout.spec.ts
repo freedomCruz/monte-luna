@@ -125,8 +125,7 @@ test.describe('Checkout Flow (S3, S4, S5, S6)', () => {
     await page.fill('#checkout-address1', 'Calle 5 # 12-34');
 
     // Accept data policy
-    const policyBtn = page.locator('button[role="checkbox"]:has-text("Autorizo a Monteluna")');
-    await policyBtn.click();
+    await page.locator('label[for="checkout-consent-data-policy"]').click();
 
     // 4. Verify live quote results rendered
     await expect(page.locator('text=Envío a Pitalito, Huila')).toBeVisible();
@@ -150,6 +149,9 @@ test.describe('Checkout Flow (S3, S4, S5, S6)', () => {
     await expect(page.getByRole('list', { name: 'Medios de pago disponibles' }).getByText('Nequi', { exact: true })).toBeVisible();
     await expect(page.getByRole('list', { name: 'Medios de pago disponibles' }).getByText('Bancolombia', { exact: true })).toBeVisible();
     await expect(page.locator('button:has-text("Pagar $47.500")')).toBeVisible();
+    await expect(page.locator('text=El pago en línea estará disponible pronto.')).toBeVisible();
+    const payBtn = page.locator('button:has-text("Pagar $47.500")');
+    await expect(payBtn).toHaveAttribute('aria-disabled', 'true');
 
     // Verify contact review summary in Step 3
     await expect(page.locator('text=María Gómez').first()).toBeVisible();

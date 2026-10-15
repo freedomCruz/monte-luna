@@ -1,16 +1,16 @@
-import React from 'react';
+import { OrderLineItem } from '../ui/order-line-item';
 import type { CartItem } from '../../lib/cart-store';
 import type { VariantAvailability } from '../../lib/availabilities-client';
-import type { OrderQuote } from '../../lib/orders/client';
+import type { OrderQuoteResponse } from '../../lib/orders/client';
 import { formatMoneyCop } from '../../lib/formatters';
 
 export interface CheckoutSummaryAsideProps {
   id: string;
   items: CartItem[];
   availabilities: Map<string, VariantAvailability>;
-  quote: OrderQuote | null;
+  quote: OrderQuoteResponse | null;
+  quoteLoading?: boolean;
   quoteError: string | null;
-  fallbackSubtotalMinor: number;
   totalLabel: string;
   totalDisplay: string;
 }
@@ -20,8 +20,8 @@ export function CheckoutSummaryAside({
   items,
   availabilities,
   quote,
+  quoteLoading,
   quoteError,
-  fallbackSubtotalMinor,
   totalLabel,
   totalDisplay,
 }: CheckoutSummaryAsideProps) {
@@ -42,52 +42,25 @@ export function CheckoutSummaryAside({
         </a>
       </div>
 
-      {/* Line items list */}
+      {/* Line items list using shared OrderLineItem */}
       <div className="flex flex-col gap-4">
         {items.map((item) => {
           const availability = availabilities.get(item.variant_id);
-          const unitPrice = availability?.price_amount ?? 0;
+          const unitPrice = availability?.price_amount ?? null;
           const compareAt = availability?.compare_at_price_amount;
-          const hasDiscount = Boolean(compareAt && compareAt > unitPrice);
 
           return (
-            <div key={item.variant_id} className="flex items-center gap-3.5">
-              <div className="relative shrink-0 w-16 h-16 rounded-xl bg-secondary flex items-center justify-center p-1">
-                {item.image_url ? (
-                  <img
-                    src={item.image_url}
-                    alt=""
-                    className="w-full h-full object-contain"
-                  />
-                ) : (
-                  <span className="font-condensed font-bold text-xs">Monteluna</span>
-                )}
-                <span className="absolute -top-2 -right-2 min-w-5 h-5 px-1.5 rounded-full bg-foreground text-background text-xs font-extrabold flex items-center justify-center">
-                  {item.quantity}
-                </span>
-              </div>
-
-              <div className="flex-1 min-w-0 flex flex-col">
-                <span className="text-base font-extrabold truncate">{item.product_name}</span>
-                <span className="text-xs text-muted-foreground">{item.variant_label}</span>
-                {availability?.production_date && item.product_type === 'coffee' && (
-                  <span className="text-xs font-semibold text-brand-green">
-                    Tostado el {availability.production_date}
-                  </span>
-                )}
-              </div>
-
-              <div className="flex flex-col items-end">
-                {hasDiscount && (
-                  <s aria-label="Precio regular" className="text-xs text-muted-foreground">
-                    {formatMoneyCop(compareAt! * item.quantity)}
-                  </s>
-                )}
-                <span className="text-base font-extrabold">
-                  {formatMoneyCop(unitPrice * item.quantity)}
-                </span>
-              </div>
-            </div>
+            <OrderLineItem
+              key={item.variant_id}
+              image={item.image_url}
+              title={item.product_name}
+              variantLabel={item.variant_label}
+              quantity={item.quantity}
+              amountMinor={unitPrice}
+              compareAtAmountMinor={compareAt}
+              productionDate={availability?.production_date}
+              isCoffee={item.product_type === 'coffee'}
+            />
           );
         })}
       </div>
@@ -97,7 +70,13 @@ export function CheckoutSummaryAside({
         <div className="flex justify-between items-center">
           <span>Subtotal</span>
           <span className="font-semibold">
-            {quote ? formatMoneyCop(quote.subtotal_amount) : formatMoneyCop(fallbackSubtotalMinor)}
+            {quote ? (
+              formatMoneyCop(quote.subtotal_amount)
+            ) : quoteLoading ? (
+              <span className="text-muted-foreground text-sm">Calculando…</span>
+            ) : (
+              <span className="text-muted-foreground text-sm font-normal">Sin cotizar</span>
+            )}
           </span>
         </div>
         <div className="flex justify-between items-center">
@@ -105,7 +84,7 @@ export function CheckoutSummaryAside({
           <span
             className={`font-semibold ${
               quote?.shipping.is_free_shipping
-                ? 'text-success'
+                ? 'text-brand-green'
                 : quote
                   ? 'text-foreground'
                   : quoteError
@@ -117,19 +96,44 @@ export function CheckoutSummaryAside({
               ? 'Gratis'
               : quote
                 ? formatMoneyCop(quote.shipping_amount)
-                : quoteError
-                  ? 'Sin cobertura'
-                  : 'Elige tu municipio'}
+                : quoteLoading
+                  ? 'Calculando…'
+                  : quoteError
+                    ? 'Sin cobertura'
+                    : 'Elige tu municipio'}
           </span>
         </div>
       </div>
 
-      <div className="flex justify-between items-end pt-4 border-t-2 border-dashed border-dashed">
+      <div className="flex justify-between items-end pt-4 border-t-2 border-dashed border-border">
         <div className="flex flex-col">
           <span className="text-base font-bold">{totalLabel}</span>
           <span className="text-xs text-muted-foreground">Pesos colombianos</span>
         </div>
         <span className="text-3xl font-extrabold text-foreground">{totalDisplay}</span>
+      </div>
+
+      {/* Reassurance text */}
+      <div className="flex items-start gap-3 p-3.5 bg-hero/60 rounded-xl text-xs sm:text-sm text-foreground/90">
+        <svg
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden="true"
+          className="shrink-0 mt-0.5"
+        >
+          <circle cx="12" cy="12" r="9"></circle>
+          <path d="M12 7v5l3 2"></path>
+        </svg>
+        <span>
+          En el siguiente paso creamos tu pedido y lo apartamos{' '}
+          <strong className="font-extrabold">30 minutos</strong> mientras pagas.
+        </span>
       </div>
     </aside>
   );

@@ -187,17 +187,13 @@ export function CheckoutIsland() {
     );
   }
 
-  // Fallback subtotal calculation from live availabilities while quote loads
-  const fallbackSubtotalMinor = items.reduce((sum, item) => {
-    const avail = availabilities.get(item.variant_id);
-    return sum + (avail?.price_amount ?? 0) * item.quantity;
-  }, 0);
-
-  // Total display formatting
+  // Total display formatting - server quote is authoritative (no client calculation)
   const totalDisplay = quote
     ? formatMoneyCop(quote.total_amount)
-    : formatMoneyCop(fallbackSubtotalMinor);
-  const totalLabel = quote ? 'Total' : 'Total estimado';
+    : quoteLoading
+      ? 'Calculando…'
+      : 'Sin cotizar';
+  const totalLabel = quote ? 'Total' : 'Total sin envío';
 
   // Render Step 3: Pago Shell
   if (step === 'pago') {
@@ -211,7 +207,6 @@ export function CheckoutIsland() {
         selectedMuni={selectedMuni}
         items={items}
         availabilities={availabilities}
-        fallbackSubtotalMinor={fallbackSubtotalMinor}
         totalDisplay={totalDisplay}
         onBackToDatos={() => {
           setStep('datos');
@@ -238,7 +233,6 @@ export function CheckoutIsland() {
       selectedMuni={selectedMuni}
       items={items}
       availabilities={availabilities}
-      fallbackSubtotalMinor={fallbackSubtotalMinor}
       totalLabel={totalLabel}
       totalDisplay={totalDisplay}
       onChange={handleChange}

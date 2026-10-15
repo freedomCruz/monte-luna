@@ -2,6 +2,7 @@ import type { components } from '../../generated/orders';
 
 export type OrderQuoteRequest = components['schemas']['OrderQuoteRequest'];
 export type OrderQuote = components['schemas']['OrderQuote'];
+export type OrderQuoteResponse = OrderQuote;
 export type CartItem = components['schemas']['CartItem'];
 export type Problem = components['schemas']['Problem'];
 export type ShippingSummary = components['schemas']['ShippingSummary'];
