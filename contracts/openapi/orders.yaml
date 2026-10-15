@@ -258,6 +258,38 @@ components:
           description: Business days; greater than or equal to estimated_days_min.
           examples: [5]
 
+    QuoteShippingSummary:
+      allOf:
+        - $ref: '#/components/schemas/ShippingSummary'
+        - type: object
+          additionalProperties: false
+          required: [rate_name, shipping_amount, is_free_shipping, estimated_days_min, estimated_days_max, regular_shipping_amount]
+          properties:
+            rate_name:
+              type: string
+            shipping_amount:
+              $ref: ./common.yaml#/components/schemas/MoneyAmount
+            is_free_shipping:
+              type: boolean
+            estimated_days_min:
+              type: integer
+            estimated_days_max:
+              type: integer
+            regular_shipping_amount:
+              $ref: ./common.yaml#/components/schemas/MoneyAmount
+              description: |
+                Regular non-discounted rate amount for the resolved rate before
+                the free-shipping threshold is applied. Equals shipping_amount
+                when is_free_shipping is false. When is_free_shipping is true,
+                shipping_amount is 0 and regular_shipping_amount holds the
+                original rate cost.
+              examples: [950000]
+      description: |
+        Shipping summary for checkout quotes. Extends the resolved shipping
+        rate with the regular, non-discounted rate amount before the
+        free-shipping threshold is applied, so the storefront can render the
+        regular rate struck through when free shipping applies.
+
     OrderQuote:
       type: object
       additionalProperties: false
@@ -268,7 +300,7 @@ components:
           items:
             $ref: '#/components/schemas/OrderLine'
         shipping:
-          $ref: '#/components/schemas/ShippingSummary'
+          $ref: '#/components/schemas/QuoteShippingSummary'
         subtotal_amount:
           $ref: ./common.yaml#/components/schemas/MoneyAmount
         shipping_amount:
