@@ -72,7 +72,7 @@ Contract: `contracts/openapi/orders.yaml` (no `shipping.yaml` in this wave, L2).
 | B4 | Implement C2 in the quote endpoint (after G5 approval) | S3 | backend | C2 | — |
 | F3c | Render "Costo normal" from the C2 field and remove the hard-coded `$9.500` in ShippingQuoteBanner (after B4 types) | S3 | frontend | C2 | — |
 | F1c | Refactor to the approved folder architecture (L31) and extract shared cart line and quantity stepper components used by `CartPanel`, `CartPage` and `ProductPurchaseIsland` (L30); no visual change | S1 | frontend | F3 | — |
-| F4 | Order placement integration and `/pedido` guest view | S4, S5 | frontend | F3 | — |
+| F4 | Order placement on "Continuar al pago" (L40) and `/pedido` guest view (in progress: `task_31fa0e9dff42` / `ctx_b5eb5e377a5f`) | S4, S5 | frontend | F1c | — |
 | I1 | Integrate branches, end-to-end checkout against the real API, `task verify` | all | coordinator | B3, F4 | — |
 | V1 | Verification of every spec, including desktop and mobile visual comparison against canvas | all | verifier | I1 | — |
 
