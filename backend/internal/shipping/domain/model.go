@@ -30,8 +30,8 @@ type Quote struct {
 	Amount           int64
 	Currency         string
 	FreeShipping     bool
-	EstimatedDaysMin *int32
-	EstimatedDaysMax *int32
+	EstimatedDaysMin int32
+	EstimatedDaysMax int32
 }
 type Rate struct {
 	ID, ZoneID, Name, Currency, Status string
@@ -39,7 +39,7 @@ type Rate struct {
 	MinWeightGrams                     int32
 	MaxWeightGrams                     *int32
 	FreeShippingThresholdAmount        *int64
-	EstimatedDaysMin, EstimatedDaysMax *int32
+	EstimatedDaysMin, EstimatedDaysMax int32
 }
 type Repository interface {
 	// FindZone selects an active municipality zone before an active department zone,
@@ -55,8 +55,7 @@ func ValidateRate(rate Rate, existing []Rate) error {
 		rate.PriceAmount < 0 || rate.MinWeightGrams < 0 || (rate.Status != "active" && rate.Status != "archived") ||
 		(rate.MaxWeightGrams != nil && *rate.MaxWeightGrams <= rate.MinWeightGrams) ||
 		(rate.FreeShippingThresholdAmount != nil && *rate.FreeShippingThresholdAmount <= 0) ||
-		(rate.EstimatedDaysMin != nil && *rate.EstimatedDaysMin < 0) || (rate.EstimatedDaysMax != nil && *rate.EstimatedDaysMax < 0) ||
-		(rate.EstimatedDaysMin != nil && rate.EstimatedDaysMax != nil && *rate.EstimatedDaysMax < *rate.EstimatedDaysMin) {
+		rate.EstimatedDaysMin < 1 || rate.EstimatedDaysMax < rate.EstimatedDaysMin {
 		return errors.New("invalid shipping rate")
 	}
 	for _, other := range existing {

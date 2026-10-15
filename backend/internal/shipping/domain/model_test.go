@@ -10,7 +10,7 @@ import (
 func ptr[T any](v T) *T { return &v }
 
 func TestRateQuote(t *testing.T) {
-	rate := domain.Rate{Name: "Standard", ZoneID: "zone", PriceAmount: 1200000, Currency: "COP", MinWeightGrams: 0, MaxWeightGrams: ptr(int32(1000)), FreeShippingThresholdAmount: ptr(int64(15000000)), EstimatedDaysMin: ptr(int32(2)), EstimatedDaysMax: ptr(int32(4)), Status: "active"}
+	rate := domain.Rate{Name: "Standard", ZoneID: "zone", PriceAmount: 1200000, Currency: "COP", MinWeightGrams: 0, MaxWeightGrams: ptr(int32(1000)), FreeShippingThresholdAmount: ptr(int64(15000000)), EstimatedDaysMin: 2, EstimatedDaysMax: 4, Status: "active"}
 	for _, tc := range []struct {
 		name              string
 		weight            int32
@@ -36,15 +36,37 @@ func TestRateQuote(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if got.RateName != "Standard" || got.Amount != tc.amount || got.FreeShipping != tc.free || got.Currency != "COP" || *got.EstimatedDaysMin != 2 || *got.EstimatedDaysMax != 4 {
+			if got.RateName != "Standard" || got.Amount != tc.amount || got.FreeShipping != tc.free || got.Currency != "COP" || got.EstimatedDaysMin != 2 || got.EstimatedDaysMax != 4 {
 				t.Fatalf("quote = %+v", got)
 			}
 		})
 	}
 }
 
+func TestRequiredEstimatedDays(t *testing.T) {
+	for _, tc := range []struct {
+		name     string
+		min, max int32
+		invalid  bool
+	}{
+		{"zero minimum", 0, 5, true},
+		{"negative minimum", -1, 5, true},
+		{"reversed range", 3, 2, true},
+		{"zero maximum", 3, 0, true},
+		{"minimum boundary", 1, 1, false},
+		{"business day demo", 3, 5, false},
+	} {
+		t.Run(tc.name, func(t *testing.T) {
+			rate := domain.Rate{ZoneID: "zone", Name: "Standard", Currency: "COP", Status: "active", EstimatedDaysMin: tc.min, EstimatedDaysMax: tc.max}
+			if err := domain.ValidateRate(rate, nil); (err != nil) != tc.invalid {
+				t.Fatalf("ValidateRate(%d, %d) = %v", tc.min, tc.max, err)
+			}
+		})
+	}
+}
+
 func TestRateValidationAndOverlap(t *testing.T) {
-	base := domain.Rate{ZoneID: "zone", Name: "Standard", Currency: "COP", PriceAmount: 1, MinWeightGrams: 0, MaxWeightGrams: ptr(int32(1000)), Status: "active"}
+	base := domain.Rate{ZoneID: "zone", Name: "Standard", Currency: "COP", PriceAmount: 1, MinWeightGrams: 0, MaxWeightGrams: ptr(int32(1000)), EstimatedDaysMin: 3, EstimatedDaysMax: 5, Status: "active"}
 	for _, tc := range []struct {
 		name    string
 		change  func(*domain.Rate)
@@ -58,8 +80,8 @@ func TestRateValidationAndOverlap(t *testing.T) {
 		{"negative price", func(r *domain.Rate) { r.PriceAmount = -1 }, true},
 		{"invalid band", func(r *domain.Rate) { r.MaxWeightGrams = ptr(int32(0)) }, true},
 		{"invalid threshold", func(r *domain.Rate) { r.FreeShippingThresholdAmount = ptr(int64(0)) }, true},
-		{"reversed days", func(r *domain.Rate) { r.EstimatedDaysMin = ptr(int32(4)); r.EstimatedDaysMax = ptr(int32(2)) }, true},
-		{"negative days", func(r *domain.Rate) { r.EstimatedDaysMin = ptr(int32(-1)) }, true},
+		{"reversed days", func(r *domain.Rate) { r.EstimatedDaysMin = 4; r.EstimatedDaysMax = 2 }, true},
+		{"negative days", func(r *domain.Rate) { r.EstimatedDaysMin = -1 }, true},
 		{"invalid currency", func(r *domain.Rate) { r.Currency = "cop" }, true},
 		{"invalid status", func(r *domain.Rate) { r.Status = "draft" }, true},
 	} {

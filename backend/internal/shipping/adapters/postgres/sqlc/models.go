@@ -17,8 +17,8 @@ type ShippingShippingRate struct {
 	MinWeightGrams              int32
 	MaxWeightGrams              *int32
 	FreeShippingThresholdAmount *int64
-	EstimatedDaysMin            *int32
-	EstimatedDaysMax            *int32
+	EstimatedDaysMin            int32
+	EstimatedDaysMax            int32
 	Status                      string
 	Version                     int32
 	CreatedAt                   pgtype.Timestamptz

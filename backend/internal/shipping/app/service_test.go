@@ -43,12 +43,12 @@ func TestQuote(t *testing.T) {
 	} {
 		t.Run(tc.name, func(t *testing.T) {
 			maxWeight := int32(1000)
-			repo := &repository{zone: "zone", rates: []domain.Rate{{Name: "Parcel", Status: "active", PriceAmount: 100, Currency: "COP", MaxWeightGrams: &maxWeight}}}
+			repo := &repository{zone: "zone", rates: []domain.Rate{{Name: "Parcel", Status: "active", PriceAmount: 100, Currency: "COP", MaxWeightGrams: &maxWeight, EstimatedDaysMin: 3, EstimatedDaysMax: 5}}}
 			service := app.NewService(repo, domain.NewReference())
 			got, err := service.Quote(t.Context(), domain.QuoteInput{MunicipalityCode: tc.code, TotalWeightGrams: tc.weight, OrderSubtotal: tc.subtotal})
 			switch tc.failure {
 			case "":
-				if err != nil || got.Amount != 100 || got.RateName != "Parcel" {
+				if err != nil || got.Amount != 100 || got.RateName != "Parcel" || got.EstimatedDaysMin != 3 || got.EstimatedDaysMax != 5 {
 					t.Fatalf("%+v / %v", got, err)
 				}
 			case "unknown":
