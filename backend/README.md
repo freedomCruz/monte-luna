@@ -70,7 +70,8 @@ An active municipality zone wins over an active department zone **before** weigh
 resolution. Missing rates in a specific zone do not trigger department fallback.
 Bands include both endpoints, with null maximum meaning unbounded. A subtotal
 at or above the configured threshold produces amount zero and `FreeShipping=true`.
-Estimated days remain nullable, as in the canonical model.
+Estimated delivery business days are required integer values on every rate and
+quote (`min >= 1`, `max >= min`), as in the canonical model (decision L12).
 
 `LookupMunicipality` returns department/municipality display names for snapshots.
 The backend embeds `internal/shipping/domain/divipola.json`, byte-identical to
@@ -102,11 +103,20 @@ The seed inserts three explicitly fictional zones: Demo Bogotá (`11001`), Demo
 Medellín (`05001`), and Demo Antioquia (department `05`). Standard rates cover 0–1,000 g
 and heavy rates 1,001 g upward. Standard demo amounts are 800000, 1000000 and 1500000
 COP minor units respectively; heavy parcels add 500000. Every demo rate has a
-15000000 threshold. Demo estimates are 1–2, 2–3 and 3–5 days respectively.
+15000000 threshold. All newly seeded demo rates estimate 3–5 business days.
 These are fixtures, not production pricing or coverage commitments.
 
 Seeding is transactional, repeatable, preserves existing rows/prices/status/timestamps,
 and does not reset merchant edits. Existing geographic mappings are not reassigned.
+Existing valid merchant estimates are preserved on repeat seeds, not reset to demo
+values. Migration `00002_required_estimated_days.sql` makes both estimate columns
+`NOT NULL` and enforces `min >= 1`, `max >= min`, without editing migration 00001
+or backfilling data. If existing rows contain null or zero estimates, PostgreSQL
+rejects the upgrade with a column/check error and goose rolls back the migration
+and its version record. A merchant must explicitly correct those values before
+retrying; the application does not guess delivery promises. Down restores the
+previous nullable/nonnegative checks without rewriting stored values.
+
 Rate creation and the seed validate inclusive bands under a zone-row lock; area
 writes validate existing department/municipality codes and their association against
 DIVIPOLA before insertion. Raw SQL imports must not bypass those write boundaries.
@@ -214,5 +224,7 @@ exercise exit codes, stdout, JSON stderr, help, repeated migrate/seed runs, and 
 absence of demo rows after migration alone. Shipping adapter tests exercise the same
 PostgreSQL 18 up/down/up cycle, schema constraints and geographic uniqueness, domain
 validation before persistence, inclusive rate boundaries, active-zone precedence,
-free-shipping threshold, unsupported destinations, seed preservation and rollback,
+free-shipping threshold, unsupported destinations, required estimated-day constraints,
+legacy estimate upgrade rejection without backfill, new migration up/down/up with
+unchanged stored values, seed preservation and rollback,
 and the in-process public facade. No worktree database or `.env` values are read.

@@ -27,11 +27,10 @@ func Seed(ctx context.Context, db *sql.DB) (err error) {
 		name, department string
 		municipality     *string
 		price            int64
-		daysMin, daysMax int32
 	}{
-		{"Demo Bogotá", "11", value("11001"), 800000, 1, 2},
-		{"Demo Medellín", "05", value("05001"), 1000000, 2, 3},
-		{"Demo Antioquia", "05", nil, 1500000, 3, 5},
+		{"Demo Bogotá", "11", value("11001"), 800000},
+		{"Demo Medellín", "05", value("05001"), 1000000},
+		{"Demo Antioquia", "05", nil, 1500000},
 	} {
 		if err := reference.ValidateArea(fixture.department, fixture.municipality); err != nil {
 			return err
@@ -69,7 +68,7 @@ func Seed(ctx context.Context, db *sql.DB) (err error) {
 			if found {
 				continue
 			}
-			rate := domain.Rate{ZoneID: zone, Name: band.name, PriceAmount: fixture.price + band.extra, Currency: "COP", MinWeightGrams: band.min, MaxWeightGrams: band.max, FreeShippingThresholdAmount: value(int64(15000000)), EstimatedDaysMin: &fixture.daysMin, EstimatedDaysMax: &fixture.daysMax, Status: "active"}
+			rate := domain.Rate{ZoneID: zone, Name: band.name, PriceAmount: fixture.price + band.extra, Currency: "COP", MinWeightGrams: band.min, MaxWeightGrams: band.max, FreeShippingThresholdAmount: value(int64(15000000)), EstimatedDaysMin: 3, EstimatedDaysMax: 5, Status: "active"}
 			if err := domain.ValidateRate(rate, existing); err != nil {
 				return fmt.Errorf("validate demo shipping rate: %w", err)
 			}

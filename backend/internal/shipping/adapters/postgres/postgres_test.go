@@ -109,14 +109,14 @@ func TestMigrationsRoundTripAndConstraints(t *testing.T) {
 			{"bad department", `INSERT INTO shipping.shipping_zone_areas(zone_id,department_code) VALUES($1,'5')`},
 			{"bad municipality", `INSERT INTO shipping.shipping_zone_areas(zone_id,department_code,municipality_code) VALUES($1,'05','0500')`},
 			{"mismatched department", `INSERT INTO shipping.shipping_zone_areas(zone_id,department_code,municipality_code) VALUES($1,'11','05001')`},
-			{"negative price", `INSERT INTO shipping.shipping_rates(zone_id,name,price_amount) VALUES($1,'Bad',-1)`},
-			{"invalid currency", `INSERT INTO shipping.shipping_rates(zone_id,name,price_amount,currency) VALUES($1,'Bad',1,'cop')`},
-			{"negative band", `INSERT INTO shipping.shipping_rates(zone_id,name,price_amount,min_weight_grams) VALUES($1,'Bad',1,-1)`},
-			{"empty band", `INSERT INTO shipping.shipping_rates(zone_id,name,price_amount,min_weight_grams,max_weight_grams) VALUES($1,'Bad',1,10,10)`},
-			{"zero threshold", `INSERT INTO shipping.shipping_rates(zone_id,name,price_amount,free_shipping_threshold_amount) VALUES($1,'Bad',1,0)`},
+			{"negative price", `INSERT INTO shipping.shipping_rates(zone_id,name,price_amount,estimated_days_min,estimated_days_max) VALUES($1,'Bad',-1,3,5)`},
+			{"invalid currency", `INSERT INTO shipping.shipping_rates(zone_id,name,price_amount,currency,estimated_days_min,estimated_days_max) VALUES($1,'Bad',1,'cop',3,5)`},
+			{"negative band", `INSERT INTO shipping.shipping_rates(zone_id,name,price_amount,min_weight_grams,estimated_days_min,estimated_days_max) VALUES($1,'Bad',1,-1,3,5)`},
+			{"empty band", `INSERT INTO shipping.shipping_rates(zone_id,name,price_amount,min_weight_grams,max_weight_grams,estimated_days_min,estimated_days_max) VALUES($1,'Bad',1,10,10,3,5)`},
+			{"zero threshold", `INSERT INTO shipping.shipping_rates(zone_id,name,price_amount,free_shipping_threshold_amount,estimated_days_min,estimated_days_max) VALUES($1,'Bad',1,0,3,5)`},
 			{"reversed days", `INSERT INTO shipping.shipping_rates(zone_id,name,price_amount,estimated_days_min,estimated_days_max) VALUES($1,'Bad',1,3,2)`},
-			{"negative days", `INSERT INTO shipping.shipping_rates(zone_id,name,price_amount,estimated_days_min) VALUES($1,'Bad',1,-1)`},
-			{"rate status", `INSERT INTO shipping.shipping_rates(zone_id,name,price_amount,status) VALUES($1,'Bad',1,'draft')`},
+			{"negative days", `INSERT INTO shipping.shipping_rates(zone_id,name,price_amount,estimated_days_min,estimated_days_max) VALUES($1,'Bad',1,-1,5)`},
+			{"rate status", `INSERT INTO shipping.shipping_rates(zone_id,name,price_amount,status,estimated_days_min,estimated_days_max) VALUES($1,'Bad',1,'draft',3,5)`},
 		} {
 			t.Run(tc.name, func(t *testing.T) {
 				before := snapshot(t, db)
@@ -175,12 +175,12 @@ func TestQuoteResolutionThroughPublicPort(t *testing.T) {
 		min, max         int32
 		unsupported      bool
 	}{
-		{"municipality wins", "05001", "Demo standard parcel", 1000, 0, 1000000, false, 2, 3, false},
+		{"municipality wins", "05001", "Demo standard parcel", 1000, 0, 1000000, false, 3, 5, false},
 		{"department fallback", "05002", "Demo standard parcel", 1, 0, 1500000, false, 3, 5, false},
 		{"next band", "05002", "Demo heavy parcel", 1001, 0, 2000000, false, 3, 5, false},
-		{"unbounded band", "05001", "Demo heavy parcel", 2147483647, 0, 1500000, false, 2, 3, false},
-		{"threshold", "11001", "Demo standard parcel", 1000, 15000000, 0, true, 1, 2, false},
-		{"below threshold", "11001", "Demo standard parcel", 1000, 14999999, 800000, false, 1, 2, false},
+		{"unbounded band", "05001", "Demo heavy parcel", 2147483647, 0, 1500000, false, 3, 5, false},
+		{"threshold", "11001", "Demo standard parcel", 1000, 15000000, 0, true, 3, 5, false},
+		{"below threshold", "11001", "Demo standard parcel", 1000, 14999999, 800000, false, 3, 5, false},
 		{"unsupported destination", "76001", "", 1, 0, 0, false, 0, 0, true},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -191,7 +191,7 @@ func TestQuoteResolutionThroughPublicPort(t *testing.T) {
 				if !errors.As(err, &target) {
 					t.Fatalf("error = %v", err)
 				}
-			} else if err != nil || got.RateName != tc.rate || got.Amount != tc.amount || got.Currency != "COP" || got.FreeShipping != tc.free || got.EstimatedDaysMin == nil || *got.EstimatedDaysMin != tc.min || got.EstimatedDaysMax == nil || *got.EstimatedDaysMax != tc.max {
+			} else if err != nil || got.RateName != tc.rate || got.Amount != tc.amount || got.Currency != "COP" || got.FreeShipping != tc.free || got.EstimatedDaysMin != tc.min || got.EstimatedDaysMax != tc.max {
 				t.Fatalf("quote = %+v, error = %v", got, err)
 			}
 			if snapshot(t, db) != before {
@@ -244,7 +244,7 @@ func TestAreaAndRateWritesValidateBeforePersistence(t *testing.T) {
 	if err := repo.AddArea(t.Context(), zone, "05", pointer("05001")); err != nil {
 		t.Fatal(err)
 	}
-	rate := domain.Rate{ZoneID: zone, Name: "Standard", PriceAmount: 100, Currency: "COP", MaxWeightGrams: pointer(int32(1000)), Status: "active"}
+	rate := domain.Rate{ZoneID: zone, Name: "Standard", PriceAmount: 100, Currency: "COP", MaxWeightGrams: pointer(int32(1000)), EstimatedDaysMin: 3, EstimatedDaysMax: 5, Status: "active"}
 	id, err := repo.CreateRate(t.Context(), rate)
 	if err != nil {
 		t.Fatal(err)
@@ -282,6 +282,9 @@ func TestSeedIdempotentAndPreservesMerchantEdits(t *testing.T) {
 	if err := postgres.Seed(t.Context(), db); err != nil {
 		t.Fatal(err)
 	}
+	if got := scalar[int](t, db, `SELECT count(*) FROM shipping.shipping_rates WHERE estimated_days_min=3 AND estimated_days_max=5`); got != 6 {
+		t.Fatalf("demo rates with 3 to 5 business days = %d, want 6", got)
+	}
 	for _, tc := range []struct {
 		table string
 		want  int
@@ -297,7 +300,7 @@ func TestSeedIdempotentAndPreservesMerchantEdits(t *testing.T) {
 	if snapshot(t, db) != before {
 		t.Fatal("reseed changed data")
 	}
-	execSQL(t, db, `UPDATE shipping.shipping_rates SET price_amount=12345,version=version+1,updated_at=now();UPDATE shipping.shipping_zones SET status='archived',version=version+1,updated_at=now()`)
+	execSQL(t, db, `UPDATE shipping.shipping_rates SET price_amount=12345,estimated_days_min=4,estimated_days_max=7,version=version+1,updated_at=now();UPDATE shipping.shipping_zones SET status='archived',version=version+1,updated_at=now()`)
 	before = snapshot(t, db)
 	if err := postgres.Seed(t.Context(), db); err != nil {
 		t.Fatal(err)
