@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useStore } from '@nanostores/react';
-import { $cartItems } from '../../lib/cart-store';
-import { fetchCartAvailabilities } from '../../lib/cart-pricing';
-import type { VariantAvailability } from '../../lib/availabilities-client';
-import { formatMoneyCop } from '../../lib/formatters';
+import { $cartItems } from '../../lib/cart/store';
+import { fetchCartAvailabilities } from '../../lib/cart/pricing';
+import type { VariantAvailability } from '../../lib/catalog/availabilities';
+import { formatMoneyCop } from '../../lib/shared/formatters';
 import {
   type CheckoutFormData,
   type CheckoutFormErrors,

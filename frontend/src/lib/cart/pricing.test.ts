@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
-import { fetchCartAvailabilities, computeCartTotals } from './cart-pricing';
-import type { CartItem } from './cart-store';
-import type { ProductAvailabilityPage } from './availabilities-client';
+import { fetchCartAvailabilities, computeCartTotals } from './pricing';
+import type { CartItem } from './store';
+import type { ProductAvailabilityPage } from '../catalog/availabilities';
 
 describe('cart-pricing', () => {
   const originalFetch = globalThis.fetch;

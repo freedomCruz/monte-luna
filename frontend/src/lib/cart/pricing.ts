@@ -1,9 +1,9 @@
 import {
   fetchProductAvailabilities,
   type VariantAvailability,
-} from './availabilities-client';
-import type { CartItem } from './cart-store';
-import { formatMoneyCop } from './formatters';
+} from '../catalog/availabilities';
+import type { CartItem } from './store';
+import { formatMoneyCop } from '../shared/formatters';
 
 export interface CartTotals {
   subtotalMinor: number;

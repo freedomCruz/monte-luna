@@ -1,4 +1,4 @@
-import type { components } from '../generated/catalog';
+import type { components } from '../../generated/catalog';
 
 export type ProductAvailability = components['schemas']['ProductAvailability'];
 export type ProductAvailabilityPage = components['schemas']['ProductAvailabilityPage'];

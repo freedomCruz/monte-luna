@@ -2,7 +2,7 @@ import { cleanup, render, waitFor } from '@testing-library/react';
 import { describe, expect, it, vi, beforeEach, afterEach } from 'vitest';
 import React from 'react';
 import { ListingPriceIsland } from './ListingPriceIsland';
-import type { ProductAvailabilityPage } from '../../lib/availabilities-client';
+import type { ProductAvailabilityPage } from '../../lib/catalog/availabilities';
 
 describe('ListingPriceIsland', () => {
   const originalFetch = globalThis.fetch;

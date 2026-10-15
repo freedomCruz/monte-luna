@@ -9,7 +9,7 @@ import {
   mockMariaProduct,
   mockChocolateProduct,
   mockNoOriginProduct,
-} from '../mocks/catalog';
+} from '../../mocks/catalog';
 
 describe('Catalog Mock Spanish Seed Alignment (B3 demo_data.go / metadata.sql)', () => {
   it('aligns product types and categories with Spanish seed metadata', () => {

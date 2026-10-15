@@ -14,7 +14,7 @@ import {
   closeCart,
   toggleCart,
   type CartItem,
-} from './cart-store';
+} from './store';
 
 describe('cart-store', () => {
   beforeEach(() => {

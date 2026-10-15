@@ -1,6 +1,6 @@
 import React from 'react';
 import type { OrderQuote } from '../../lib/orders/client';
-import { formatMoneyCop } from '../../lib/formatters';
+import { formatMoneyCop } from '../../lib/shared/formatters';
 import type { DivipolaDepartment, DivipolaMunicipality } from '../../lib/checkout/divipola';
 
 export interface ShippingQuoteBannerProps {

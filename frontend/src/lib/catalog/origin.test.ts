@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { getCatalogProductsByOrigin } from './catalog';
-import { mockOriginCoffee, mockOriginCacao } from '../mocks/catalog';
+import { mockOriginCoffee, mockOriginCacao } from '../../mocks/catalog';
 
 describe('getCatalogProductsByOrigin', () => {
   it('returns products belonging to a specific origin in mock mode', async () => {

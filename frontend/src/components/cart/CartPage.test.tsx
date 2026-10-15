@@ -2,8 +2,8 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
 import { render, screen, fireEvent, waitFor, cleanup } from '@testing-library/react';
 import React from 'react';
 import { CartPage } from './CartPage';
-import { $cart, addItem, clearCart } from '../../lib/cart-store';
-import type { ProductAvailabilityPage } from '../../lib/availabilities-client';
+import { $cart, addItem, clearCart } from '../../lib/cart/store';
+import type { ProductAvailabilityPage } from '../../lib/catalog/availabilities';
 
 describe('CartPage', () => {
   const originalFetch = globalThis.fetch;

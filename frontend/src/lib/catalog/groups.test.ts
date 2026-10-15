@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
-import { groupProductsByCategory, groupProductsByProductType } from './catalog-groups';
-import { mockCatalogData } from '../mocks/catalog';
+import { groupProductsByCategory, groupProductsByProductType } from './groups';
+import { mockCatalogData } from '../../mocks/catalog';
 
 describe('Catalog grouping helpers for tienda', () => {
   const products = mockCatalogData.products;
