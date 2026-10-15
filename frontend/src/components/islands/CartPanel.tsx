@@ -298,7 +298,7 @@ export function CartPanel() {
               </div>
 
               <p className="m-0 text-xs md:text-sm leading-snug text-muted-foreground">
-                El envío se calcula con tu municipio y los cupones se ingresan al pagar.
+                El envío se calcula con tu municipio en el paso siguiente.
               </p>
 
               <a

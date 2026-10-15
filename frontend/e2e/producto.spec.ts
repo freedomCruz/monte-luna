@@ -50,9 +50,21 @@ test.describe('Product Detail (/productos/[slug])', () => {
     await expect(island).toContainText('Tostado el 30 sep 2026');
     await expect(island).toContainText('Disponible en 500 · Media');
 
-    // 6. Invariant Gate G2 / S4: NO add-to-cart button exists inside main content or purchase island in F1
-    const addToCartButtons = page.locator('main').getByRole('button', { name: /comprar|carrito|agregar/i });
-    await expect(addToCartButtons).toHaveCount(0);
+    // 6. Add to cart is enabled for in-stock variant
+    const addToCartBtn = island.getByRole('button', { name: /agregar al carrito/i });
+    await expect(addToCartBtn).toBeVisible();
+    await expect(addToCartBtn).toBeEnabled();
+
+    // Out-of-stock combination disables add to cart:
+    // Switch presentation back to 250g while Fina is selected (250g + Fina is out_of_stock)
+    const pres250Btn = page.getByRole('button', { name: /^250$/i });
+    await pres250Btn.click();
+    await fineBtn.click();
+
+    await expect(island).toContainText('Sin existencias para 250 · Fina');
+    const agotadoBtn = island.getByRole('button', { name: /^agotado$/i });
+    await expect(agotadoBtn).toBeVisible();
+    await expect(agotadoBtn).toBeDisabled();
   });
 
   test('chocolate-85: product without origin displays no origin link and shows out-of-stock badge', async ({ page }) => {
@@ -69,8 +81,9 @@ test.describe('Product Detail (/productos/[slug])', () => {
     const island = page.locator('[data-testid="product-purchase-island"]');
     await expect(island).toContainText('Sin existencias');
 
-    // Invariant Gate G2 / S4: NO add-to-cart button inside main content
-    const addToCartButtons = page.locator('main').getByRole('button', { name: /comprar|carrito|agregar/i });
-    await expect(addToCartButtons).toHaveCount(0);
+    // Out of stock disables add-to-cart
+    const agotadoBtn = island.getByRole('button', { name: /^agotado$/i });
+    await expect(agotadoBtn).toBeVisible();
+    await expect(agotadoBtn).toBeDisabled();
   });
 });
