@@ -56,7 +56,7 @@ Contract: `contracts/openapi/orders.yaml` (no `shipping.yaml` in this wave, L2).
 | --- | --- | --- | --- | --- | --- |
 | T1 | Feature document and Engram mirror (done) | S1–S6 | coordinator | — | `a1ccf00` |
 | C1 | `orders.yaml` contract → Gate G3 (done; approved L6) | S3, S4, S5 | coordinator draft (L1), backend owns later changes | T1 | `a1ccf00` |
-| D1 | DIVIPOLA snapshot script and data file with attribution (done) | S6 | coordinator | G3 | see L7 |
+| D1 | DIVIPOLA snapshot script and data file with attribution (done) | S6 | coordinator | G3 | `91eb4d6` |
 | B1 | Shipping schema, migrations, seed, and quote port | S2 | backend | G3 | — |
 | B2 | Orders schema, migrations, quote endpoint, `TaxCalculator` port | S3 | backend | B1, D1 | — |
 | B3 | Order placement, catalog allocation and release, order number, tracking token, outbox, guest order endpoint | S4, S5 | backend | B2 | — |
