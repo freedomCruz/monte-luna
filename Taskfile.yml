@@ -60,13 +60,13 @@ tasks:
       - npm run build
 
   backend:migrate:
-    desc: Apply embedded database migrations to this worktree's database
+    desc: Apply embedded database migrations (catalog, then shipping) to this worktree's database
     dir: backend
     cmds:
       - go run ./cmd/migrate
 
   backend:seed:
-    desc: Load the idempotent demo catalog into this worktree's database (never production)
+    desc: Load idempotent demo data (catalog, then shipping) into this worktree's database (never production)
     dir: backend
     cmds:
       - go run ./cmd/seed
