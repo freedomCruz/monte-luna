@@ -43,6 +43,8 @@ tasks:
   frontend:dev:
     desc: Run Astro on this worktree's FRONTEND_PORT (localhost only)
     dir: frontend
+    env:
+      CATALOG_API_URL: "http://{{.API_ADDR}}"
     preconditions:
       - sh: test -n "$FRONTEND_PORT"
         msg: "FRONTEND_PORT is derived by Taskfile; unset any shell override"
