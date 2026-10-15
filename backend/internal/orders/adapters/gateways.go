@@ -3,12 +3,64 @@ package adapters
 import (
 	"context"
 	"errors"
+	"fmt"
+	"strings"
 
 	"github.com/freedomCruz/monte-luna/backend/internal/catalog"
 	"github.com/freedomCruz/monte-luna/backend/internal/invoicing"
 	"github.com/freedomCruz/monte-luna/backend/internal/orders/domain"
 	"github.com/freedomCruz/monte-luna/backend/internal/shipping"
 )
+
+type CatalogInventory interface {
+	Allocate(context.Context, string, []catalog.StockRequest) ([]catalog.Allocation, error)
+	Release(context.Context, string) error
+}
+type InventoryGateway struct{ Catalog CatalogInventory }
+
+func (g InventoryGateway) Allocate(ctx context.Context, reference string, items []domain.Item) ([]domain.Allocation, error) {
+	requests := make([]catalog.StockRequest, len(items))
+	for i, item := range items {
+		requests[i] = catalog.StockRequest{VariantID: strings.ToLower(item.VariantID), Quantity: item.Quantity}
+	}
+	rows, err := g.Catalog.Allocate(ctx, reference, requests)
+	if err != nil {
+		var shortage *catalog.InsufficientStockError
+		var unavailable *catalog.VariantUnavailableError
+		code, variant, status, field := "", "", 422, "variant_id"
+		if errors.As(err, &shortage) {
+			code, variant, status, field = "insufficient_stock", shortage.VariantID, 409, "quantity"
+		} else if errors.As(err, &unavailable) {
+			code, variant = "variant_unavailable", unavailable.VariantID
+		}
+		if code != "" {
+			for i, item := range items {
+				if strings.EqualFold(item.VariantID, variant) {
+					return nil, domain.FieldProblem(status, code, fmt.Sprintf("items[%d].%s", i, field))
+				}
+			}
+		}
+		return nil, err
+	}
+	result := make([]domain.Allocation, 0, len(rows))
+	for _, row := range rows {
+		result = append(result, domain.Allocation{VariantID: row.VariantID, LotID: row.LotID, LotCode: row.LotCode, ProductionDate: row.ProductionDate, Quantity: row.Quantity})
+	}
+	return result, nil
+}
+func (g InventoryGateway) Release(ctx context.Context, reference string) error {
+	return g.Catalog.Release(ctx, reference)
+}
+
+type AddressGateway struct{}
+
+func (AddressGateway) LookupAddress(code string) (string, string, error) {
+	place, err := shipping.LookupMunicipality(code)
+	if err != nil {
+		return "", "", domain.FieldProblem(422, "unknown_municipality", "shipping_address.municipality_code")
+	}
+	return place.DepartmentName, place.MunicipalityName, nil
+}
 
 type CatalogReader interface {
 	CheckoutVariants(context.Context, []string) ([]catalog.CheckoutVariant, error)

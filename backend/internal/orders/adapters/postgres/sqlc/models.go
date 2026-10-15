@@ -8,6 +8,16 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type OrdersIdempotencyKey struct {
+	Key            string
+	RequestHash    string
+	OrderID        string
+	ResponseStatus int32
+	ResponseBody   []byte
+	CreatedAt      pgtype.Timestamptz
+	ExpiresAt      pgtype.Timestamptz
+}
+
 type OrdersOrder struct {
 	ID                       string
 	OrderNumber              string
@@ -38,6 +48,7 @@ type OrdersOrder struct {
 	Version                  int32
 	CreatedAt                pgtype.Timestamptz
 	UpdatedAt                pgtype.Timestamptz
+	ShippingIsFreeShipping   bool
 }
 
 type OrdersOrderLine struct {

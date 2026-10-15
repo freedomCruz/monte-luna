@@ -56,8 +56,12 @@ func scalar[T any](t *testing.T, db *sql.DB, query string, args ...any) T {
 func snapshot(t *testing.T, db *sql.DB) string {
 	t.Helper()
 	var result string
-	for _, table := range []string{"orders", "order_lines", "order_line_lot_allocations", "order_shipping_addresses", "order_status_history", "outbox"} {
-		result += scalar[string](t, db, fmt.Sprintf(`SELECT COALESCE(jsonb_agg(to_jsonb(r) ORDER BY id),'[]'::jsonb)::text FROM orders.%s r`, table))
+	for _, table := range []string{"orders", "order_lines", "order_line_lot_allocations", "order_shipping_addresses", "order_status_history", "outbox", "idempotency_keys"} {
+		orderCol := "id"
+		if table == "idempotency_keys" {
+			orderCol = "key"
+		}
+		result += scalar[string](t, db, fmt.Sprintf(`SELECT COALESCE(jsonb_agg(to_jsonb(r) ORDER BY %s),'[]'::jsonb)::text FROM orders.%s r`, orderCol, table))
 	}
 	return result
 }
@@ -73,7 +77,7 @@ func TestMigrationRoundTrip(t *testing.T) {
 		if err := postgres.Seed(t.Context(), db); err != nil {
 			t.Fatal(err)
 		}
-		if snapshot(t, db) != "[][][][][][]" {
+		if snapshot(t, db) != "[][][][][][][]" {
 			t.Fatal("migrate/seed wrote orders")
 		}
 		if scalar[bool](t, db, `SELECT to_regclass('public.goose_db_version') IS NOT NULL`) {
@@ -82,11 +86,23 @@ func TestMigrationRoundTrip(t *testing.T) {
 		if scalar[int](t, db, `SELECT count(*) FROM pg_constraint c JOIN pg_namespace n ON n.oid=c.connamespace WHERE n.nspname='orders' AND c.contype='f' AND c.confrelid NOT IN (SELECT oid FROM pg_class WHERE relnamespace=n.oid)`) != 0 {
 			t.Fatal("cross-schema foreign key")
 		}
+		if !scalar[bool](t, db, `SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='orders' AND table_name='orders' AND column_name='shipping_is_free_shipping')`) {
+			t.Fatal("migration 00002 did not add shipping_is_free_shipping")
+		}
+		if !scalar[bool](t, db, `SELECT to_regclass('orders.idempotency_keys') IS NOT NULL`) {
+			t.Fatal("migration 00002 did not add idempotency_keys")
+		}
 		if err := postgres.Down(t.Context(), db); err != nil {
 			t.Fatal(err)
 		}
 		if scalar[int](t, db, `SELECT count(*) FROM information_schema.tables WHERE table_schema='orders' AND table_name<>'goose_db_version'`) != 0 {
 			t.Fatal("Down left module tables")
+		}
+		if scalar[bool](t, db, `SELECT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='orders' AND table_name='orders' AND column_name='shipping_is_free_shipping')`) {
+			t.Fatal("Down did not remove shipping_is_free_shipping")
+		}
+		if scalar[bool](t, db, `SELECT to_regclass('orders.idempotency_keys') IS NOT NULL`) {
+			t.Fatal("Down did not drop idempotency_keys")
 		}
 	}
 	if err := postgres.Migrate(t.Context(), db); err != nil {
@@ -165,7 +181,7 @@ func TestOrderSchemaConstraintsAndQueries(t *testing.T) {
 		t.Fatalf("history=%+v/%v", history, err)
 	}
 	execSQL(t, db, `DELETE FROM orders.orders WHERE id=$1`, id)
-	if snapshot(t, db) != "[][][][][][]" {
+	if snapshot(t, db) != "[][][][][][][]" {
 		t.Fatal("same-schema cascade left snapshots")
 	}
 }
