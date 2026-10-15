@@ -9,6 +9,7 @@ const pagesToScan = [
   { name: 'Origin Detail (Coffee)', path: '/origenes/finca-el-mirador' },
   { name: 'Origin Detail (Cacao)', path: '/origenes/demo-cacao-origin' },
   { name: 'Cart Page', path: '/carrito' },
+  { name: 'Checkout Page (Empty)', path: '/checkout' },
 ];
 
 test.describe('WCAG 2 A/AA Accessibility Scans (axe-core)', () => {
