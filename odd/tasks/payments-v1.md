@@ -80,6 +80,7 @@ Contracts: new `contracts/openapi/payments.yaml`; changes to `contracts/openapi/
 | F1b | Frontend review fixes (L14): remove the "Simular el regreso del pago" control, no default payment method label, cancelled-order variant with the approved copy, visual comparison report with screenshots (done) | S7 | frontend | F2 | `cbc45aa`; merged `16ccf56` |
 | F1c | (a) payment sheet text without the designer annotation; (b) `/pedido` origin card from the catalog by `product_slug` (fix of cart-and-orders S5), per-state title, hidden when no line has an origin (L15) (done; origin card redone in F1d) | S7 | frontend | F1b | `777164a`, `4df8b9d`; merged `16ccf56` |
 | F1d | Origin card without invented data: no hard-coded story, no browser fallback to the build-time catalog loaders (demo data), hide the card or paragraph when data is missing (L16) (done) | S7 | frontend | F1c | `d5ca2e3`; merged `16ccf56` |
+| F1e | Frontend visual polish per V1 findings (L18): (1) stepper step numbers legible on uncompleted steps; (2) hide stepper in `Rechazado`; (3) CTA color `#C1272D` in `Rechazado` and `Vencido`; (4) 390px mobile bleed on contact/shipping CAMBIAR links | S7 | frontend | V1 | — |
 | M1 | Manual sandbox check with the user's Wompi sandbox keys: widget payment, webhook or polling confirmation, and the reference-query fallback response shape (L8) | S1–S3 | coordinator with user | I1, sandbox keys | — |
 | I1 | Integrate branches, end-to-end checkout with a fake Wompi gateway, `task verify` (done) | all | coordinator | B4, F1, F2 | verified on `16ccf56` (L17) |
 | V1 | Verification of every spec, including desktop and mobile visual comparison against canvas (done, PARTIAL: S1-S6, S8 PASS; S7 functional PASS, 4 visual findings) | all | verifier | I1 | report in `.atl/v1-report-detailed.md` (L18) |
@@ -112,3 +113,4 @@ Gates: G1 contract approval (C1) resolved L7; G2 Wompi widget script approval (A
     2. Stepper card ("Así va tu pedido") appears in `Rechazado` view (`conSeguimiento: false` in canvas).
     3. Primary CTA button in `Rechazado` and `Vencido` uses white bg instead of Monteluna brand red (`#C1272D` with white text).
     4. Mobile 390px viewport padding causes "CAMBIAR" link to bleed slightly outside contact/shipping card boundary in `CheckoutIsland.tsx`.
+- L19 (coordinator, 2026-10-16): Created task F1e to address the 4 visual findings from V1 (`.atl/v1-report-detailed.md`, L18) before final PR. Dispatched to frontend worker.
