@@ -11,6 +11,8 @@ info:
     - order_not_found (404): no order matches the tracking token.
     - order_not_payable (409): not pending_payment, already approved, or the
       reservation has elapsed, even if the expiry worker has not run yet.
+    - payment_pending (409): the order has a known pending payment attempt;
+      a new attempt is refused until that attempt is no longer pending.
     - validation_failed (422): invalid fields or unknown request fields.
     - idempotency_key_reused (422): key reused with a different body.
     - payment_transaction_mismatch (422): provider transaction does not match
@@ -34,6 +36,8 @@ paths:
         supplies neither an order identifier nor an amount. Only an unexpired
         pending_payment order without an approved attempt is payable. Retries
         after declined or error are allowed while that condition holds.
+        A new attempt is refused with 409 payment_pending while the order has
+        an attempt in pending status. An idempotent replay is not a new attempt.
         A new attempt gets a unique random reference, the order total in COP
         minor units, and an expiry equal to reservation_expires_at.
         The server computes SHA-256(reference + amount_in_cents + currency +
@@ -72,7 +76,7 @@ paths:
         '404':
           $ref: '#/components/responses/OrderNotFound'
         '409':
-          description: Order is already paid, expired, cancelled, otherwise not pending_payment, or already has an approved attempt (order_not_payable).
+          description: Order is already paid, expired, cancelled, otherwise not pending_payment, or already has an approved attempt (order_not_payable); or a known pending attempt prevents a new attempt (payment_pending).
           content:
             application/problem+json:
               schema:

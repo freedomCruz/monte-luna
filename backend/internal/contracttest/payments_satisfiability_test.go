@@ -60,6 +60,22 @@ func TestPaymentsSchemasSatisfiability(t *testing.T) {
 	}
 }
 
+func TestStartPaymentPendingAttemptConflict(t *testing.T) {
+	contract := contracttest.Load(t, "payments.yaml")
+	const code = "payment_pending"
+	if !strings.Contains(contract.Doc().Info.Description, code+" (409)") {
+		t.Fatal("pending-attempt problem code must be documented in the code list")
+	}
+	start := contract.Doc().Paths.Find("/api/v1/payments").Post
+	if !strings.Contains(start.Description, code) || !strings.Contains(start.Description, "pending") {
+		t.Fatal("startPayment must document refusing a new attempt while one is pending")
+	}
+	conflict := start.Responses.Value("409")
+	if conflict == nil || conflict.Value == nil || conflict.Value.Description == nil || !strings.Contains(*conflict.Value.Description, code) {
+		t.Fatal("startPayment must document its distinct pending-attempt 409 problem code")
+	}
+}
+
 func TestGuestOrderPaymentSatisfiability(t *testing.T) {
 	contract := contracttest.Load(t, "orders.yaml")
 	// The existing order representation remains intact; only payment is added.
