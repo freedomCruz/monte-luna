@@ -140,4 +140,118 @@ describe('OrderTrackingIsland (S4, S5)', () => {
       expect(screen.getAllByText('Preparando').length).toBeGreaterThan(0);
     });
   });
+
+  it('handles Wompi redirect with ?id=..., calls verifyPayment, and cleans URL', async () => {
+    // Mock window.location and window.history
+    const replaceStateSpy = vi.spyOn(window.history, 'replaceState');
+    const originalLocation = window.location;
+    delete (window as any).location;
+    window.location = new URL('http://localhost:4321/pedido?token=tok_redirect&id=wompi_tx_123') as any;
+
+    let verifyCalled = false;
+    globalThis.fetch = vi.fn().mockImplementation((url: string, options?: any) => {
+      if (typeof url === 'string' && url.includes('/api/v1/payments/verify')) {
+        verifyCalled = true;
+        expect(options.method).toBe('POST');
+        const body = JSON.parse(options.body);
+        expect(body.tracking_token).toBe('tok_redirect');
+        expect(body.transaction_id).toBe('wompi_tx_123');
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            order_id: '01928374-abcd-7000-8000-123456789abc',
+            order_number: 'ORD-7K2M9Q4X',
+            status: 'paid',
+            status_text: 'Pago aprobado',
+            payment: {
+              transaction_id: 'wompi_tx_123',
+              status: 'APPROVED',
+              method: 'nequi',
+              method_label: 'Nequi',
+            },
+          }),
+        });
+      }
+      if (typeof url === 'string' && url.includes('/api/v1/orders/track')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            ...mockGuestOrder,
+            status: 'paid',
+            payment: {
+              latest_attempt_status: 'approved',
+              payment_method_type: 'nequi',
+            },
+          }),
+        });
+      }
+      return Promise.resolve({ ok: false, status: 404 });
+    });
+
+    render(<OrderTrackingIsland />);
+
+    await waitFor(() => {
+      expect(verifyCalled).toBe(true);
+      expect(replaceStateSpy).toHaveBeenCalledWith(null, '', '/pedido?token=tok_redirect');
+      expect(screen.getAllByText('¡Gracias! Tu café ya es tuyo.').length).toBeGreaterThan(0);
+      expect(screen.getByText('Pagado con Nequi')).toBeDefined();
+    });
+
+    window.location = originalLocation;
+  });
+
+  it('renders Rechazado state with retry CTA when order is pending_payment with declined payment', async () => {
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+      if (typeof url === 'string' && url.includes('/api/v1/orders/track')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            ...mockGuestOrder,
+            status: 'pending_payment',
+            payment: {
+              latest_attempt_status: 'declined',
+              payment_method_type: 'card',
+            },
+          }),
+        });
+      }
+      return Promise.resolve({ ok: false, status: 404 });
+    });
+
+    render(<OrderTrackingIsland initialToken="tok_declined" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('El pago no pasó.')).toBeDefined();
+      expect(screen.getByText('Rechazado')).toBeDefined();
+      expect(screen.getByRole('link', { name: /Intentar el pago de nuevo →/i })).toBeDefined();
+    });
+  });
+
+  it('renders Vencido state with restart CTA when order is expired', async () => {
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+      if (typeof url === 'string' && url.includes('/api/v1/orders/track')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            ...mockGuestOrder,
+            status: 'expired',
+            payment: null,
+          }),
+        });
+      }
+      return Promise.resolve({ ok: false, status: 404 });
+    });
+
+    render(<OrderTrackingIsland initialToken="tok_expired" />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Se acabó el tiempo de este pedido.')).toBeDefined();
+      expect(screen.getByText('Vencida')).toBeDefined();
+      expect(screen.getByRole('link', { name: /Armar el pedido de nuevo →/i })).toBeDefined();
+    });
+  });
 });

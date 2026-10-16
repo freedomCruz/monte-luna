@@ -1,6 +1,7 @@
 import React from 'react';
 import type { components } from '../../generated/orders';
 import { OrderCountdownTimer } from './OrderCountdownTimer';
+import { resolveTrackingViewState } from '../../lib/orders/payment-tracking';
 
 export interface OrderTrackingHeroProps {
   order: components['schemas']['GuestOrder'];
@@ -8,24 +9,24 @@ export interface OrderTrackingHeroProps {
 }
 
 export function OrderTrackingHero({ order, onTimerExpire }: OrderTrackingHeroProps) {
-  const status = order.status;
+  const viewState = resolveTrackingViewState(order.status, order.payment);
 
   // Determine variant styling & texts based on M-Pedido / M-Pedido-390 canvas
-  const isPaid = ['paid', 'preparing', 'shipped', 'delivered'].includes(status);
-  const isPending = status === 'pending_payment';
-  const isExpired = status === 'expired';
-  const isCancelled = status === 'cancelled';
+  const isPaid = viewState === 'Pagado';
+  const isPending = viewState === 'Confirmando';
+  const isExpired = viewState === 'Vencido';
+  const isRejected = viewState === 'Rechazado';
 
   // Hero container colors
   const heroBg = isPaid
     ? 'bg-brand-green text-primary-foreground'
-    : isExpired || isCancelled
+    : isExpired || isRejected
       ? 'bg-hero/30 text-foreground'
       : 'bg-hero/40 text-foreground';
 
   // Title, text, buttons
   let title = '¡Gracias! Tu café ya es tuyo.';
-  let text = `Recibimos tu pago. Enviamos la confirmación y el enlace para seguir tu pedido.`;
+  let text = 'Recibimos tu pago. Enviamos la confirmación y el enlace para seguir tu pedido.';
   let btnText = 'Seguir mi pedido';
   let btnHref = '#';
   let linkText = 'Volver a la tienda';
@@ -59,7 +60,7 @@ export function OrderTrackingHero({ order, onTimerExpire }: OrderTrackingHeroPro
     selloB = 'Vencida';
     selloC = '30 minutos';
     selloBg = 'bg-primary text-primary-foreground';
-  } else if (isCancelled) {
+  } else if (isRejected) {
     title = 'El pago no pasó.';
     text =
       'El medio de pago rechazó la transacción y no se hizo ningún cobro. Tu pedido sigue apartado o puedes reintentar el pago.';
@@ -97,8 +98,8 @@ export function OrderTrackingHero({ order, onTimerExpire }: OrderTrackingHeroPro
             {text}
           </p>
 
-          {/* 30-min reservation countdown timer if pending */}
-          {isPending && order.reservation_expires_at && (
+          {/* 30-min reservation countdown timer if pending or rejected (while still pending_payment) */}
+          {order.status === 'pending_payment' && order.reservation_expires_at && (
             <div className="w-full max-w-[420px] my-2">
               <OrderCountdownTimer
                 expiresAt={order.reservation_expires_at}

@@ -209,4 +209,125 @@ test.describe('Guest Order Tracking Page (/pedido?token=...) (S4, S5)', () => {
       .analyze();
     expect(axe.violations).toEqual([]);
   });
+
+  test('handles Wompi redirect with ?id=..., calls verify endpoint, cleans URL and displays paid status with Nequi label', async ({
+    page,
+  }) => {
+    let verifyCalled = false;
+
+    await page.route('**/api/v1/payments/verify', async (route) => {
+      const request = route.request();
+      if (request.method() === 'POST') {
+        verifyCalled = true;
+        const postData = JSON.parse(request.postData() || '{}');
+        expect(postData.tracking_token).toBe('tok_redirect_wompi');
+        expect(postData.transaction_id).toBe('wompi_tx_test_456');
+
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            order_id: '01912345-6789-7abc-def0-123456789abc',
+            order_number: 'ORD-7K2M9Q4X',
+            status: 'paid',
+            status_text: 'Pago aprobado',
+            payment: {
+              transaction_id: 'wompi_tx_test_456',
+              status: 'APPROVED',
+              method: 'nequi',
+              method_label: 'Nequi',
+            },
+          }),
+        });
+        return;
+      }
+      await route.continue();
+    });
+
+    await page.route('**/api/v1/orders/track?token=tok_redirect_wompi', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ...mockOrderPending,
+          status: 'paid',
+          payment: {
+            latest_attempt_status: 'approved',
+            payment_method_type: 'nequi',
+          },
+        }),
+      });
+    });
+
+    await page.goto('/pedido?token=tok_redirect_wompi&id=wompi_tx_test_456');
+
+    // Verify verification endpoint was called
+    expect(verifyCalled).toBe(true);
+
+    // Verify ?id= was stripped from the URL without losing token
+    await expect(page).toHaveURL(/.*\/pedido\?token=tok_redirect_wompi$/);
+
+    // Verify view renders 'Pagado' variant
+    await expect(page.locator('h1')).toHaveText('¡Gracias! Tu café ya es tuyo.');
+    await expect(page.locator('text=Aprobado')).toBeVisible();
+    await expect(page.locator('text=Pagado con Nequi')).toBeVisible();
+
+    const axe = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa'])
+      .analyze();
+    expect(axe.violations).toEqual([]);
+  });
+
+  test('renders Rechazado state when order has declined payment attempt', async ({ page }) => {
+    await page.route('**/api/v1/orders/track?token=tok_declined', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ...mockOrderPending,
+          status: 'pending_payment',
+          payment: {
+            latest_attempt_status: 'declined',
+            payment_method_type: 'card',
+          },
+        }),
+      });
+    });
+
+    await page.goto('/pedido?token=tok_declined');
+
+    await expect(page.locator('h1')).toHaveText('El pago no pasó.');
+    await expect(page.locator('text=Rechazado')).toBeVisible();
+    await expect(page.locator('a:has-text("Intentar el pago de nuevo")')).toBeVisible();
+
+    const axe = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa'])
+      .analyze();
+    expect(axe.violations).toEqual([]);
+  });
+
+  test('renders Vencido state when order status is expired', async ({ page }) => {
+    await page.route('**/api/v1/orders/track?token=tok_expired', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ...mockOrderPending,
+          status: 'expired',
+          payment: null,
+        }),
+      });
+    });
+
+    await page.goto('/pedido?token=tok_expired');
+
+    await expect(page.locator('h1')).toHaveText('Se acabó el tiempo de este pedido.');
+    await expect(page.locator('text=Vencida')).toBeVisible();
+    await expect(page.locator('a:has-text("Armar el pedido de nuevo")')).toBeVisible();
+
+    const axe = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa'])
+      .analyze();
+    expect(axe.violations).toEqual([]);
+  });
 });

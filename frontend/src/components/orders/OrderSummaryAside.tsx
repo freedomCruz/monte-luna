@@ -1,13 +1,18 @@
 import React from 'react';
 import type { components } from '../../generated/orders';
 import { formatMoneyCop } from '../../lib/shared/formatters';
+import {
+  formatPaymentMethodLabel,
+  resolveTrackingViewState,
+} from '../../lib/orders/payment-tracking';
 
 export interface OrderSummaryAsideProps {
   lines: components['schemas']['GuestOrderLine'][];
   subtotalAmount: number;
   shippingAmount: number;
   totalAmount: number;
-  status: string;
+  status: components['schemas']['OrderStatus'];
+  payment?: components['schemas']['GuestPayment'] | null;
 }
 
 export function OrderSummaryAside({
@@ -16,21 +21,31 @@ export function OrderSummaryAside({
   shippingAmount,
   totalAmount,
   status,
+  payment,
 }: OrderSummaryAsideProps) {
-  const isPaid = ['paid', 'preparing', 'shipped', 'delivered'].includes(status);
-  const isCancelledOrExpired = status === 'cancelled' || status === 'expired';
+  const viewState = resolveTrackingViewState(status, payment);
 
-  const totalLabel = isPaid
-    ? 'Total pagado'
-    : isCancelledOrExpired
-      ? 'Total'
-      : 'Total por pagar';
+  let totalLabel = 'Total';
+  let totalNote = 'Pesos colombianos';
 
-  const totalNote = isPaid
-    ? 'Pagado con Wompi'
-    : isCancelledOrExpired
-      ? 'Pedido sin pagar'
-      : 'Pesos colombianos';
+  switch (viewState) {
+    case 'Pagado':
+      totalLabel = 'Total pagado';
+      totalNote = formatPaymentMethodLabel(payment?.payment_method_type ?? null);
+      break;
+    case 'Confirmando':
+      totalLabel = 'Total';
+      totalNote = 'Pago en confirmación';
+      break;
+    case 'Rechazado':
+      totalLabel = 'Total por pagar';
+      totalNote = 'Pesos colombianos';
+      break;
+    case 'Vencido':
+      totalLabel = 'Total';
+      totalNote = 'Pedido sin pagar';
+      break;
+  }
 
   return (
     <aside

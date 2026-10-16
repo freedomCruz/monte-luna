@@ -106,6 +106,22 @@ describe('Order Subcomponents Unit Tests', () => {
       expect(screen.getByText('Rechazado')).toBeDefined();
       expect(screen.getByText(/Intentar el pago de nuevo/i)).toBeDefined();
     });
+
+    it('renders rejected variant when order is pending_payment with declined payment attempt', () => {
+      const rejectedPendingOrder: components['schemas']['GuestOrder'] = {
+        ...mockOrder,
+        status: 'pending_payment',
+        payment: {
+          latest_attempt_status: 'declined',
+          payment_method_type: 'card',
+        },
+      };
+      render(<OrderTrackingHero order={rejectedPendingOrder} />);
+
+      expect(screen.getByText('El pago no pasó.')).toBeDefined();
+      expect(screen.getByText('Rechazado')).toBeDefined();
+      expect(screen.getByText(/Intentar el pago de nuevo/i)).toBeDefined();
+    });
   });
 
   describe('OrderDeliveryCard', () => {
@@ -166,6 +182,25 @@ describe('Order Subcomponents Unit Tests', () => {
       expect(screen.getAllByText('$76.000').length).toBeGreaterThan(0);
       expect(screen.getByText('$9.500')).toBeDefined();
       expect(screen.getByText('$85.500')).toBeDefined();
+    });
+
+    it('renders custom payment method label (e.g. Pagado con Nequi) when paid', () => {
+      render(
+        <OrderSummaryAside
+          lines={mockOrder.lines}
+          subtotalAmount={mockOrder.subtotal_amount}
+          shippingAmount={mockOrder.shipping_amount}
+          totalAmount={mockOrder.total_amount}
+          status="paid"
+          payment={{
+            latest_attempt_status: 'approved',
+            payment_method_type: 'nequi',
+          }}
+        />
+      );
+
+      expect(screen.getByText('Total pagado')).toBeDefined();
+      expect(screen.getByText('Pagado con Nequi')).toBeDefined();
     });
   });
 
