@@ -86,7 +86,7 @@ export function CheckoutPaymentStep({
       </div>
 
       {/* Main Container */}
-      <main className="max-w-[1320px] w-full mx-auto px-6 md:px-12 py-8 md:py-12 flex-1 flex flex-col lg:flex-row items-start gap-8 lg:gap-12">
+      <main className="max-w-[1320px] w-full mx-auto px-4 sm:px-6 md:px-12 py-8 md:py-12 flex-1 flex flex-col lg:flex-row items-start gap-8 lg:gap-12">
         {/* Left Column: Customer Review + Wompi Box */}
         <div className="flex-1 w-full flex flex-col gap-8">
           {/* S5 Out-of-Stock / Insufficient Stock Alert */}

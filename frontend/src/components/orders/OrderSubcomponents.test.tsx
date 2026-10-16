@@ -95,7 +95,10 @@ describe('Order Subcomponents Unit Tests', () => {
 
       expect(screen.getByText('Se acabó el tiempo de este pedido.')).toBeDefined();
       expect(screen.getByText('Vencida')).toBeDefined();
-      expect(screen.getByText(/Armar el pedido de nuevo/i)).toBeDefined();
+      const restartLink = screen.getByText(/Armar el pedido de nuevo/i);
+      expect(restartLink).toBeDefined();
+      expect(restartLink.className).toContain('bg-[#C1272D]');
+      expect(restartLink.className).toContain('text-white');
     });
 
     it('renders cancelled status with Cancelado seal, approved copy, and restart link (S7)', () => {
@@ -111,7 +114,10 @@ describe('Order Subcomponents Unit Tests', () => {
       expect(screen.getAllByText('Pedido').length).toBeGreaterThanOrEqual(1);
       expect(screen.getByText('Cancelado')).toBeDefined();
       expect(screen.getByText('Reembolso')).toBeDefined();
-      expect(screen.getByText(/Armar el pedido de nuevo/i)).toBeDefined();
+      const restartLink = screen.getByText(/Armar el pedido de nuevo/i);
+      expect(restartLink).toBeDefined();
+      expect(restartLink.className).toContain('bg-[#C1272D]');
+      expect(restartLink.className).toContain('text-white');
       expect(screen.getByText(/Ir a la tienda/i)).toBeDefined();
       // Must NOT render Rechazado or payment retry
       expect(screen.queryByText('Rechazado')).toBeNull();
@@ -131,7 +137,10 @@ describe('Order Subcomponents Unit Tests', () => {
 
       expect(screen.getByText('El pago no pasó.')).toBeDefined();
       expect(screen.getByText('Rechazado')).toBeDefined();
-      expect(screen.getByText(/Intentar el pago de nuevo/i)).toBeDefined();
+      const retryLink = screen.getByText(/Intentar el pago de nuevo/i);
+      expect(retryLink).toBeDefined();
+      expect(retryLink.className).toContain('bg-[#C1272D]');
+      expect(retryLink.className).toContain('text-white');
     });
   });
 
@@ -272,13 +281,27 @@ describe('Order Subcomponents Unit Tests', () => {
   });
 
   describe('computeOrderTrackingSteps', () => {
-    it('computes correct step states for shipped status', () => {
+    it('computes correct step states and high-contrast styles for shipped status', () => {
       const steps = computeOrderTrackingSteps('shipped');
       expect(steps.length).toBe(4);
-      expect(steps[0].marca).toBe('✓'); // Pago recibido
-      expect(steps[1].marca).toBe('✓'); // Preparando
-      expect(steps[2].actual).toBe(true); // Enviado
-      expect(steps[3].actual).toBe(false); // Entregado
+      expect(steps[0].marca).toBe('✓'); // Pago recibido (hecho)
+      expect(steps[0].bg).toBe('bg-[#1E6B45]');
+      expect(steps[0].fg).toBe('text-white');
+      expect(steps[0].bc).toBe('border-[#1E6B45]');
+
+      expect(steps[1].marca).toBe('✓'); // Preparando (hecho)
+      expect(steps[1].bg).toBe('bg-[#1E6B45]');
+      expect(steps[1].fg).toBe('text-white');
+
+      expect(steps[2].actual).toBe(true); // Enviado (actual)
+      expect(steps[2].bg).toBe('bg-[#1B1510]');
+      expect(steps[2].fg).toBe('text-[#FAF3E3]');
+      expect(steps[2].bc).toBe('border-[#1B1510]');
+
+      expect(steps[3].actual).toBe(false); // Entregado (pendiente)
+      expect(steps[3].bg).toBe('bg-white');
+      expect(steps[3].fg).toBe('text-[#5F554A]');
+      expect(steps[3].bc).toBe('border-[#A8997C]');
     });
 
     it('returns empty steps for expired or cancelled status', () => {
