@@ -126,9 +126,40 @@ Configuration parameters in `cmd/api`:
 - `TRACKING_TOKEN_SECRET`: Base64-encoded secret containing at least 32 bytes (required).
 - `ORDER_MAINTENANCE_INTERVAL`: Polling interval for expiry and cleanup (default: 1m).
 
+### Wompi payment initiation
+
+`POST /api/v1/payments` follows the approved [payments contract](../contracts/openapi/payments.yaml).
+Send only `tracking_token` in JSON and a UUID `Idempotency-Key`. The orders facade
+hash-authorizes the capability and supplies the order total, currency and reservation
+expiry. Unexpired `pending_payment` orders without an approved or pending attempt
+can start; declined/error attempts can be retried. New references use 24 random
+bytes, and only the backend computes the exact Wompi integrity signature.
+
+A successful response is 201 with `Location: /api/v1/payments/verify` and `no-store`.
+A matching key/body replays the original checkout for 24 hours, even when the order
+has since expired or been paid. A changed body returns `idempotency_key_reused`.
+The replay ledger never stores the raw tracking token or token-bearing redirect.
+
+Startup requires `WOMPI_PUBLIC_KEY`, `WOMPI_PRIVATE_KEY`, `WOMPI_INTEGRITY_SECRET`,
+`WOMPI_EVENTS_SECRET`, `WOMPI_ENVIRONMENT` (`sandbox` or `production`) and
+`STOREFRONT_BASE_URL` (absolute HTTP(S) storefront origin). Values are read only
+from the environment and are never logged. The redirect is always the server-built
+`/pedido?token=...` capability URL; the browser never supplies prices or status.
+
+Apply payments migrations with `go run ./cmd/migrate -module payments`; the default
+`all` now migrates catalog, shipping, orders and payments. The payments migration
+creates attempts, refunds (including `duplicate_payment`), webhook deduplication,
+outbox, consumer guards and the payment-start replay ledger. Settlements are deferred.
+Seed behavior and its module filters are unchanged; payments has no demo seed.
+
+The `PaymentGateway` port uses a bounded `net/http` adapter with the private Bearer
+key. The reference-query fallback is **undocumented and unverified**; its response
+shape/filter behavior must be confirmed with sandbox keys (M1) before production.
+Tests use only an `httptest` provider and signed fixtures, never live Wompi calls.
+
 ### Transactional outbox relay
 
-The API starts an in-process relay for registered catalog and orders outboxes,
+The API starts an in-process relay for registered catalog, orders and payments outboxes,
 using `FOR UPDATE SKIP LOCKED` claims. It dispatches registered consumers before
 marking a source event delivered. Events with no registered consumer have no
 side effects. `platform.ConsumeOnce` inserts the source UUID into the consumer's

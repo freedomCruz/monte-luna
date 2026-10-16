@@ -15,6 +15,7 @@ import (
 	"github.com/freedomCruz/monte-luna/backend/internal/catalog"
 	"github.com/freedomCruz/monte-luna/backend/internal/invoicing"
 	"github.com/freedomCruz/monte-luna/backend/internal/orders"
+	"github.com/freedomCruz/monte-luna/backend/internal/payments"
 	"github.com/freedomCruz/monte-luna/backend/internal/platform"
 	"github.com/freedomCruz/monte-luna/backend/internal/shipping"
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -57,12 +58,17 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	defer checkout.Close()
+	payment, err := payments.New(ctx, cfg.databaseURL, payments.NewOrdersPort(checkout), cfg.payments, logger, payments.Options{})
+	if err != nil {
+		return err
+	}
+	defer payment.Close()
 	relayPool, err := pgxpool.New(ctx, cfg.databaseURL)
 	if err != nil {
 		return errors.New("initialize outbox connection pool")
 	}
 	defer relayPool.Close()
-	relay, err := platform.NewRelay(relayPool, []string{"catalog", "orders"}, cfg.relay, logger)
+	relay, err := platform.NewRelay(relayPool, []string{"catalog", "orders", "payments"}, cfg.relay, logger)
 	if err != nil {
 		return err
 	}
@@ -79,6 +85,7 @@ func run(logger *slog.Logger) error {
 	platform.RegisterRoutes(mux)
 	module.RegisterRoutes(mux)
 	checkout.RegisterRoutes(mux)
+	payment.RegisterRoutes(mux)
 
 	srv := &http.Server{
 		Addr:              addr,
@@ -118,6 +125,7 @@ type config struct {
 	trackingSecret                  []byte
 	maintenanceInterval             time.Duration
 	relay                           platform.RelayConfig
+	payments                        payments.Config
 }
 
 func loadConfig() (config, error) {
@@ -143,6 +151,10 @@ func loadConfig() (config, error) {
 			return cfg, errors.New("ORDER_MAINTENANCE_INTERVAL must be a positive duration")
 		}
 		cfg.maintenanceInterval = interval
+	}
+	cfg.payments, err = payments.LoadConfig(os.Getenv)
+	if err != nil {
+		return cfg, err
 	}
 	cfg.relay, err = platform.LoadRelayConfig(os.Getenv)
 	if err != nil {
