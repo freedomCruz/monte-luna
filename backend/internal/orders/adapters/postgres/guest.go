@@ -47,6 +47,15 @@ func (r *Repository) Track(ctx context.Context, hash string) (guest domain.Guest
 		}
 		guest.Lines = append(guest.Lines, domain.GuestLine{Line: domain.Line{VariantID: line.VariantID, ProductSlug: line.ProductSlug, ProductTitle: line.ProductTitle, VariantLabel: line.VariantLabel, SKU: line.Sku, UnitPriceAmount: line.UnitPriceAmount, Quantity: line.Quantity, LineTotalAmount: line.LineTotalAmount}, ProductionDate: date})
 	}
+	if r.payments != nil {
+		payment, err := r.payments.Payment(ctx, order.ID)
+		if err != nil {
+			return guest, err
+		}
+		if payment != nil {
+			guest.Payment = payment
+		}
+	}
 	return guest, nil
 }
 func (r *Repository) Expire(ctx context.Context, now time.Time, release func(context.Context, string) error) (int, error) {
@@ -79,6 +88,21 @@ func (r *Repository) expireOne(ctx context.Context, now time.Time, release func(
 	}
 	if !domain.ReservationExpired(order.Status, order.ReservationExpiresAt.Time, now) {
 		return false, nil
+	}
+	if r.payments != nil && now.Before(order.PlacedAt.Time.Add(2*time.Hour)) {
+		inFlight, err := r.payments.InFlight(ctx, order.ID)
+		if err != nil {
+			return false, err
+		}
+		if next, extend := domain.PaymentGrace(order.PlacedAt.Time, order.ReservationExpiresAt.Time, now, inFlight); extend {
+			if _, err := tx.Exec(ctx, `UPDATE orders.orders SET reservation_expires_at=$2,updated_at=$3,version=version+1 WHERE id=$1`, order.ID, next, now); err != nil {
+				return false, err
+			}
+			if err := tx.Commit(ctx); err != nil {
+				return false, err
+			}
+			return true, nil
+		}
 	}
 	// Keep the order row locked while the idempotent catalog release commits.
 	// If order persistence then fails/crashes, the next run repeats a harmless
