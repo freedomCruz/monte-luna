@@ -180,11 +180,12 @@ export function OrderTrackingIsland({ initialToken }: OrderTrackingIslandProps) 
     );
   }
 
-  // Order tracking steps
-  const steps = computeOrderTrackingSteps(order.status);
-
   // Resolved view state: 'Pagado' | 'Confirmando' | 'Rechazado' | 'Vencido' | 'Cancelado'
   const viewState = resolveTrackingViewState(order.status, order.payment);
+
+  // Order tracking steps: only active for Pagado and Confirmando (canvas conSeguimiento: true)
+  const conSeguimiento = viewState === 'Pagado' || viewState === 'Confirmando';
+  const steps = conSeguimiento ? computeOrderTrackingSteps(order.status) : [];
 
   let notices: OrderNoticeItem[] = [];
   if (viewState === 'Pagado') {
@@ -270,7 +271,12 @@ export function OrderTrackingIsland({ initialToken }: OrderTrackingIslandProps) 
       {/* Main content body */}
       <main className="flex-1 w-full max-w-[1320px] mx-auto px-6 md:px-12 py-10 md:py-16 flex flex-col gap-8 md:gap-10">
         {/* Step progress timeline */}
-        {steps.length > 0 && <OrderTrackingStepsSection steps={steps} />}
+        {conSeguimiento && steps.length > 0 && (
+          <OrderTrackingStepsSection
+            steps={steps}
+            subtitle={viewState === 'Confirmando' ? 'Esta página se actualiza sola.' : undefined}
+          />
+        )}
 
         {/* Delivery & Summary cards */}
         <div className="flex flex-col lg:flex-row items-start gap-8 lg:gap-12">

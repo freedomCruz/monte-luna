@@ -228,6 +228,8 @@ describe('OrderTrackingIsland (S4, S5)', () => {
       expect(screen.getByText('El pago no pasó.')).toBeDefined();
       expect(screen.getByText('Rechazado')).toBeDefined();
       expect(screen.getByRole('link', { name: /Intentar el pago de nuevo →/i })).toBeDefined();
+      // Stepper must NOT be rendered in Rechazado (canvas conSeguimiento: false)
+      expect(screen.queryByText('Así va tu pedido')).toBeNull();
     });
   });
 
@@ -253,6 +255,8 @@ describe('OrderTrackingIsland (S4, S5)', () => {
       expect(screen.getByText('Se acabó el tiempo de este pedido.')).toBeDefined();
       expect(screen.getByText('Vencida')).toBeDefined();
       expect(screen.getByRole('link', { name: /Armar el pedido de nuevo →/i })).toBeDefined();
+      // Stepper must NOT be rendered in Vencido (canvas conSeguimiento: false)
+      expect(screen.queryByText('Así va tu pedido')).toBeNull();
     });
   });
 
@@ -292,6 +296,9 @@ describe('OrderTrackingIsland (S4, S5)', () => {
       // Summary
       expect(screen.getByText('Total pagado')).toBeDefined();
       expect(screen.getByText('Te lo devolvemos completo')).toBeDefined();
+
+      // Stepper must NOT be rendered in Cancelado (canvas conSeguimiento: false)
+      expect(screen.queryByText('Así va tu pedido')).toBeNull();
 
       // Delivery
       expect(screen.getByText('Sin fecha de entrega')).toBeDefined();

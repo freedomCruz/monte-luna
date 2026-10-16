@@ -42,11 +42,11 @@ export function computeOrderTrackingSteps(status: string): OrderStepItem[] {
     nota,
     actual: s === 'actual',
     marca: s === 'hecho' ? '✓' : String(i + 1),
-    bg: s === 'hecho' ? 'bg-[#1E6B45]' : s === 'actual' ? 'bg-card' : 'bg-card',
-    fg: s === 'hecho' ? 'text-primary-foreground' : s === 'actual' ? 'text-primary-foreground' : 'text-muted-foreground',
-    bc: s === 'hecho' ? 'border-[#1E6B45]' : s === 'actual' ? 'border-primary' : 'border-[#A8997C]',
-    txt: s === 'pendiente' ? 'text-muted-foreground' : 'text-foreground',
-    linea: i === 0 ? 'transparent' : s === 'pendiente' ? 'bg-[#D9CBA8]' : 'bg-primary',
+    bg: s === 'hecho' ? 'bg-[#1E6B45]' : s === 'actual' ? 'bg-[#1B1510]' : 'bg-white',
+    fg: s === 'hecho' ? 'text-white' : s === 'actual' ? 'text-[#FAF3E3]' : 'text-[#5F554A]',
+    bc: s === 'hecho' ? 'border-[#1E6B45]' : s === 'actual' ? 'border-[#1B1510]' : 'border-[#A8997C]',
+    txt: s === 'pendiente' ? 'text-[#5F554A]' : 'text-[#1B1510]',
+    linea: i === 0 ? 'transparent' : s === 'pendiente' ? 'bg-[#D9CBA8]' : 'bg-[#1B1510]',
   });
 
   return [

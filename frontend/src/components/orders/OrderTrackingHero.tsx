@@ -87,6 +87,15 @@ export function OrderTrackingHero({ order, onTimerExpire }: OrderTrackingHeroPro
     selloBg = 'bg-destructive text-primary-foreground';
   }
 
+  let btnClasses = 'bg-card text-foreground';
+  if (isPaid) {
+    btnClasses = 'bg-[#FAF3E3] text-[#1B1510]';
+  } else if (isPending) {
+    btnClasses = 'bg-[#1B1510] text-[#FAF3E3]';
+  } else if (isRejected || isExpired || isCancelled) {
+    btnClasses = 'bg-[#C1272D] text-white';
+  }
+
   return (
     <div className={`w-full ${heroBg} overflow-hidden py-10 md:py-16 px-6 md:px-12`}>
       <div className="max-w-[1320px] mx-auto flex flex-col md:flex-row items-center justify-between gap-8 md:gap-12">
@@ -125,7 +134,7 @@ export function OrderTrackingHero({ order, onTimerExpire }: OrderTrackingHeroPro
           <div className="flex flex-wrap items-center gap-4 pt-2">
             <a
               href={btnHref}
-              className="inline-flex items-center justify-center min-h-[54px] px-8 rounded-xl bg-card text-foreground font-sans text-base font-bold uppercase tracking-wide hover:opacity-95 transition-opacity"
+              className={`inline-flex items-center justify-center min-h-[54px] px-8 rounded-xl ${btnClasses} font-sans text-base font-bold uppercase tracking-wide hover:opacity-95 transition-opacity`}
             >
               {btnText} →
             </a>
