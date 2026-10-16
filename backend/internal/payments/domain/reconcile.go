@@ -36,6 +36,7 @@ func PaymentView(attempt *Attempt) *GuestPayment {
 
 type ReconciliationRepository interface {
 	Latest(context.Context, string) (*Attempt, error)
+	Active(context.Context, string) ([]Attempt, error)
 	ByReference(context.Context, string, string) (*Attempt, error)
 	Apply(context.Context, Transaction, string, time.Time) error
 }

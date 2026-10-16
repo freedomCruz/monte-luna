@@ -32,6 +32,10 @@ func (c *testClock) Now() time.Time { return c.now }
 
 type ordersReader struct{ order payments.Order }
 
+func (o *ordersReader) OrderNumber(context.Context, string) (string, error) {
+	return o.order.Number, nil
+}
+
 func (o *ordersReader) Authorize(_ context.Context, hash string) (payments.Order, error) {
 	sum := sha256.Sum256([]byte(trackingToken))
 	otherSum := sha256.Sum256([]byte(strings.Repeat("B", 43)))

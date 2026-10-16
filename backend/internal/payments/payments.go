@@ -78,6 +78,14 @@ func New(ctx context.Context, databaseURL string, orders OrdersPort, cfg Config,
 		gateway = adapters.NewWompi(cfg.GatewayURL(), cfg.PrivateKey, &http.Client{Timeout: timeout, CheckRedirect: func(*http.Request, []*http.Request) error { return http.ErrUseLastResponse }})
 	}
 	repo := postgres.NewRepository(pool)
+	repo.SetRefundReporter(func(ctx context.Context, orderID string, amount int64, reason string) {
+		number, err := orders.OrderNumber(ctx, orderID)
+		if err != nil {
+			logger.Error("manual payment refund requires attention; order number lookup failed", "order_id", orderID, "amount", amount, "reason", reason)
+			return
+		}
+		logger.Error("manual payment refund required", "order_number", number, "amount", amount, "reason", reason)
+	})
 	start := app.NewStart(repo, orders, clock, adapters.RandomReferences{}, app.CheckoutConfig{PublicKey: cfg.PublicKey, IntegritySecret: cfg.IntegritySecret, StorefrontBaseURL: cfg.StorefrontBaseURL})
 	reconciliation := app.NewReconciliation(repo, orders, gateway, clock)
 	handler := adapters.NewHTTP(start, logger)

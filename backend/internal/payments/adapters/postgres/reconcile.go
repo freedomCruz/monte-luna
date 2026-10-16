@@ -22,7 +22,7 @@ func scanAttempt(row pgx.Row) (*domain.Attempt, error) {
 	return &a, err
 }
 func (r *Repository) Latest(ctx context.Context, orderID string) (*domain.Attempt, error) {
-	return scanAttempt(r.pool.QueryRow(ctx, `SELECT `+attemptColumns+` FROM payments.payment_attempts WHERE order_id=$1 ORDER BY created_at DESC,id DESC LIMIT 1`, orderID))
+	return scanAttempt(r.pool.QueryRow(ctx, `SELECT `+attemptColumns+` FROM payments.payment_attempts WHERE order_id=$1 AND status<>'duplicate_approved' ORDER BY (status='approved') DESC,created_at DESC,id DESC LIMIT 1`, orderID))
 }
 func (r *Repository) ByReference(ctx context.Context, orderID, reference string) (*domain.Attempt, error) {
 	return scanAttempt(r.pool.QueryRow(ctx, `SELECT `+attemptColumns+` FROM payments.payment_attempts WHERE order_id=$1 AND reference=$2`, orderID, reference))
@@ -70,6 +70,15 @@ func (r *Repository) Apply(ctx context.Context, transaction domain.Transaction, 
 	if domain.Terminal(attempt.Status) {
 		return tx.Commit(ctx)
 	}
+	duplicate := false
+	if status == "approved" {
+		if err := tx.QueryRow(ctx, `SELECT EXISTS(SELECT 1 FROM payments.payment_attempts WHERE order_id=$1 AND status='approved' AND id<>$2)`, attempt.OrderID, attempt.ID).Scan(&duplicate); err != nil {
+			return err
+		}
+		if duplicate {
+			status = "duplicate_approved"
+		}
+	}
 	finalized := transaction.FinalizedAt
 	if domain.Terminal(status) && finalized == nil {
 		finalized = &now
@@ -93,7 +102,18 @@ func (r *Repository) Apply(ctx context.Context, transaction domain.Transaction, 
 			return fmt.Errorf("write payment event: %w", err)
 		}
 	}
-	return tx.Commit(ctx)
+	if duplicate {
+		if _, err := insertRefund(ctx, tx, attempt, "duplicate_payment", now); err != nil {
+			return err
+		}
+	}
+	if err := tx.Commit(ctx); err != nil {
+		return err
+	}
+	if duplicate && r.refundReporter != nil {
+		r.refundReporter(ctx, attempt.OrderID, attempt.Amount, "duplicate_payment")
+	}
+	return nil
 }
 func (r *Repository) CleanupWebhooks(ctx context.Context, now time.Time, retention time.Duration, batch int) error {
 	_, err := r.pool.Exec(ctx, `DELETE FROM payments.provider_webhook_events WHERE id IN (SELECT id FROM payments.provider_webhook_events WHERE received_at < $1 ORDER BY received_at,id LIMIT $2)`, now.Add(-retention), batch)

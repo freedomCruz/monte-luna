@@ -18,6 +18,8 @@ type fixedReference struct{}
 
 func (fixedReference) Reference() (string, error) { return "REF123", nil }
 
+func (p orderPort) OrderNumber(context.Context, string) (string, error) { return p.order.Number, nil }
+
 type orderPort struct {
 	order domain.Order
 	err   error

@@ -10,6 +10,13 @@ import (
 	"github.com/freedomCruz/monte-luna/backend/internal/payments/domain"
 )
 
+func (r *reconcileRepo) Active(context.Context, string) ([]domain.Attempt, error) {
+	if r.attempt == nil {
+		return nil, nil
+	}
+	return []domain.Attempt{*r.attempt}, nil
+}
+
 type reconcileRepo struct {
 	attempt *domain.Attempt
 	applied int
@@ -39,6 +46,19 @@ type gateway struct {
 func (g *gateway) Fetch(context.Context, string, string) (*domain.Transaction, error) {
 	g.calls++
 	return g.transaction, nil
+}
+func TestExpiryChecksProviderBeforeGrantingGrace(t *testing.T) {
+	for _, status := range []string{"PENDING", "DECLINED", "ERROR", "APPROVED"} {
+		t.Run(status, func(t *testing.T) {
+			repo := &reconcileRepo{attempt: &domain.Attempt{OrderID: "order", Reference: "REF", Amount: 4500000, Currency: "COP", Status: "created"}}
+			fake := &gateway{transaction: &domain.Transaction{ID: "provider", Reference: "REF", Amount: 4500000, Currency: "COP", Status: status}}
+			service := app.NewReconciliation(repo, orderPort{}, fake, fixedClock{time.Now()})
+			pending, err := service.InFlight(t.Context(), "order")
+			if err != nil || pending != (status == "PENDING") || fake.calls != 1 || repo.applied != 1 {
+				t.Fatalf("status %s pending=%v err=%v calls=%d applied=%d", status, pending, err, fake.calls, repo.applied)
+			}
+		})
+	}
 }
 func TestVerifyHintOwnershipAmountCurrencyAndNoKnownID(t *testing.T) {
 	for _, tt := range []struct {

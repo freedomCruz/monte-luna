@@ -8,8 +8,13 @@ import (
 
 type OrderReader interface {
 	PaymentOrder(context.Context, string) (orders.PaymentOrder, bool, error)
+	OrderNumber(context.Context, string) (string, error)
 }
 type OrdersGateway struct{ Reader OrderReader }
+
+func (g OrdersGateway) OrderNumber(ctx context.Context, id string) (string, error) {
+	return g.Reader.OrderNumber(ctx, id)
+}
 
 func (g OrdersGateway) Authorize(ctx context.Context, hash string) (domain.Order, error) {
 	order, found, err := g.Reader.PaymentOrder(ctx, hash)

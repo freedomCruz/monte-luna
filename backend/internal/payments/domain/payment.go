@@ -65,6 +65,7 @@ type GuestPayment struct {
 }
 type OrdersPort interface {
 	Authorize(context.Context, string) (Order, error)
+	OrderNumber(context.Context, string) (string, error)
 }
 type Clock interface{ Now() time.Time }
 type References interface{ Reference() (string, error) }

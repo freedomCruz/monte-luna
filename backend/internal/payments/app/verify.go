@@ -60,6 +60,46 @@ func (s *Reconciliation) Verify(ctx context.Context, token, hint string) (*domai
 	}
 	return domain.PaymentView(latest), nil
 }
+func (s *Reconciliation) InFlight(ctx context.Context, orderID string) (bool, error) {
+	latest, err := s.repository.Latest(ctx, orderID)
+	if err != nil {
+		return false, err
+	}
+	if latest != nil && latest.Status == "approved" {
+		return false, nil
+	}
+	attempts, err := s.repository.Active(ctx, orderID)
+	if err != nil {
+		return false, err
+	}
+	inFlight := false
+	for _, attempt := range attempts {
+		id := ""
+		if attempt.ProviderID != nil {
+			id = *attempt.ProviderID
+		}
+		transaction, err := s.gateway.Fetch(ctx, id, attempt.Reference)
+		if err != nil {
+			return false, err
+		}
+		if transaction == nil {
+			continue
+		}
+		if transaction.Reference != attempt.Reference || transaction.Amount != attempt.Amount || transaction.Currency != attempt.Currency {
+			return false, domain.Problem(422, "payment_transaction_mismatch")
+		}
+		if err := s.repository.Apply(ctx, *transaction, "", s.clock.Now().UTC()); err != nil {
+			return false, err
+		}
+		if transaction.Status == "APPROVED" {
+			return false, nil
+		}
+		if transaction.Status == "PENDING" {
+			inFlight = true
+		}
+	}
+	return inFlight, nil
+}
 func (s *Reconciliation) Webhook(ctx context.Context, body []byte, checksum, secret string) error {
 	transaction, key, err := VerifyWebhook(body, checksum, secret)
 	if err != nil {

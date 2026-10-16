@@ -63,6 +63,7 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	defer payment.Close()
+	checkout.EnablePayments(orderPayments{module: payment})
 	relayPool, err := pgxpool.New(ctx, cfg.databaseURL)
 	if err != nil {
 		return errors.New("initialize outbox connection pool")
@@ -72,6 +73,8 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	relay.Subscribe("payments.payment_approved", checkout.HandlePaymentApproved)
+	relay.Subscribe("orders.order_cancelled", payment.HandleOrderCancelled)
 	relayCtx, cancelRelay := context.WithCancel(ctx)
 	relayDone := make(chan struct{})
 	go func() { defer close(relayDone); relay.Run(relayCtx) }()

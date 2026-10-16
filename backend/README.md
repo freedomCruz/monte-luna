@@ -176,6 +176,33 @@ provider request. Successful reconciliation does not synchronously mark orders p
 The API runs bounded webhook-ledger cleanup at the configured outbox cleanup
 interval and joins it before closing the payments pool.
 
+### Order payment confirmation, late payments and refunds
+
+Startup registers `orders` for `payments.payment_approved` and `payments` for
+`orders.order_cancelled`. Consumers commit their own `processed_events` guard with
+their state/history/outbox effects. Pending orders become paid once; expired orders
+reallocate stock through the catalog facade and become paid, or cancelled with
+`late_payment_no_stock`. Fulfillment and terminal orders never move backwards.
+Catalog's late reallocation is idempotent by order reference, including retries
+after a consumer persistence failure; ordinary allocation still rejects reused references.
+
+Before expiry, orders queries payments through an in-process port. Only a private
+provider-confirmed `PENDING` result extends the reservation by 15 minutes, capped
+at `placed_at + 2h`. Provider-query failures leave the reservation unchanged for a
+retry; the hard ceiling expires orders using the existing history/event/release path.
+Background reconciliation can use the explicitly unverified adapter reference fallback.
+
+A second provider approval becomes terminal `duplicate_approved`, preserving the
+unique canonical `approved` attempt. It emits no approval event and creates one
+pending manual `duplicate_payment` refund. Cancelled orders with an approved attempt
+create a pending manual refund with the cancellation reason. Refund creation logs
+an ERROR with order number and amount, without tokens, idempotency keys or secrets.
+Refund execution, admin workflows and emails remain deferred.
+
+`GuestOrder.payment` and payment verification project the canonical approved attempt
+when present; otherwise they project the latest attempt. `duplicate_approved` is never
+exposed. Provider methods are lowercase actual values, or null until known.
+
 ### Transactional outbox relay
 
 The API starts an in-process relay for registered catalog, orders and payments outboxes,
