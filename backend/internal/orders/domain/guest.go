@@ -32,6 +32,7 @@ type GuestOrder struct {
 	TotalAmount          int64        `json:"total_amount"`
 	Address              GuestAddress `json:"shipping_address"`
 	Shipment             any          `json:"shipment"`
+	Payment              any          `json:"payment"`
 }
 type GuestReader interface {
 	Track(context.Context, string) (GuestOrder, error)
