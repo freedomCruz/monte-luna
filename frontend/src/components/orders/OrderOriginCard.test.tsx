@@ -37,20 +37,34 @@ describe('OrderOriginCard (M-Pedido canvas, F1c)', () => {
     expect(screen.getByText('Origen')).toBeDefined();
   });
 
-  it('renders canvas fixed story copy when farmerStory is not provided or starts with [', () => {
-    render(
+  it('renders no story paragraph when farmerStory is null, undefined, or empty and never invents text', () => {
+    const { container } = render(
       <OrderOriginCard
         title="Mientras decides, conoce de dónde viene tu café."
         originSlug="finca-el-mirador"
         department="Huila"
-        farmerStory="[Historia demo] Finca cafetera ficticia..."
+        farmerStory={null}
       />
     );
 
-    expect(
-      screen.getByText('María Gómez cultiva en Finca El Mirador, entre 1.500 y 1.900 m s. n. m.')
-    ).toBeDefined();
-    expect(screen.queryByText(/\[Historia demo\]/i)).toBeNull();
+    expect(screen.getByText('Mientras decides, conoce de dónde viene tu café.')).toBeDefined();
+    expect(screen.getByText('Origen · Huila')).toBeDefined();
+    expect(container.querySelector('p')).toBeNull();
+    expect(screen.queryByText(/María Gómez/i)).toBeNull();
+    expect(screen.queryByText(/Finca El Mirador/i)).toBeNull();
+  });
+
+  it('renders no story paragraph when farmerStory is whitespace-only', () => {
+    const { container } = render(
+      <OrderOriginCard
+        title="Mientras llega, conoce de dónde viene tu café."
+        originSlug="finca-el-mirador"
+        department="Huila"
+        farmerStory="   "
+      />
+    );
+
+    expect(container.querySelector('p')).toBeNull();
   });
 
   it('renders "Mientras decides, conoce de dónde viene tu café." title for expired/cancelled states', () => {

@@ -1,9 +1,5 @@
 import type { components } from '../../generated/catalog';
 import type { TrackingViewState } from './payment-tracking';
-import {
-  getCatalogProductBySlug,
-  getCatalogOriginBySlug,
-} from '../catalog/catalog';
 
 export type Product = components['schemas']['Product'];
 export type Origin = components['schemas']['Origin'];
@@ -36,10 +32,12 @@ export function resolveOriginCardTitle(viewState: TrackingViewState): string {
 }
 
 /**
- * Finds the origin of the first order line whose product has one from the catalog API:
- * 1. GET /api/v1/products/{slug} (or fallback to catalog data if unmocked preview)
- * 2. If product has an origin, GET /api/v1/origins/{slug} for region/department and story.
- * Returns null if no line has an origin.
+ * Finds the origin of the first order line whose product has one from the live catalog API:
+ * 1. GET /api/v1/products/{slug}
+ * 2. If product has an origin, GET /api/v1/origins/{slug} for department and story.
+ * If product request fails or has no origin, tries the next line.
+ * If origin request fails, renders the card with the product's origin summary fields only (no department, no story).
+ * Returns null if no line yields an origin (hides the card).
  */
 export async function fetchOrderOrigin(
   lines: { product_slug: string }[]
@@ -53,7 +51,7 @@ export async function fetchOrderOrigin(
     try {
       let product: Product | null = null;
 
-      // 1. Fetch product from catalog API
+      // 1. Fetch product from live catalog API
       try {
         const prodRes = await fetch(
           `/api/v1/products/${encodeURIComponent(line.product_slug)}`,
@@ -61,11 +59,9 @@ export async function fetchOrderOrigin(
         );
         if (prodRes.ok) {
           product = (await prodRes.json()) as Product;
-        } else {
-          product = await getCatalogProductBySlug(line.product_slug);
         }
       } catch {
-        product = await getCatalogProductBySlug(line.product_slug);
+        product = null;
       }
 
       if (!product || !product.origin || !product.origin.slug) {
@@ -76,7 +72,7 @@ export async function fetchOrderOrigin(
       let department: string | null = null;
       let story: string | null = null;
 
-      // 2. Fetch origin facts from catalog API for department and story
+      // 2. Fetch origin facts from live catalog API for department and story
       try {
         const originRes = await fetch(
           `/api/v1/origins/${encodeURIComponent(originSlug)}`,
@@ -86,19 +82,10 @@ export async function fetchOrderOrigin(
           const originData = (await originRes.json()) as Origin;
           department = originData.department ?? null;
           story = originData.story ?? null;
-        } else {
-          const mockOrigin = await getCatalogOriginBySlug(originSlug);
-          if (mockOrigin) {
-            department = mockOrigin.department ?? null;
-            story = mockOrigin.story ?? null;
-          }
         }
       } catch {
-        const mockOrigin = await getCatalogOriginBySlug(originSlug);
-        if (mockOrigin) {
-          department = mockOrigin.department ?? null;
-          story = mockOrigin.story ?? null;
-        }
+        department = null;
+        story = null;
       }
 
       return {

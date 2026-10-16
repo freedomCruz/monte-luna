@@ -3,7 +3,6 @@ import {
   resolveOriginCardTitle,
   fetchOrderOrigin,
 } from './order-origin';
-import { mockOriginCoffee, mockCoffeeProduct } from '../../mocks/catalog';
 
 describe('order-origin lib (S5 of cart-and-orders, F1c)', () => {
   describe('resolveOriginCardTitle (M-Pedido canvas titles per state)', () => {
@@ -156,14 +155,126 @@ describe('order-origin lib (S5 of cart-and-orders, F1c)', () => {
       expect(result?.department).toBe('Huila');
     });
 
-    it('falls back to local catalog data when backend route returns 404', async () => {
+    it('returns null when product request fails (404/500) and does not fall back to demo data', async () => {
       globalThis.fetch = vi.fn().mockResolvedValue({ ok: false, status: 404 });
 
       const result = await fetchOrderOrigin([{ product_slug: 'finca-el-mirador' }]);
 
+      expect(result).toBeNull();
+    });
+
+    it('returns null when product fetch throws a network error', async () => {
+      globalThis.fetch = vi.fn().mockRejectedValue(new Error('Network failure'));
+
+      const result = await fetchOrderOrigin([{ product_slug: 'finca-el-mirador' }]);
+
+      expect(result).toBeNull();
+    });
+
+    it('returns summary fields with null department and null story when origin request fails (404/500)', async () => {
+      globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+        if (typeof url === 'string' && url.includes('/api/v1/products/finca-el-mirador')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({
+              slug: 'finca-el-mirador',
+              origin: {
+                slug: 'finca-el-mirador',
+                name: 'Finca El Mirador',
+                producer_name: 'María Gómez',
+              },
+            }),
+          });
+        }
+        if (typeof url === 'string' && url.includes('/api/v1/origins/finca-el-mirador')) {
+          return Promise.resolve({
+            ok: false,
+            status: 404,
+          });
+        }
+        return Promise.resolve({ ok: false, status: 404 });
+      });
+
+      const result = await fetchOrderOrigin([{ product_slug: 'finca-el-mirador' }]);
+
       expect(result).not.toBeNull();
-      expect(result?.originSlug).toBe(mockOriginCoffee.slug);
+      expect(result?.originSlug).toBe('finca-el-mirador');
+      expect(result?.producerName).toBe('María Gómez');
+      expect(result?.originName).toBe('Finca El Mirador');
+      expect(result?.department).toBeNull();
+      expect(result?.story).toBeNull();
+    });
+
+    it('returns summary fields with null department and null story when origin request throws a network error', async () => {
+      globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+        if (typeof url === 'string' && url.includes('/api/v1/products/finca-el-mirador')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({
+              slug: 'finca-el-mirador',
+              origin: {
+                slug: 'finca-el-mirador',
+                name: 'Finca El Mirador',
+                producer_name: 'María Gómez',
+              },
+            }),
+          });
+        }
+        if (typeof url === 'string' && url.includes('/api/v1/origins/finca-el-mirador')) {
+          return Promise.reject(new Error('Network failure on origin'));
+        }
+        return Promise.resolve({ ok: false, status: 404 });
+      });
+
+      const result = await fetchOrderOrigin([{ product_slug: 'finca-el-mirador' }]);
+
+      expect(result).not.toBeNull();
+      expect(result?.originSlug).toBe('finca-el-mirador');
+      expect(result?.producerName).toBe('María Gómez');
+      expect(result?.originName).toBe('Finca El Mirador');
+      expect(result?.department).toBeNull();
+      expect(result?.story).toBeNull();
+    });
+
+    it('returns summary with null story when origin endpoint returns story: null', async () => {
+      globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+        if (typeof url === 'string' && url.includes('/api/v1/products/finca-el-mirador')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({
+              slug: 'finca-el-mirador',
+              origin: {
+                slug: 'finca-el-mirador',
+                name: 'Finca El Mirador',
+                producer_name: 'María Gómez',
+              },
+            }),
+          });
+        }
+        if (typeof url === 'string' && url.includes('/api/v1/origins/finca-el-mirador')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({
+              slug: 'finca-el-mirador',
+              name: 'Finca El Mirador',
+              producer_name: 'María Gómez',
+              department: 'Huila',
+              story: null,
+            }),
+          });
+        }
+        return Promise.resolve({ ok: false, status: 404 });
+      });
+
+      const result = await fetchOrderOrigin([{ product_slug: 'finca-el-mirador' }]);
+
+      expect(result).not.toBeNull();
       expect(result?.department).toBe('Huila');
+      expect(result?.story).toBeNull();
     });
   });
 });

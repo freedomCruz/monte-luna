@@ -14,10 +14,7 @@ export function OrderOriginCard({
   farmerStory,
 }: OrderOriginCardProps) {
   const departmentLabel = department ? `Origen · ${department}` : 'Origen';
-  const storyText =
-    farmerStory && !farmerStory.startsWith('[')
-      ? farmerStory
-      : 'María Gómez cultiva en Finca El Mirador, entre 1.500 y 1.900 m s. n. m.';
+  const hasStory = Boolean(farmerStory && farmerStory.trim().length > 0);
 
   return (
     <section
@@ -34,9 +31,11 @@ export function OrderOriginCard({
         >
           {title}
         </h2>
-        <p className="m-0 max-w-[520px] text-base md:text-lg leading-relaxed text-primary-foreground/90">
-          {storyText}
-        </p>
+        {hasStory && (
+          <p className="m-0 max-w-[520px] text-base md:text-lg leading-relaxed text-primary-foreground/90">
+            {farmerStory}
+          </p>
+        )}
       </div>
 
       <a
