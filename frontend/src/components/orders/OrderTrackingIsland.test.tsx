@@ -302,4 +302,155 @@ describe('OrderTrackingIsland (S4, S5)', () => {
       expect(screen.queryByText('Rechazado')).toBeNull();
     });
   });
+
+  describe('OrderOriginCard integration (F1c)', () => {
+    it('renders origin card with state-dependent title and origin link when line has origin', async () => {
+      globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+        if (typeof url === 'string' && url.includes('/api/v1/orders/track')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({
+              ...mockGuestOrder,
+              status: 'paid',
+              lines: [
+                {
+                  variant_id: '01912345-6789-7abc-def0-123456789abc',
+                  product_slug: 'finca-el-mirador',
+                  product_title: 'Finca El Mirador',
+                  variant_label: '500 g',
+                  quantity: 1,
+                  line_total_amount: 3800000,
+                },
+              ],
+            }),
+          });
+        }
+        if (typeof url === 'string' && url.includes('/api/v1/products/finca-el-mirador')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({
+              slug: 'finca-el-mirador',
+              origin: {
+                slug: 'finca-el-mirador',
+                name: 'Finca El Mirador',
+                producer_name: 'María Gómez',
+              },
+            }),
+          });
+        }
+        if (typeof url === 'string' && url.includes('/api/v1/origins/finca-el-mirador')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({
+              slug: 'finca-el-mirador',
+              name: 'Finca El Mirador',
+              producer_name: 'María Gómez',
+              department: 'Huila',
+              story: 'María Gómez cultiva en Finca El Mirador, entre 1.500 y 1.900 m s. n. m.',
+            }),
+          });
+        }
+        return Promise.resolve({ ok: false, status: 404 });
+      });
+
+      render(<OrderTrackingIsland initialToken="tok_origin_test" />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Mientras llega, conoce de dónde viene tu café.')
+        ).toBeDefined();
+        const originLink = screen.getByRole('link', { name: /Conocer el origen/i });
+        expect(originLink.getAttribute('href')).toBe('/origenes/finca-el-mirador');
+      });
+    });
+
+    it('renders "Mientras decides, conoce de dónde viene tu café." title when order is expired', async () => {
+      globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+        if (typeof url === 'string' && url.includes('/api/v1/orders/track')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({
+              ...mockGuestOrder,
+              status: 'expired',
+              lines: [{ product_slug: 'finca-el-mirador' }],
+            }),
+          });
+        }
+        if (typeof url === 'string' && url.includes('/api/v1/products/finca-el-mirador')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({
+              slug: 'finca-el-mirador',
+              origin: { slug: 'finca-el-mirador', name: 'Finca El Mirador' },
+            }),
+          });
+        }
+        if (typeof url === 'string' && url.includes('/api/v1/origins/finca-el-mirador')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({
+              slug: 'finca-el-mirador',
+              department: 'Huila',
+            }),
+          });
+        }
+        return Promise.resolve({ ok: false, status: 404 });
+      });
+
+      render(<OrderTrackingIsland initialToken="tok_expired_origin" />);
+
+      await waitFor(() => {
+        expect(
+          screen.getByText('Mientras decides, conoce de dónde viene tu café.')
+        ).toBeDefined();
+      });
+    });
+
+    it('hides origin card completely when no line has an origin', async () => {
+      globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+        if (typeof url === 'string' && url.includes('/api/v1/orders/track')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({
+              ...mockGuestOrder,
+              status: 'paid',
+              lines: [
+                {
+                  product_slug: 'chocolate-85',
+                  product_title: 'Chocolate 85%',
+                  quantity: 1,
+                },
+              ],
+            }),
+          });
+        }
+        if (typeof url === 'string' && url.includes('/api/v1/products/chocolate-85')) {
+          return Promise.resolve({
+            ok: true,
+            status: 200,
+            json: async () => ({
+              slug: 'chocolate-85',
+              origin: null,
+            }),
+          });
+        }
+        return Promise.resolve({ ok: false, status: 404 });
+      });
+
+      render(<OrderTrackingIsland initialToken="tok_no_origin" />);
+
+      await waitFor(() => {
+        expect(screen.getByText('¡Gracias! Tu café ya es tuyo.')).toBeDefined();
+        expect(screen.queryByText(/Conocer el origen/i)).toBeNull();
+        expect(screen.queryByText(/conoce de dónde viene tu café/i)).toBeNull();
+      });
+    });
+  });
 });

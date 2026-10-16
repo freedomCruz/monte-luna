@@ -1,18 +1,24 @@
 import React from 'react';
 
 export interface OrderOriginCardProps {
-  title?: string;
-  department?: string;
-  farmerStory?: string;
-  originSlug?: string;
+  title: string;
+  originSlug: string;
+  department?: string | null;
+  farmerStory?: string | null;
 }
 
 export function OrderOriginCard({
-  title = 'Mientras llega, conoce de dónde viene tu café.',
-  department = 'Huila',
-  farmerStory = 'Caficultores colombianos cultivan lotes únicos de origen entre 1.500 y 1.900 m s. n. m.',
-  originSlug = 'huila',
+  title,
+  originSlug,
+  department,
+  farmerStory,
 }: OrderOriginCardProps) {
+  const departmentLabel = department ? `Origen · ${department}` : 'Origen';
+  const storyText =
+    farmerStory && !farmerStory.startsWith('[')
+      ? farmerStory
+      : 'María Gómez cultiva en Finca El Mirador, entre 1.500 y 1.900 m s. n. m.';
+
   return (
     <section
       aria-labelledby="h-origen"
@@ -20,7 +26,7 @@ export function OrderOriginCard({
     >
       <div className="flex-1 min-w-[280px] flex flex-col items-start gap-3.5">
         <span className="font-condensed text-base md:text-lg font-bold tracking-wider uppercase text-brand-yellow">
-          Origen · {department}
+          {departmentLabel}
         </span>
         <h2
           id="h-origen"
@@ -29,7 +35,7 @@ export function OrderOriginCard({
           {title}
         </h2>
         <p className="m-0 max-w-[520px] text-base md:text-lg leading-relaxed text-primary-foreground/90">
-          {farmerStory}
+          {storyText}
         </p>
       </div>
 

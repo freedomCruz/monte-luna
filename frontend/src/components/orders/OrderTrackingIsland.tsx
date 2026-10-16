@@ -10,6 +10,11 @@ import { OrderDeliveryCard } from './OrderDeliveryCard';
 import { OrderSummaryAside } from './OrderSummaryAside';
 import { OrderNoticesGrid, type OrderNoticeItem } from './OrderNoticesGrid';
 import { OrderOriginCard } from './OrderOriginCard';
+import {
+  fetchOrderOrigin,
+  resolveOriginCardTitle,
+  type OrderOriginData,
+} from '../../lib/orders/order-origin';
 
 export interface OrderTrackingIslandProps {
   initialToken?: string;
@@ -21,6 +26,7 @@ export function OrderTrackingIsland({ initialToken }: OrderTrackingIslandProps) 
   const [loading, setLoading] = useState<boolean>(true);
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [originData, setOriginData] = useState<OrderOriginData | null>(null);
 
   // Keep track of whether we already verified the redirect transaction ID hint
   const hasAttemptedVerifyRef = useRef(false);
@@ -100,6 +106,24 @@ export function OrderTrackingIsland({ initialToken }: OrderTrackingIslandProps) 
 
     initOrder(resolvedToken, transactionIdHint);
   }, [token, fetchOrder]);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!order || !order.lines || order.lines.length === 0) {
+      setOriginData(null);
+      return;
+    }
+
+    fetchOrderOrigin(order.lines).then((data) => {
+      if (isMounted) {
+        setOriginData(data);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [order]);
 
   // Loading state
   if (loading) {
@@ -272,9 +296,14 @@ export function OrderTrackingIsland({ initialToken }: OrderTrackingIslandProps) 
         </div>
 
         {/* Origin section */}
-        <OrderOriginCard
-          department={order.shipping_address.department_name}
-        />
+        {originData && (
+          <OrderOriginCard
+            title={resolveOriginCardTitle(viewState)}
+            originSlug={originData.originSlug}
+            department={originData.department}
+            farmerStory={originData.story}
+          />
+        )}
       </main>
     </div>
   );

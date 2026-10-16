@@ -271,7 +271,7 @@ test.describe('Checkout Flow (S3, S4, S5, S6)', () => {
     await expect(page.locator('text=Tu pedido sigue apartado')).toBeVisible();
     await expect(page.locator('text=Calle 5 # 12-34')).toBeVisible();
     await expect(page.locator('text=Pitalito, Huila')).toBeVisible();
-    await expect(page.locator('text=Finca El Mirador')).toBeVisible();
+    await expect(page.getByText('Finca El Mirador', { exact: true })).toBeVisible();
     await expect(page.locator('text=$47.500').first()).toBeVisible();
 
     // Check WCAG 2 A/AA on /pedido

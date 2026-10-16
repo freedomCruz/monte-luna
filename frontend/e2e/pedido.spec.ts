@@ -173,7 +173,7 @@ test.describe('Guest Order Tracking Page (/pedido?token=...) (S4, S5)', () => {
 
     // Order summary lines, subtotal, shipping, and authoritative total
     await expect(page.locator('text=Resumen')).toBeVisible();
-    await expect(page.locator('text=Finca El Mirador')).toBeVisible();
+    await expect(page.getByText('Finca El Mirador', { exact: true })).toBeVisible();
     await expect(page.locator('text=500 g / Grano entero')).toBeVisible();
     await expect(page.locator('span:text-is("$76.000")').first()).toBeVisible();
     await expect(page.locator('span:text-is("$9.500")')).toBeVisible();
@@ -324,6 +324,9 @@ test.describe('Guest Order Tracking Page (/pedido?token=...) (S4, S5)', () => {
     await expect(page.locator('h1')).toHaveText('Se acabó el tiempo de este pedido.');
     await expect(page.locator('text=Vencida')).toBeVisible();
     await expect(page.locator('a:has-text("Armar el pedido de nuevo")')).toBeVisible();
+    await expect(
+      page.locator('text=Mientras decides, conoce de dónde viene tu café.')
+    ).toBeVisible();
 
     const axe = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa'])
@@ -368,6 +371,46 @@ test.describe('Guest Order Tracking Page (/pedido?token=...) (S4, S5)', () => {
     // Must not render Rechazado
     await expect(page.locator('text=El pago no pasó.')).toHaveCount(0);
     await expect(page.locator('text=Rechazado')).toHaveCount(0);
+
+    // Origin card with expired/cancelled title
+    await expect(
+      page.locator('text=Mientras decides, conoce de dónde viene tu café.')
+    ).toBeVisible();
+
+    const axe = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa'])
+      .analyze();
+    expect(axe.violations).toEqual([]);
+  });
+
+  test('hides origin card when no line product has an origin', async ({ page }) => {
+    await page.route('**/api/v1/orders/track?token=tok_no_origin', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ...mockOrderPending,
+          tracking_token: 'tok_no_origin',
+          lines: [
+            {
+              variant_id: '01912345-6789-7abc-def0-123456789abc',
+              product_slug: 'chocolate-85',
+              product_title: 'Chocolate 85%',
+              variant_label: '80 g',
+              unit_price_amount: 1800000,
+              quantity: 1,
+              line_total_amount: 1800000,
+            },
+          ],
+        }),
+      });
+    });
+
+    await page.goto('/pedido?token=tok_no_origin');
+
+    await expect(page.locator('text=ORD-7K2M9Q4X')).toBeVisible();
+    await expect(page.locator('a:has-text("Conocer el origen")')).toHaveCount(0);
+    await expect(page.locator('text=conoce de dónde viene tu café')).toHaveCount(0);
 
     const axe = await new AxeBuilder({ page })
       .withTags(['wcag2a', 'wcag2aa'])
