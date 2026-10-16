@@ -157,6 +157,25 @@ key. The reference-query fallback is **undocumented and unverified**; its respon
 shape/filter behavior must be confirmed with sandbox keys (M1) before production.
 Tests use only an `httptest` provider and signed fixtures, never live Wompi calls.
 
+### Verified provider outcomes
+
+`POST /api/v1/payments/webhooks/wompi` verifies the required `X-Event-Checksum`
+against dynamic, ordered `signature.properties`, the timestamp and events secret.
+Missing, unresolved or altered signed values are rejected without writes. Checksums
+are normalized for deduplication; repeated events return an empty 200. Status,
+provider details, deduplication and `payments.payment_approved`/`payment_failed`
+commit in one transaction. Terminal attempts cannot move backwards.
+
+`POST /api/v1/payments/verify` requires the tracking token and a nullable
+`transaction_id`. The hint is fetched server-side and accepted only if reference,
+amount and currency match an attempt of that order. A mismatch returns 422 without
+writes. No known transaction ID returns the current payment unchanged, without a
+provider request. Successful reconciliation does not synchronously mark orders paid.
+
+`PAYMENT_WEBHOOK_RETENTION` is a positive Go duration (default `720h`, 30 days).
+The API runs bounded webhook-ledger cleanup at the configured outbox cleanup
+interval and joins it before closing the payments pool.
+
 ### Transactional outbox relay
 
 The API starts an in-process relay for registered catalog, orders and payments outboxes,

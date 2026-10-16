@@ -31,14 +31,15 @@ type Options struct {
 	Gateway PaymentGateway
 }
 type Module struct {
-	pool       *pgxpool.Pool
-	http       *adapters.HTTP
-	clock      domain.Clock
-	gateway    PaymentGateway
-	repository *postgres.Repository
-	logger     *slog.Logger
-	orders     OrdersPort
-	config     Config
+	pool           *pgxpool.Pool
+	http           *adapters.HTTP
+	clock          domain.Clock
+	gateway        PaymentGateway
+	repository     *postgres.Repository
+	logger         *slog.Logger
+	orders         OrdersPort
+	config         Config
+	reconciliation *app.Reconciliation
 }
 
 func LoadConfig(getenv func(string) string) (Config, error) { return adapters.LoadConfig(getenv) }
@@ -78,7 +79,10 @@ func New(ctx context.Context, databaseURL string, orders OrdersPort, cfg Config,
 	}
 	repo := postgres.NewRepository(pool)
 	start := app.NewStart(repo, orders, clock, adapters.RandomReferences{}, app.CheckoutConfig{PublicKey: cfg.PublicKey, IntegritySecret: cfg.IntegritySecret, StorefrontBaseURL: cfg.StorefrontBaseURL})
-	return &Module{pool: pool, http: adapters.NewHTTP(start, logger), clock: clock, gateway: gateway, repository: repo, logger: logger, orders: orders, config: cfg}, nil
+	reconciliation := app.NewReconciliation(repo, orders, gateway, clock)
+	handler := adapters.NewHTTP(start, logger)
+	handler.EnableReconciliation(reconciliation, cfg.EventsSecret)
+	return &Module{pool: pool, http: handler, clock: clock, gateway: gateway, repository: repo, logger: logger, orders: orders, config: cfg, reconciliation: reconciliation}, nil
 }
 func (m *Module) RegisterRoutes(mux *http.ServeMux) { m.http.RegisterRoutes(mux) }
 func (m *Module) Close()                            { m.pool.Close() }

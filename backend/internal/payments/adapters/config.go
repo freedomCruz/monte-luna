@@ -12,10 +12,19 @@ import (
 type Config struct {
 	PublicKey, PrivateKey, IntegritySecret, EventsSecret, Environment, StorefrontBaseURL string
 	HTTPTimeout                                                                          time.Duration
+	WebhookRetention                                                                     time.Duration
 }
 
 func LoadConfig(getenv func(string) string) (Config, error) {
 	cfg := Config{PublicKey: getenv("WOMPI_PUBLIC_KEY"), PrivateKey: getenv("WOMPI_PRIVATE_KEY"), IntegritySecret: getenv("WOMPI_INTEGRITY_SECRET"), EventsSecret: getenv("WOMPI_EVENTS_SECRET"), Environment: getenv("WOMPI_ENVIRONMENT"), StorefrontBaseURL: strings.TrimRight(getenv("STOREFRONT_BASE_URL"), "/"), HTTPTimeout: 10 * time.Second}
+	cfg.WebhookRetention = 30 * 24 * time.Hour
+	if value := getenv("PAYMENT_WEBHOOK_RETENTION"); value != "" {
+		parsed, err := time.ParseDuration(value)
+		if err != nil || parsed <= 0 {
+			return cfg, fmt.Errorf("PAYMENT_WEBHOOK_RETENTION must be a positive duration")
+		}
+		cfg.WebhookRetention = parsed
+	}
 	return cfg, cfg.Validate()
 }
 func (c Config) Validate() error {
