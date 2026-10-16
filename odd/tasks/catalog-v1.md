@@ -37,10 +37,10 @@ Rules: `AGENTS.md` section 5 and the `parallel-agents-orca` skill. Read this who
 | F3 | Playwright + axe-core flows for the three pages, plus colour-token fix and guard (done) | S4, S8 | frontend worker | F2, G1 | `0d7dc4f`, `e497ec4`, `5692534`; merged `8305478` |
 | B4 | Demo media storage keys point at the design images in `frontend/public/images`; brand logo key null (L40) (done) | S2, S8 | backend worker (gemini-3.8-flash-high) | B3 | `96a2936`; merged `721c359` |
 | I1 | Integrate worker branches into `feat/catalog-v1`; build against the real API; `task verify` (done) | all | coordinator | B2, F3 | `5d655b3`; evidence L42 |
-| V1 | Read-only verification (reopened for S8: prior functional PASS did not establish visual fidelity) | all | verifier (Gemini Flash 3.8, L18; Sonnet quota) | I1, F4, F5 | historical evidence L43; visual acceptance pending |
-| F4 | Shared original-design product card, indicators, project reuse rules and manual testing checklist (in progress; savings policy approved) | S2, S8, S12, S13 | coordinator / frontend | G2 (unchanged contract) | — |
-| F5 | Reproduce and correct product-detail visual discrepancies against original desktop/mobile HTML and CSS (pending after F4) | S2, S4, S5, S8, S12, S14 | coordinator / frontend | F4 | — |
-| T4 | CHANGELOG and pull request to `main` (blocked until visual corrections, manual acceptance and publication authorization) | S1, S12 | coordinator | V1, F4 | — |
+| V1 | Read-only verification (all 14 specs S1–S14 verified; manual testing accepted by user) (done) | all | verifier / user | I1, F4, F5 | `1cb98b4`, `eb5a761`, `2de8377` |
+| F4 | Shared original-design product card, indicators, project reuse rules and manual testing checklist (done) | S2, S8, S12, S13 | coordinator / frontend | G2 (unchanged contract) | `b91f76a`, `01dc24b` |
+| F5 | Reproduce and correct product-detail visual discrepancies against original desktop/mobile HTML and CSS (done) | S2, S4, S5, S8, S12, S14 | coordinator / frontend | F4 | `1cb98b4` |
+| T4 | CHANGELOG and pull request to `main` (done; PR #5 merged 2026-10-15) | S1, S12 | coordinator | V1, F4 | merge `92b97ac` |
 
 ## Log
 

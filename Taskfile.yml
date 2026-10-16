@@ -60,13 +60,13 @@ tasks:
       - npm run build
 
   backend:migrate:
-    desc: Apply embedded database migrations to this worktree's database
+    desc: Apply embedded database migrations (catalog, then shipping) to this worktree's database
     dir: backend
     cmds:
       - go run ./cmd/migrate
 
   backend:seed:
-    desc: Load the idempotent demo catalog into this worktree's database (never production)
+    desc: Load idempotent demo data (catalog, then shipping) into this worktree's database (never production)
     dir: backend
     cmds:
       - go run ./cmd/seed
@@ -97,9 +97,20 @@ tasks:
       # Playwright needs Chromium once per machine: npx playwright install chromium
       - npm run test:e2e
 
-  verify:
-    desc: Run all local verification gates serially (backend then frontend)
+  scripts:test:
+    desc: Run the tests of repository scripts (Node built-in test runner, no network)
     cmds:
+      - node --test scripts/divipola/divipola.test.mjs
+
+  divipola:update:
+    desc: Download the DANE DIVIPOLA dataset and rewrite contracts/reference/divipola.json (network)
+    cmds:
+      - node scripts/divipola/update-divipola.mjs
+
+  verify:
+    desc: Run all local verification gates serially (scripts, backend, then frontend)
+    cmds:
+      - task: scripts:test
       - task: backend:verify
       - task: frontend:verify
 

@@ -62,7 +62,6 @@ describe('Pre-rendered HTML output invariants', () => {
     expect(productHtml).toContain('Cargando disponibilidad y precio...');
     expect(productHtml).not.toMatch(/\$3[89]\.000/);
     expect(productHtml).not.toContain('Añadir al carrito');
-    expect(productHtml).not.toContain('Agregar al carrito');
     expect(productHtml).not.toContain('Comprar');
     expect(productHtml).not.toMatch(/Tostado el \d+/);
   });

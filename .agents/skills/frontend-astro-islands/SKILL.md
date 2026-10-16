@@ -23,6 +23,9 @@ Do not use for backend logic; the frontend displays and collects data, and the b
 - Dependency installation: never install dependencies autonomously; follow `dependency-audit`. npm 12 blocks install scripts by default (`allowScripts`); never set `ignore-scripts=true`. Never omit optional dependencies (`--omit=optional`) so `esbuild` and `sharp` run with platform binaries without scripts.
 - Never copy `node_modules` between operating systems; production builds occur in Linux containers. Playwright browsers are installed with `npx playwright install` (dev/test only; never on the VPS).
 - Follow the component reuse and visual review rules in `AGENTS.md`: compose cohesive units, share product-card markup across pages, and compare rendered desktop/mobile views with the original references. Functional and axe checks alone do not prove design fidelity.
+- Folder architecture (approved 2026-10-15, `docs/architecture/system-architecture.md` section 2): `components/ui/` for design-system primitives, `components/<domain>/` for each domain's `.astro` components and islands together, `components/layout/` for site chrome, `lib/<domain>/` and `lib/shared/` for stores, clients, and helpers. Never create a generic `islands/` folder; never import another domain's internals.
+- Design-system fidelity is absolute: never skip the Monteluna design system and never invent elements, copy, colours, spacing, data, or behaviour that are not in the canvas HTML/CSS, the approved tokens, the contract, or the ODD specs. When something is missing or conflicting, ask the coordinator instead of improvising.
+- Reuse before writing: search `components/ui/`, the domain folder, and `lib/` for an existing component or helper first. Never copy markup between components; extract a shared component when a second place needs it, with explicit props. Report reused and created shared components in every task report.
 - Default to `.astro` components rendered as static HTML. React (including shadcn/ui) components without a `client:` directive render as static HTML; hydrate only interactive islands where client interaction is required.
 - Hydration directives: `client:load` for above-the-fold purchase controls; `client:idle` for non-urgent widgets; `client:visible` for below-the-fold content. Never hydrate static content.
 - React is the only client framework. UI primitives follow the official shadcn/ui registry source with Radix primitives (`--base radix`) and Tailwind CSS. Components are incorporated as project-owned code after reviewing the official registry source; record the source URL and adapt them to Monteluna tokens and conventions. No other UI library without user approval.
@@ -39,6 +42,8 @@ Do not use for backend logic; the frontend displays and collects data, and the b
 
 | Situation | Action |
 | --- | --- |
+| Same markup needed in two places | Extract one component with explicit props (domain folder, or `components/ui/` when a second domain needs it); never duplicate |
+| Element, copy, or data not in canvas, tokens, contract, or specs | Ask the coordinator; do not invent |
 | Content without interaction | `.astro` component or React component without `client:` directive, no JavaScript |
 | Production runtime | Static output (`output: 'static'`); no Node.js process on the VPS |
 | Browser testing install | Install browsers via `npx playwright install` for local development and test only; never on the VPS |

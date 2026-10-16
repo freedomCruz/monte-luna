@@ -50,6 +50,14 @@ The system is organized as a decoupled frontend and a single modular backend app
 - **Island Props:** Props passed to hydrated islands must be serializable data; functions cannot cross the server-to-client boundary.
 - **Cross-Island State:** Independent React islands do not share a global React Context tree. Cross-island synchronization (e.g., header cart counter reacting to an "Add to Cart" event) uses lightweight reactive stores (e.g., Nano Stores) or grouped composite islands.
 - **Merchant Admin Panel:** A compact, custom administrative interface located under `/admin`, built using the same Astro + React + shadcn/ui stack and consuming Go REST endpoints.
+- **Frontend Folder Architecture (domain + shared ui, approved 2026-10-15):** `frontend/src/` groups code by business domain, with one shared layer for design-system primitives:
+  - `components/ui/`: design-system primitives reused across domains (`Button`, `QuantityStepper`, `Price`, `FormField`, badges). No domain knowledge, no API calls.
+  - `components/<domain>/` (`catalog`, `cart`, `checkout`, `orders`, and later `admin/<module>`): the domain's `.astro` components and React islands together; an island lives with its domain, never in a generic `islands/` folder.
+  - `components/layout/`: site chrome shared by every page (header, footer, header cart button).
+  - `lib/<domain>/`: stores, API clients, and pure helpers of that domain; `lib/shared/` for cross-domain helpers (formatters, utils).
+  - `layouts/`, `pages/` (Astro routing), `styles/` (Monteluna tokens), `generated/` (types and data generated from `contracts/`), `mocks/`.
+  - Tests sit next to the file they test. A component moves to `components/ui/` only when a second domain needs it; a domain component never imports another domain's internals except through `components/ui/` or `lib/shared/`.
+
 - **Output Mode and Production Runtime:** Astro static output (`output: 'static'`). No Node.js process runs in production; all storefront pages and the `/admin` shell are pre-rendered to static assets. The `/admin` area remains a static shell that authenticates through the backend session cookie and loads private data client-side. Static assets in production are served directly by Caddy from a Caddy-based container image with pre-rendered assets baked in; Go `embed` for static files is rejected. Caddy proxies `/api` to the Go backend, leaving the Go application unexposed directly to the internet.
 
 ---
@@ -191,6 +199,7 @@ To guarantee that any module can be extracted into an independent microservice i
 | **Shipping** | Dedicated `internal/shipping` module with 4-table schema: `shipping_zones` ✎, `shipping_zone_areas`, `shipping_rates` ✎, `shipments` ✎, plus `outbox`/`processed_events`. DANE geographic resolution, weight-band rates, free shipping threshold, manual admin dispatch in v1 | Approved (open items: carrier API integration, split shipments) |
 | **Notifications** | Dedicated `internal/notifications` module consuming domain events, Resend provider via `net/http` behind `EmailSender` port, no SDK, delivery webhooks, Go html/template | Approved (Spanish customer emails; `template_data` cleared after 90 days, recipient anonymized after 2 years; domain pending) |
 | **Reverse Proxy** | Caddy official image pinned by version and digest, automatic HTTPS, static file server (`encode zstd gzip`, `precompressed`), proxy `/api` to Go backend; rate limiting in Go app | Approved (domain configuration pending) |
+| **Frontend Folder Architecture** | Domain folders plus shared `components/ui/` design-system primitives (section 2) | Approved |
 | **Astro Output Mode** | Static output (`output: 'static'`, no Node.js in production; static assets served by Caddy reverse proxy; Go `embed` rejected) | Approved |
 | **Containers** | Single VPS running Docker Compose with per-service memory limits (Go backend, PostgreSQL 18, Caddy reverse proxy); local Docker for PostgreSQL and Testcontainers | Approved (memory limits pending) |
 | **Media Storage** | Cloudflare R2 (S3-compatible object storage with zero egress fees, global CDN delivery). Backend uses `aws-sdk-go-v2/service/s3` behind Go `MediaStorePort`. Image keys stored relatively in database. Local development: `MEDIA_BASE_URL` points to the worktree's Astro server and the demo seed's keys (`images/...`) reuse the design images in `frontend/public/images` | Approved |

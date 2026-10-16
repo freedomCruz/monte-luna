@@ -1,0 +1,559 @@
+openapi: 3.1.0
+info:
+  title: Monteluna orders storefront API
+  version: 1.0.0
+  description: |
+    Orders module contract for Monteluna (Cart & Checkout v1).
+    Server-side checkout quote, guest order placement with a 30-minute stock
+    reservation, and guest order tracking by private token.
+
+    Rules: docs/architecture/api-conventions.md and docs/domain/orders.md.
+    The cart lives only in the browser; the browser never computes prices,
+    shipping, taxes, or totals. Shipping resolution is an in-process port of
+    internal/shipping and has no public HTTP endpoint. Coupons are out of
+    scope for this version and will be added as an optional field.
+
+    Error codes (Problem.code) used by this contract:
+    - validation_failed: field errors listed in `errors` (422).
+    - unknown_municipality: municipality code is not a DIVIPOLA code (422, field error).
+    - unsupported_destination: no active shipping zone or rate covers the destination and weight (422, field error).
+    - variant_unavailable: a variant does not exist, is not active, or its product is not published (422, field error on items[n].variant_id).
+    - insufficient_stock: requested quantity exceeds available stock (409, field error on items[n].quantity).
+    - idempotency_key_reused: Idempotency-Key reused with a different body (422).
+    - order_not_found: tracking token does not match an order (404).
+security: []
+tags:
+  - name: orders
+    description: Checkout quote, order placement, and guest tracking.
+paths:
+  /api/v1/orders/quote:
+    post:
+      operationId: calculateOrderQuote
+      tags: [orders]
+      summary: Calculate the checkout quote with live prices, shipping, and taxes
+      description: |
+        Composes catalog (live price, status, weight, stock), shipping
+        (zone and rate for the destination), and the TaxCalculator port.
+        Read-only: reserves nothing and stores nothing. Order placement
+        recomputes every amount; a quote is never accepted as input.
+        Responds with `Cache-Control: no-store`.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/OrderQuoteRequest'
+      responses:
+        '200':
+          description: Resolved checkout quote.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/OrderQuote'
+        '400':
+          $ref: ./common.yaml#/components/responses/BadRequest
+        '409':
+          description: 'Requested quantity exceeds available stock (`insufficient_stock`).'
+          content:
+            application/problem+json:
+              schema:
+                $ref: ./common.yaml#/components/schemas/Problem
+        '422':
+          description: 'Validation failed (`validation_failed`, `unknown_municipality`, `unsupported_destination`, `variant_unavailable`).'
+          content:
+            application/problem+json:
+              schema:
+                $ref: ./common.yaml#/components/schemas/Problem
+        '500':
+          $ref: ./common.yaml#/components/responses/InternalError
+
+  /api/v1/orders:
+    post:
+      operationId: placeOrder
+      tags: [orders]
+      summary: Place a guest order and reserve stock for 30 minutes
+      description: |
+        Recomputes the quote, allocates stock oldest lot first, and persists
+        the order in `pending_payment` with `reservation_expires_at` 30
+        minutes after placement. Generates a random Crockford base32 order
+        number and a 32-byte tracking token; only its SHA-256 hash is stored.
+        The raw token is returned once in this response.
+        Repeating the same Idempotency-Key with the same body within 24 hours
+        returns the original response.
+      parameters:
+        - $ref: ./common.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PlaceOrderRequest'
+      responses:
+        '201':
+          description: Order placed.
+          headers:
+            Location:
+              description: Tracking resource of the new order, `/api/v1/orders/track?token=<tracking_token>`.
+              schema:
+                type: string
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PlacedOrder'
+        '400':
+          $ref: ./common.yaml#/components/responses/BadRequest
+        '409':
+          description: 'Stock could not be reserved (`insufficient_stock`). Nothing is reserved or stored.'
+          content:
+            application/problem+json:
+              schema:
+                $ref: ./common.yaml#/components/schemas/Problem
+        '422':
+          description: 'Validation failed (`validation_failed`, `unknown_municipality`, `unsupported_destination`, `variant_unavailable`, `idempotency_key_reused`).'
+          content:
+            application/problem+json:
+              schema:
+                $ref: ./common.yaml#/components/schemas/Problem
+        '500':
+          $ref: ./common.yaml#/components/responses/InternalError
+
+  /api/v1/orders/track:
+    get:
+      operationId: getGuestOrder
+      tags: [orders]
+      summary: Read a guest order by its private tracking token
+      description: |
+        The server hashes the token with SHA-256 and looks the order up by
+        hash. The order id or order number alone never grants access.
+        Responds with `Cache-Control: no-store`.
+      parameters:
+        - name: token
+          in: query
+          required: true
+          description: Raw tracking token from the confirmation link (32 random bytes, base64url without padding).
+          schema:
+            type: string
+            pattern: '^[A-Za-z0-9_-]{43}$'
+      responses:
+        '200':
+          description: Guest order.
+          headers:
+            Cache-Control:
+              schema:
+                type: string
+                const: no-store
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GuestOrder'
+        '400':
+          $ref: ./common.yaml#/components/responses/BadRequest
+        '404':
+          description: 'No order matches the token (`order_not_found`).'
+          content:
+            application/problem+json:
+              schema:
+                $ref: ./common.yaml#/components/schemas/Problem
+        '500':
+          $ref: ./common.yaml#/components/responses/InternalError
+
+components:
+  schemas:
+    MunicipalityCode:
+      type: string
+      pattern: '^[0-9]{5}$'
+      description: 5-digit DIVIPOLA (DANE) municipality code; the first two digits are the department code.
+      examples: ['11001']
+
+    OrderStatus:
+      type: string
+      enum: [pending_payment, paid, preparing, shipped, delivered, cancelled, expired]
+      description: Clients must tolerate unknown values added later.
+
+    CartItem:
+      type: object
+      additionalProperties: false
+      required: [variant_id, quantity]
+      properties:
+        variant_id:
+          $ref: ./common.yaml#/components/schemas/Id
+        quantity:
+          type: integer
+          minimum: 1
+          maximum: 99
+          examples: [2]
+
+    OrderQuoteRequest:
+      type: object
+      additionalProperties: false
+      required: [items, municipality_code]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          maxItems: 50
+          description: One entry per variant; a repeated variant_id is a validation error.
+          items:
+            $ref: '#/components/schemas/CartItem'
+        municipality_code:
+          $ref: '#/components/schemas/MunicipalityCode'
+
+    OrderLine:
+      type: object
+      additionalProperties: false
+      required: [variant_id, product_slug, product_title, variant_label, sku, unit_price_amount, quantity, line_total_amount]
+      properties:
+        variant_id:
+          $ref: ./common.yaml#/components/schemas/Id
+        product_slug:
+          $ref: ./common.yaml#/components/schemas/Slug
+          description: Snapshot; clients use it to read the product image and origin from the catalog API.
+        product_title:
+          type: string
+          examples: ['Finca El Mirador']
+        variant_label:
+          type: string
+          examples: ['250 g / Grano entero']
+        sku:
+          type: string
+          examples: ['MTL-MIR-250-GR']
+        unit_price_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+        quantity:
+          type: integer
+          minimum: 1
+        line_total_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+
+    ShippingSummary:
+      type: object
+      additionalProperties: false
+      required: [rate_name, shipping_amount, is_free_shipping, estimated_days_min, estimated_days_max]
+      properties:
+        rate_name:
+          type: string
+          examples: ['Bogotá estándar']
+        shipping_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+        is_free_shipping:
+          type: boolean
+          description: True when the subtotal reached the rate's free-shipping threshold.
+        estimated_days_min:
+          type: integer
+          minimum: 1
+          description: Business days.
+          examples: [3]
+        estimated_days_max:
+          type: integer
+          minimum: 1
+          description: Business days; greater than or equal to estimated_days_min.
+          examples: [5]
+
+    QuoteShippingSummary:
+      type: object
+      additionalProperties: false
+      required: [rate_name, shipping_amount, is_free_shipping, estimated_days_min, estimated_days_max, regular_shipping_amount]
+      properties:
+        rate_name:
+          type: string
+          examples: ['Bogotá estándar']
+        shipping_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+        is_free_shipping:
+          type: boolean
+          description: True when the subtotal reached the rate's free-shipping threshold.
+        estimated_days_min:
+          type: integer
+          minimum: 1
+          description: Business days.
+          examples: [3]
+        estimated_days_max:
+          type: integer
+          minimum: 1
+          description: Business days; greater than or equal to estimated_days_min.
+          examples: [5]
+        regular_shipping_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+          description: |
+            Regular non-discounted rate amount for the resolved rate before
+            the free-shipping threshold is applied. Equals shipping_amount
+            when is_free_shipping is false. When is_free_shipping is true,
+            shipping_amount is 0 and regular_shipping_amount holds the
+            original rate cost.
+          examples: [950000]
+      description: |
+        Shipping summary for checkout quotes. Extends the resolved shipping
+        rate with the regular, non-discounted rate amount before the
+        free-shipping threshold is applied, so the storefront can render the
+        regular rate struck through when free shipping applies.
+
+    OrderQuote:
+      type: object
+      additionalProperties: false
+      required: [lines, shipping, subtotal_amount, shipping_amount, tax_amount, total_amount]
+      properties:
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/OrderLine'
+        shipping:
+          $ref: '#/components/schemas/QuoteShippingSummary'
+        subtotal_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+        shipping_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+        tax_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+        total_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+
+    Customer:
+      type: object
+      additionalProperties: false
+      description: Buyer contact. The confirmation and tracking link are sent to `email`.
+      required: [email, full_name, phone]
+      properties:
+        email:
+          type: string
+          format: email
+          maxLength: 254
+          description: Stored lowercased.
+          examples: ['maria@correo.com']
+        full_name:
+          type: string
+          minLength: 3
+          maxLength: 120
+          description: Person name, or company legal name when `fiscal_data.person_type` is `legal`.
+          examples: ['María Gómez']
+        phone:
+          type: [string, 'null']
+          pattern: '^3[0-9]{9}$'
+          description: Optional Colombian mobile number, 10 digits starting with 3.
+          examples: ['3001234567']
+
+    ShippingAddress:
+      type: object
+      additionalProperties: false
+      description: |
+        Delivery data. The department is derived from the first two digits of
+        `municipality_code`; department and municipality names are
+        snapshotted by the server from DIVIPOLA.
+      required: [recipient_name, recipient_phone, municipality_code, address_line1, address_line2, postal_code, delivery_notes]
+      properties:
+        recipient_name:
+          type: string
+          minLength: 3
+          maxLength: 120
+          examples: ['María Gómez']
+        recipient_phone:
+          type: string
+          pattern: '^3[0-9]{9}$'
+          description: The carrier calls this number.
+          examples: ['3001234567']
+        municipality_code:
+          $ref: '#/components/schemas/MunicipalityCode'
+        address_line1:
+          type: string
+          minLength: 5
+          maxLength: 200
+          examples: ['Calle 5 # 12-34']
+        address_line2:
+          type: [string, 'null']
+          maxLength: 120
+          description: Apartment, tower, or office.
+          examples: ['Apto 501, Torre 2']
+        postal_code:
+          type: [string, 'null']
+          pattern: '^[0-9]{6}$'
+          examples: ['417030']
+        delivery_notes:
+          type: [string, 'null']
+          maxLength: 300
+          examples: ['Portería, horario en el que hay alguien']
+
+    FiscalData:
+      type: object
+      additionalProperties: false
+      description: |
+        Optional buyer data for an invoice with the buyer's document.
+        `natural` persons use CC, CE, or PP; `legal` persons use NIT.
+        Stored as entered in the order tax snapshot; invoice issuance is out
+        of scope for this version.
+      required: [person_type, document_type, document_number]
+      properties:
+        person_type:
+          type: string
+          enum: [natural, legal]
+        document_type:
+          type: string
+          enum: [CC, CE, PP, NIT]
+        document_number:
+          type: string
+          minLength: 3
+          maxLength: 20
+          pattern: '^[0-9A-Za-z-]+$'
+          description: Digits and letters; separators such as dots are removed by the client. NIT includes the check digit after a hyphen.
+          examples: ['1234567890', '900123456-7']
+
+    PlaceOrderRequest:
+      type: object
+      additionalProperties: false
+      required: [items, customer, shipping_address, fiscal_data, accepts_data_policy]
+      properties:
+        items:
+          type: array
+          minItems: 1
+          maxItems: 50
+          items:
+            $ref: '#/components/schemas/CartItem'
+        customer:
+          $ref: '#/components/schemas/Customer'
+        shipping_address:
+          $ref: '#/components/schemas/ShippingAddress'
+        fiscal_data:
+          oneOf:
+            - $ref: '#/components/schemas/FiscalData'
+            - type: 'null'
+        accepts_data_policy:
+          type: boolean
+          const: true
+          description: Personal data policy and purchase terms consent; must be true.
+
+    PlacedOrder:
+      type: object
+      additionalProperties: false
+      required: [order_id, order_number, status, total_amount, reservation_expires_at, tracking_token]
+      properties:
+        order_id:
+          $ref: ./common.yaml#/components/schemas/Id
+        order_number:
+          type: string
+          pattern: '^ORD-[0-9A-HJKMNP-TV-Z]{8}$'
+          examples: ['ORD-7K2M9Q4X']
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        total_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+        reservation_expires_at:
+          $ref: ./common.yaml#/components/schemas/Timestamp
+        tracking_token:
+          type: string
+          pattern: '^[A-Za-z0-9_-]{43}$'
+          description: Raw tracking token, returned only here and in the confirmation email link.
+
+    Shipment:
+      type: object
+      additionalProperties: false
+      required: [carrier_name, tracking_number, tracking_url]
+      properties:
+        carrier_name:
+          type: string
+          examples: ['Coordinadora']
+        tracking_number:
+          type: string
+          examples: ['1234567890']
+        tracking_url:
+          type: [string, 'null']
+          format: uri
+
+    GuestShippingAddress:
+      type: object
+      additionalProperties: false
+      required: [recipient_name, recipient_phone, municipality_code, municipality_name, department_name, address_line1, address_line2, delivery_notes]
+      properties:
+        recipient_name:
+          type: string
+        recipient_phone:
+          type: string
+        municipality_code:
+          $ref: '#/components/schemas/MunicipalityCode'
+        municipality_name:
+          type: string
+          description: DIVIPOLA display name snapshotted at placement (contracts/reference/divipola.json).
+          examples: ['Bogotá, D. C.']
+        department_name:
+          type: string
+          examples: ['Bogotá, D. C.']
+        address_line1:
+          type: string
+        address_line2:
+          type: [string, 'null']
+        delivery_notes:
+          type: [string, 'null']
+
+    GuestOrderLine:
+      type: object
+      additionalProperties: false
+      required: [variant_id, product_slug, product_title, variant_label, sku, unit_price_amount, quantity, line_total_amount, production_date]
+      properties:
+        variant_id:
+          $ref: ./common.yaml#/components/schemas/Id
+        product_slug:
+          $ref: ./common.yaml#/components/schemas/Slug
+          description: Snapshot; clients use it to read the product image and origin from the catalog API.
+        product_title:
+          type: string
+          examples: ['Finca El Mirador']
+        variant_label:
+          type: string
+          examples: ['250 g / Grano entero']
+        sku:
+          type: string
+          examples: ['MTL-MIR-250-GR']
+        unit_price_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+        quantity:
+          type: integer
+          minimum: 1
+        line_total_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+        production_date:
+          oneOf:
+            - $ref: ./common.yaml#/components/schemas/CalendarDate
+            - type: 'null'
+          description: Earliest production (roast) date among the lots allocated to this line.
+
+    GuestOrder:
+      type: object
+      additionalProperties: false
+      description: Guest view of an order. Buyer phone, email, and fiscal data are not returned.
+      required: [order_number, status, placed_at, reservation_expires_at, lines, shipping, subtotal_amount, shipping_amount, tax_amount, total_amount, shipping_address, shipment]
+      properties:
+        order_number:
+          type: string
+          examples: ['ORD-7K2M9Q4X']
+        status:
+          $ref: '#/components/schemas/OrderStatus'
+        placed_at:
+          $ref: ./common.yaml#/components/schemas/Timestamp
+        reservation_expires_at:
+          $ref: ./common.yaml#/components/schemas/Timestamp
+        lines:
+          type: array
+          items:
+            $ref: '#/components/schemas/GuestOrderLine'
+        shipping:
+          $ref: '#/components/schemas/ShippingSummary'
+        subtotal_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+        shipping_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+        tax_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+        total_amount:
+          $ref: ./common.yaml#/components/schemas/MoneyAmount
+        shipping_address:
+          $ref: '#/components/schemas/GuestShippingAddress'
+        shipment:
+          oneOf:
+            - $ref: '#/components/schemas/Shipment'
+            - type: 'null'

@@ -36,6 +36,10 @@ The following safeguards mitigate single-node failure risks and resource content
 - **External backups:** Automated, off-provider backups (e.g., S3-compatible object storage) for database dumps and media assets (strategy approved in Section 5; provider and retention pending).
 - **Container isolation:** Containerization (e.g., Docker Compose) with explicit CPU and memory resource limits per service (approved in Section 5).
 - **Reverse proxy and TLS:** Caddy reverse proxy handling automatic HTTPS, compression (`encode zstd gzip` with `precompressed` sidecars), static asset serving, and reverse proxying to the Go backend (approved in Section 5).
+- **Rate limiting and abuse prevention (Denial of Inventory / Database Bloating):** Defense-in-depth against automated fake order spikes and database bloat:
+  1. *Edge/Proxy layer:* Caddy rate-limiting rules and Cloudflare Turnstile bot verification on checkout mutation endpoints (`POST /api/v1/orders`), capping submission attempts per IP.
+  2. *Application layer:* Strict 30-minute stock reservation ceiling with automatic background release, lot-bound allocations failing closed (`422 insufficient_stock`), and DIVIPOLA input validation in memory before database writes.
+  3. *Database hygiene:* Periodic archival or pruning of unpaid, expired orders older than 14 days to keep transactional tables performant on the 100 GB SSD.
 - **Resource monitoring:** Proactive monitoring with threshold alerts for storage exhaustion and RAM pressure (pending approval).
 
 ## 5. Architectural Decisions (Checked = Approved, Unchecked = Pending)

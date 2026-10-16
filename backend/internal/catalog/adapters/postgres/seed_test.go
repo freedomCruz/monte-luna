@@ -152,21 +152,31 @@ func TestDemoSeedFailureRollsBackEverything(t *testing.T) {
 func TestSeedCommand(t *testing.T) {
 	binary := buildCommand(t, "seed")
 	code, stdout, stderr := command(t, binary, "")
-	assertLog(t, code, stdout, stderr, "ERROR", "demo catalog seed failed", "DATABASE_URL is required")
+	assertLog(t, code, stdout, stderr, "ERROR", "demo catalog, shipping and orders seed failed", "DATABASE_URL is required")
 	code, stdout, stderr = command(t, binary, "", "-h")
-	wantHelp := "Usage: seed\nLoad idempotent demo catalog data into an already migrated development database.\nNever run against production. Existing rows and stock are not reset.\nEnvironment: DATABASE_URL is required.\n"
+	wantHelp := "Usage: seed\nLoad idempotent demo data in order: catalog, shipping, orders, into an already migrated development database.\nNever run against production. Existing rows, prices and stock are not reset.\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping|orders (default all).\n"
 	if code != 0 || stdout != "" || stderr != wantHelp {
 		t.Fatalf("help exit/stdout/stderr = %d/%q/%q", code, stdout, stderr)
 	}
 	db, url := database(t)
-	if err := postgres.Migrate(t.Context(), db); err != nil {
-		t.Fatal(err)
-	}
+	migrate := buildCommand(t, "migrate")
+	code, stdout, stderr = command(t, migrate, url)
+	assertLog(t, code, stdout, stderr, "INFO", "catalog, shipping and orders migrations applied", "")
 	code, stdout, stderr = command(t, binary, url)
-	assertLog(t, code, stdout, stderr, "INFO", "demo catalog seeded", "")
+	assertLog(t, code, stdout, stderr, "INFO", "demo catalog, shipping and orders seeded", "")
 	assertDemo(t, db)
+	if scalar[int](t, db, `SELECT count(*) FROM orders.orders`) != 0 || scalar[int](t, db, `SELECT count(*) FROM orders.outbox`) != 0 {
+		t.Fatal("seed invented orders or events")
+	}
+	if scalar[int](t, db, `SELECT count(*) FROM shipping.shipping_zones`) != 3 || scalar[int](t, db, `SELECT count(*) FROM shipping.shipping_rates`) != 6 {
+		t.Fatal("default seed did not load demo shipping coverage")
+	}
 	before := catalogSnapshot(t, db)
+	shippingBefore := scalar[string](t, db, `SELECT jsonb_agg(to_jsonb(r) ORDER BY id)::text FROM shipping.shipping_rates r`)
 	code, stdout, stderr = command(t, binary, url)
-	assertLog(t, code, stdout, stderr, "INFO", "demo catalog seeded", "")
+	assertLog(t, code, stdout, stderr, "INFO", "demo catalog, shipping and orders seeded", "")
 	assertSameCatalog(t, db, before)
+	if scalar[string](t, db, `SELECT jsonb_agg(to_jsonb(r) ORDER BY id)::text FROM shipping.shipping_rates r`) != shippingBefore {
+		t.Fatal("repeated default seed changed shipping rates")
+	}
 }

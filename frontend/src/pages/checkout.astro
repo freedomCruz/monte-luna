@@ -1,0 +1,11 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { CheckoutIsland } from '../components/checkout/CheckoutIsland';
+---
+
+<Layout
+  title="Checkout · Monteluna"
+  description="Completa tus datos de envío y realiza el pago seguro de tu pedido de café y cacao colombiano."
+>
+  <CheckoutIsland client:load />
+</Layout>

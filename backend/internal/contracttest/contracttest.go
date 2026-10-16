@@ -25,6 +25,11 @@ type Contract struct {
 	router routers.Router
 }
 
+// Doc returns the loaded raw OpenAPI specification document.
+func (c *Contract) Doc() *openapi3.T {
+	return c.doc
+}
+
 // contractsDir returns the absolute path of contracts/openapi.
 func contractsDir() string {
 	_, file, _, _ := runtime.Caller(0)
@@ -57,6 +62,17 @@ func Load(t *testing.T, name string) *Contract {
 // conform to the contract, and returns the recorded response.
 func (c *Contract) Do(t *testing.T, handler http.Handler, req *http.Request) *httptest.ResponseRecorder {
 	t.Helper()
+	return c.exchange(t, handler, req, true)
+}
+
+// DoInvalid proves a deliberately invalid request is rejected by OpenAPI, then
+// validates the handler's problem response against the same operation contract.
+func (c *Contract) DoInvalid(t *testing.T, handler http.Handler, req *http.Request) *httptest.ResponseRecorder {
+	t.Helper()
+	return c.exchange(t, handler, req, false)
+}
+func (c *Contract) exchange(t *testing.T, handler http.Handler, req *http.Request, valid bool) *httptest.ResponseRecorder {
+	t.Helper()
 	ctx := context.Background()
 
 	var reqBody []byte
@@ -80,8 +96,12 @@ func (c *Contract) Do(t *testing.T, handler http.Handler, req *http.Request) *ht
 		Route:      route,
 		Options:    &openapi3filter.Options{AuthenticationFunc: openapi3filter.NoopAuthenticationFunc},
 	}
-	if err := openapi3filter.ValidateRequest(ctx, reqInput); err != nil {
-		t.Fatalf("request does not match the contract: %v", err)
+	validationErr := openapi3filter.ValidateRequest(ctx, reqInput)
+	if valid && validationErr != nil {
+		t.Fatalf("request does not match the contract: %v", validationErr)
+	}
+	if !valid && validationErr == nil {
+		t.Fatal("negative request unexpectedly matches the contract")
 	}
 
 	rec := httptest.NewRecorder()

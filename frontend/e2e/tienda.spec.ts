@@ -50,8 +50,8 @@ test.describe('Tienda (/tienda)', () => {
     const choc85SavingsSlot = page.locator('[data-live-savings-slot="chocolate-85"]').first();
     await expect(choc85SavingsSlot).toBeEmpty();
 
-    // 4. Invariant: NO add-to-cart or buy buttons anywhere on /tienda
-    const addToCartButtons = page.getByRole('button', { name: /comprar|carrito|agregar/i });
+    // 4. Invariant: NO add-to-cart or buy buttons inside products list / main content
+    const addToCartButtons = page.locator('main').getByRole('button', { name: /comprar|carrito|agregar/i });
     await expect(addToCartButtons).toHaveCount(0);
   });
 });

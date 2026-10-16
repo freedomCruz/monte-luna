@@ -32,6 +32,10 @@ Canonical requirements and data model for the `orders` module. Conventions in [d
   1. Calls `catalog` to retrieve live variant pricing, active status, weight, and stock availability.
   2. Calls `shipping` with destination municipality code, total weight in grams, and subtotal to resolve the matching shipping rate and cost.
   3. Invokes the `TaxCalculator` port (`invoicing` domain) with line tax categories, merchant fiscal profile in force, and destination to obtain tax rates and tax amounts.
+- **Client session lifecycle and cart independence:**
+  - Placed order summaries in client storage (`sessionStorage`) are ephemeral reference mirrors only for the immediate Step 3 payment shell.
+  - If the customer returns to the store and adds or changes items in the cart, any existing placed order mirror in `sessionStorage` is immediately evicted, and checkout resets to Step 2 (Datos y entrega).
+  - Each checkout completion creates an independent order with its own unique `Idempotency-Key` and derived HMAC tracking token. Order tracking URLs (`/pedido?token=...`) are standalone capability URLs that resolve purely by token hash against PostgreSQL without client session or cookie dependencies.
 
 **Order placement and stock reservation**
 - Placing an order generates a new UUIDv7 order ID and unique human-readable order number.
@@ -59,7 +63,8 @@ Canonical requirements and data model for the `orders` module. Conventions in [d
   - `promotions`: to transition reserved coupon redemptions to `confirmed`.
 
 **Guest tracking and security**
-- Every order generates a cryptographically secure random tracking token (at least 32 bytes).
+- Every order gets a 32-byte tracking token derived as `HMAC-SHA256(TRACKING_TOKEN_SECRET, Idempotency-Key)`, encoded base64url without padding (43 characters). The Idempotency-Key is a client-generated random UUID and the secret never leaves the server, so the token is unpredictable; deriving it lets an idempotent retry return the same token without storing it (approved 2026-10-15).
+- `TRACKING_TOKEN_SECRET` is a server secret of at least 32 random bytes, validated at startup. Rotating it does not invalidate existing tokens (only their hashes are stored); it only changes the token an idempotent retry would recompute within the 24-hour window.
 - The raw token is sent to the customer via email in their private order tracking URL.
 - The database stores only the SHA-256 hash (`tracking_token_hash`).
 - When the customer visits the tracking page, the server computes the SHA-256 hash of the supplied token and queries by hash. The order UUID or order number alone never grants access to order details.
@@ -131,6 +136,9 @@ orders ✎ ──< order_lines ──< order_line_lot_allocations
 | `total_amount` | `bigint` | Not null; `CHECK (total_amount >= 0)` |
 | `coupon_code` | `text` | Nullable; snapshot of applied coupon code |
 | `shipping_rate_name` | `text` | Not null; snapshot of applied shipping rate name |
+| `shipping_estimated_days_min` | `integer` | Not null; snapshot of the rate's minimum delivery days; `CHECK (shipping_estimated_days_min >= 1)` |
+| `shipping_estimated_days_max` | `integer` | Not null; snapshot of the rate's maximum delivery days; `CHECK (shipping_estimated_days_max >= shipping_estimated_days_min)` |
+| `shipping_is_free_shipping` | `boolean` | Not null, default `false`; snapshot of whether the rate's free-shipping threshold was reached (distinguishes threshold-free shipping from a zero-price rate) |
 | `customer_email` | `text` | Not null; `CHECK (customer_email = lower(customer_email))` |
 | `customer_name` | `text` | Not null |
 | `customer_phone` | `text` | Nullable |
@@ -162,6 +170,7 @@ Immutable snapshot of purchased items. No `updated_at`.
 | `product_id` | `uuid` | Not null; plain catalog product identifier (no cross-schema FK) |
 | `variant_id` | `uuid` | Not null; plain catalog variant identifier (no cross-schema FK) |
 | `sku` | `text` | Not null; snapshot of SKU |
+| `product_slug` | `text` | Not null; snapshot of product slug, used by the guest order view to read image and origin from the catalog |
 | `product_title` | `text` | Not null; snapshot of product name |
 | `variant_label` | `text` | Not null; snapshot of variant options (e.g. "250 g / Whole Bean") |
 | `unit_price_amount` | `bigint` | Not null; `CHECK (unit_price_amount > 0)` |
@@ -236,10 +245,29 @@ Outbox table and consumer tracking follow [data-modeling.md](../architecture/dat
 - **`orders.order_shipped`**: Published when order transitions to `shipped` following shipment dispatch.
   - Attributes: `order_id`, `order_number`, `customer_email`, `shipped_at`.
 
+### 3.7 `idempotency_keys`
+
+Stores order-placement results so a retried `POST /api/v1/orders` with the same `Idempotency-Key` returns the original response for 24 hours ([api-conventions.md](../architecture/api-conventions.md) section 8). Rows are written in the same transaction as the order.
+
+| Column | Type | Rules |
+|---|---|---|
+| `key` | `uuid` | Primary key; client-generated `Idempotency-Key` |
+| `request_hash` | `text` | Not null; SHA-256 of the canonical request body; a different body with the same key returns `422 idempotency_key_reused` |
+| `order_id` | `uuid` | Not null; FK → `orders(id)` ON DELETE CASCADE |
+| `response_status` | `integer` | Not null |
+| `response_body` | `jsonb` | Not null; original response body **without** `tracking_token`; a retry recomputes the token from the key (section 2, Guest tracking) |
+| `created_at` | `timestamptz` | Not null, default `now()` |
+| `expires_at` | `timestamptz` | Not null; `created_at + 24 hours`; indexed for cleanup |
+
+Only successful placements (`201`) are stored; failed requests store nothing and may be retried with the same key. Expired rows are deleted by a periodic cleanup.
+
+The key is normalized to canonical lowercase UUID text before hashing, HMAC derivation, and locking. Because the tracking token is derived from the key, a key whose idempotency row has expired can never place a second order: its reuse returns `422 idempotency_key_reused` (detected through the retained `tracking_token_hash`). Clients generate a fresh UUID key for every new checkout attempt.
+
 ## 4. Open Items
 
 - **Retention policy for orders:** Commercial and fiscal records in Colombia require long-term preservation (e.g. Código de Comercio art. 60 — 10 years, Estatuto Tributario art. 632). Confirm exact archiving policy with merchant's accountant.
 - **Personal data retention and privacy policy:** Customer PII lifecycle (email, phone, address, national ID) under statutory Habeas Data (Ley 1581 de 2012).
+- **Abuse prevention and unfulfilled order pruning:** Operational rules for pruning or cold-archiving unpaid, expired orders (`status = 'expired' AND paid_at IS NULL`) older than 14 days, coupled with Caddy rate-limiting and Cloudflare Turnstile on `POST /api/v1/orders` to defend against denial-of-inventory and database bloating attacks (documented in [infrastructure.md](../architecture/infrastructure.md) section 4).
 
 ## 5. Sources
 

@@ -1,8 +1,8 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { getCatalogProducts, getCatalogCategories } from '../lib/catalog';
-import { groupProductsByCategory } from '../lib/catalog-groups';
-import { ListingPriceIsland } from '../components/islands/ListingPriceIsland';
+import { getCatalogProducts, getCatalogCategories } from '../lib/catalog/catalog';
+import { groupProductsByCategory } from '../lib/catalog/groups';
+import { ListingPriceIsland } from '../components/catalog/ListingPriceIsland';
 import ProductCard from '../components/catalog/ProductCard.astro';
 
 const productsPage = await getCatalogProducts();
