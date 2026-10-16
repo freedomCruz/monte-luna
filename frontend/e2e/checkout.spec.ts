@@ -31,8 +31,8 @@ const mockOrderQuoteResponse = {
 const mockPlacedOrderResponse = {
   order_number: 'ORD-7K2M9Q4X',
   status: 'pending_payment',
-  placed_at: '2026-10-15T15:00:00Z',
-  reservation_expires_at: '2026-10-15T15:30:00Z',
+  placed_at: new Date().toISOString(),
+  reservation_expires_at: new Date(Date.now() + 25 * 60 * 1000).toISOString(),
   lines: [
     {
       variant_id: '01912345-6789-7abc-def0-123456789abc',
@@ -235,10 +235,9 @@ test.describe('Checkout Flow (S3, S4, S5, S6)', () => {
     await expect(page.getByRole('list', { name: 'Medios de pago disponibles' }).getByText('PSE', { exact: true })).toBeVisible();
     await expect(page.getByRole('list', { name: 'Medios de pago disponibles' }).getByText('Nequi', { exact: true })).toBeVisible();
     await expect(page.getByRole('list', { name: 'Medios de pago disponibles' }).getByText('Bancolombia', { exact: true })).toBeVisible();
-    await expect(page.locator('button:has-text("Pagar $47.500")')).toBeVisible();
-    await expect(page.locator('text=El pago en línea estará disponible pronto.')).toBeVisible();
-    const payBtn = page.locator('button:has-text("Pagar $47.500")');
-    await expect(payBtn).toHaveAttribute('aria-disabled', 'true');
+    await expect(page.locator('button:has-text("Pagar $47.500")').first()).toBeVisible();
+    const payBtn = page.locator('button:has-text("Pagar $47.500")').first();
+    await expect(payBtn).toBeEnabled();
 
     // Verify contact review summary in Step 3
     await expect(page.locator('text=María Gómez').first()).toBeVisible();
