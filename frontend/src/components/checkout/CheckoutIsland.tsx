@@ -403,12 +403,6 @@ export function CheckoutIsland() {
         paymentError={paymentError}
         isPaymentWindowOpen={isPaymentWindowOpen}
         onClosePaymentWindow={() => setIsPaymentWindowOpen(false)}
-        onSimulateReturn={() => {
-          setIsPaymentWindowOpen(false);
-          if (typeof window !== 'undefined' && placedOrder?.tracking_token) {
-            window.location.href = `/pedido?token=${encodeURIComponent(placedOrder.tracking_token)}`;
-          }
-        }}
       />
     );
   }

@@ -98,13 +98,24 @@ describe('Order Subcomponents Unit Tests', () => {
       expect(screen.getByText(/Armar el pedido de nuevo/i)).toBeDefined();
     });
 
-    it('renders cancelled status with rejected badge and payment retry link', () => {
+    it('renders cancelled status with Cancelado seal, approved copy, and restart link (S7)', () => {
       const cancelledOrder = { ...mockOrder, status: 'cancelled' as const };
       render(<OrderTrackingHero order={cancelledOrder} />);
 
-      expect(screen.getByText('El pago no pasó.')).toBeDefined();
-      expect(screen.getByText('Rechazado')).toBeDefined();
-      expect(screen.getByText(/Intentar el pago de nuevo/i)).toBeDefined();
+      expect(screen.getByText('Tu pago llegó cuando el café ya no estaba disponible.')).toBeDefined();
+      expect(
+        screen.getByText(
+          'Recibimos tu pago después de que se venció la reserva y ya no había inventario. No vamos a despachar este pedido y te devolveremos el dinero completo.'
+        )
+      ).toBeDefined();
+      expect(screen.getAllByText('Pedido').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText('Cancelado')).toBeDefined();
+      expect(screen.getByText('Reembolso')).toBeDefined();
+      expect(screen.getByText(/Armar el pedido de nuevo/i)).toBeDefined();
+      expect(screen.getByText(/Ir a la tienda/i)).toBeDefined();
+      // Must NOT render Rechazado or payment retry
+      expect(screen.queryByText('Rechazado')).toBeNull();
+      expect(screen.queryByText(/Intentar el pago de nuevo/i)).toBeNull();
     });
 
     it('renders rejected variant when order is pending_payment with declined payment attempt', () => {
@@ -201,6 +212,62 @@ describe('Order Subcomponents Unit Tests', () => {
 
       expect(screen.getByText('Total pagado')).toBeDefined();
       expect(screen.getByText('Pagado con Nequi')).toBeDefined();
+    });
+
+    it('renders no payment method note when paid with null or unknown method (never Pagado con Wompi)', () => {
+      const { unmount } = render(
+        <OrderSummaryAside
+          lines={mockOrder.lines}
+          subtotalAmount={mockOrder.subtotal_amount}
+          shippingAmount={mockOrder.shipping_amount}
+          totalAmount={mockOrder.total_amount}
+          status="paid"
+          payment={{
+            latest_attempt_status: 'approved',
+            payment_method_type: null,
+          }}
+        />
+      );
+
+      expect(screen.getByText('Total pagado')).toBeDefined();
+      expect(screen.queryByText(/Pagado con/i)).toBeNull();
+      unmount();
+
+      render(
+        <OrderSummaryAside
+          lines={mockOrder.lines}
+          subtotalAmount={mockOrder.subtotal_amount}
+          shippingAmount={mockOrder.shipping_amount}
+          totalAmount={mockOrder.total_amount}
+          status="paid"
+          payment={{
+            latest_attempt_status: 'approved',
+            payment_method_type: 'unknown_method' as any,
+          }}
+        />
+      );
+
+      expect(screen.getByText('Total pagado')).toBeDefined();
+      expect(screen.queryByText(/Pagado con/i)).toBeNull();
+    });
+
+    it('renders Total pagado and refund note for cancelled order (S7)', () => {
+      render(
+        <OrderSummaryAside
+          lines={mockOrder.lines}
+          subtotalAmount={mockOrder.subtotal_amount}
+          shippingAmount={mockOrder.shipping_amount}
+          totalAmount={mockOrder.total_amount}
+          status="cancelled"
+          payment={{
+            latest_attempt_status: 'approved',
+            payment_method_type: 'card',
+          }}
+        />
+      );
+
+      expect(screen.getByText('Total pagado')).toBeDefined();
+      expect(screen.getByText('Te lo devolvemos completo')).toBeDefined();
     });
   });
 

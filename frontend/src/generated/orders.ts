@@ -295,8 +295,10 @@ export interface components {
             production_date: components["schemas"]["CalendarDate"] | null;
         };
         /**
-         * @description Latest payment attempt, ordered by creation time. Null payment on
-         *     GuestOrder means no attempt exists. Status is server-verified, never
+         * @description The approved payment attempt when the order has one; otherwise the
+         *     latest attempt, ordered by creation time. A duplicate_approved attempt
+         *     is never returned. Null payment on GuestOrder means no attempt exists.
+         *     Status is server-verified, never
          *     taken from a browser redirect. For a pending_payment order, pending
          *     (or approved while the orders outbox consumer catches up) supports
          *     the confirming view; declined or error supports the rejected view.

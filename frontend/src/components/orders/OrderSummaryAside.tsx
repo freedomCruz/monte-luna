@@ -26,7 +26,7 @@ export function OrderSummaryAside({
   const viewState = resolveTrackingViewState(status, payment);
 
   let totalLabel = 'Total';
-  let totalNote = 'Pesos colombianos';
+  let totalNote: string | null = 'Pesos colombianos';
 
   switch (viewState) {
     case 'Pagado':
@@ -44,6 +44,10 @@ export function OrderSummaryAside({
     case 'Vencido':
       totalLabel = 'Total';
       totalNote = 'Pedido sin pagar';
+      break;
+    case 'Cancelado':
+      totalLabel = 'Total pagado';
+      totalNote = 'Te lo devolvemos completo';
       break;
   }
 
@@ -109,7 +113,7 @@ export function OrderSummaryAside({
       <div className="relative flex items-end justify-between gap-3 -mx-6 md:-mx-7 px-6 md:px-7 pt-5 border-t-2 border-dashed border-border/80">
         <div className="flex flex-col gap-0.5">
           <span className="text-base md:text-lg font-bold">{totalLabel}</span>
-          <span className="text-xs md:text-sm text-muted-foreground">{totalNote}</span>
+          {totalNote && <span className="text-xs md:text-sm text-muted-foreground">{totalNote}</span>}
         </div>
         <span className="font-sans text-3xl md:text-4xl font-extrabold tracking-tight">
           {formatMoneyCop(totalAmount)}

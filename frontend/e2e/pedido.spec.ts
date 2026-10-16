@@ -330,4 +330,48 @@ test.describe('Guest Order Tracking Page (/pedido?token=...) (S4, S5)', () => {
       .analyze();
     expect(axe.violations).toEqual([]);
   });
+
+  test('renders Cancelado state when order status is cancelled (S7)', async ({ page }) => {
+    await page.route('**/api/v1/orders/track?token=tok_cancelled', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          ...mockOrderPending,
+          status: 'cancelled',
+          payment: {
+            latest_attempt_status: 'approved',
+            payment_method_type: 'card',
+          },
+        }),
+      });
+    });
+
+    await page.goto('/pedido?token=tok_cancelled');
+
+    await expect(page.locator('h1')).toHaveText(
+      'Tu pago llegó cuando el café ya no estaba disponible.'
+    );
+    await expect(page.locator('text=Cancelado')).toBeVisible();
+    await expect(page.locator('text=Reembolso')).toBeVisible();
+    await expect(page.locator('text=Total pagado')).toBeVisible();
+    await expect(page.locator('text=Te lo devolvemos completo')).toBeVisible();
+    await expect(page.locator('text=Sin fecha de entrega')).toBeVisible();
+    await expect(page.locator('text=Este pedido no se va a despachar.')).toBeVisible();
+    await expect(page.locator('a:has-text("Armar el pedido de nuevo")')).toBeVisible();
+    await expect(page.locator('a:has-text("Ir a la tienda")')).toBeVisible();
+
+    // Notices: only "Los precios pueden cambiar", drop "¿Alcanzaste a pagar?"
+    await expect(page.locator('text=Los precios pueden cambiar')).toBeVisible();
+    await expect(page.locator('text=¿Alcanzaste a pagar?')).toHaveCount(0);
+
+    // Must not render Rechazado
+    await expect(page.locator('text=El pago no pasó.')).toHaveCount(0);
+    await expect(page.locator('text=Rechazado')).toHaveCount(0);
+
+    const axe = await new AxeBuilder({ page })
+      .withTags(['wcag2a', 'wcag2aa'])
+      .analyze();
+    expect(axe.violations).toEqual([]);
+  });
 });

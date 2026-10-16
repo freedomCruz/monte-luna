@@ -159,7 +159,7 @@ export function OrderTrackingIsland({ initialToken }: OrderTrackingIslandProps) 
   // Order tracking steps
   const steps = computeOrderTrackingSteps(order.status);
 
-  // Resolved view state: 'Pagado' | 'Confirmando' | 'Rechazado' | 'Vencido'
+  // Resolved view state: 'Pagado' | 'Confirmando' | 'Rechazado' | 'Vencido' | 'Cancelado'
   const viewState = resolveTrackingViewState(order.status, order.payment);
 
   let notices: OrderNoticeItem[] = [];
@@ -200,6 +200,15 @@ export function OrderTrackingIsland({ initialToken }: OrderTrackingIslandProps) 
         texto:
           'Si tu pago llega tarde, confirmamos el pedido si todavía hay inventario. Si no, te devolvemos el dinero.',
       },
+      {
+        marca: '↻',
+        titulo: 'Los precios pueden cambiar',
+        texto:
+          'Al armar el pedido de nuevo se calculan otra vez precios, tarifas de envío y disponibilidad.',
+      },
+    ];
+  } else if (viewState === 'Cancelado') {
+    notices = [
       {
         marca: '↻',
         titulo: 'Los precios pueden cambiar',

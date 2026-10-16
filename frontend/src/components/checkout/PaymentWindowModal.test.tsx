@@ -6,9 +6,8 @@ import { PaymentWindowModal } from './PaymentWindowModal';
 describe('PaymentWindowModal (S7, M-Checkout-Pago canvas)', () => {
   const expiresFuture = new Date(Date.now() + 29 * 60 * 1000).toISOString();
 
-  it('renders modal dialog with order number, total, timer, and close button', () => {
+  it('renders modal dialog with order number, total, timer, and close button, without prototype simulation button', () => {
     const handleClose = vi.fn();
-    const handleSimulate = vi.fn();
 
     render(
       <PaymentWindowModal
@@ -16,7 +15,6 @@ describe('PaymentWindowModal (S7, M-Checkout-Pago canvas)', () => {
         totalDisplay="$68.900"
         reservationExpiresAt={expiresFuture}
         onClose={handleClose}
-        onSimulateReturn={handleSimulate}
       />
     );
 
@@ -32,9 +30,7 @@ describe('PaymentWindowModal (S7, M-Checkout-Pago canvas)', () => {
     fireEvent.click(closeBtn);
     expect(handleClose).toHaveBeenCalledOnce();
 
-    // Simulate return button
-    const simBtn = screen.getByRole('button', { name: /Simular el regreso del pago →/i });
-    fireEvent.click(simBtn);
-    expect(handleSimulate).toHaveBeenCalledOnce();
+    // Prototype simulation button must not exist
+    expect(screen.queryByRole('button', { name: /Simular el regreso del pago/i })).toBeNull();
   });
 });

@@ -49,6 +49,7 @@ const mockGuestOrder: components['schemas']['GuestOrder'] = {
 describe('OrderTrackingIsland (S4, S5)', () => {
   beforeEach(() => {
     vi.restoreAllMocks();
+    document.body.innerHTML = '';
   });
 
   it('renders loading spinner and then displays order data when token is valid', async () => {
@@ -252,6 +253,53 @@ describe('OrderTrackingIsland (S4, S5)', () => {
       expect(screen.getByText('Se acabó el tiempo de este pedido.')).toBeDefined();
       expect(screen.getByText('Vencida')).toBeDefined();
       expect(screen.getByRole('link', { name: /Armar el pedido de nuevo →/i })).toBeDefined();
+    });
+  });
+
+  it('renders Cancelado state with refund notices and approved copy when order is cancelled (S7)', async () => {
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+      if (typeof url === 'string' && url.includes('/api/v1/orders/track')) {
+        return Promise.resolve({
+          ok: true,
+          status: 200,
+          json: async () => ({
+            ...mockGuestOrder,
+            status: 'cancelled',
+            payment: {
+              latest_attempt_status: 'approved',
+              payment_method_type: 'card',
+            },
+          }),
+        });
+      }
+      return Promise.resolve({ ok: false, status: 404 });
+    });
+
+    render(<OrderTrackingIsland initialToken="tok_cancelled" />);
+
+    await waitFor(() => {
+      expect(
+        screen.getAllByText('Tu pago llegó cuando el café ya no estaba disponible.').length
+      ).toBeGreaterThanOrEqual(1);
+      expect(screen.getAllByText('Cancelado').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByRole('link', { name: /Armar el pedido de nuevo →/i })).toBeDefined();
+      expect(screen.getByRole('link', { name: /Ir a la tienda/i })).toBeDefined();
+
+      // Notices: only "Los precios pueden cambiar", drop "¿Alcanzaste a pagar?"
+      expect(screen.getByText('Los precios pueden cambiar')).toBeDefined();
+      expect(screen.queryByText('¿Alcanzaste a pagar?')).toBeNull();
+
+      // Summary
+      expect(screen.getByText('Total pagado')).toBeDefined();
+      expect(screen.getByText('Te lo devolvemos completo')).toBeDefined();
+
+      // Delivery
+      expect(screen.getByText('Sin fecha de entrega')).toBeDefined();
+      expect(screen.getByText('Este pedido no se va a despachar.')).toBeDefined();
+
+      // Must not render Rechazado
+      expect(screen.queryByText('El pago no pasó.')).toBeNull();
+      expect(screen.queryByText('Rechazado')).toBeNull();
     });
   });
 });

@@ -6,7 +6,6 @@ export interface PaymentWindowModalProps {
   totalDisplay: string;
   reservationExpiresAt: string;
   onClose: () => void;
-  onSimulateReturn?: () => void;
 }
 
 export function PaymentWindowModal({
@@ -14,7 +13,6 @@ export function PaymentWindowModal({
   totalDisplay,
   reservationExpiresAt,
   onClose,
-  onSimulateReturn,
 }: PaymentWindowModalProps) {
   return (
     <div
@@ -106,17 +104,6 @@ export function PaymentWindowModal({
             El medio de pago y sus datos se escriben ahí, no en Monteluna. Total a pagar: {totalDisplay}.
           </span>
         </div>
-
-        {/* Simulate return button for testing/canvas consistency */}
-        {onSimulateReturn && (
-          <button
-            type="button"
-            onClick={onSimulateReturn}
-            className="w-full inline-flex items-center justify-center min-h-[56px] rounded-xl bg-primary text-primary-foreground font-sans text-base font-bold uppercase tracking-wide hover:opacity-90 cursor-pointer"
-          >
-            Simular el regreso del pago →
-          </button>
-        )}
 
         <span className="text-xs md:text-sm text-center text-muted-foreground leading-relaxed">
           Si cierras esta ventana, tu pedido sigue apartado hasta que se acabe el tiempo y puedes volver a intentar el pago.

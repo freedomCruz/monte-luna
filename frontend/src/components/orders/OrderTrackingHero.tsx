@@ -16,11 +16,12 @@ export function OrderTrackingHero({ order, onTimerExpire }: OrderTrackingHeroPro
   const isPending = viewState === 'Confirmando';
   const isExpired = viewState === 'Vencido';
   const isRejected = viewState === 'Rechazado';
+  const isCancelled = viewState === 'Cancelado';
 
   // Hero container colors
   const heroBg = isPaid
     ? 'bg-brand-green text-primary-foreground'
-    : isExpired || isRejected
+    : isExpired || isRejected || isCancelled
       ? 'bg-hero/30 text-foreground'
       : 'bg-hero/40 text-foreground';
 
@@ -59,6 +60,18 @@ export function OrderTrackingHero({ order, onTimerExpire }: OrderTrackingHeroPro
     selloA = 'Reserva';
     selloB = 'Vencida';
     selloC = '30 minutos';
+    selloBg = 'bg-primary text-primary-foreground';
+  } else if (isCancelled) {
+    title = 'Tu pago llegó cuando el café ya no estaba disponible.';
+    text =
+      'Recibimos tu pago después de que se venció la reserva y ya no había inventario. No vamos a despachar este pedido y te devolveremos el dinero completo.';
+    btnText = 'Armar el pedido de nuevo';
+    btnHref = '/tienda';
+    linkText = 'Ir a la tienda';
+    linkHref = '/tienda';
+    selloA = 'Pedido';
+    selloB = 'Cancelado';
+    selloC = 'Reembolso';
     selloBg = 'bg-primary text-primary-foreground';
   } else if (isRejected) {
     title = 'El pago no pasó.';

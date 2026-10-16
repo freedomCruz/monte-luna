@@ -19,8 +19,14 @@ describe('payment-tracking helpers (Task F2 / Spec S7)', () => {
       expect(formatPaymentMethodLabel('bancolombia_transfer')).toBe('Pagado con Bancolombia');
     });
 
-    it('falls back to Pagado con Wompi when null or undefined', () => {
-      expect(formatPaymentMethodLabel(null)).toBe('Pagado con Wompi');
+    it('returns null when null or undefined (no default fallback to Pagado con Wompi)', () => {
+      expect(formatPaymentMethodLabel(null)).toBeNull();
+      expect(formatPaymentMethodLabel(undefined)).toBeNull();
+    });
+
+    it('returns null for unknown payment methods', () => {
+      expect(formatPaymentMethodLabel('unknown_provider' as any)).toBeNull();
+      expect(formatPaymentMethodLabel('crypto' as any)).toBeNull();
     });
   });
 
@@ -37,8 +43,9 @@ describe('payment-tracking helpers (Task F2 / Spec S7)', () => {
       expect(resolveTrackingViewState('expired', { latest_attempt_status: 'expired', payment_method_type: null })).toBe('Vencido');
     });
 
-    it('returns Rechazado for cancelled orders', () => {
-      expect(resolveTrackingViewState('cancelled', null)).toBe('Rechazado');
+    it('returns Cancelado for cancelled orders (reusing Vencido layout with cancelled copy, S7)', () => {
+      expect(resolveTrackingViewState('cancelled', null)).toBe('Cancelado');
+      expect(resolveTrackingViewState('cancelled', { latest_attempt_status: 'approved', payment_method_type: 'card' })).toBe('Cancelado');
     });
 
     it('returns Rechazado for pending_payment when latest attempt is declined or error', () => {

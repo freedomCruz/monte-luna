@@ -28,7 +28,6 @@ export interface CheckoutPaymentStepProps {
   paymentError?: string | null;
   isPaymentWindowOpen?: boolean;
   onClosePaymentWindow?: () => void;
-  onSimulateReturn?: () => void;
 }
 
 export function CheckoutPaymentStep({
@@ -50,7 +49,6 @@ export function CheckoutPaymentStep({
   paymentError,
   isPaymentWindowOpen,
   onClosePaymentWindow,
-  onSimulateReturn,
 }: CheckoutPaymentStepProps) {
   const isExpired = reservationExpiresAt
     ? new Date(reservationExpiresAt).getTime() <= Date.now()
@@ -207,7 +205,6 @@ export function CheckoutPaymentStep({
           onClose={() => {
             if (onClosePaymentWindow) onClosePaymentWindow();
           }}
-          onSimulateReturn={onSimulateReturn}
         />
       )}
     </div>
