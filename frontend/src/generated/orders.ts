@@ -294,6 +294,32 @@ export interface components {
             /** @description Earliest production (roast) date among the lots allocated to this line. */
             production_date: components["schemas"]["CalendarDate"] | null;
         };
+        /**
+         * @description The approved payment attempt when the order has one; otherwise the
+         *     latest attempt, ordered by creation time. A duplicate_approved attempt
+         *     is never returned. Null payment on GuestOrder means no attempt exists.
+         *     Status is server-verified, never
+         *     taken from a browser redirect. For a pending_payment order, pending
+         *     (or approved while the orders outbox consumer catches up) supports
+         *     the confirming view; declined or error supports the rejected view.
+         *     Order status remains authoritative: expired shows the expired view,
+         *     and paid or later fulfillment statuses show the paid view with the
+         *     real payment method. Created means widget parameters were issued,
+         *     not that Wompi has accepted a transaction. Do not infer payment success
+         *     from the existence of an attempt or a payment method.
+         */
+        GuestPayment: {
+            /**
+             * @description Internal attempt status; clients tolerate unknown future values.
+             * @enum {string}
+             */
+            latest_attempt_status: "created" | "pending" | "approved" | "declined" | "voided" | "error" | "expired";
+            /**
+             * @description Actual provider method mapped to lowercase; null until known. Never substitute a default method. nequi supports the label Pagado con Nequi.
+             * @enum {string|null}
+             */
+            payment_method_type: "card" | "pse" | "nequi" | "bancolombia_transfer" | null;
+        };
         /** @description Guest view of an order. Buyer phone, email, and fiscal data are not returned. */
         GuestOrder: {
             /** @example ORD-7K2M9Q4X */
@@ -309,6 +335,8 @@ export interface components {
             total_amount: components["schemas"]["MoneyAmount"];
             shipping_address: components["schemas"]["GuestShippingAddress"];
             shipment: components["schemas"]["Shipment"] | null;
+            /** @description Latest attempt and real payment method; null when no attempt exists. */
+            payment: components["schemas"]["GuestPayment"] | null;
         };
         /**
          * Format: uuid

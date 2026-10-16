@@ -7,6 +7,7 @@ import { PurchaseSteps } from '../ui/purchase-steps';
 import { DeliveryDataCard } from './DeliveryDataCard';
 import { PaymentMethodsSection } from './PaymentMethodsSection';
 import { CheckoutSummaryAside } from './CheckoutSummaryAside';
+import { PaymentWindowModal } from './PaymentWindowModal';
 
 export interface CheckoutPaymentStepProps {
   formData: CheckoutFormData;
@@ -20,7 +21,13 @@ export interface CheckoutPaymentStepProps {
   totalDisplay: string;
   orderNumber?: string;
   trackingToken?: string;
+  reservationExpiresAt?: string;
   onBackToDatos: () => void;
+  onPay?: () => void;
+  isPaymentLoading?: boolean;
+  paymentError?: string | null;
+  isPaymentWindowOpen?: boolean;
+  onClosePaymentWindow?: () => void;
 }
 
 export function CheckoutPaymentStep({
@@ -35,8 +42,18 @@ export function CheckoutPaymentStep({
   totalDisplay,
   orderNumber,
   trackingToken,
+  reservationExpiresAt,
   onBackToDatos,
+  onPay,
+  isPaymentLoading,
+  paymentError,
+  isPaymentWindowOpen,
+  onClosePaymentWindow,
 }: CheckoutPaymentStepProps) {
+  const isExpired = reservationExpiresAt
+    ? new Date(reservationExpiresAt).getTime() <= Date.now()
+    : false;
+
   return (
     <div className="w-full bg-background text-foreground min-h-screen flex flex-col font-sans">
       {/* Top reassurance banner */}
@@ -73,7 +90,7 @@ export function CheckoutPaymentStep({
         {/* Left Column: Customer Review + Wompi Box */}
         <div className="flex-1 w-full flex flex-col gap-8">
           {/* S5 Out-of-Stock / Insufficient Stock Alert */}
-          {quoteError === 'insufficient_stock' && (
+          {(quoteError === 'insufficient_stock' || isExpired) && (
             <div
               role="alert"
               className="flex items-start justify-between gap-4 p-5 bg-card border-2 border-destructive rounded-2xl"
@@ -94,11 +111,12 @@ export function CheckoutPaymentStep({
                 </svg>
                 <div className="flex flex-col gap-1">
                   <span className="text-lg font-bold text-destructive">
-                    Inventario no disponible
+                    {isExpired ? 'Tiempo de reserva agotado' : 'Inventario no disponible'}
                   </span>
                   <p className="text-sm text-foreground/80">
-                    Uno o más productos de tu carrito ya no tienen stock disponible. Por favor regresa
-                    al carrito para ajustar las cantidades.
+                    {isExpired
+                      ? 'Pasó el tiempo de reserva sin recibir el pago y liberamos el inventario. Puedes armarlo de nuevo en un minuto.'
+                      : 'Uno o más productos de tu carrito ya no tienen stock disponible. Por favor regresa al carrito para ajustar las cantidades.'}
                   </p>
                 </div>
               </div>
@@ -126,6 +144,10 @@ export function CheckoutPaymentStep({
             orderNumber={orderNumber}
             trackingToken={trackingToken}
             onBackToDatos={onBackToDatos}
+            onPay={onPay}
+            isLoading={isPaymentLoading}
+            errorMessage={paymentError}
+            reservationExpired={isExpired}
           />
         </div>
 
@@ -141,6 +163,50 @@ export function CheckoutPaymentStep({
           totalDisplay={totalDisplay}
         />
       </main>
+
+      {/* Mobile Sticky Bar (M-Checkout-Pago-390 canvas) */}
+      <div className="md:hidden sticky bottom-0 z-10 flex items-center gap-3.5 px-4 py-3 bg-card border-t-2 border-primary shadow-lg">
+        <span className="flex flex-col">
+          <span className="text-xs font-bold text-muted-foreground">Total</span>
+          <span className="text-2xl font-extrabold tracking-tight leading-none">
+            {totalDisplay}
+          </span>
+        </span>
+        <button
+          type="button"
+          disabled={isPaymentLoading || isExpired}
+          onClick={onPay}
+          className="flex-1 inline-flex items-center justify-center gap-2 min-h-[52px] rounded-xl bg-[#C1272D] hover:bg-[#a81f25] text-white font-condensed text-lg font-extrabold uppercase tracking-wide cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed select-none"
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.4"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            aria-hidden="true"
+          >
+            <rect x="5" y="10.5" width="14" height="10" rx="2"></rect>
+            <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path>
+          </svg>
+          {isPaymentLoading ? 'Abriendo…' : 'Pagar'}
+        </button>
+      </div>
+
+      {/* Payment Window Modal ("Ventana de pago" state in M-Checkout-Pago canvas) */}
+      {isPaymentWindowOpen && orderNumber && (
+        <PaymentWindowModal
+          orderNumber={orderNumber}
+          totalDisplay={totalDisplay}
+          reservationExpiresAt={reservationExpiresAt || ''}
+          onClose={() => {
+            if (onClosePaymentWindow) onClosePaymentWindow();
+          }}
+        />
+      )}
     </div>
   );
 }

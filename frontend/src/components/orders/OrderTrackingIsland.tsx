@@ -1,13 +1,20 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import type { components } from '../../generated/orders';
 import { getGuestOrder } from '../../lib/orders/client';
+import { verifyPayment } from '../../lib/payments/client';
 import { computeOrderTrackingSteps } from '../../lib/orders/tracking';
+import { resolveTrackingViewState } from '../../lib/orders/payment-tracking';
 import { OrderTrackingHero } from './OrderTrackingHero';
 import { OrderTrackingStepsSection } from './OrderTrackingStepsSection';
 import { OrderDeliveryCard } from './OrderDeliveryCard';
 import { OrderSummaryAside } from './OrderSummaryAside';
 import { OrderNoticesGrid, type OrderNoticeItem } from './OrderNoticesGrid';
 import { OrderOriginCard } from './OrderOriginCard';
+import {
+  fetchOrderOrigin,
+  resolveOriginCardTitle,
+  type OrderOriginData,
+} from '../../lib/orders/order-origin';
 
 export interface OrderTrackingIslandProps {
   initialToken?: string;
@@ -19,6 +26,10 @@ export function OrderTrackingIsland({ initialToken }: OrderTrackingIslandProps) 
   const [loading, setLoading] = useState<boolean>(true);
   const [errorStatus, setErrorStatus] = useState<number | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [originData, setOriginData] = useState<OrderOriginData | null>(null);
+
+  // Keep track of whether we already verified the redirect transaction ID hint
+  const hasAttemptedVerifyRef = useRef(false);
 
   const fetchOrder = useCallback(async (trackingToken: string) => {
     setLoading(true);
@@ -49,24 +60,70 @@ export function OrderTrackingIsland({ initialToken }: OrderTrackingIslandProps) 
 
   useEffect(() => {
     let resolvedToken = token;
-    if (!resolvedToken && typeof window !== 'undefined') {
+    let transactionIdHint: string | null = null;
+
+    if (typeof window !== 'undefined') {
       const params = new URLSearchParams(window.location.search);
-      resolvedToken = params.get('token');
-      if (resolvedToken) {
-        setToken(resolvedToken);
+      if (!resolvedToken) {
+        resolvedToken = params.get('token');
+        if (resolvedToken) {
+          setToken(resolvedToken);
+        }
       }
+      transactionIdHint = params.get('id');
     }
 
-    if (resolvedToken) {
-      fetchOrder(resolvedToken);
-    } else {
+    if (!resolvedToken) {
       setLoading(false);
       setErrorStatus(400);
       setErrorMessage(
         'No se proporcionó un token de seguimiento. Para ver el estado de tu pedido, accede a través del enlace enviado a tu correo.'
       );
+      return;
     }
-  }, [fetchOrder]);
+
+    async function initOrder(tok: string, txId: string | null) {
+      // If returning from Wompi with ?id=..., verify once with backend and strip ?id= from URL (S3, S7)
+      if (txId && !hasAttemptedVerifyRef.current) {
+        hasAttemptedVerifyRef.current = true;
+        try {
+          await verifyPayment(tok, txId);
+        } catch (vErr) {
+          console.error('Error verifying payment from redirect hint:', vErr);
+        } finally {
+          // Remove ?id= from URL without page reload
+          if (typeof window !== 'undefined' && window.history && window.history.replaceState) {
+            const cleanParams = new URLSearchParams(window.location.search);
+            cleanParams.delete('id');
+            const cleanUrl = `${window.location.pathname}${cleanParams.toString() ? '?' + cleanParams.toString() : ''}`;
+            window.history.replaceState(null, '', cleanUrl);
+          }
+        }
+      }
+
+      await fetchOrder(tok);
+    }
+
+    initOrder(resolvedToken, transactionIdHint);
+  }, [token, fetchOrder]);
+
+  useEffect(() => {
+    let isMounted = true;
+    if (!order || !order.lines || order.lines.length === 0) {
+      setOriginData(null);
+      return;
+    }
+
+    fetchOrderOrigin(order.lines).then((data) => {
+      if (isMounted) {
+        setOriginData(data);
+      }
+    });
+
+    return () => {
+      isMounted = false;
+    };
+  }, [order]);
 
   // Loading state
   if (loading) {
@@ -126,14 +183,11 @@ export function OrderTrackingIsland({ initialToken }: OrderTrackingIslandProps) 
   // Order tracking steps
   const steps = computeOrderTrackingSteps(order.status);
 
-  // Informative notices based on status (M-Pedido / M-Pedido-390 canvas)
-  const isPaid = ['paid', 'preparing', 'shipped', 'delivered'].includes(order.status);
-  const isPending = order.status === 'pending_payment';
-  const isExpired = order.status === 'expired';
-  const isCancelled = order.status === 'cancelled';
+  // Resolved view state: 'Pagado' | 'Confirmando' | 'Rechazado' | 'Vencido' | 'Cancelado'
+  const viewState = resolveTrackingViewState(order.status, order.payment);
 
   let notices: OrderNoticeItem[] = [];
-  if (isPaid) {
+  if (viewState === 'Pagado') {
     notices = [
       {
         marca: '@',
@@ -147,7 +201,7 @@ export function OrderTrackingIsland({ initialToken }: OrderTrackingIslandProps) 
         texto: 'Con la transportadora y el número de guía para rastrearlo en tiempo real.',
       },
     ];
-  } else if (isPending) {
+  } else if (viewState === 'Confirmando') {
     notices = [
       {
         marca: '!',
@@ -162,7 +216,7 @@ export function OrderTrackingIsland({ initialToken }: OrderTrackingIslandProps) 
           'Apenas el pago quede confirmado recibes el correo de confirmación para seguir tu pedido.',
       },
     ];
-  } else if (isExpired) {
+  } else if (viewState === 'Vencido') {
     notices = [
       {
         marca: '$',
@@ -177,7 +231,16 @@ export function OrderTrackingIsland({ initialToken }: OrderTrackingIslandProps) 
           'Al armar el pedido de nuevo se calculan otra vez precios, tarifas de envío y disponibilidad.',
       },
     ];
-  } else if (isCancelled) {
+  } else if (viewState === 'Cancelado') {
+    notices = [
+      {
+        marca: '↻',
+        titulo: 'Los precios pueden cambiar',
+        texto:
+          'Al armar el pedido de nuevo se calculan otra vez precios, tarifas de envío y disponibilidad.',
+      },
+    ];
+  } else if (viewState === 'Rechazado') {
     notices = [
       {
         marca: '?',
@@ -228,13 +291,19 @@ export function OrderTrackingIsland({ initialToken }: OrderTrackingIslandProps) 
             shippingAmount={order.shipping_amount}
             totalAmount={order.total_amount}
             status={order.status}
+            payment={order.payment}
           />
         </div>
 
         {/* Origin section */}
-        <OrderOriginCard
-          department={order.shipping_address.department_name}
-        />
+        {originData && (
+          <OrderOriginCard
+            title={resolveOriginCardTitle(viewState)}
+            originSlug={originData.originSlug}
+            department={originData.department}
+            farmerStory={originData.story}
+          />
+        )}
       </main>
     </div>
   );
