@@ -32,6 +32,10 @@ Canonical requirements and data model for the `orders` module. Conventions in [d
   1. Calls `catalog` to retrieve live variant pricing, active status, weight, and stock availability.
   2. Calls `shipping` with destination municipality code, total weight in grams, and subtotal to resolve the matching shipping rate and cost.
   3. Invokes the `TaxCalculator` port (`invoicing` domain) with line tax categories, merchant fiscal profile in force, and destination to obtain tax rates and tax amounts.
+- **Client session lifecycle and cart independence:**
+  - Placed order summaries in client storage (`sessionStorage`) are ephemeral reference mirrors only for the immediate Step 3 payment shell.
+  - If the customer returns to the store and adds or changes items in the cart, any existing placed order mirror in `sessionStorage` is immediately evicted, and checkout resets to Step 2 (Datos y entrega).
+  - Each checkout completion creates an independent order with its own unique `Idempotency-Key` and derived HMAC tracking token. Order tracking URLs (`/pedido?token=...`) are standalone capability URLs that resolve purely by token hash against PostgreSQL without client session or cookie dependencies.
 
 **Order placement and stock reservation**
 - Placing an order generates a new UUIDv7 order ID and unique human-readable order number.
@@ -263,6 +267,7 @@ The key is normalized to canonical lowercase UUID text before hashing, HMAC deri
 
 - **Retention policy for orders:** Commercial and fiscal records in Colombia require long-term preservation (e.g. Código de Comercio art. 60 — 10 years, Estatuto Tributario art. 632). Confirm exact archiving policy with merchant's accountant.
 - **Personal data retention and privacy policy:** Customer PII lifecycle (email, phone, address, national ID) under statutory Habeas Data (Ley 1581 de 2012).
+- **Abuse prevention and unfulfilled order pruning:** Operational rules for pruning or cold-archiving unpaid, expired orders (`status = 'expired' AND paid_at IS NULL`) older than 14 days, coupled with Caddy rate-limiting and Cloudflare Turnstile on `POST /api/v1/orders` to defend against denial-of-inventory and database bloating attacks (documented in [infrastructure.md](../architecture/infrastructure.md) section 4).
 
 ## 5. Sources
 

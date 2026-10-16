@@ -15,6 +15,7 @@ import {
   validateCheckoutForm,
   loadPlacedOrder,
   savePlacedOrder,
+  clearPlacedOrder,
   mapFormDataToPlaceOrderRequest,
 } from '../../lib/checkout/state';
 import {
@@ -34,13 +35,18 @@ export function CheckoutIsland() {
   const [availabilities, setAvailabilities] = useState<Map<string, VariantAvailability>>(new Map());
   const [loadingAvailabilities, setLoadingAvailabilities] = useState(false);
 
-  // Placed order from storage if arriving at Step 3
+  // Placed order from storage only if cart is empty (e.g. arriving directly at Step 3 for a previously placed order)
   const [placedOrder, setPlacedOrder] = useState<StoredPlacedOrder | null>(() => {
+    if (items.length > 0) {
+      clearPlacedOrder();
+      return null;
+    }
     return loadPlacedOrder();
   });
 
-  // Multi-step flow: 'datos' (step 2) -> 'pago' (step 3)
+  // Multi-step flow: if there are items in cart, always start at 'datos' (step 2)
   const [step, setStep] = useState<'datos' | 'pago'>(() => {
+    if (items.length > 0) return 'datos';
     const savedPlaced = loadPlacedOrder();
     return savedPlaced ? 'pago' : 'datos';
   });

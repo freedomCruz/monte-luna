@@ -351,4 +351,42 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
       screen.getByLabelText(/Número de NIT \(con dígito de verificación\)/i)
     ).toBeDefined();
   });
+
+  it('resets step to datos and clears old placedOrder when cart has new items', async () => {
+    // Seed old placed order in sessionStorage
+    sessionStorage.setItem(
+      'monteluna:placed-order',
+      JSON.stringify({
+        order_id: '01999999-9999-7999-9999-999999999999',
+        order_number: 'ORD-OLDORDER',
+        status: 'pending_payment',
+        total_amount: 15200000,
+        reservation_expires_at: new Date(Date.now() + 1800000).toISOString(),
+        tracking_token: 'old_tracking_token',
+      })
+    );
+
+    // Now user adds a new item to cart
+    addItem(mockItem);
+
+    globalThis.fetch = vi.fn().mockImplementation((url: string) => {
+      if (typeof url === 'string' && url.includes('/api/v1/product-availabilities')) {
+        return Promise.resolve({
+          ok: true,
+          json: async () => mockAvailabilityResponse,
+        });
+      }
+      return Promise.resolve({ ok: false, status: 404 });
+    });
+
+    render(<CheckoutIsland />);
+
+    // Should NOT be on Step 3, should be on Step 2 (Datos y envío)
+    expect(screen.getByText('Paso 2 de 3')).toBeDefined();
+    expect(screen.getByText('¿A dónde lo enviamos?')).toBeDefined();
+    expect(screen.queryByText('Paso 3 de 3')).toBeNull();
+    expect(screen.queryByText(/ORD-OLDORDER/i)).toBeNull();
+    // Old placed order in sessionStorage must have been cleared
+    expect(sessionStorage.getItem('monteluna:placed-order')).toBeNull();
+  });
 });
