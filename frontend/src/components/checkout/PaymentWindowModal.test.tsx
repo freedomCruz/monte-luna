@@ -22,7 +22,8 @@ describe('PaymentWindowModal (S7, M-Checkout-Pago canvas)', () => {
     expect(screen.getByText('Pedido creado')).toBeDefined();
     expect(screen.getByText('ORD-7K2M9Q4X')).toBeDefined();
     expect(screen.getByText(/Total a pagar: \$68\.900/i)).toBeDefined();
-    expect(screen.getByText(/\[Aquí se abre la ventana de pago de Wompi\]/i)).toBeDefined();
+    expect(screen.getByText('Se abrió la ventana segura de Wompi.')).toBeDefined();
+    expect(screen.queryByText(/\[Aquí se abre la ventana de pago de Wompi\]/i)).toBeNull();
     expect(screen.getAllByText(/Tu pedido sigue apartado/i).length).toBeGreaterThanOrEqual(1);
 
     // Close button

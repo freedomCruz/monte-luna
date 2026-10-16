@@ -98,7 +98,7 @@ export function PaymentWindowModal({
             <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
           </svg>
           <span className="text-base md:text-lg font-extrabold text-foreground">
-            [Aquí se abre la ventana de pago de Wompi]
+            Se abrió la ventana segura de Wompi.
           </span>
           <span className="max-w-[340px] text-sm md:text-base leading-relaxed">
             El medio de pago y sus datos se escriben ahí, no en Monteluna. Total a pagar: {totalDisplay}.
