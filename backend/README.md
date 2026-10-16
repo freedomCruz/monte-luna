@@ -126,6 +126,33 @@ Configuration parameters in `cmd/api`:
 - `TRACKING_TOKEN_SECRET`: Base64-encoded secret containing at least 32 bytes (required).
 - `ORDER_MAINTENANCE_INTERVAL`: Polling interval for expiry and cleanup (default: 1m).
 
+### Transactional outbox relay
+
+The API starts an in-process relay for registered catalog and orders outboxes,
+using `FOR UPDATE SKIP LOCKED` claims. It dispatches registered consumers before
+marking a source event delivered. Events with no registered consumer have no
+side effects. `platform.ConsumeOnce` inserts the source UUID into the consumer's
+`processed_events` in the same transaction as its effect; failed effects roll
+back both. Register subscriptions at startup before running the relay.
+
+Configuration overrides (all positive, validated at startup):
+
+| Environment variable | Default |
+| --- | --- |
+| `OUTBOX_POLL_INTERVAL` | `1s` |
+| `OUTBOX_BATCH_SIZE` | `100` |
+| `OUTBOX_CLEANUP_INTERVAL` | `1h` |
+| `OUTBOX_RETENTION` | `168h` (7 days) |
+| `OUTBOX_MAX_ATTEMPTS` | `10` |
+| `OUTBOX_INITIAL_BACKOFF` | `1s` |
+| `OUTBOX_MAX_BACKOFF` | `15m` |
+
+Delivery retries use exponential backoff; exhausted events become `failed`,
+produce an ERROR log, and are never deleted automatically. Hourly bounded cleanup
+removes only delivered events and successful consumer guards older than retention.
+Consumer errors are not persisted verbatim, to avoid leaking private data.
+Shutdown cancels and joins the relay before closing database pools.
+
 ### Scenario A tax calculation
 
 `internal/invoicing` exposes `TaxCalculator`. Its explicit demo configuration is

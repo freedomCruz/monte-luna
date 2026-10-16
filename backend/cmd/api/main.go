@@ -17,6 +17,7 @@ import (
 	"github.com/freedomCruz/monte-luna/backend/internal/orders"
 	"github.com/freedomCruz/monte-luna/backend/internal/platform"
 	"github.com/freedomCruz/monte-luna/backend/internal/shipping"
+	"github.com/jackc/pgx/v5/pgxpool"
 )
 
 func main() {
@@ -52,12 +53,27 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	checkout, err := orders.NewRuntime(ctx, cfg.databaseURL, module, ship, tax, cfg.trackingSecret, logger, orders.RuntimeOptions{})
- if err != nil { return err }
- defer checkout.Close()
- jobsCtx, cancelJobs := context.WithCancel(ctx)
- jobsDone := make(chan struct{})
- go func(){defer close(jobsDone);checkout.RunJobs(jobsCtx,cfg.maintenanceInterval)}()
- defer func(){cancelJobs();<-jobsDone}()
+	if err != nil {
+		return err
+	}
+	defer checkout.Close()
+	relayPool, err := pgxpool.New(ctx, cfg.databaseURL)
+	if err != nil {
+		return errors.New("initialize outbox connection pool")
+	}
+	defer relayPool.Close()
+	relay, err := platform.NewRelay(relayPool, []string{"catalog", "orders"}, cfg.relay, logger)
+	if err != nil {
+		return err
+	}
+	relayCtx, cancelRelay := context.WithCancel(ctx)
+	relayDone := make(chan struct{})
+	go func() { defer close(relayDone); relay.Run(relayCtx) }()
+	defer func() { cancelRelay(); <-relayDone }()
+	jobsCtx, cancelJobs := context.WithCancel(ctx)
+	jobsDone := make(chan struct{})
+	go func() { defer close(jobsDone); checkout.RunJobs(jobsCtx, cfg.maintenanceInterval) }()
+	defer func() { cancelJobs(); <-jobsDone }()
 
 	mux := http.NewServeMux()
 	platform.RegisterRoutes(mux)
@@ -99,8 +115,9 @@ func run(logger *slog.Logger) error {
 
 type config struct {
 	addr, databaseURL, mediaBaseURL string
- trackingSecret []byte
- maintenanceInterval time.Duration
+	trackingSecret                  []byte
+	maintenanceInterval             time.Duration
+	relay                           platform.RelayConfig
 }
 
 func loadConfig() (config, error) {
@@ -114,14 +131,22 @@ func loadConfig() (config, error) {
 	if err := catalog.ValidateMediaBaseURL(cfg.mediaBaseURL); err != nil {
 		return cfg, err
 	}
- secret, err := orders.DecodeTrackingSecret(os.Getenv("TRACKING_TOKEN_SECRET"))
- if err != nil { return cfg, err }
- cfg.trackingSecret = secret
- cfg.maintenanceInterval = time.Minute
- if value := os.Getenv("ORDER_MAINTENANCE_INTERVAL"); value != "" {
-  interval, err := time.ParseDuration(value)
-  if err != nil || interval <= 0 { return cfg, errors.New("ORDER_MAINTENANCE_INTERVAL must be a positive duration") }
-  cfg.maintenanceInterval = interval
- }
+	secret, err := orders.DecodeTrackingSecret(os.Getenv("TRACKING_TOKEN_SECRET"))
+	if err != nil {
+		return cfg, err
+	}
+	cfg.trackingSecret = secret
+	cfg.maintenanceInterval = time.Minute
+	if value := os.Getenv("ORDER_MAINTENANCE_INTERVAL"); value != "" {
+		interval, err := time.ParseDuration(value)
+		if err != nil || interval <= 0 {
+			return cfg, errors.New("ORDER_MAINTENANCE_INTERVAL must be a positive duration")
+		}
+		cfg.maintenanceInterval = interval
+	}
+	cfg.relay, err = platform.LoadRelayConfig(os.Getenv)
+	if err != nil {
+		return cfg, err
+	}
 	return cfg, nil
 }
