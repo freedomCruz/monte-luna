@@ -246,6 +246,7 @@ Outbox table and consumer tracking follow [data-modeling.md](../architecture/dat
 ## 4. Open Items
 
 - **Secret management tooling:** Production API keys and signing secrets are injected via environment variables from an env file with `0600` permissions on the VPS outside the repository, loaded by Docker Compose and validated at application startup. Dedicated secret engines (Vault/Doppler) deferred post-v1.
+- **Duplicate payment customer notice:** In v1 the customer receives no storefront notice of a `duplicate_approved` charge; the merchant acts on the pending `duplicate_payment` refund and the ERROR log. A refund email is added with the notifications module (2026-10-16).
 - **Automated settlement import:** Automated ingestion of Wompi settlement reports via API or CSV file upload deferred to post-v1.
 - **In-flight transaction query by reference (sandbox confirmation pending):** Official docs (https://docs.wompi.co/docs/colombia/transacciones/) document only `GET /v1/transactions/{transaction_id}` with the private key. On 2026-10-16, `GET /v1/transactions?reference=…` answered `401 INVALID_ACCESS_TOKEN` without a key and "Solicitud no autorizada" with a public key on both `sandbox.wompi.co` and `production.wompi.co`, while an unknown route answers a gateway `404`; the route exists, requires the private key, and its response shape is undocumented. It is used only as an adapter fallback when no transaction id is known, and must be confirmed with sandbox keys before production.
 

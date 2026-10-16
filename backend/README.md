@@ -126,6 +126,110 @@ Configuration parameters in `cmd/api`:
 - `TRACKING_TOKEN_SECRET`: Base64-encoded secret containing at least 32 bytes (required).
 - `ORDER_MAINTENANCE_INTERVAL`: Polling interval for expiry and cleanup (default: 1m).
 
+### Wompi payment initiation
+
+`POST /api/v1/payments` follows the approved [payments contract](../contracts/openapi/payments.yaml).
+Send only `tracking_token` in JSON and a UUID `Idempotency-Key`. The orders facade
+hash-authorizes the capability and supplies the order total, currency and reservation
+expiry. Unexpired `pending_payment` orders without an approved or pending attempt
+can start; declined/error attempts can be retried. New references use 24 random
+bytes, and only the backend computes the exact Wompi integrity signature.
+
+A successful response is 201 with `Location: /api/v1/payments/verify` and `no-store`.
+A matching key/body replays the original checkout for 24 hours, even when the order
+has since expired or been paid. A changed body returns `idempotency_key_reused`.
+The replay ledger never stores the raw tracking token or token-bearing redirect.
+
+Startup requires `WOMPI_PUBLIC_KEY`, `WOMPI_PRIVATE_KEY`, `WOMPI_INTEGRITY_SECRET`,
+`WOMPI_EVENTS_SECRET`, `WOMPI_ENVIRONMENT` (`sandbox` or `production`) and
+`STOREFRONT_BASE_URL` (absolute HTTP(S) storefront origin). Values are read only
+from the environment and are never logged. The redirect is always the server-built
+`/pedido?token=...` capability URL; the browser never supplies prices or status.
+
+Apply payments migrations with `go run ./cmd/migrate -module payments`; the default
+`all` now migrates catalog, shipping, orders and payments. The payments migration
+creates attempts, refunds (including `duplicate_payment`), webhook deduplication,
+outbox, consumer guards and the payment-start replay ledger. Settlements are deferred.
+Seed behavior and its module filters are unchanged; payments has no demo seed.
+
+The `PaymentGateway` port uses a bounded `net/http` adapter with the private Bearer
+key. The reference-query fallback is **undocumented and unverified**; its response
+shape/filter behavior must be confirmed with sandbox keys (M1) before production.
+Tests use only an `httptest` provider and signed fixtures, never live Wompi calls.
+
+### Verified provider outcomes
+
+`POST /api/v1/payments/webhooks/wompi` verifies the required `X-Event-Checksum`
+against dynamic, ordered `signature.properties`, the timestamp and events secret.
+Missing, unresolved or altered signed values are rejected without writes. Checksums
+are normalized for deduplication; repeated events return an empty 200. Status,
+provider details, deduplication and `payments.payment_approved`/`payment_failed`
+commit in one transaction. Terminal attempts cannot move backwards.
+
+`POST /api/v1/payments/verify` requires the tracking token and a nullable
+`transaction_id`. The hint is fetched server-side and accepted only if reference,
+amount and currency match an attempt of that order. A mismatch returns 422 without
+writes. No known transaction ID returns the current payment unchanged, without a
+provider request. Successful reconciliation does not synchronously mark orders paid.
+
+`PAYMENT_WEBHOOK_RETENTION` is a positive Go duration (default `720h`, 30 days).
+The API runs bounded webhook-ledger cleanup at the configured outbox cleanup
+interval and joins it before closing the payments pool.
+
+### Order payment confirmation, late payments and refunds
+
+Startup registers `orders` for `payments.payment_approved` and `payments` for
+`orders.order_cancelled`. Consumers commit their own `processed_events` guard with
+their state/history/outbox effects. Pending orders become paid once; expired orders
+reallocate stock through the catalog facade and become paid, or cancelled with
+`late_payment_no_stock`. Fulfillment and terminal orders never move backwards.
+Catalog's late reallocation is idempotent by order reference, including retries
+after a consumer persistence failure; ordinary allocation still rejects reused references.
+
+Before expiry, orders queries payments through an in-process port. Only a private
+provider-confirmed `PENDING` result extends the reservation by 15 minutes, capped
+at `placed_at + 2h`. Provider-query failures leave the reservation unchanged for a
+retry; the hard ceiling expires orders using the existing history/event/release path.
+Background reconciliation can use the explicitly unverified adapter reference fallback.
+
+A second provider approval becomes terminal `duplicate_approved`, preserving the
+unique canonical `approved` attempt. It emits no approval event and creates one
+pending manual `duplicate_payment` refund. Cancelled orders with an approved attempt
+create a pending manual refund with the cancellation reason. Refund creation logs
+an ERROR with order number and amount, without tokens, idempotency keys or secrets.
+Refund execution, admin workflows and emails remain deferred.
+
+`GuestOrder.payment` and payment verification project the canonical approved attempt
+when present; otherwise they project the latest attempt. `duplicate_approved` is never
+exposed. Provider methods are lowercase actual values, or null until known.
+
+### Transactional outbox relay
+
+The API starts an in-process relay for registered catalog, orders and payments outboxes,
+using `FOR UPDATE SKIP LOCKED` claims. It dispatches registered consumers before
+marking a source event delivered. Events with no registered consumer have no
+side effects. `platform.ConsumeOnce` inserts the source UUID into the consumer's
+`processed_events` in the same transaction as its effect; failed effects roll
+back both. Register subscriptions at startup before running the relay.
+
+Configuration overrides (all positive, validated at startup):
+
+| Environment variable | Default |
+| --- | --- |
+| `OUTBOX_POLL_INTERVAL` | `1s` |
+| `OUTBOX_BATCH_SIZE` | `100` |
+| `OUTBOX_CLEANUP_INTERVAL` | `1h` |
+| `OUTBOX_RETENTION` | `168h` (7 days) |
+| `OUTBOX_MAX_ATTEMPTS` | `10` |
+| `OUTBOX_INITIAL_BACKOFF` | `1s` |
+| `OUTBOX_MAX_BACKOFF` | `15m` |
+
+Delivery retries use exponential backoff; exhausted events become `failed`,
+produce an ERROR log, and are never deleted automatically. Hourly bounded cleanup
+removes only delivered events and successful consumer guards older than retention.
+Consumer errors are not persisted verbatim, to avoid leaking private data.
+Shutdown cancels and joins the relay before closing database pools.
+
 ### Scenario A tax calculation
 
 `internal/invoicing` exposes `TaxCalculator`. Its explicit demo configuration is

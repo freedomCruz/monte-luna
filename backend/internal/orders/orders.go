@@ -11,6 +11,7 @@ import (
 	"github.com/freedomCruz/monte-luna/backend/internal/orders/adapters"
 	"github.com/freedomCruz/monte-luna/backend/internal/orders/adapters/postgres"
 	"github.com/freedomCruz/monte-luna/backend/internal/orders/app"
+	"github.com/freedomCruz/monte-luna/backend/internal/orders/domain"
 	"github.com/freedomCruz/monte-luna/backend/internal/shipping"
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -20,6 +21,9 @@ type Module struct {
 	pool        *pgxpool.Pool
 	maintenance *app.Maintenance
 	logger      *slog.Logger
+	repository  *postgres.Repository
+	inventory   domain.ReallocationPort
+	clock       domain.Clock
 }
 type CatalogReader = adapters.CatalogReader
 

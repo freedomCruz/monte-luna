@@ -1,12 +1,13 @@
 package main
 
 import (
- "testing"
- "encoding/base64"
- "strings"
+	"encoding/base64"
+	"strings"
+	"testing"
 )
 
 func TestAPIConfiguration(t *testing.T) {
+	paymentEnvironment(t)
 	for _, tc := range []struct{ name, addr, database, media, want string }{
 		{"existing_missing_addr", "", "", "", "API_ADDR is required (for example 127.0.0.1:8080)"},
 		{"missing_database", "127.0.0.1:8080", "", "https://media.example/", "DATABASE_URL is required"},
@@ -19,8 +20,8 @@ func TestAPIConfiguration(t *testing.T) {
 			t.Setenv("API_ADDR", tc.addr)
 			t.Setenv("DATABASE_URL", tc.database)
 			t.Setenv("MEDIA_BASE_URL", tc.media)
- t.Setenv("TRACKING_TOKEN_SECRET",base64.StdEncoding.EncodeToString([]byte(strings.Repeat("s",32))))
- t.Setenv("ORDER_MAINTENANCE_INTERVAL","")
+			t.Setenv("TRACKING_TOKEN_SECRET", base64.StdEncoding.EncodeToString([]byte(strings.Repeat("s", 32))))
+			t.Setenv("ORDER_MAINTENANCE_INTERVAL", "")
 			cfg, err := loadConfig()
 			if tc.want != "" {
 				if err == nil || err.Error() != tc.want {
