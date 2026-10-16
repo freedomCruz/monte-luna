@@ -11,7 +11,7 @@ Canonical requirements and data model for the `payments` module. Conventions in 
 | Payment methods: `CARD`, `PSE`, `NEQUI`, `BANCOLOMBIA_TRANSFER` | Approved |
 | Integration via Wompi Web Checkout widget with server-side integrity signature | Approved |
 | Widget script loaded only on checkout step 3 when the buyer presses "Pagar"; Wompi's injected fraud scripts (Sift, ClearSale) accepted; Content-Security-Policy defined with deployment (2026-10-16) | Approved |
-| New attempt blocked while the order has a known `pending` attempt; a second approval still arriving creates a pending manual refund (`duplicate_payment`) (2026-10-16) | Approved |
+| New attempt blocked while the order has a known `pending` attempt; a second approval still arriving is stored as `duplicate_approved` and creates a pending manual refund (`duplicate_payment`) (2026-10-16) | Approved |
 | Webhook verification with dynamic `signature.properties` checksum and 30-day dedup | Approved |
 | Fallback polling via `GET /v1/transactions/{id}` with private key | Approved |
 | Status mapping (`PENDING`, `APPROVED`, `DECLINED`, `VOIDED`, `ERROR`) | Approved |
@@ -80,6 +80,7 @@ Canonical requirements and data model for the `payments` module. Conventions in 
   - `voided`: Transaction cancelled/reversed via card void.
   - `error`: Technical gateway or communication failure.
   - `expired`: Attempt reservation window expired without payment initiation.
+  - `duplicate_approved`: Wompi approved and captured this attempt, but the order already has an `approved` attempt; it never moves the order and requires a `duplicate_payment` refund.
 - **Minor currency units:** Single currency `COP`. Wompi's `amount_in_cents` corresponds exactly to the application's internal `bigint` minor units (e.g. COP 45,000 = `4500000`).
 
 **Secrets and configuration**
@@ -128,7 +129,7 @@ processed_events (outbox consumer deduplication)
 
 ### 3.1 `payment_attempts`
 
-Tracks every payment transaction initiated for an order. Multiple attempts can exist for an order (e.g. buyer retries after a bank decline), but at most one attempt can reach `approved`. A new attempt cannot start while the order has an attempt in `pending` status. If a second provider approval still arrives for an order that already has an approved attempt, the second attempt is recorded as approved at the provider but does not move the order; a `manual` refund with reason `duplicate_payment` and status `pending` is created and an ERROR-level log is written.
+Tracks every payment transaction initiated for an order. Multiple attempts can exist for an order (e.g. buyer retries after a bank decline), but at most one attempt can reach `approved`. A new attempt cannot start while the order has an attempt in `pending` status. If a second provider approval still arrives for an order that already has an approved attempt, the second attempt is stored with status `duplicate_approved` (the unique approved index stays intact and no `payments.payment_approved` event is emitted for it), the order does not change, and a `manual` refund with reason `duplicate_payment` and status `pending` is created and an ERROR-level log is written.
 
 | Column | Type | Rules |
 |---|---|---|
@@ -139,7 +140,7 @@ Tracks every payment transaction initiated for an order. Multiple attempts can e
 | `payment_method_type` | `text` | Nullable; `CHECK (payment_method_type IN ('CARD','PSE','NEQUI','BANCOLOMBIA_TRANSFER'))` |
 | `amount` | `bigint` | Not null; `CHECK (amount > 0)` |
 | `currency` | `text` | Not null, default `'COP'`; `CHECK (currency ~ '^[A-Z]{3}$')` |
-| `status` | `text` | Not null; `CHECK (status IN ('created','pending','approved','declined','voided','error','expired'))` |
+| `status` | `text` | Not null; `CHECK (status IN ('created','pending','approved','declined','voided','error','expired','duplicate_approved'))` |
 | `status_message` | `text` | Nullable; provider error or decline message |
 | `expires_at` | `timestamptz` | Not null; timestamp when this attempt's checkout window expires |
 | `finalized_at` | `timestamptz` | Nullable; timestamp when terminal status was reached |
