@@ -10,6 +10,8 @@ Canonical requirements and data model for the `payments` module. Conventions in 
 | Payment gateway: Wompi Colombia, Advanced aggregator plan (2.65% + COP 700 + VAT) | Approved |
 | Payment methods: `CARD`, `PSE`, `NEQUI`, `BANCOLOMBIA_TRANSFER` | Approved |
 | Integration via Wompi Web Checkout widget with server-side integrity signature | Approved |
+| Widget script loaded only on checkout step 3 when the buyer presses "Pagar"; Wompi's injected fraud scripts (Sift, ClearSale) accepted; Content-Security-Policy defined with deployment (2026-10-16) | Approved |
+| New attempt blocked while the order has a known `pending` attempt; a second approval still arriving creates a pending manual refund (`duplicate_payment`) (2026-10-16) | Approved |
 | Webhook verification with dynamic `signature.properties` checksum and 30-day dedup | Approved |
 | Fallback polling via `GET /v1/transactions/{id}` with private key | Approved |
 | Status mapping (`PENDING`, `APPROVED`, `DECLINED`, `VOIDED`, `ERROR`) | Approved |
@@ -20,7 +22,7 @@ Canonical requirements and data model for the `payments` module. Conventions in 
 | Data model (section 3) | Approved |
 | Secret management tooling (env variables in v1, `0600` env file on VPS) | Approved |
 | Automated settlement report import (API / CSV upload) | Deferred (post-v1) |
-| Wompi endpoint confirmation for querying in-flight transaction by reference | Open Item (verify at implementation) |
+| Query by reference (`GET /v1/transactions?reference=`): undocumented; used only inside the Wompi adapter as a fallback when no transaction id is known; must be confirmed with sandbox keys before production (2026-10-16) | Approved (sandbox confirmation pending) |
 
 ## 2. Approved Requirements
 
@@ -126,7 +128,7 @@ processed_events (outbox consumer deduplication)
 
 ### 3.1 `payment_attempts`
 
-Tracks every payment transaction initiated for an order. Multiple attempts can exist for an order (e.g. buyer retries after a bank decline), but at most one attempt can reach `approved`.
+Tracks every payment transaction initiated for an order. Multiple attempts can exist for an order (e.g. buyer retries after a bank decline), but at most one attempt can reach `approved`. A new attempt cannot start while the order has an attempt in `pending` status. If a second provider approval still arrives for an order that already has an approved attempt, the second attempt is recorded as approved at the provider but does not move the order; a `manual` refund with reason `duplicate_payment` and status `pending` is created and an ERROR-level log is written.
 
 | Column | Type | Rules |
 |---|---|---|
@@ -159,7 +161,7 @@ Ledger of payment reversals and manual refunds. Managed by backend workflows and
 | `order_id` | `uuid` | Not null; plain `orders.orders(id)` identifier (no cross-schema FK); indexed |
 | `amount` | `bigint` | Not null; `CHECK (amount > 0)` |
 | `currency` | `text` | Not null, default `'COP'`; `CHECK (currency ~ '^[A-Z]{3}$')` |
-| `reason` | `text` | Not null; `CHECK (reason IN ('late_payment_no_stock','order_cancelled','customer_request'))` |
+| `reason` | `text` | Not null; `CHECK (reason IN ('late_payment_no_stock','order_cancelled','customer_request','duplicate_payment'))` |
 | `method` | `text` | Not null; `CHECK (method IN ('card_void','manual'))` |
 | `status` | `text` | Not null; `CHECK (status IN ('pending','completed','failed'))` |
 | `external_reference` | `text` | Nullable; Wompi void transaction ID or bank transfer voucher/receipt number |
@@ -244,7 +246,7 @@ Outbox table and consumer tracking follow [data-modeling.md](../architecture/dat
 
 - **Secret management tooling:** Production API keys and signing secrets are injected via environment variables from an env file with `0600` permissions on the VPS outside the repository, loaded by Docker Compose and validated at application startup. Dedicated secret engines (Vault/Doppler) deferred post-v1.
 - **Automated settlement import:** Automated ingestion of Wompi settlement reports via API or CSV file upload deferred to post-v1.
-- **In-flight transaction query endpoint:** Confirm the exact Wompi REST endpoint used by the backend to poll an in-flight transaction by reference before the provider transaction ID is returned (`GET /v1/transactions?reference={ref}`).
+- **In-flight transaction query by reference (sandbox confirmation pending):** Official docs (https://docs.wompi.co/docs/colombia/transacciones/) document only `GET /v1/transactions/{transaction_id}` with the private key. On 2026-10-16, `GET /v1/transactions?reference=…` answered `401 INVALID_ACCESS_TOKEN` without a key and "Solicitud no autorizada" with a public key on both `sandbox.wompi.co` and `production.wompi.co`, while an unknown route answers a gateway `404`; the route exists, requires the private key, and its response shape is undocumented. It is used only as an adapter fallback when no transaction id is known, and must be confirmed with sandbox keys before production.
 
 ## 5. Sources
 
