@@ -77,8 +77,17 @@ body {
   animation: flota 6s ease-in-out infinite;
 }
 
+@keyframes cinta {
+  to { transform: translateX(-50%); }
+}
+
+.cinta {
+  animation: cinta 32s linear infinite;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .flota {
+  .flota,
+  .cinta {
     animation: none;
   }
   *,
@@ -88,3 +97,4 @@ body {
     transition-duration: 0.01ms !important;
   }
 }
+

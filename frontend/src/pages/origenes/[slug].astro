@@ -7,12 +7,13 @@ import { ListingPriceIsland } from '../../components/catalog/ListingPriceIsland'
 
 export async function getStaticPaths() {
   const originsPage = await getCatalogOrigins();
+  const allOrigins = originsPage.items;
   return Promise.all(
     originsPage.items.map(async (origin) => {
       const products = await getCatalogProductsByOrigin(origin.slug);
       return {
         params: { slug: origin.slug },
-        props: { origin, products },
+        props: { origin, products, allOrigins },
       };
     })
   );
@@ -21,93 +22,189 @@ export async function getStaticPaths() {
 interface Props {
   origin: Origin;
   products: Product[];
+  allOrigins?: Origin[];
 }
 
-const { origin, products } = Astro.props;
+const { origin, products, allOrigins = [] } = Astro.props;
 
-// Format altitude string
+// Determine product domain (Coffee vs Cacao)
+const isCoffee = !products.some((p) => p.product_type?.slug === 'cacao') && !origin.slug.includes('cacao');
+
+// Theme tokens based on domain
+const domainColor = isCoffee ? '#0F3B2C' : '#4B1C52';
+const domainBgClass = isCoffee ? 'bg-brand-green' : 'bg-brand-purple';
+const domainTextClass = isCoffee ? 'text-brand-green' : 'text-brand-purple';
+
+// Format altitude string (using en-dash for range)
 let altitudeText = 'N/D';
+let altitudeShort = '';
 if (origin.altitude_min_masl && origin.altitude_max_masl) {
   altitudeText = origin.altitude_min_masl === origin.altitude_max_masl
     ? `${origin.altitude_min_masl} m s. n. m.`
     : `${origin.altitude_min_masl} – ${origin.altitude_max_masl} m s. n. m.`;
+  altitudeShort = origin.altitude_min_masl === origin.altitude_max_masl
+    ? `${origin.altitude_min_masl}`
+    : `${origin.altitude_min_masl}–${origin.altitude_max_masl}`;
 } else if (origin.altitude_min_masl) {
   altitudeText = `${origin.altitude_min_masl} m s. n. m.`;
+  altitudeShort = `${origin.altitude_min_masl}`;
 }
 
-// Format location
+// Location formatting
 const locationParts = [origin.municipality_name, origin.department, origin.country_code].filter(Boolean);
 const locationText = locationParts.join(', ');
 
-const heroImage = origin.images[0]?.url || '/images/photo-coffee-cherries.jpg';
-const heroImageAlt = origin.images[0]?.alt_text || origin.name;
+// Pre-title / Eyebrow (e.g. "Origen de café · Huila, Colombia")
+const originCategoryLabel = isCoffee ? 'Origen de café' : 'Origen de cacao';
+const originRegionLabel = origin.department ? `${origin.department}, Colombia` : 'Colombia';
+const eyebrowText = `${originCategoryLabel} · ${originRegionLabel}`;
+
+// Hero photo and floating product asset
+const defaultHeroPhoto = isCoffee ? '/images/photo-coffee-cherries.jpg' : '/images/photo-cacao-pods-trunk.jpg';
+const heroPhoto = origin.images[0]?.url || defaultHeroPhoto;
+const heroPhotoAlt = origin.images[0]?.alt_text || `Paisaje y cultivo de ${origin.name}`;
+
+const defaultProductPackaging = isCoffee ? '/images/packaging-finca-el-mirador.webp' : '/images/packaging-chocolate-65.webp';
+const floatingProductImg = products[0]?.images[0]?.url || defaultProductPackaging;
+
+// Process steps ("Del árbol a tu bolsa" / "Del árbol a tu barra")
+const pasosCafe = [
+  { n: '01', t: 'Cosecha', d: 'Se recogen las cerezas maduras del cafeto.' },
+  { n: '02', t: 'Beneficio', d: 'Se retira la pulpa y el grano se seca. El proceso de cada lote va en su ficha.' },
+  { n: '03', t: 'Tostión', d: 'Se tuesta por lote. La fecha de tueste aparece en cada producto.' },
+  { n: '04', t: 'A tu medida', d: 'En grano entero o molido, según lo que elijas en el producto.' }
+];
+
+const pasosCacao = [
+  { n: '01', t: 'Cosecha', d: 'Se abren las mazorcas maduras y se saca el grano con su pulpa.' },
+  { n: '02', t: 'Fermentación y secado', d: 'El grano se fermenta y luego se seca.' },
+  { n: '03', t: 'Tostado y molido', d: 'El grano tostado se muele hasta formar la pasta de cacao.' },
+  { n: '04', t: 'En barra', d: 'Se moldea en barras. El porcentaje de cacao va en cada producto.' }
+];
+
+const procesoTitulo = isCoffee ? 'Del árbol a tu bolsa' : 'Del árbol a tu barra';
+const procesoSub = isCoffee
+  ? 'Así llega un café de finca hasta tu casa.'
+  : 'Así llega un cacao de origen hasta una barra de chocolate.';
+const procesoPasos = isCoffee ? pasosCafe : pasosCacao;
+
+// Gallery photos
+const defaultGalleryCoffee = [
+  { src: '/images/photo-coffee-cherries.jpg', alt: 'Cerezas de café rojas y verdes en la rama' },
+  { src: '/images/photo-roasted-beans-concrete.jpg', alt: 'Granos de café tostados sobre una superficie clara' },
+  { src: '/images/photo-roasted-beans-pile.jpg', alt: 'Montón de granos de café tostado enteros' }
+];
+
+const defaultGalleryCacao = [
+  { src: '/images/photo-cacao-pods-colourful.jpg', alt: 'Mazorcas de cacao rojas y amarillas' },
+  { src: '/images/photo-cacao-pods-trunk.jpg', alt: 'Mazorcas de cacao verdes y amarillas en el tronco del árbol' }
+];
+
+const galeriaFotos = origin.images && origin.images.length >= 3
+  ? origin.images.map((img) => ({ src: img.url, alt: img.alt_text }))
+  : (isCoffee ? defaultGalleryCoffee : defaultGalleryCacao);
+
+// Lead text for story section
+const storyLead = `${origin.name} está en ${origin.department || 'Colombia'}${origin.altitude_min_masl ? `, entre ${origin.altitude_min_masl} y ${origin.altitude_max_masl || origin.altitude_min_masl} metros sobre el nivel del mar` : ''}. ${isCoffee ? 'La' : 'Lo'} cultiva ${origin.producer_name}.`;
+
+// Cinta items (repeated for infinite smooth marquee)
+const cintaBatch = [
+  { tipo: 'texto', valor: origin.name },
+  { tipo: 'pildora', valor: origin.department || 'Colombia' },
+  { tipo: 'texto', valor: origin.producer_name },
+  ...(altitudeShort ? [{ tipo: 'pildora', valor: `${altitudeShort} m s. n. m.` }] : []),
+  { tipo: 'texto', valor: 'Origen Colombia' },
+  { tipo: 'pildora', valor: `${products.length} ${isCoffee ? (products.length === 1 ? 'café' : 'cafés') : (products.length === 1 ? 'chocolate' : 'chocolates')}` },
+];
+// Duplicate batch 3 times to cover screen widths seamlessly
+const cintaItems = [...cintaBatch, ...cintaBatch, ...cintaBatch];
+
+// Other origins for the footer section
+const otherOrigins = allOrigins.filter((o) => o.slug !== origin.slug);
 ---
 
 <Layout title={`${origin.name} · Origen Monteluna`} description={origin.story || `Origen ${origin.name}, cultivado por ${origin.producer_name}.`}>
   <!-- Dark Hero Section per M-Origen design canvas -->
-  <section class="bg-brand-green text-primary-foreground overflow-hidden">
-    <div class="max-w-[1320px] mx-auto px-6 md:px-12 pt-8 pb-16 md:pb-24 flex flex-col gap-8">
+  <section class={`oscuro ${domainBgClass} text-primary-foreground overflow-hidden`} aria-labelledby="origen-h1">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 pt-7 pb-16 md:pb-28 flex flex-col gap-7">
       
       <!-- Breadcrumb -->
-      <nav aria-label="Ruta de navegación" class="flex flex-wrap items-center gap-2 text-sm font-semibold text-primary-foreground/70">
-        <a href="/" class="hover:text-primary-foreground">Inicio</a>
+      <nav aria-label="Ruta de navegación" class="flex flex-wrap items-center gap-2.5 text-base font-semibold text-primary-foreground/90">
+        <a href="/" class="hover:text-primary-foreground transition-colors">Inicio</a>
         <span aria-hidden="true">/</span>
-        <a href="/tienda" class="hover:text-primary-foreground">Tienda</a>
+        <a href="/tienda#origenes" class="hover:text-primary-foreground transition-colors">Orígenes</a>
         <span aria-hidden="true">/</span>
         <span class="text-primary-foreground">{origin.name}</span>
       </nav>
 
-      <!-- Grid: Copy & Photo -->
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
-        <div class="lg:col-span-7 flex flex-col items-start gap-6">
-          <span class="font-condensed text-base md:text-lg font-bold tracking-widest uppercase text-brand-yellow">
-            Origen y Terroir Colombiano
+      <!-- Hero Grid: Copy & Product Over Photo -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-14 items-center">
+        <!-- Copy Column -->
+        <div class="lg:col-span-7 flex flex-col items-start gap-5 pb-6 lg:pb-16">
+          <span class="font-condensed text-lg md:text-xl font-bold tracking-widest uppercase text-brand-yellow">
+            {eyebrowText}
           </span>
-          <h1 class="text-4xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.95] text-primary-foreground">
+          <h1 id="origen-h1" class="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-black tracking-tight leading-[0.92] text-primary-foreground m-0">
             {origin.name}
           </h1>
-          <p class="text-xl md:text-2xl font-extrabold text-brand-yellow">
+          <p class="text-2xl md:text-3xl font-extrabold text-brand-yellow leading-tight m-0">
             Nuestras montañas también cuentan historias.
           </p>
-          <p class="text-base md:text-lg text-primary-foreground/90 leading-relaxed max-w-xl">
-            Producido por <strong class="text-primary-foreground font-bold">{origin.producer_name}</strong> en {locationText}. Cada cosecha es el fruto del cuidado manual y del respeto profundo por el suelo.
+          <p class="text-base md:text-lg text-primary-foreground/90 leading-relaxed max-w-[500px] m-0">
+            {origin.producer_name} cultiva {isCoffee ? 'café' : 'cacao'} aquí{altitudeShort ? `, entre ${altitudeShort} m s. n. m.` : ''}.
           </p>
           
-          <div class="flex flex-wrap gap-4 pt-2">
+          <div class="flex flex-wrap gap-3 pt-2">
             <a
               href="#productos"
-              class="px-6 py-3.5 rounded-xl bg-primary-foreground text-foreground font-bold text-sm uppercase tracking-wider hover:bg-primary-foreground/90 transition-colors"
+              class="inline-flex items-center justify-center min-h-[56px] px-6 md:px-7 rounded-xl bg-primary-foreground text-foreground font-bold text-base tracking-wide uppercase hover:bg-primary-foreground/90 transition-colors"
             >
-              Ver productos ({products.length})
+              Ver {isCoffee ? 'el café' : 'el cacao'} de esta finca
             </a>
-            {origin.story && (
-              <a
-                href="#historia"
-                class="px-6 py-3.5 rounded-xl bg-brand-yellow text-foreground font-bold text-sm uppercase tracking-wider hover:bg-brand-yellow/90 transition-colors"
-              >
-                Leer la historia
-              </a>
-            )}
+            <a
+              href="#historia"
+              class="inline-flex items-center justify-center min-h-[56px] px-6 md:px-7 rounded-xl bg-brand-yellow text-foreground font-bold text-base tracking-wide uppercase hover:bg-brand-yellow/90 transition-colors"
+            >
+              Leer la historia
+            </a>
           </div>
         </div>
 
-        <div class="lg:col-span-5 relative flex justify-center">
-          <div class="relative w-full max-w-[480px] aspect-[5/5.4] rounded-3xl overflow-hidden shadow-2xl border-4 border-primary-foreground/10">
+        <!-- Photo & Floating Product Column -->
+        <div class="lg:col-span-5 relative flex justify-center items-end self-end pt-4 pb-12 sm:pb-16 pl-6 sm:pl-12 lg:pl-16">
+          <!-- Background photo of farm/crop -->
+          <div class="relative w-full max-w-[480px] aspect-[5/5.4] rounded-[20px] overflow-hidden shadow-2xl">
             <img
-              src={heroImage}
-              alt={heroImageAlt}
+              src={heroPhoto}
+              alt={heroPhotoAlt}
               class="w-full h-full object-cover"
             />
           </div>
 
-          <!-- Altitude Badge if available -->
+          <!-- Floating product packaging overlay on bottom-left with levitation animation -->
+          <div class="flota absolute -left-2 sm:-left-4 lg:-left-2 bottom-6 sm:bottom-10 h-[260px] sm:h-[340px] md:h-[400px] pointer-events-none z-10">
+            <img
+              src={floatingProductImg}
+              alt=""
+              class="h-full object-contain -rotate-7 drop-shadow-[0_24px_20px_rgba(0,0,0,0.5)]"
+            />
+          </div>
+
+          <!-- Altitude badge top-right with dashed outline and rotation -->
           {origin.altitude_min_masl && (
-            <div class="absolute -top-4 -right-4 sm:-right-6 w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-brand-yellow text-foreground flex flex-col items-center justify-center p-2 text-center shadow-xl rotate-6 border-2 border-brand-green">
-              <span class="font-condensed text-xs font-bold uppercase tracking-wider">Altura</span>
-              <span class="font-black text-xl sm:text-2xl leading-none my-0.5">
-                {origin.altitude_min_masl}
+            <div
+              class="absolute -right-2 sm:-right-4 top-0 sm:-top-5 w-24 h-24 sm:w-32 sm:h-32 rounded-full bg-brand-yellow text-foreground flex flex-col items-center justify-center p-2 text-center shadow-xl rotate-9 z-20"
+              style={`outline: 2px dashed ${domainColor}; outline-offset: -8px;`}
+            >
+              <span class="font-condensed text-[11px] sm:text-sm font-bold uppercase tracking-widest leading-none">
+                Altura
               </span>
-              <span class="font-condensed text-[11px] font-bold uppercase">m s. n. m.</span>
+              <span class="font-black text-lg sm:text-2xl leading-none my-0.5 sm:my-1">
+                {altitudeShort}
+              </span>
+              <span class="font-condensed text-[10px] sm:text-xs font-bold uppercase tracking-wider leading-none">
+                m s. n. m.
+              </span>
             </div>
           )}
         </div>
@@ -116,81 +213,195 @@ const heroImageAlt = origin.images[0]?.alt_text || origin.name;
     </div>
   </section>
 
-  <!-- Key Origin Facts Bar (M-Origen facts grid) -->
-  <div class="max-w-[1320px] mx-auto px-6 md:px-12 -mt-8 relative z-10">
-    <dl class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-4">
-      <div class="bg-card p-6 rounded-2xl shadow-md border border-foreground/10 flex flex-col gap-1">
-        <dt class="font-condensed text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Productor / Finca
+  <!-- Key Origin Facts Bar (Overlapping cards per M-Origen) -->
+  <div class="max-w-[1320px] mx-auto px-6 md:px-12 -mt-10 sm:-mt-14 relative z-20">
+    <dl class="m-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div class="bg-card p-5 sm:p-6 rounded-[20px] shadow-lg border border-foreground/5 flex flex-col gap-1.5">
+        <dt class="font-condensed text-sm sm:text-base font-bold uppercase tracking-wider text-muted-foreground">
+          Productora / Productor
         </dt>
-        <dd class="text-xl font-black text-foreground">
+        <dd class="text-xl sm:text-2xl font-black text-foreground m-0">
           {origin.producer_name}
         </dd>
       </div>
 
-      <div class="bg-card p-6 rounded-2xl shadow-md border border-foreground/10 flex flex-col gap-1">
-        <dt class="font-condensed text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Ubicación
+      <div class="bg-card p-5 sm:p-6 rounded-[20px] shadow-lg border border-foreground/5 flex flex-col gap-1.5">
+        <dt class="font-condensed text-sm sm:text-base font-bold uppercase tracking-wider text-muted-foreground">
+          Departamento
         </dt>
-        <dd class="text-xl font-black text-foreground">
-          {locationText}
+        <dd class="text-xl sm:text-2xl font-black text-foreground m-0">
+          {origin.department ? `${origin.department}, Colombia` : 'Colombia'}
         </dd>
       </div>
 
-      <div class="bg-card p-6 rounded-2xl shadow-md border border-foreground/10 flex flex-col gap-1">
-        <dt class="font-condensed text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Altitud
+      <div class="bg-card p-5 sm:p-6 rounded-[20px] shadow-lg border border-foreground/5 flex flex-col gap-1.5">
+        <dt class="font-condensed text-sm sm:text-base font-bold uppercase tracking-wider text-muted-foreground">
+          Municipio
         </dt>
-        <dd class="text-xl font-black text-foreground">
+        <dd class="text-xl sm:text-2xl font-black text-foreground m-0">
+          {origin.municipality_name || '[Municipio]'}
+        </dd>
+      </div>
+
+      <div class="bg-card p-5 sm:p-6 rounded-[20px] shadow-lg border border-foreground/5 flex flex-col gap-1.5">
+        <dt class="font-condensed text-sm sm:text-base font-bold uppercase tracking-wider text-muted-foreground">
+          Altura
+        </dt>
+        <dd class="text-xl sm:text-2xl font-black text-foreground m-0">
           {altitudeText}
-        </dd>
-      </div>
-
-      <div class="bg-card p-6 rounded-2xl shadow-md border border-foreground/10 flex flex-col gap-1">
-        <dt class="font-condensed text-xs font-bold uppercase tracking-wider text-muted-foreground">
-          Lotes Activos
-        </dt>
-        <dd class="text-xl font-black text-foreground">
-          {products.length} {products.length === 1 ? 'Producto' : 'Productos'}
         </dd>
       </div>
     </dl>
   </div>
 
-  <!-- Story Section (if origin has story) -->
-  {origin.story && (
-    <section id="historia" class="py-20 md:py-28 max-w-[1320px] mx-auto px-6 md:px-12">
-      <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
-        <div class="lg:col-span-5 flex flex-col gap-3">
-          <span class="font-condensed text-sm font-bold uppercase tracking-wider text-brand-green">
-            La Historia
-          </span>
-          <h2 class="text-3xl md:text-5xl font-black tracking-tight text-foreground">
-            Quién lo cultiva y dónde.
-          </h2>
-        </div>
-        <div class="lg:col-span-7 flex flex-col gap-6 text-base md:text-lg text-foreground/80 leading-relaxed">
-          <p class="font-semibold text-foreground text-xl">
+  <!-- Story Section ("Quién lo cultiva y dónde") -->
+  <section id="historia" aria-labelledby="historia-h2" class="py-16 md:py-24 max-w-[1320px] mx-auto px-6 md:px-12">
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-16 items-start">
+      <div class="lg:col-span-5 flex flex-col gap-3">
+        <span class={`font-condensed text-base md:text-lg font-bold uppercase tracking-widest ${domainTextClass}`}>
+          La historia
+        </span>
+        <h2 id="historia-h2" class="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-none text-foreground m-0">
+          Quién lo cultiva y dónde.
+        </h2>
+      </div>
+
+      <div class="lg:col-span-7 flex flex-col gap-5 text-foreground">
+        <p class="text-2xl sm:text-3xl font-bold leading-snug m-0">
+          {storyLead}
+        </p>
+        {origin.story && (
+          <p class="text-base sm:text-lg leading-relaxed text-foreground/90 m-0">
             {origin.story}
           </p>
+        )}
+        <div class="p-6 border-2 border-dashed border-[#A8997C] rounded-[20px] text-base md:text-lg leading-relaxed text-[#5F554A]">
+          [Historia corta de esta finca, tal como la escribas en el administrador. Dos o tres párrafos sobre la tradición, el suelo y la dedicación de quienes la trabajan.]
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Sliding Black Ticker Ribbon (Cinta negra animada per M-Origen) -->
+  <div aria-hidden="true" class="overflow-hidden bg-[#1B1510] text-[#FAF3E3]">
+    <div class="cinta flex items-center w-max py-3.5 md:py-4 text-2xl md:text-[34px] font-extrabold whitespace-nowrap select-none leading-none">
+      {cintaItems.map((item) => (
+        item.tipo === 'texto' ? (
+          <span class="inline-flex items-center gap-4 md:gap-5 pr-4 md:pr-5">
+            {item.valor} <span class="text-brand-yellow font-normal">✦</span>
+          </span>
+        ) : (
+          <span class="mr-4 md:mr-5 px-3 md:px-3.5 py-1 md:py-1.5 rounded-lg bg-[#F3E6C4] text-[#1B1510] text-sm md:text-base font-semibold -rotate-3">
+            {item.valor}
+          </span>
+        )
+      ))}
+    </div>
+  </div>
+
+  <!-- "Del árbol a tu bolsa" / "Del árbol a tu barra" Process Section -->
+  <section aria-labelledby="proceso-h2" class="py-16 md:py-24 bg-card border-y border-foreground/5">
+    <div class="max-w-[1320px] mx-auto px-6 md:px-12 flex flex-col gap-10">
+      <div class="flex flex-col gap-3 max-w-[720px]">
+        <h2 id="proceso-h2" class="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-none text-foreground m-0">
+          {procesoTitulo}
+        </h2>
+        <p class="text-base md:text-lg text-foreground/80 leading-relaxed m-0">
+          {procesoSub}
+        </p>
+      </div>
+
+      <ol class="list-none m-0 p-0 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        {procesoPasos.map((paso) => (
+          <li class="flex flex-col items-start gap-3 p-7 rounded-[20px] bg-[#FAF3E3] border border-foreground/5 shadow-sm">
+            <span
+              aria-hidden="true"
+              class="inline-flex items-center justify-center w-12 h-12 md:w-14 md:h-14 rounded-full bg-brand-yellow text-foreground font-condensed text-2xl md:text-3xl font-black"
+            >
+              {paso.n}
+            </span>
+            <h3 class="text-2xl font-black leading-tight text-foreground m-0">
+              {paso.t}
+            </h3>
+            <p class="text-base text-foreground/80 leading-relaxed m-0">
+              {paso.d}
+            </p>
+          </li>
+        ))}
+      </ol>
+    </div>
+  </section>
+
+  <!-- "El origen en cifras" Large Cream/Hero Band -->
+  {origin.altitude_min_masl && (
+    <section aria-label="El origen en cifras" class="bg-[#F8E4AE]">
+      <div class="max-w-[1320px] mx-auto px-6 md:px-12 py-16 md:py-20 grid grid-cols-1 sm:grid-cols-3 gap-8 md:gap-12">
+        <div class="flex flex-col gap-2">
+          <span class="text-6xl sm:text-7xl lg:text-[90px] font-black leading-[0.95] tracking-tight text-foreground">
+            {origin.altitude_min_masl} m
+          </span>
+          <span class="font-condensed text-lg sm:text-xl font-bold uppercase tracking-wider text-foreground/90">
+            Altura mínima sobre el nivel del mar
+          </span>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <span class="text-6xl sm:text-7xl lg:text-[90px] font-black leading-[0.95] tracking-tight text-foreground">
+            {origin.altitude_max_masl || origin.altitude_min_masl} m
+          </span>
+          <span class="font-condensed text-lg sm:text-xl font-bold uppercase tracking-wider text-foreground/90">
+            Altura máxima sobre el nivel del mar
+          </span>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <span class="text-6xl sm:text-7xl lg:text-[90px] font-black leading-[0.95] tracking-tight text-foreground">
+            {products.length}
+          </span>
+          <span class="font-condensed text-lg sm:text-xl font-bold uppercase tracking-wider text-foreground/90">
+            {isCoffee ? 'Café' : 'Chocolate'}{products.length === 1 ? '' : 's'} de esta finca en la tienda
+          </span>
         </div>
       </div>
     </section>
   )}
 
-  <!-- Products from this Origin (M-Origen products list) -->
-  <section id="productos" class="py-16 md:py-24 bg-card border-t border-foreground/10">
+  <!-- Origin Photos Gallery -->
+  {galeriaFotos.length > 0 && (
+    <section aria-label="Fotos del origen" class="py-16 md:py-24 max-w-[1320px] mx-auto px-6 md:px-12">
+      <div class={`grid grid-cols-1 sm:grid-cols-2 ${galeriaFotos.length >= 3 ? 'lg:grid-cols-3' : ''} gap-5`}>
+        {galeriaFotos.map((foto) => (
+          <div class="overflow-hidden rounded-[20px] aspect-[4/5] bg-card shadow-sm border border-foreground/5">
+            <img
+              src={foto.src}
+              alt={foto.alt}
+              class="w-full h-full object-cover hover:scale-105 transition-transform duration-500"
+            />
+          </div>
+        ))}
+      </div>
+    </section>
+  )}
+
+  <!-- Products Section ("Llévate la montaña a casa") -->
+  <section id="productos" aria-labelledby="productos-h2" class="py-16 md:py-24 bg-card border-t border-foreground/10">
     <div class="max-w-[1320px] mx-auto px-6 md:px-12 flex flex-col gap-10">
       <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-        <div>
-          <span class="font-condensed text-xs font-bold uppercase tracking-wider text-brand-purple">
-            Cosecha Disponible
+        <div class="flex flex-col items-start gap-3">
+          <span class={`font-condensed text-base md:text-lg font-bold uppercase tracking-widest ${domainTextClass}`}>
+            {isCoffee ? 'El café de esta finca' : 'El cacao de este origen'}
           </span>
-          <h2 class="text-3xl md:text-4xl font-black text-foreground">
-            Productos de {origin.name}
+          <h2 id="productos-h2" class="text-4xl md:text-5xl font-black text-foreground m-0">
+            Llévate la montaña a casa.
           </h2>
+          <p class="text-base md:text-lg text-foreground/80 leading-relaxed max-w-xl m-0">
+            {isCoffee
+              ? 'Variedad, proceso, notas de cata y fecha de tueste están en la página de cada producto.'
+              : 'El porcentaje de cacao y el peso están en la página de cada producto.'}
+          </p>
         </div>
-        <a href="/tienda" class="font-condensed text-sm font-bold uppercase tracking-wider text-foreground hover:text-brand-purple transition-colors">
+
+        <a href="/tienda" class="font-condensed text-base font-bold uppercase tracking-wider text-foreground hover:text-accent transition-colors self-start sm:self-end">
           Ver todo el catálogo →
         </a>
       </div>
@@ -221,4 +432,62 @@ const heroImageAlt = origin.images[0]?.alt_text || origin.name;
       />
     )}
   </section>
+
+  <!-- "Otros orígenes" Section before Footer per M-Origen -->
+  {otherOrigins.length > 0 && (
+    <section aria-labelledby="otros-h2" class="py-16 md:py-24 max-w-[1320px] mx-auto px-6 md:px-12">
+      <div class="flex flex-col gap-6">
+        <div class="flex flex-wrap items-end justify-between gap-4">
+          <h2 id="otros-h2" class="text-4xl md:text-5xl lg:text-6xl font-black tracking-tight leading-none text-foreground m-0">
+            Otros orígenes
+          </h2>
+          <a
+            href="/tienda#origenes"
+            class="min-h-[44px] inline-flex items-center text-base font-bold uppercase underline decoration-2 underline-offset-4 text-foreground hover:text-accent transition-colors"
+          >
+            Ver todos los orígenes <span aria-hidden="true" class="ml-2">→</span>
+          </a>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 pt-4">
+          {otherOrigins.map((other) => {
+            const isOtherCoffee = !other.slug.includes('cacao');
+            const otherBgClass = isOtherCoffee ? 'bg-brand-green' : 'bg-brand-purple';
+            const otherImg = isOtherCoffee ? '/images/packaging-finca-la-maria.webp' : '/images/packaging-chocolate-65.webp';
+            const otherEtiqueta = isOtherCoffee
+              ? `Origen de café · ${other.department ? `${other.department}, ` : ''}Colombia`
+              : `Origen de cacao · ${other.department ? `${other.department}, ` : ''}Colombia`;
+            const otherDesc = isOtherCoffee
+              ? `${other.producer_name} · entre ${other.altitude_min_masl || 1700} y ${other.altitude_max_masl || 2000} m s. n. m.`
+              : `${other.producer_name} · De aquí sale el chocolate Monteluna.`;
+
+            return (
+              <div class={`oscuro relative flex flex-col items-start gap-4 p-8 md:pr-48 rounded-[20px] overflow-hidden text-primary-foreground ${otherBgClass} shadow-md`}>
+                <span class="font-condensed text-base md:text-lg font-bold tracking-widest uppercase text-brand-yellow">
+                  {otherEtiqueta}
+                </span>
+                <h3 class="text-3xl md:text-4xl font-extrabold leading-none text-primary-foreground m-0">
+                  {other.name}
+                </h3>
+                <p class="text-base md:text-lg leading-relaxed text-primary-foreground/90 m-0">
+                  {otherDesc}
+                </p>
+                <a
+                  href={`/origenes/${other.slug}`}
+                  class="mt-2 inline-flex items-center justify-center min-h-[50px] px-6 rounded-xl bg-primary-foreground text-foreground font-bold text-sm sm:text-base uppercase hover:bg-primary-foreground/90 transition-colors"
+                >
+                  Conocer el origen
+                </a>
+                <img
+                  src={otherImg}
+                  alt=""
+                  class="absolute -right-2 -bottom-2 h-56 md:h-64 rotate-6 drop-shadow-[0_20px_18px_rgba(0,0,0,0.45)] pointer-events-none"
+                />
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </section>
+  )}
 </Layout>
