@@ -59,7 +59,7 @@ func NewRuntime(ctx context.Context, databaseURL string, catalog CatalogStore, s
 	repository := postgres.NewRepository(pool)
 	quote := app.NewService(gateways, gateways, gateways)
 	placement := app.NewPlacement(quote, repository, inventory, adapters.AddressGateway{}, clock, numbers, secret)
-	module := &Module{http: adapters.NewHTTP(quote, logger), pool: pool, maintenance: app.NewMaintenance(repository, inventory, clock), logger: logger}
+	module := &Module{http: adapters.NewHTTP(quote, logger), pool: pool, maintenance: app.NewMaintenance(repository, inventory, clock), logger: logger, repository: repository, inventory: inventory, clock: clock}
 	module.http.EnablePlacement(placement, repository)
 	return module, nil
 }

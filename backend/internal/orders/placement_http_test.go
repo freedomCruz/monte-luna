@@ -188,6 +188,9 @@ func TestPlacementReplaySnapshotsAndGuestPrivacy(t *testing.T) {
 		t.Fatal("fiscal snapshot mismatch")
 	}
 	guest := callTrack(t, mux, c, token, 200)
+	if payment, exists := guest["payment"]; !exists || payment != nil {
+		t.Fatalf("guest payment=%v exists=%v; want explicit null without an attempt", payment, exists)
+	}
 	if guest["order_number"] != placed["order_number"] || guest["status"] != "pending_payment" || guest["total_amount"] != placed["total_amount"] || guest["shipment"] != nil {
 		t.Fatalf("guest=%v", guest)
 	}
