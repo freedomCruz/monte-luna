@@ -95,16 +95,52 @@ describe('Order Subcomponents Unit Tests', () => {
 
       expect(screen.getByText('Se acabó el tiempo de este pedido.')).toBeDefined();
       expect(screen.getByText('Vencida')).toBeDefined();
-      expect(screen.getByText(/Armar el pedido de nuevo/i)).toBeDefined();
+      const restartLink = screen.getByText(/Armar el pedido de nuevo/i);
+      expect(restartLink).toBeDefined();
+      expect(restartLink.className).toContain('bg-[#C1272D]');
+      expect(restartLink.className).toContain('text-white');
     });
 
-    it('renders cancelled status with rejected badge and payment retry link', () => {
+    it('renders cancelled status with Cancelado seal, approved copy, and restart link (S7)', () => {
       const cancelledOrder = { ...mockOrder, status: 'cancelled' as const };
       render(<OrderTrackingHero order={cancelledOrder} />);
 
+      expect(screen.getByText('Tu pago llegó cuando el café ya no estaba disponible.')).toBeDefined();
+      expect(
+        screen.getByText(
+          'Recibimos tu pago después de que se venció la reserva y ya no había inventario. No vamos a despachar este pedido y te devolveremos el dinero completo.'
+        )
+      ).toBeDefined();
+      expect(screen.getAllByText('Pedido').length).toBeGreaterThanOrEqual(1);
+      expect(screen.getByText('Cancelado')).toBeDefined();
+      expect(screen.getByText('Reembolso')).toBeDefined();
+      const restartLink = screen.getByText(/Armar el pedido de nuevo/i);
+      expect(restartLink).toBeDefined();
+      expect(restartLink.className).toContain('bg-[#C1272D]');
+      expect(restartLink.className).toContain('text-white');
+      expect(screen.getByText(/Ir a la tienda/i)).toBeDefined();
+      // Must NOT render Rechazado or payment retry
+      expect(screen.queryByText('Rechazado')).toBeNull();
+      expect(screen.queryByText(/Intentar el pago de nuevo/i)).toBeNull();
+    });
+
+    it('renders rejected variant when order is pending_payment with declined payment attempt', () => {
+      const rejectedPendingOrder: components['schemas']['GuestOrder'] = {
+        ...mockOrder,
+        status: 'pending_payment',
+        payment: {
+          latest_attempt_status: 'declined',
+          payment_method_type: 'card',
+        },
+      };
+      render(<OrderTrackingHero order={rejectedPendingOrder} />);
+
       expect(screen.getByText('El pago no pasó.')).toBeDefined();
       expect(screen.getByText('Rechazado')).toBeDefined();
-      expect(screen.getByText(/Intentar el pago de nuevo/i)).toBeDefined();
+      const retryLink = screen.getByText(/Intentar el pago de nuevo/i);
+      expect(retryLink).toBeDefined();
+      expect(retryLink.className).toContain('bg-[#C1272D]');
+      expect(retryLink.className).toContain('text-white');
     });
   });
 
@@ -167,16 +203,105 @@ describe('Order Subcomponents Unit Tests', () => {
       expect(screen.getByText('$9.500')).toBeDefined();
       expect(screen.getByText('$85.500')).toBeDefined();
     });
+
+    it('renders custom payment method label (e.g. Pagado con Nequi) when paid', () => {
+      render(
+        <OrderSummaryAside
+          lines={mockOrder.lines}
+          subtotalAmount={mockOrder.subtotal_amount}
+          shippingAmount={mockOrder.shipping_amount}
+          totalAmount={mockOrder.total_amount}
+          status="paid"
+          payment={{
+            latest_attempt_status: 'approved',
+            payment_method_type: 'nequi',
+          }}
+        />
+      );
+
+      expect(screen.getByText('Total pagado')).toBeDefined();
+      expect(screen.getByText('Pagado con Nequi')).toBeDefined();
+    });
+
+    it('renders no payment method note when paid with null or unknown method (never Pagado con Wompi)', () => {
+      const { unmount } = render(
+        <OrderSummaryAside
+          lines={mockOrder.lines}
+          subtotalAmount={mockOrder.subtotal_amount}
+          shippingAmount={mockOrder.shipping_amount}
+          totalAmount={mockOrder.total_amount}
+          status="paid"
+          payment={{
+            latest_attempt_status: 'approved',
+            payment_method_type: null,
+          }}
+        />
+      );
+
+      expect(screen.getByText('Total pagado')).toBeDefined();
+      expect(screen.queryByText(/Pagado con/i)).toBeNull();
+      unmount();
+
+      render(
+        <OrderSummaryAside
+          lines={mockOrder.lines}
+          subtotalAmount={mockOrder.subtotal_amount}
+          shippingAmount={mockOrder.shipping_amount}
+          totalAmount={mockOrder.total_amount}
+          status="paid"
+          payment={{
+            latest_attempt_status: 'approved',
+            payment_method_type: 'unknown_method' as any,
+          }}
+        />
+      );
+
+      expect(screen.getByText('Total pagado')).toBeDefined();
+      expect(screen.queryByText(/Pagado con/i)).toBeNull();
+    });
+
+    it('renders Total pagado and refund note for cancelled order (S7)', () => {
+      render(
+        <OrderSummaryAside
+          lines={mockOrder.lines}
+          subtotalAmount={mockOrder.subtotal_amount}
+          shippingAmount={mockOrder.shipping_amount}
+          totalAmount={mockOrder.total_amount}
+          status="cancelled"
+          payment={{
+            latest_attempt_status: 'approved',
+            payment_method_type: 'card',
+          }}
+        />
+      );
+
+      expect(screen.getByText('Total pagado')).toBeDefined();
+      expect(screen.getByText('Te lo devolvemos completo')).toBeDefined();
+    });
   });
 
   describe('computeOrderTrackingSteps', () => {
-    it('computes correct step states for shipped status', () => {
+    it('computes correct step states and high-contrast styles for shipped status', () => {
       const steps = computeOrderTrackingSteps('shipped');
       expect(steps.length).toBe(4);
-      expect(steps[0].marca).toBe('✓'); // Pago recibido
-      expect(steps[1].marca).toBe('✓'); // Preparando
-      expect(steps[2].actual).toBe(true); // Enviado
-      expect(steps[3].actual).toBe(false); // Entregado
+      expect(steps[0].marca).toBe('✓'); // Pago recibido (hecho)
+      expect(steps[0].bg).toBe('bg-[#1E6B45]');
+      expect(steps[0].fg).toBe('text-white');
+      expect(steps[0].bc).toBe('border-[#1E6B45]');
+
+      expect(steps[1].marca).toBe('✓'); // Preparando (hecho)
+      expect(steps[1].bg).toBe('bg-[#1E6B45]');
+      expect(steps[1].fg).toBe('text-white');
+
+      expect(steps[2].actual).toBe(true); // Enviado (actual)
+      expect(steps[2].bg).toBe('bg-[#1B1510]');
+      expect(steps[2].fg).toBe('text-[#FAF3E3]');
+      expect(steps[2].bc).toBe('border-[#1B1510]');
+
+      expect(steps[3].actual).toBe(false); // Entregado (pendiente)
+      expect(steps[3].bg).toBe('bg-white');
+      expect(steps[3].fg).toBe('text-[#5F554A]');
+      expect(steps[3].bc).toBe('border-[#A8997C]');
     });
 
     it('returns empty steps for expired or cancelled status', () => {
