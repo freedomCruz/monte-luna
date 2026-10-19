@@ -121,3 +121,8 @@ type OrdersOutbox struct {
 	CreatedAt   pgtype.Timestamptz
 	UpdatedAt   pgtype.Timestamptz
 }
+
+type OrdersProcessedEvent struct {
+	ID          string
+	ProcessedAt pgtype.Timestamptz
+}

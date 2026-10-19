@@ -1,0 +1,347 @@
+openapi: 3.1.0
+info:
+  title: Monteluna payments storefront API
+  version: 1.0.0
+  description: |
+    Wompi Colombia payment initiation, signed provider events, and server-side
+    verification. Rules: docs/architecture/api-conventions.md and
+    docs/domain/payments.md. No private key or signing secret is returned.
+
+    Stable Problem.code values:
+    - order_not_found (404): no order matches the tracking token.
+    - order_not_payable (409): not pending_payment, already approved, or the
+      reservation has elapsed, even if the expiry worker has not run yet.
+    - payment_pending (409): the order has a known pending payment attempt;
+      a new attempt is refused until that attempt is no longer pending.
+    - validation_failed (422): invalid fields or unknown request fields.
+    - idempotency_key_reused (422): key reused with a different body.
+    - payment_transaction_mismatch (422): provider transaction does not match
+      an attempt owned by the authorized order; no state changes.
+    - invalid_webhook_checksum (401): absent or invalid X-Event-Checksum,
+      including altered signed properties; no state changes.
+    - payment_provider_unavailable (503): Wompi cannot be queried reliably;
+      no payment success is inferred from a failure or browser hint.
+security: []
+tags:
+  - name: payments
+    description: Guest payment attempts and verified Wompi notifications.
+paths:
+  /api/v1/payments:
+    post:
+      operationId: startPayment
+      tags: [payments]
+      summary: Create a payment attempt and obtain Wompi widget parameters
+      description: |
+        Authorizes solely by tracking_token, hashed by the backend. The client
+        supplies neither an order identifier nor an amount. Only an unexpired
+        pending_payment order without an approved attempt is payable. Retries
+        after declined or error are allowed while that condition holds.
+        A new attempt is refused with 409 payment_pending while the order has
+        an attempt in pending status. An idempotent replay is not a new attempt.
+        A new attempt gets a unique random reference, the order total in COP
+        minor units, and an expiry equal to reservation_expires_at.
+        The server computes SHA-256(reference + amount_in_cents + currency +
+        expiration_time + integrity_secret). The exact expiration string
+        returned must be passed to Wompi without reformatting.
+        The same Idempotency-Key and body within 24 hours return the original
+        201 response without creating another attempt, even after expiry.
+        A different body with the same key returns 422 idempotency_key_reused.
+        Neither token nor idempotency key may be logged. The only token-bearing
+        URL generated here is the existing storefront /pedido?token=... URL.
+      parameters:
+        - $ref: ./common.yaml#/components/parameters/IdempotencyKey
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/StartPaymentRequest'
+      responses:
+        '201':
+          description: Payment attempt created, or original idempotent result replayed.
+          headers:
+            Location:
+              description: Payment verification action; use POST with the tracking token in the body. This is not a public payment read URL.
+              schema:
+                type: string
+                const: /api/v1/payments/verify
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentCheckout'
+        '400':
+          $ref: ./common.yaml#/components/responses/BadRequest
+        '404':
+          $ref: '#/components/responses/OrderNotFound'
+        '409':
+          description: Order is already paid, expired, cancelled, otherwise not pending_payment, or already has an approved attempt (order_not_payable); or a known pending attempt prevents a new attempt (payment_pending).
+          content:
+            application/problem+json:
+              schema:
+                $ref: ./common.yaml#/components/schemas/Problem
+        '422':
+          description: Invalid input (validation_failed) or an idempotency key reused with a different body (idempotency_key_reused).
+          content:
+            application/problem+json:
+              schema:
+                $ref: ./common.yaml#/components/schemas/Problem
+        '500':
+          $ref: ./common.yaml#/components/responses/InternalError
+
+  /api/v1/payments/verify:
+    post:
+      operationId: verifyPayment
+      tags: [payments]
+      summary: Reconcile an order payment using a backend Wompi query
+      description: |
+        Called by /pedido after the Wompi redirect. Wompi appends id (the
+        transaction ID) to redirect-url; it is only an untrusted lookup hint.
+        Authorize with tracking_token before querying. With a supplied hint or
+        a stored provider ID, query GET /v1/transactions/{transaction_id}
+        using the private Bearer key, only from the backend. Accept a result
+        only when its reference, amount_in_cents, and currency match an attempt
+        owned by this order; a mismatch changes nothing and returns 422.
+        Map PENDING/APPROVED/DECLINED/VOIDED/ERROR to the corresponding lowercase
+        attempt statuses, using the same terminal-status guard and outbox effects
+        as the webhook. Browser status, method, reference, and amount are never
+        accepted. A terminal attempt never moves back to a nonterminal status.
+        If transaction_id is null and no provider ID is stored, return the
+        current server payment data unchanged. No undocumented provider
+        query-by-reference endpoint is promised by this contract.
+        Verification does not synchronously mark an order paid; orders consumes
+        the outbox event. The view refreshes GET /api/v1/orders/track using its
+        existing contract to obtain the authoritative order status.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VerifyPaymentRequest'
+      responses:
+        '200':
+          description: Current server payment data, including null when no attempt exists.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaymentVerification'
+        '400':
+          $ref: ./common.yaml#/components/responses/BadRequest
+        '404':
+          $ref: '#/components/responses/OrderNotFound'
+        '422':
+          description: Invalid input (validation_failed) or the fetched transaction does not belong to an attempt of this order with matching amount and currency (payment_transaction_mismatch). No state changes on mismatch.
+          content:
+            application/problem+json:
+              schema:
+                $ref: ./common.yaml#/components/schemas/Problem
+        '503':
+          description: Provider query unavailable or provider transaction not yet retrievable (payment_provider_unavailable). Retry later; never infer approval.
+          content:
+            application/problem+json:
+              schema:
+                $ref: ./common.yaml#/components/schemas/Problem
+        '500':
+          $ref: ./common.yaml#/components/responses/InternalError
+
+  /api/v1/payments/webhooks/wompi:
+    post:
+      operationId: receiveWompiWebhook
+      tags: [payments]
+      summary: Receive a signed transaction.updated notification
+      description: |
+        Authenticated by X-Event-Checksum, never an admin session. Read property
+        paths dynamically from signature.properties relative to data, in their
+        supplied order. Compare SHA-256(concatenated_property_values + timestamp
+        + events_secret) with the header. Missing checksum, unresolved signed
+        property, tampering, or mismatch is rejected without changing anything.
+        Provider payloads permit additional fields so new signed properties
+        can be resolved, unlike storefront request bodies.
+        Deduplicate by (wompi, event checksum); a duplicate returns 200 without
+        reprocessing. Record provider_transaction_id, payment_method_type,
+        status_message, and finalized_at when provided. Map statuses as in
+        verifyPayment and never move an attempt out of a terminal status.
+        Attempt updates and payment_approved/payment_failed outbox events commit
+        together; cross-module effects are asynchronous. Return 200 promptly.
+        Deduplication records are retained for 30 days.
+      parameters:
+        - name: X-Event-Checksum
+          in: header
+          required: true
+          description: SHA-256 hexadecimal checksum; required even when signature.checksum is present.
+          schema:
+            type: string
+            pattern: '^[A-Fa-f0-9]{64}$'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WompiEvent'
+      responses:
+        '200':
+          description: Accepted or already processed. Empty response body; no duplicate effects.
+        '400':
+          $ref: ./common.yaml#/components/responses/BadRequest
+        '401':
+          description: Missing or invalid checksum, including tampered or unresolved signed properties (invalid_webhook_checksum). No state changes.
+          content:
+            application/problem+json:
+              schema:
+                $ref: ./common.yaml#/components/schemas/Problem
+        '422':
+          $ref: ./common.yaml#/components/responses/ValidationFailed
+        '500':
+          $ref: ./common.yaml#/components/responses/InternalError
+components:
+  headers:
+    NoStore:
+      schema:
+        type: string
+        const: no-store
+  responses:
+    OrderNotFound:
+      description: No order matches the private tracking token (order_not_found).
+      content:
+        application/problem+json:
+          schema:
+            $ref: ./common.yaml#/components/schemas/Problem
+  schemas:
+    TrackingToken:
+      type: string
+      pattern: '^[A-Za-z0-9_-]{43}$'
+      description: Private order capability, base64url without padding. Never use in a payment API path or query.
+    StartPaymentRequest:
+      type: object
+      additionalProperties: false
+      required: [tracking_token]
+      properties:
+        tracking_token:
+          $ref: '#/components/schemas/TrackingToken'
+    PaymentCheckout:
+      type: object
+      additionalProperties: false
+      required: [public_key, currency, amount_in_cents, reference, integrity_signature, expires_at, redirect_url]
+      properties:
+        public_key:
+          type: string
+          minLength: 1
+          description: Wompi public-key (data-public-key); WidgetCheckout publicKey. The public key is not a secret.
+        currency:
+          type: string
+          const: COP
+          description: Wompi currency; WidgetCheckout currency.
+        amount_in_cents:
+          type: integer
+          format: int64
+          minimum: 1
+          description: Authoritative order total in minor units. Wompi amount-in-cents; WidgetCheckout amountInCents. COP 45000 is 4500000.
+        reference:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Unique random reference per attempt; Wompi reference; WidgetCheckout reference.
+        integrity_signature:
+          type: string
+          pattern: '^[a-f0-9]{64}$'
+          description: Server-computed SHA-256 digest, not the integrity secret. Wompi signature:integrity; WidgetCheckout signature.integrity.
+        expires_at:
+          $ref: ./common.yaml#/components/schemas/Timestamp
+          description: Exact signed expiration string equal to reservation_expires_at. Wompi expiration-time; WidgetCheckout expirationTime. Prevents new initiation, not interruption of in-flight transactions.
+        redirect_url:
+          type: string
+          format: uri
+          description: Server-built storefront /pedido?token=... URL. Wompi redirect-url; WidgetCheckout redirectUrl. Wompi appends id; never trust the redirect as payment proof.
+    VerifyPaymentRequest:
+      type: object
+      additionalProperties: false
+      required: [tracking_token, transaction_id]
+      properties:
+        tracking_token:
+          $ref: '#/components/schemas/TrackingToken'
+        transaction_id:
+          type: [string, 'null']
+          minLength: 1
+          description: Untrusted Wompi redirect id or widget callback transaction.id. Send null when unknown; server validates ownership and payment amounts before applying anything.
+    PaymentVerification:
+      type: object
+      additionalProperties: false
+      required: [payment]
+      properties:
+        payment:
+          oneOf:
+            - $ref: ./orders.yaml#/components/schemas/GuestPayment
+            - type: 'null'
+    WompiEvent:
+      type: object
+      additionalProperties: true
+      required: [event, data, environment, signature, timestamp, sent_at]
+      properties:
+        event:
+          type: string
+          const: transaction.updated
+        data:
+          type: object
+          additionalProperties: true
+          required: [transaction]
+          properties:
+            transaction:
+              $ref: '#/components/schemas/WompiTransaction'
+        environment:
+          type: string
+          enum: [test, prod]
+        signature:
+          type: object
+          additionalProperties: true
+          required: [properties, checksum]
+          properties:
+            properties:
+              type: array
+              minItems: 1
+              description: Ordered property paths relative to data; never assume fixed paths.
+              items:
+                type: string
+                minLength: 1
+            checksum:
+              type: string
+              pattern: '^[A-Fa-f0-9]{64}$'
+        timestamp:
+          type: integer
+          format: int64
+          description: Provider UNIX timestamp included in checksum calculation.
+        sent_at:
+          $ref: ./common.yaml#/components/schemas/Timestamp
+    WompiTransaction:
+      type: object
+      additionalProperties: true
+      description: Provider-owned wire format, not storefront enums. Extra fields are preserved for dynamic signature resolution; optional provider fields may be absent.
+      required: [id, reference, amount_in_cents, currency, status, payment_method_type]
+      properties:
+        id:
+          type: string
+          minLength: 1
+        reference:
+          type: string
+          minLength: 1
+        amount_in_cents:
+          type: integer
+          format: int64
+          minimum: 1
+        currency:
+          type: string
+          const: COP
+        status:
+          type: string
+          enum: [PENDING, APPROVED, DECLINED, VOIDED, ERROR]
+        payment_method_type:
+          type: [string, 'null']
+          enum: [CARD, PSE, NEQUI, BANCOLOMBIA_TRANSFER, null]
+        status_message:
+          type: [string, 'null']
+        finalized_at:
+          type: [string, 'null']
+          format: date-time
