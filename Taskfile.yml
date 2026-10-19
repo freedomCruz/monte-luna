@@ -67,13 +67,13 @@ tasks:
       - npm run build
 
   backend:migrate:
-    desc: Apply embedded database migrations (catalog, then shipping) to this worktree's database
+    desc: Apply embedded database migrations (catalog, shipping, orders, then payments) to this worktree's database
     dir: backend
     cmds:
       - go run ./cmd/migrate
 
   backend:seed:
-    desc: Load idempotent demo data (catalog, then shipping) into this worktree's database (never production)
+    desc: Load idempotent demo data (catalog, shipping, orders) into this worktree's database (never production)
     dir: backend
     cmds:
       - go run ./cmd/seed
@@ -133,6 +133,22 @@ tasks:
     desc: Stop the local PostgreSQL container (data is kept)
     cmds:
       - docker compose stop postgres
+
+  dev:db:reset:
+    desc: Drop and recreate this worktree's database, then migrate and load demo data (deletes all orders and payments)
+    prompt: This deletes every row in this worktree's database. Stop task backend:dev first. Continue?
+    preconditions:
+      - sh: test -n "$WORKTREE_DB" && test "$WORKTREE_DB" != "$POSTGRES_DB"
+        msg: "WORKTREE_DB must be this worktree's own database, never the shared POSTGRES_DB"
+    cmds:
+      # psql quotes the identifier (%I); WITH (FORCE) closes leftover connections.
+      - |
+        docker compose exec -T postgres psql -X -q -U "$POSTGRES_USER" -d postgres -v ON_ERROR_STOP=1 -v "worktree_db=$WORKTREE_DB" <<'SQL'
+        SELECT format('DROP DATABASE IF EXISTS %I WITH (FORCE)', :'worktree_db') \gexec
+        SQL
+      - task: setup
+      - task: backend:migrate
+      - task: backend:seed
 
   dev:db:psql:
     desc: Open psql in the local PostgreSQL container
