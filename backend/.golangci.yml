@@ -17,6 +17,17 @@ linters:
           deny:
             - pkg: github.com/freedomCruz/monte-luna/backend/internal/contracttest
               desc: contracttest is test-only
+        payments-public-surface-only:
+          files:
+            - "$all"
+            - "!**/internal/payments/**"
+          deny:
+            - pkg: github.com/freedomCruz/monte-luna/backend/internal/payments/domain
+              desc: Import only the payments root facade
+            - pkg: github.com/freedomCruz/monte-luna/backend/internal/payments/app
+              desc: Import only the payments root facade
+            - pkg: github.com/freedomCruz/monte-luna/backend/internal/payments/adapters
+              desc: Import only the payments root facade
         orders-public-surface-only:
           files:
             - "$all"
