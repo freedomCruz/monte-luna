@@ -1,0 +1,36 @@
+# Home v1
+
+Storefront home page `/` built from the Monteluna canvas `M-Inicio` (1440 px) and `M-Inicio-390` (390 px). Frontend only, built inline by one agent on branch `feat/home` (from `main`); one pull request to `main` that the user merges.
+Read this whole document up to `## Log` before working on any task.
+
+## Specs
+
+- S1 — Composition: `/` replicates `docs/design/monteluna/canvas/M-Inicio.dc.html` and `M-Inicio-390.dc.html` in this order, inside the shared `Layout`: cacao promo bar ("Chocolate oscuro" · "Monteluna 65 %, 75 % y 100 %" · "de cacao fino de aroma" · "Ver cacao"), hero ("Café y cacao de las montañas de Colombia."), marquee, product section ("Dile hola al café de finca. Y al cacao."), benefits ("Lo que hay en cada empaque"), cacao split ("Chocolate oscuro, del 65 al 100 % de cacao."), origin band ("Nuestras montañas también cuentan historias."). Desktop and mobile layouts follow their own artboard (for example: mobile hero stacks full-width CTAs and has no facts row; mobile cacao split has no percentage chips; mobile origin band places the photo after the heading and has no overlaid package).
+- S2 — Copy (L4): every text of the canvas is reproduced verbatim as fixed copy, including "Dos fincas, tostión media y notas de cata a la vista. Y chocolate oscuro Monteluna, de cacao fino de aroma.", "Fincas entre 1.500 y 2.000 m s. n. m.", "Chocolate al 65 %, 75 % y 100 % de cacao", "Dos cafés y tres chocolates oscuros. Entra a cada uno para elegir peso, molienda o porcentaje de cacao." and the marquee pills "Finca El Mirador", "Monteluna 65 %", "Finca La María", "Monteluna 100 %". Hero and cacao-split images are the canvas packaging assets in `frontend/public/images`. No money amount is written as fixed copy.
+- S3 — Products (L2, choice 2): "Los primeros 4 del catálogo (recomendado)" — "Usa el listado público existente, con el mismo orden que /tienda. Sin cambios de backend ni de contrato." Cards use the shared `ProductCard`; price and the "Ahorras $X" badge come live from the existing `ListingPriceIsland` (`docs/domain/catalog.md` section 2). Fewer than 4 products renders those that exist; zero products hides the grid.
+- S4 — Origin band (L2, choice 3; L4): "Primer origen publicado (recomendado)" — "Se toma del catálogo en vivo; si no hay orígenes, la banda se oculta." Eyebrow `<origin name> · <department>`; paragraph = origin `story`; chips "Productora: <producer_name>", "Variedad <varieties>" and "Puntaje SCA <cupping_score>", the last two taken from the first published product of that origin and each hidden when missing; photo = first origin image; desktop overlay package = that product's cover; CTA "Conocer <origin name>" to `/origenes/<slug>`.
+- S5 — Navigation: the header marks "Inicio" as the current page on `/` (`aria-current="page"` and underline, as the canvas header). Every other page keeps "Tienda" marked exactly as today, now also with `aria-current="page"`; no other visual header change. Known mismatch left out of scope: `M-Origen` marks "Orígenes".
+- S6 — Static first: the page ships no new island; only the existing header cart, cart panel and `ListingPriceIsland` hydrate. Animations (`cinta`, `flota`) stop under `prefers-reduced-motion: reduce`.
+- S7 — Visual acceptance (`AGENTS.md`): rendered desktop and 390 px screenshots are compared against both artboards; every missing or different element is reported as a failure.
+
+Non-goals: footer and header chrome redesign (canvas footer columns, "Contacto" nav item); "Elegir · desde" CTA and dual cacao dots on the shared `ProductCard` (existing gap that also affects `/tienda`); a "featured product" catalog field.
+
+## Tasks
+
+| ID | Task | Specs | Route | Commit |
+|---|---|---|---|---|
+| T1 | `Layout` current-page prop; home and shop pass it; tests (done: RED then GREEN in `prerender.test.ts`) | S5 | inline | `20c331d` |
+| T2 | Home data helper (first 4 products, first origin with its first product) with Vitest (done: RED then GREEN, `home.test.ts`) | S3, S4 | inline | `c632208` |
+| T3 | Home section components under `components/home/` and `pages/index.astro`; prerender assertions (done; assertions written after the markup, see L6) | S1, S2, S3, S4, S6 | inline | `c632208` |
+| T4 | Playwright home spec with axe; desktop and 390 px screenshots compared with the canvas (done; findings in L7) | S1, S6, S7 | inline | `8924ead` |
+
+## Log
+
+- L1 — User (2026-10-19): "tenemos este pr pendiente lo trabajamos más y vamos a trabajr ahora el home de la página"
+- L2 — User choices (2026-10-19): branch "Desde main (recomendado)"; products "Los primeros 4 del catálogo (recomendado)"; origin band "Primer origen publicado (recomendado)"; execution "Yo directo, solo frontend (recomendado)".
+- L3 — Asked whether the origin band shows only origin facts (design-system section 8) or the canvas chips, and whether catalog figures in copy are derived or fixed. User answers: "Fíjate muy en el html que tenmos en design" and "mira los html que salienron de design system".
+- L4 — Interpretation recorded for user correction: follow the home HTML literally. Section 8 governs the origin page template (`M-Origen` already defers variety and process to product pages), so the home band keeps "Variedad" and "Puntaje SCA" chips sourced from the origin's first product. All canvas prose and figures are fixed copy (S2).
+- L5 — The `conventional-commits` skill forbids `git commit` without an explicit user instruction, which takes precedence over automatic work-unit commits. Work stays uncommitted on `feat/home` until the user asks.
+- L6 — T3 home assertions in `prerender.test.ts` were written after the components, so no RED was observed for them; they would fail on the previous placeholder page.
+- L7 — Visual comparison at 1280 px and 390 px against `M-Inicio` / `M-Inicio-390`. Matches: promo bar (desktop only), hero copy, CTAs, facts row (desktop only), roast seal, packaging composition, marquee with rotated pills, four protruding cards with live price and savings badge, benefits, cacao split (chips desktop only, image after CTA on mobile), origin band (photo after heading on mobile, overlaid package on desktop), footer flush, "Inicio" current. Fixed during review: missing space in "oscuros. Entra". Differences left open, all in shared components outside this scope: (a) `ProductCard` eyebrow shows "Café · Finca El Mirador" (origin name) where the canvas shows "Café · Huila"; (b) the card CTA from `ListingPriceIsland` reads "Ver producto · desde $32.000 $40.000" and wraps to two lines in four columns, the canvas shows "Ver producto · $38.000" on one line; (c) "Elegir · desde" and dual cacao dots (non-goal); (d) layout chrome: top bar says "Café tostado en grano y molido" (canvas: "Café tostado en grano"), no "Contacto" item, simplified footer (non-goal). The origin story shows fixture text "[Historia demo] …" because the demo data is a placeholder.
+- L8 — User (2026-10-19): "haz los commits y manda pr". Commits: `20c331d` (T1), `c632208` (T2, T3, changelog), `8924ead` (T4), then this document. About 630 changed lines in one pull request; the commits are the review slices. Final checks before commit: Vitest 147 passed, `astro check` 0 errors, Playwright 62 passed.

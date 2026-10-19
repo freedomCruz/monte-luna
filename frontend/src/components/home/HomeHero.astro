@@ -1,0 +1,65 @@
+---
+// Home hero (M-Inicio / M-Inicio-390): fixed canvas copy and packaging assets.
+const ctaClass =
+  'flex lg:inline-flex items-center justify-center min-h-14 px-[26px] rounded-md text-base font-bold tracking-[0.02em] uppercase no-underline';
+const dropShadow = 'drop-shadow-[0_22px_20px_rgba(27,21,16,0.28)]';
+---
+
+<section aria-labelledby="hero-inicio" class="bg-hero overflow-hidden">
+  <div class="max-w-[1320px] mx-auto flex flex-col lg:flex-row lg:flex-wrap lg:items-center lg:gap-x-12 lg:gap-y-8 px-5 pt-8 lg:px-12 lg:pt-16">
+    <div class="flex flex-col items-start gap-[18px] lg:gap-[22px] lg:flex-[1_1_520px] min-w-0 lg:pb-[72px]">
+      <div class="flex items-center gap-2 lg:gap-2.5 text-[15px] lg:text-base font-bold">
+        <svg class="size-5 lg:size-[22px] fill-brand-green" viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 2l2.9 6.3 6.9.8-5.1 4.7 1.4 6.8L12 17.2 5.9 20.6l1.4-6.8L2.2 9.1l6.9-.8L12 2z"></path>
+        </svg>
+        <span>Origen Colombia · 100 % arábica</span>
+      </div>
+      <h1 id="hero-inicio" class="m-0 text-[46px] lg:text-[clamp(46px,6.2vw,90px)] leading-[0.96] lg:leading-[0.95] font-extrabold tracking-[-0.015em]">
+        Café y cacao de las montañas de Colombia.
+      </h1>
+      <p class="m-0 text-[22px] lg:text-[28px] leading-[1.1] font-extrabold lg:tracking-[-0.01em]">
+        Tostado en grano, con finca y altura en cada bolsa
+      </p>
+      <p class="m-0 lg:max-w-[520px] text-[17px] lg:text-lg leading-normal">
+        Dos fincas, tostión media y notas de cata a la vista. Y chocolate oscuro Monteluna, de cacao fino de aroma.
+      </p>
+      <div class="flex flex-col lg:flex-row lg:flex-wrap gap-2.5 lg:gap-3 self-stretch lg:self-auto lg:pt-1.5">
+        <a href="/tienda" class={`${ctaClass} bg-accent text-white hover:text-white`}>Probar el café</a>
+        <a href="/tienda" class={`${ctaClass} bg-foreground text-primary-foreground hover:text-primary-foreground`}>Ver el cacao</a>
+      </div>
+      <div class="hidden lg:flex flex-wrap gap-x-7 gap-y-4 pt-3.5">
+        <div class="flex items-center gap-3 text-[17px] leading-[1.15] font-semibold">
+          <svg class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M3 20l6-11 4 7 2.5-4L21 20H3z"></path>
+          </svg>
+          <span>Fincas entre 1.500<br />y 2.000 m s. n. m.</span>
+        </div>
+        <div aria-hidden="true" class="w-px bg-foreground/30"></div>
+        <div class="flex items-center gap-3 text-[17px] leading-[1.15] font-semibold">
+          <svg class="size-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <ellipse cx="12" cy="12" rx="6" ry="9.5" transform="rotate(30 12 12)"></ellipse>
+            <path d="M8.5 17.5C13 14 11 10 15.5 6.5"></path>
+          </svg>
+          <span>Chocolate al 65 %, 75 %<br />y 100 % de cacao</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="relative h-[400px] lg:h-[640px] mt-5 lg:mt-0 lg:flex-[1_1_520px] min-w-0 lg:self-end">
+      <div class="flota-b absolute -right-11 -bottom-[34px] h-[330px] lg:right-[-3%] lg:bottom-[-7%] lg:h-[86%]">
+        <img src="/images/packaging-finca-la-maria.webp" alt="Bolsa de café Finca La María, 500 g" class={`h-full max-w-none rotate-[8deg] lg:rotate-[7deg] ${dropShadow}`} />
+      </div>
+      <div class="absolute left-1/2 -ml-[168px] -bottom-6 h-[400px] lg:left-auto lg:ml-0 lg:right-[20%] lg:bottom-[-5%] lg:h-[102%]">
+        <img src="/images/packaging-finca-el-mirador.webp" alt="Bolsa de café Finca El Mirador, 500 g" class="h-full max-w-none drop-shadow-[0_26px_22px_rgba(27,21,16,0.32)]" />
+      </div>
+      <div class="flota absolute -left-[26px] -bottom-3.5 h-[250px] lg:left-[-4%] lg:bottom-[-3%] lg:h-[64%]">
+        <img src="/images/packaging-chocolate-65.webp" alt="Barra de chocolate oscuro Monteluna 65 % cacao, 80 g" class="h-full max-w-none -rotate-[10deg] lg:-rotate-[9deg] drop-shadow-[0_20px_18px_rgba(27,21,16,0.3)]" />
+      </div>
+      <div class="absolute right-3 top-0 lg:right-[2%] lg:top-[4%] flex flex-col items-center justify-center size-24 lg:size-[124px] rounded-full bg-brand-green text-primary-foreground outline-2 outline-dashed outline-brand-yellow -outline-offset-[7px] lg:-outline-offset-[9px] rotate-[10deg] text-center">
+        <span class="font-condensed text-xs lg:text-sm font-bold tracking-widest uppercase">Tostión</span>
+        <span class="text-[23px] lg:text-[30px] leading-[0.95] font-extrabold text-brand-yellow">Media</span>
+        <span class="font-condensed text-xs lg:text-sm font-bold tracking-widest uppercase">en grano</span>
+      </div>
+    </div>
+  </div>
+</section>

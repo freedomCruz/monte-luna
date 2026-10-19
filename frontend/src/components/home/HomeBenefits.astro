@@ -1,0 +1,40 @@
+---
+// "Lo que hay en cada empaque" benefit cards (fixed canvas copy).
+const benefits = [
+  {
+    tag: 'Café',
+    tagClass: 'bg-brand-green text-primary-foreground',
+    title: '100 % arábica, tostado en grano',
+    text: 'Tostión media en bolsas de 500 g. Cada una dice su finca, su altura y sus notas de cata.',
+  },
+  {
+    tag: 'Cacao',
+    tagClass: 'bg-brand-purple text-primary-foreground',
+    title: 'Cacao fino de aroma',
+    text: 'Chocolate oscuro al 65 %, 75 % y 100 %, en barras de 80 g. Sin gluten y con ingredientes naturales.',
+  },
+  {
+    tag: 'Origen',
+    tagClass: 'bg-accent text-white',
+    title: 'Apoya a nuestros cacaocultores',
+    text: 'Café y cacao de origen colombiano, de fincas entre 1.500 y 2.000 m s. n. m.',
+  },
+];
+---
+
+<section aria-labelledby="dentro-inicio" class="py-16 lg:py-[104px] bg-card">
+  <div class="max-w-[1320px] mx-auto px-5 lg:px-12 flex flex-col gap-7 lg:gap-12">
+    <h2 id="dentro-inicio" class="m-0 max-w-[700px] text-4xl lg:text-[56px] leading-none font-extrabold tracking-[-0.015em]">
+      Lo que hay en cada empaque
+    </h2>
+    <div class="grid grid-cols-1 lg:grid-cols-[repeat(auto-fit,minmax(300px,1fr))] gap-3 lg:gap-6">
+      {benefits.map((benefit) => (
+        <div class="flex flex-col items-start gap-3 lg:gap-3.5 p-6 lg:p-7 bg-background rounded-xl">
+          <span class={`px-3 py-[5px] rounded-sm text-[15px] font-semibold ${benefit.tagClass}`}>{benefit.tag}</span>
+          <h3 class="m-0 text-[26px] lg:text-[30px] leading-[1.1] font-extrabold">{benefit.title}</h3>
+          <p class="m-0 text-[17px] lg:text-lg leading-normal">{benefit.text}</p>
+        </div>
+      ))}
+    </div>
+  </div>
+</section>

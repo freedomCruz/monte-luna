@@ -68,6 +68,11 @@ body {
   outline-offset: 3px;
 }
 
+/* Dark brand surfaces switch the focus outline to brand-yellow (design system section 4). */
+.surface-dark :focus-visible {
+  outline-color: var(--brand-yellow);
+}
+
 @keyframes flota {
   0%, 100% { transform: translateY(0); }
   50% { transform: translateY(-10px); }
@@ -75,6 +80,10 @@ body {
 
 .flota {
   animation: flota 6s ease-in-out infinite;
+}
+
+.flota-b {
+  animation: flota 7.5s ease-in-out infinite reverse;
 }
 
 @keyframes cinta {
@@ -87,6 +96,7 @@ body {
 
 @media (prefers-reduced-motion: reduce) {
   .flota,
+  .flota-b,
   .cinta {
     animation: none;
   }

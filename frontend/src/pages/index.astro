@@ -1,32 +1,35 @@
 ---
-import '../styles/global.css';
+import Layout from '../layouts/Layout.astro';
+import HomePromoBar from '../components/home/HomePromoBar.astro';
+import HomeHero from '../components/home/HomeHero.astro';
+import HomeMarquee from '../components/home/HomeMarquee.astro';
+import HomeProducts from '../components/home/HomeProducts.astro';
+import HomeBenefits from '../components/home/HomeBenefits.astro';
+import HomeCacaoSplit from '../components/home/HomeCacaoSplit.astro';
+import HomeOriginBand from '../components/home/HomeOriginBand.astro';
+import { getCatalogOrigins, getCatalogProducts, getCatalogProductsByOrigin } from '../lib/catalog/catalog';
+import { buildOriginBand, selectHomeProducts } from '../lib/catalog/home';
+
+const products = selectHomeProducts((await getCatalogProducts()).items);
+const firstOrigin = (await getCatalogOrigins()).items[0];
+const originBand = buildOriginBand(
+  firstOrigin,
+  firstOrigin ? await getCatalogProductsByOrigin(firstOrigin.slug) : []
+);
 ---
 
-<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#FAF3E3" />
-    <title>Monteluna</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;500;700;800&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <main class="min-h-screen bg-background text-foreground">
-      <header class="bg-brand-yellow px-5 py-4 font-condensed text-2xl font-extrabold uppercase tracking-wide md:px-12">
-        Monteluna
-      </header>
-      <section class="bg-hero px-5 py-16 md:px-12 md:py-24">
-        <div class="mx-auto max-w-[1320px]">
-          <h1 class="text-5xl font-extrabold tracking-tight md:text-7xl">Monteluna</h1>
-          <p class="mt-4 text-lg">Café y cacao</p>
-        </div>
-      </section>
-    </main>
-  </body>
-</html>
+<Layout
+  title="Monteluna · Café y cacao de Colombia"
+  currentPage="inicio"
+  flushFooter={originBand !== null}
+>
+  <HomePromoBar />
+  <main>
+    <HomeHero />
+    <HomeMarquee />
+    <HomeProducts products={products} />
+    <HomeBenefits />
+    <HomeCacaoSplit />
+    {originBand && <HomeOriginBand band={originBand} />}
+  </main>
+</Layout>
