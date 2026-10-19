@@ -1,6 +1,7 @@
 import React from 'react';
 import type { components } from '../../generated/orders';
 import { OrderCountdownTimer } from './OrderCountdownTimer';
+import { resolveTrackingViewState } from '../../lib/orders/payment-tracking';
 
 export interface OrderTrackingHeroProps {
   order: components['schemas']['GuestOrder'];
@@ -8,24 +9,25 @@ export interface OrderTrackingHeroProps {
 }
 
 export function OrderTrackingHero({ order, onTimerExpire }: OrderTrackingHeroProps) {
-  const status = order.status;
+  const viewState = resolveTrackingViewState(order.status, order.payment);
 
   // Determine variant styling & texts based on M-Pedido / M-Pedido-390 canvas
-  const isPaid = ['paid', 'preparing', 'shipped', 'delivered'].includes(status);
-  const isPending = status === 'pending_payment';
-  const isExpired = status === 'expired';
-  const isCancelled = status === 'cancelled';
+  const isPaid = viewState === 'Pagado';
+  const isPending = viewState === 'Confirmando';
+  const isExpired = viewState === 'Vencido';
+  const isRejected = viewState === 'Rechazado';
+  const isCancelled = viewState === 'Cancelado';
 
   // Hero container colors
   const heroBg = isPaid
     ? 'bg-brand-green text-primary-foreground'
-    : isExpired || isCancelled
+    : isExpired || isRejected || isCancelled
       ? 'bg-hero/30 text-foreground'
       : 'bg-hero/40 text-foreground';
 
   // Title, text, buttons
   let title = '¡Gracias! Tu café ya es tuyo.';
-  let text = `Recibimos tu pago. Enviamos la confirmación y el enlace para seguir tu pedido.`;
+  let text = 'Recibimos tu pago. Enviamos la confirmación y el enlace para seguir tu pedido.';
   let btnText = 'Seguir mi pedido';
   let btnHref = '#';
   let linkText = 'Volver a la tienda';
@@ -60,6 +62,18 @@ export function OrderTrackingHero({ order, onTimerExpire }: OrderTrackingHeroPro
     selloC = '30 minutos';
     selloBg = 'bg-primary text-primary-foreground';
   } else if (isCancelled) {
+    title = 'Tu pago llegó cuando el café ya no estaba disponible.';
+    text =
+      'Recibimos tu pago después de que se venció la reserva y ya no había inventario. No vamos a despachar este pedido y te devolveremos el dinero completo.';
+    btnText = 'Armar el pedido de nuevo';
+    btnHref = '/tienda';
+    linkText = 'Ir a la tienda';
+    linkHref = '/tienda';
+    selloA = 'Pedido';
+    selloB = 'Cancelado';
+    selloC = 'Reembolso';
+    selloBg = 'bg-primary text-primary-foreground';
+  } else if (isRejected) {
     title = 'El pago no pasó.';
     text =
       'El medio de pago rechazó la transacción y no se hizo ningún cobro. Tu pedido sigue apartado o puedes reintentar el pago.';
@@ -71,6 +85,15 @@ export function OrderTrackingHero({ order, onTimerExpire }: OrderTrackingHeroPro
     selloB = 'Rechazado';
     selloC = 'Sin cobro';
     selloBg = 'bg-destructive text-primary-foreground';
+  }
+
+  let btnClasses = 'bg-card text-foreground';
+  if (isPaid) {
+    btnClasses = 'bg-[#FAF3E3] text-[#1B1510]';
+  } else if (isPending) {
+    btnClasses = 'bg-[#1B1510] text-[#FAF3E3]';
+  } else if (isRejected || isExpired || isCancelled) {
+    btnClasses = 'bg-[#C1272D] text-white';
   }
 
   return (
@@ -97,8 +120,8 @@ export function OrderTrackingHero({ order, onTimerExpire }: OrderTrackingHeroPro
             {text}
           </p>
 
-          {/* 30-min reservation countdown timer if pending */}
-          {isPending && order.reservation_expires_at && (
+          {/* 30-min reservation countdown timer if pending or rejected (while still pending_payment) */}
+          {order.status === 'pending_payment' && order.reservation_expires_at && (
             <div className="w-full max-w-[420px] my-2">
               <OrderCountdownTimer
                 expiresAt={order.reservation_expires_at}
@@ -111,7 +134,7 @@ export function OrderTrackingHero({ order, onTimerExpire }: OrderTrackingHeroPro
           <div className="flex flex-wrap items-center gap-4 pt-2">
             <a
               href={btnHref}
-              className="inline-flex items-center justify-center min-h-[54px] px-8 rounded-xl bg-card text-foreground font-sans text-base font-bold uppercase tracking-wide hover:opacity-95 transition-opacity"
+              className={`inline-flex items-center justify-center min-h-[54px] px-8 rounded-xl ${btnClasses} font-sans text-base font-bold uppercase tracking-wide hover:opacity-95 transition-opacity`}
             >
               {btnText} →
             </a>

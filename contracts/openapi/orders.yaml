@@ -522,11 +522,38 @@ components:
             - type: 'null'
           description: Earliest production (roast) date among the lots allocated to this line.
 
+    GuestPayment:
+      type: object
+      additionalProperties: false
+      description: |
+        The approved payment attempt when the order has one; otherwise the
+        latest attempt, ordered by creation time. A duplicate_approved attempt
+        is never returned. Null payment on GuestOrder means no attempt exists.
+        Status is server-verified, never
+        taken from a browser redirect. For a pending_payment order, pending
+        (or approved while the orders outbox consumer catches up) supports
+        the confirming view; declined or error supports the rejected view.
+        Order status remains authoritative: expired shows the expired view,
+        and paid or later fulfillment statuses show the paid view with the
+        real payment method. Created means widget parameters were issued,
+        not that Wompi has accepted a transaction. Do not infer payment success
+        from the existence of an attempt or a payment method.
+      required: [latest_attempt_status, payment_method_type]
+      properties:
+        latest_attempt_status:
+          type: string
+          enum: [created, pending, approved, declined, voided, error, expired]
+          description: Internal attempt status; clients tolerate unknown future values.
+        payment_method_type:
+          type: [string, 'null']
+          enum: [card, pse, nequi, bancolombia_transfer, null]
+          description: Actual provider method mapped to lowercase; null until known. Never substitute a default method. nequi supports the label Pagado con Nequi.
+
     GuestOrder:
       type: object
       additionalProperties: false
       description: Guest view of an order. Buyer phone, email, and fiscal data are not returned.
-      required: [order_number, status, placed_at, reservation_expires_at, lines, shipping, subtotal_amount, shipping_amount, tax_amount, total_amount, shipping_address, shipment]
+      required: [order_number, status, placed_at, reservation_expires_at, lines, shipping, subtotal_amount, shipping_amount, tax_amount, total_amount, shipping_address, shipment, payment]
       properties:
         order_number:
           type: string
@@ -556,4 +583,9 @@ components:
         shipment:
           oneOf:
             - $ref: '#/components/schemas/Shipment'
+            - type: 'null'
+        payment:
+          description: Latest attempt and real payment method; null when no attempt exists.
+          oneOf:
+            - $ref: '#/components/schemas/GuestPayment'
             - type: 'null'

@@ -235,7 +235,7 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
             order_number: 'ORD-7K2M9Q4X',
             status: 'pending_payment',
             total_amount: 4750000,
-            reservation_expires_at: '2026-10-15T15:30:00Z',
+            reservation_expires_at: new Date(Date.now() + 1800000).toISOString(),
             tracking_token: 'tok_abc123def456',
           }),
         });
@@ -285,12 +285,10 @@ describe('CheckoutIsland component (S3, S4, S5, S6)', () => {
       expect(screen.getByText('Revisa y paga')).toBeDefined();
       expect(screen.getByText('Pagas en la ventana segura de Wompi.')).toBeDefined();
       expect(screen.getByRole('button', { name: /Pagar \$47\.500/i })).toBeDefined();
-      expect(screen.getByText('El pago en línea estará disponible pronto.')).toBeDefined();
       expect(screen.getAllByText(/ORD-7K2M9Q4X/i).length).toBeGreaterThan(0);
-      expect(screen.getByRole('link', { name: /Ver estado del pedido/i })).toBeDefined();
+      expect(screen.getByRole('link', { name: /Ir a seguimiento de pedido/i })).toBeDefined();
       const payBtn = screen.getByRole('button', { name: /Pagar \$47\.500/i });
-      expect(payBtn.getAttribute('aria-disabled')).toBe('true');
-      expect((payBtn as HTMLButtonElement).disabled).toBe(true);
+      expect((payBtn as HTMLButtonElement).disabled).toBe(false);
     });
   });
 

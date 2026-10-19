@@ -21,38 +21,50 @@ export function DeliveryDataCard({
   return (
     <section
       aria-labelledby="h-revisa"
-      className="flex flex-col px-6 md:px-8 py-3 bg-card border border-border rounded-2xl shadow-xs"
+      className="flex flex-col px-4 sm:px-6 md:px-8 py-2 md:py-3 bg-card border border-border rounded-2xl shadow-xs overflow-hidden"
     >
       <h2 id="h-revisa" className="sr-only">
         Tus datos
       </h2>
 
       {/* Contact */}
-      <div className="flex items-start justify-between gap-4 py-5 border-b border-border">
-        <span className="w-28 pt-1 font-condensed text-base font-bold tracking-wider uppercase text-muted-foreground">
+      <div className="flex flex-wrap md:flex-nowrap items-center md:items-start justify-between gap-x-3 gap-y-1 py-3.5 md:py-5 border-b border-border">
+        <span className="font-condensed text-base md:text-[17px] font-bold tracking-wider uppercase text-muted-foreground order-1 md:w-28 md:pt-1 shrink-0">
           Contacto
         </span>
-        <div className="flex-1 flex flex-col gap-0.5">
-          <span className="text-lg md:text-xl font-extrabold">{formData.fullName}</span>
-          <span className="text-base text-foreground/80">{formData.email}</span>
-        </div>
         <button
           type="button"
           onClick={onBackToDatos}
           aria-label="Cambiar los datos de contacto"
-          className="min-h-[44px] inline-flex items-center text-sm font-bold uppercase underline underline-offset-4 hover:text-accent cursor-pointer"
+          className="min-h-[44px] inline-flex items-center text-sm font-bold uppercase underline underline-offset-4 hover:text-accent cursor-pointer order-2 md:order-3 shrink-0"
         >
           Cambiar
         </button>
+        <div className="w-full md:w-auto md:flex-1 min-w-0 flex flex-col gap-0.5 order-3 md:order-2">
+          <span className="text-lg md:text-xl font-extrabold truncate md:overflow-visible md:whitespace-normal">
+            {formData.fullName}
+          </span>
+          <span className="text-base text-foreground/80 break-all md:break-normal">
+            {formData.email}
+          </span>
+        </div>
       </div>
 
       {/* Shipping Address */}
-      <div className="flex items-start justify-between gap-4 py-5 border-b border-border">
-        <span className="w-28 pt-1 font-condensed text-base font-bold tracking-wider uppercase text-muted-foreground">
+      <div className="flex flex-wrap md:flex-nowrap items-center md:items-start justify-between gap-x-3 gap-y-1 py-3.5 md:py-5 border-b border-border">
+        <span className="font-condensed text-base md:text-[17px] font-bold tracking-wider uppercase text-muted-foreground order-1 md:w-28 md:pt-1 shrink-0">
           Envío a
         </span>
-        <div className="flex-1 flex flex-col gap-0.5">
-          <span className="text-lg md:text-xl font-extrabold">
+        <button
+          type="button"
+          onClick={onBackToDatos}
+          aria-label="Cambiar la dirección de entrega"
+          className="min-h-[44px] inline-flex items-center text-sm font-bold uppercase underline underline-offset-4 hover:text-accent cursor-pointer order-2 md:order-3 shrink-0"
+        >
+          Cambiar
+        </button>
+        <div className="w-full md:w-auto md:flex-1 min-w-0 flex flex-col gap-0.5 order-3 md:order-2">
+          <span className="text-lg md:text-xl font-extrabold break-words">
             {formData.addressLine1}
             {formData.addressLine2 ? `, ${formData.addressLine2}` : ''}
           </span>
@@ -68,22 +80,14 @@ export function DeliveryDataCard({
             · Tel: {formData.recipientPhone}
           </span>
         </div>
-        <button
-          type="button"
-          onClick={onBackToDatos}
-          aria-label="Cambiar la dirección de entrega"
-          className="min-h-[44px] inline-flex items-center text-sm font-bold uppercase underline underline-offset-4 hover:text-accent cursor-pointer"
-        >
-          Cambiar
-        </button>
       </div>
 
       {/* Shipping info */}
-      <div className="flex items-start justify-between gap-4 py-5 border-b border-border">
-        <span className="w-28 pt-1 font-condensed text-base font-bold tracking-wider uppercase text-muted-foreground">
+      <div className="flex flex-col md:flex-row md:items-start gap-2 md:gap-4 py-3.5 md:py-5 border-b border-border">
+        <span className="font-condensed text-base md:text-[17px] font-bold tracking-wider uppercase text-muted-foreground md:w-28 md:pt-1 shrink-0">
           Envío
         </span>
-        <div className="flex-1 flex flex-wrap items-center gap-3">
+        <div className="flex-1 min-w-0 flex flex-wrap items-center gap-2 md:gap-3">
           {quote ? (
             <>
               <span className="text-lg md:text-xl font-extrabold">
@@ -103,11 +107,19 @@ export function DeliveryDataCard({
       </div>
 
       {/* Invoice info */}
-      <div className="flex items-start justify-between gap-4 py-5">
-        <span className="w-28 pt-1 font-condensed text-base font-bold tracking-wider uppercase text-muted-foreground">
+      <div className="flex flex-wrap md:flex-nowrap items-center md:items-start justify-between gap-x-3 gap-y-1 py-3.5 md:py-5">
+        <span className="font-condensed text-base md:text-[17px] font-bold tracking-wider uppercase text-muted-foreground order-1 md:w-28 md:pt-1 shrink-0">
           Factura
         </span>
-        <div className="flex-1 flex flex-col gap-0.5">
+        <button
+          type="button"
+          onClick={onBackToDatos}
+          aria-label="Agregar o cambiar datos de factura"
+          className="min-h-[44px] inline-flex items-center text-sm font-bold uppercase underline underline-offset-4 hover:text-accent cursor-pointer order-2 md:order-3 shrink-0"
+        >
+          {formData.wantsInvoice ? 'Cambiar' : 'Agregar'}
+        </button>
+        <div className="w-full md:w-auto md:flex-1 min-w-0 flex flex-col gap-0.5 order-3 md:order-2">
           {formData.wantsInvoice ? (
             <>
               <span className="text-lg md:text-xl font-extrabold">
@@ -128,14 +140,6 @@ export function DeliveryDataCard({
             </>
           )}
         </div>
-        <button
-          type="button"
-          onClick={onBackToDatos}
-          aria-label="Agregar o cambiar datos de factura"
-          className="min-h-[44px] inline-flex items-center text-sm font-bold uppercase underline underline-offset-4 hover:text-accent cursor-pointer"
-        >
-          {formData.wantsInvoice ? 'Cambiar' : 'Agregar'}
-        </button>
       </div>
     </section>
   );

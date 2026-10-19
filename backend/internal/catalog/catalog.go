@@ -67,6 +67,9 @@ type VariantUnavailableError = domain.VariantUnavailableError
 func (m *Module) Allocate(ctx context.Context, reference string, items []StockRequest) ([]Allocation, error) {
 	return postgres.NewRepository(m.pool).Allocate(ctx, reference, items)
 }
+func (m *Module) Reallocate(ctx context.Context, reference string, items []StockRequest) ([]Allocation, error) {
+	return postgres.NewRepository(m.pool).Reallocate(ctx, reference, items)
+}
 func (m *Module) Release(ctx context.Context, reference string) error {
 	return postgres.NewRepository(m.pool).Release(ctx, reference)
 }

@@ -16,7 +16,12 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
-type Repository struct{ pool *pgxpool.Pool }
+type Repository struct {
+	pool     *pgxpool.Pool
+	payments domain.PaymentsPort
+}
+
+func (r *Repository) EnablePayments(port domain.PaymentsPort) { r.payments = port }
 
 func NewRepository(pool *pgxpool.Pool) *Repository { return &Repository{pool: pool} }
 
@@ -24,7 +29,7 @@ type placementTx struct {
 	tx           pgx.Tx
 	q            *orderssql.Queries
 	key, orderID string
- pool *pgxpool.Pool
+	pool         *pgxpool.Pool
 }
 
 func stamp(t time.Time) pgtype.Timestamptz { return pgtype.Timestamptz{Time: t, Valid: true} }
@@ -38,7 +43,7 @@ func (r *Repository) BeginPlacement(ctx context.Context, key string) (domain.Pla
 		_ = tx.Rollback(ctx)
 		return nil, fmt.Errorf("lock placement key: %w", err)
 	}
-	return &placementTx{tx: tx, q: q, key: key, pool:r.pool}, nil
+	return &placementTx{tx: tx, q: q, key: key, pool: r.pool}, nil
 }
 func (t *placementTx) Replay(ctx context.Context, hash string, now time.Time) (*domain.PlacedOrder, error) {
 	row, err := t.q.GetIdempotency(ctx, t.key)
@@ -77,19 +82,27 @@ func (t *placementTx) Commit(ctx context.Context) error {
 		return err
 	}
 	// Fence on the same key in a fresh transaction: acquiring this lock proves
- // the original transaction has ended, even if its COMMIT response was lost.
- // A stored result proves success; absence proves it is safe to compensate.
- recovery, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
- defer cancel()
- probe, probeErr := t.pool.Begin(recovery)
- if probeErr != nil { return errors.Join(domain.ErrCommitUncertain, err, probeErr) }
- defer func(){ _ = probe.Rollback(recovery) }()
- queries := orderssql.New(probe)
- if lockErr := queries.LockIdempotencyKey(recovery,t.key); lockErr != nil { return errors.Join(domain.ErrCommitUncertain,err,lockErr) }
- record, readErr := queries.GetIdempotency(recovery,t.key)
- if readErr == nil && record.OrderID == t.orderID { return nil }
- if errors.Is(readErr,pgx.ErrNoRows) { return err }
- return errors.Join(domain.ErrCommitUncertain,err,readErr)
+	// the original transaction has ended, even if its COMMIT response was lost.
+	// A stored result proves success; absence proves it is safe to compensate.
+	recovery, cancel := context.WithTimeout(context.WithoutCancel(ctx), 10*time.Second)
+	defer cancel()
+	probe, probeErr := t.pool.Begin(recovery)
+	if probeErr != nil {
+		return errors.Join(domain.ErrCommitUncertain, err, probeErr)
+	}
+	defer func() { _ = probe.Rollback(recovery) }()
+	queries := orderssql.New(probe)
+	if lockErr := queries.LockIdempotencyKey(recovery, t.key); lockErr != nil {
+		return errors.Join(domain.ErrCommitUncertain, err, lockErr)
+	}
+	record, readErr := queries.GetIdempotency(recovery, t.key)
+	if readErr == nil && record.OrderID == t.orderID {
+		return nil
+	}
+	if errors.Is(readErr, pgx.ErrNoRows) {
+		return err
+	}
+	return errors.Join(domain.ErrCommitUncertain, err, readErr)
 }
 func (t *placementTx) Save(ctx context.Context, order domain.Order) error {
 	if _, err := t.tx.Exec(ctx, "SAVEPOINT order_number_attempt"); err != nil {

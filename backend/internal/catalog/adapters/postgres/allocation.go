@@ -14,7 +14,16 @@ import (
 
 // Allocate commits the complete cart allocation atomically, or writes nothing.
 // Reference and ascending variant locks serialize duplicate/same-stock requests.
-func (r *Repository) Allocate(ctx context.Context, reference string, items []domain.StockRequest) (result []domain.Allocation, err error) {
+func (r *Repository) Allocate(ctx context.Context, reference string, items []domain.StockRequest) ([]domain.Allocation, error) {
+	return r.allocate(ctx, reference, items, false)
+}
+
+// Reallocate resumes a released order allocation and returns an already active
+// reallocation unchanged after a consumer crash or uncertain commit.
+func (r *Repository) Reallocate(ctx context.Context, reference string, items []domain.StockRequest) ([]domain.Allocation, error) {
+	return r.allocate(ctx, reference, items, true)
+}
+func (r *Repository) allocate(ctx context.Context, reference string, items []domain.StockRequest, late bool) (result []domain.Allocation, err error) {
 	tx, err := r.pool.Begin(ctx)
 	if err != nil {
 		return nil, fmt.Errorf("begin allocation: %w", err)
@@ -29,7 +38,41 @@ func (r *Repository) Allocate(ctx context.Context, reference string, items []dom
 		return nil, fmt.Errorf("read allocation guard: %w", err)
 	}
 	if len(existing) > 0 {
-		return nil, errors.New("allocation reference already used")
+		if !late {
+			return nil, errors.New("allocation reference already used")
+		}
+		totals := make(map[string]int64)
+		for _, row := range existing {
+			if row.Quantity > 0 {
+				return nil, errors.New("invalid net allocation")
+			}
+			if row.Quantity == 0 {
+				continue
+			}
+			totals[row.VariantID] -= row.Quantity
+			var lotCode, date string
+			if err := tx.QueryRow(ctx, `SELECT lot_code,production_date::text FROM catalog.lots WHERE id=$1`, row.LotID).Scan(&lotCode, &date); err != nil {
+				return nil, err
+			}
+			if -row.Quantity > math.MaxInt32 {
+				return nil, errors.New("allocation amount out of range")
+			}
+			result = append(result, domain.Allocation{VariantID: row.VariantID, LotID: row.LotID, LotCode: lotCode, ProductionDate: date, Quantity: int32(-row.Quantity)})
+		}
+		if len(result) > 0 {
+			if len(totals) != len(items) {
+				return nil, errors.New("reallocation items changed")
+			}
+			for _, item := range items {
+				if totals[item.VariantID] != int64(item.Quantity) {
+					return nil, errors.New("reallocation quantities changed")
+				}
+			}
+			if err := tx.Commit(ctx); err != nil {
+				return nil, err
+			}
+			return result, nil
+		}
 	}
 	ordered := slices.Clone(items)
 	slices.SortFunc(ordered, func(a, b domain.StockRequest) int {

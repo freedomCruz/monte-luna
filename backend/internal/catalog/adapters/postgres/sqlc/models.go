@@ -105,6 +105,25 @@ type CatalogOriginImage struct {
 	Version    int32
 }
 
+type CatalogOutbox struct {
+	ID          string
+	Type        string
+	OccurredAt  pgtype.Timestamptz
+	Payload     []byte
+	Status      string
+	Attempts    int32
+	AvailableAt pgtype.Timestamptz
+	DeliveredAt pgtype.Timestamptz
+	LastError   *string
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
+type CatalogProcessedEvent struct {
+	ID          string
+	ProcessedAt pgtype.Timestamptz
+}
+
 type CatalogProduct struct {
 	ID            string
 	ProductTypeID string
