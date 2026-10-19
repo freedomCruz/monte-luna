@@ -77,6 +77,18 @@ describe('Pre-rendered HTML output invariants', () => {
     expect(chocolate85Html).not.toContain('Conocer el origen');
   });
 
+  it('header navigation marks only the current page', () => {
+    const read = (page: string) => fs.readFileSync(path.join(fixtureDir, page), 'utf-8');
+    const current = (html: string) =>
+      [...html.matchAll(/<a\b[^>]*aria-current="page"[^>]*>/g)].map((m) => m[0].match(/href="([^"]*)"/)?.[1]);
+
+    expect(current(read('index.html'))).toEqual(['/']);
+    expect(current(read('tienda/index.html'))).toEqual(['/tienda']);
+    expect(current(read('productos/finca-el-mirador/index.html'))).toEqual(['/tienda']);
+    expect(current(read('origenes/finca-el-mirador/index.html'))).toEqual(['/tienda']);
+    expect(current(read('carrito/index.html'))).toEqual(['/tienda']);
+  });
+
   it('origin page renders origin facts and related products', () => {
     const originHtml = fs.readFileSync(
       path.join(fixtureDir, 'origenes/finca-el-mirador/index.html'),

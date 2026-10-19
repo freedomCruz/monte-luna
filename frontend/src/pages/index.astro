@@ -1,32 +1,12 @@
 ---
-import '../styles/global.css';
+import Layout from '../layouts/Layout.astro';
 ---
 
-<!doctype html>
-<html lang="es">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#FAF3E3" />
-    <title>Monteluna</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;500;700;800&display=swap"
-      rel="stylesheet"
-    />
-  </head>
-  <body>
-    <main class="min-h-screen bg-background text-foreground">
-      <header class="bg-brand-yellow px-5 py-4 font-condensed text-2xl font-extrabold uppercase tracking-wide md:px-12">
-        Monteluna
-      </header>
-      <section class="bg-hero px-5 py-16 md:px-12 md:py-24">
-        <div class="mx-auto max-w-[1320px]">
-          <h1 class="text-5xl font-extrabold tracking-tight md:text-7xl">Monteluna</h1>
-          <p class="mt-4 text-lg">Café y cacao</p>
-        </div>
-      </section>
-    </main>
-  </body>
-</html>
+<Layout title="Monteluna · Café y cacao de Colombia" currentPage="inicio">
+  <section class="bg-hero px-5 py-16 md:px-12 md:py-24">
+    <div class="mx-auto max-w-[1320px]">
+      <h1 class="text-5xl font-extrabold tracking-tight md:text-7xl">Monteluna</h1>
+      <p class="mt-4 text-lg">Café y cacao</p>
+    </div>
+  </section>
+</Layout>
