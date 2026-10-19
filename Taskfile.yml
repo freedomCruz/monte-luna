@@ -14,9 +14,16 @@ env:
     sh: bash scripts/setup-worktree.sh --get FRONTEND_PORT
   # Local development only; the password must be URL-safe.
   DATABASE_URL: "postgres://{{.POSTGRES_USER}}:{{.POSTGRES_PASSWORD}}@127.0.0.1:{{.POSTGRES_PORT}}/{{.WORKTREE_DB}}?sslmode=disable"
+  # Host name the browser uses for the local storefront. 127.0.0.1 by default; set
+  # LOCAL_STOREFRONT_HOST in .env (for example monteluna.test) for Wompi sandbox
+  # tests, because Wompi rejects redirect URLs to localhost or 127.0.0.1.
+  STOREFRONT_HOST: '{{.LOCAL_STOREFRONT_HOST | default "127.0.0.1"}}'
   # Local development only: demo media keys (images/...) resolve to files that the
   # Astro server serves from frontend/public. Production uses Cloudflare R2.
-  MEDIA_BASE_URL: "http://127.0.0.1:{{.FRONTEND_PORT}}/"
+  # Same host as the storefront so images stay same-origin for the browser.
+  MEDIA_BASE_URL: 'http://{{.LOCAL_STOREFRONT_HOST | default "127.0.0.1"}}:{{.FRONTEND_PORT}}/'
+  # Local development only: Wompi redirects back to this worktree's storefront.
+  STOREFRONT_BASE_URL: 'http://{{.LOCAL_STOREFRONT_HOST | default "127.0.0.1"}}:{{.FRONTEND_PORT}}'
 
 tasks:
   setup:
@@ -49,7 +56,7 @@ tasks:
       - sh: test -n "$FRONTEND_PORT"
         msg: "FRONTEND_PORT is derived by Taskfile; unset any shell override"
     cmds:
-      - npm run dev -- --host 127.0.0.1 --port "$FRONTEND_PORT"
+      - npm run dev -- --host 127.0.0.1 --port "$FRONTEND_PORT" --allowed-hosts "$STOREFRONT_HOST"
 
   frontend:build:api:
     desc: Build the static storefront from this worktree's running API (start task backend:dev first)

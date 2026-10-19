@@ -252,6 +252,9 @@ Outbox table and consumer tracking follow [data-modeling.md](../architecture/dat
 
 ## 5. Sources
 
+- Local sandbox test setup (host name, redirect, images, test data): [local-wompi-sandbox.md](../development/local-wompi-sandbox.md)
+- Wompi Colombia — Datos de prueba en Sandbox: https://docs.wompi.co/docs/colombia/datos-de-prueba-en-sandbox/
+
 - Wompi Colombia — Planes y Tarifas: https://wompi.co/es/co/planes-tarifas/
 - Wompi Colombia — Widget y Web Checkout: https://docs.wompi.co/docs/colombia/widget-checkout-web/
 - Wompi Colombia — Eventos y Webhooks (firma y checksum): https://docs.wompi.co/docs/colombia/eventos/

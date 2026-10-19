@@ -17,7 +17,9 @@ export default defineConfig({
             proxy: {
               '/api': {
                 target: proxyTarget,
-                changeOrigin: true,
+                // Keep the browser Host header so the backend cross-origin check (Go
+                // CrossOriginProtection) sees Origin and Host match on any local host name.
+                changeOrigin: false,
               },
             },
           }
