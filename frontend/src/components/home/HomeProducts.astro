@@ -1,0 +1,32 @@
+---
+import ProductCard from '../catalog/ProductCard.astro';
+import { ListingPriceIsland } from '../catalog/ListingPriceIsland';
+import type { Product } from '../../lib/catalog/catalog';
+
+interface Props {
+  products: Product[];
+}
+
+const { products } = Astro.props;
+---
+
+{products.length > 0 && (
+  <section aria-labelledby="tienda-inicio" class="pt-16 pb-[72px] lg:pt-[104px] lg:pb-28">
+    <div class="max-w-[1320px] mx-auto px-5 lg:px-12 flex flex-col gap-2 lg:gap-8">
+      <div class="flex flex-col items-center gap-3 lg:gap-3.5 text-center">
+        <h2 id="tienda-inicio" class="m-0 max-w-[760px] text-4xl lg:text-[56px] leading-none font-extrabold tracking-[-0.015em]">
+          Dile hola al café de finca. Y al cacao.
+        </h2>
+        <p class="m-0 max-w-[560px] text-[17px] lg:text-lg leading-normal">
+          <span class="hidden lg:inline">Dos cafés y tres chocolates oscuros.{' '}</span>Entra a cada uno para elegir peso, molienda o porcentaje de cacao.
+        </p>
+      </div>
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-[repeat(auto-fit,minmax(270px,1fr))] gap-x-6 lg:gap-6">
+        {products.map((product) => (
+          <ProductCard product={product} cardId={`inicio-${product.slug}`} />
+        ))}
+      </div>
+    </div>
+    <ListingPriceIsland client:load productSlugs={products.map((p) => p.slug)} />
+  </section>
+)}

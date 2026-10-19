@@ -77,6 +77,38 @@ describe('Pre-rendered HTML output invariants', () => {
     expect(chocolate85Html).not.toContain('Conocer el origen');
   });
 
+  it('home page renders the canvas sections, the first four products and the first origin band', () => {
+    const homeHtml = fs.readFileSync(path.join(fixtureDir, 'index.html'), 'utf-8');
+    const text = homeHtml.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ');
+
+    for (const heading of [
+      'Café y cacao de las montañas de Colombia.',
+      'Dile hola al café de finca. Y al cacao.',
+      'Lo que hay en cada empaque',
+      'Chocolate oscuro, del 65 al 100 % de cacao.',
+      'Nuestras montañas también cuentan historias.',
+    ]) {
+      expect(text).toContain(heading);
+    }
+    expect(text).toContain('Monteluna 65 %, 75 % y 100 %');
+    expect(homeHtml).toMatch(/Dos cafés y tres chocolates oscuros\. <\/span>Entra a cada uno/);
+
+    // First four products of the fixture catalog, in API order, with live price slots only
+    const cards = [...homeHtml.matchAll(/<article[^>]*id="inicio-([^"]+)"/g)].map((m) => m[1]);
+    expect(cards).toEqual(['finca-el-mirador', 'finca-la-maria', 'chocolate-70', 'chocolate-85']);
+    expect(homeHtml).toContain('data-live-price-slot="chocolate-85"');
+    expect(homeHtml).toContain('client="load"');
+    expect(homeHtml).not.toMatch(/\$\s?\d{1,3}\.\d{3}/);
+    expect(homeHtml).not.toContain('Añadir al carrito');
+
+    // Origin band: first origin facts plus variety and cupping score from its first product
+    expect(text).toContain('Finca El Mirador · Huila');
+    expect(text).toContain('Productora: Productor de café demo');
+    expect(text).toContain('Variedad Geisha, Bourbon');
+    expect(text).toContain('Puntaje SCA 88.5');
+    expect(homeHtml).toMatch(/<a[^>]*href="\/origenes\/finca-el-mirador"[^>]*>\s*Conocer Finca El Mirador\s*<\/a>/);
+  });
+
   it('header navigation marks only the current page', () => {
     const read = (page: string) => fs.readFileSync(path.join(fixtureDir, page), 'utf-8');
     const current = (html: string) =>

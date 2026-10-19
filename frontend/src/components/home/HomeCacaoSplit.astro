@@ -1,0 +1,39 @@
+---
+// Purple cacao panel (M-Inicio "cacao split"); mobile shows the image after the CTA.
+const percentages = ['65 %', '75 %', '100 %'];
+const image = {
+  src: '/images/packaging-chocolate-75-100.webp',
+  alt: 'Barras de chocolate oscuro Monteluna 75 % y 100 % cacao',
+};
+---
+
+<section aria-labelledby="cacao-inicio" class="surface-dark bg-brand-purple text-primary-foreground overflow-hidden">
+  <div class="max-w-[1320px] mx-auto px-5 pt-16 lg:pt-0 lg:px-12 flex flex-col lg:flex-row lg:flex-wrap lg:items-center gap-[18px] lg:gap-x-16 lg:gap-y-6">
+    <div class="hidden lg:flex lg:flex-[1_1_440px] min-w-0 justify-center pt-12">
+      <img src={image.src} alt={image.alt} class="flota h-[560px] max-w-none -mb-6 drop-shadow-[0_24px_22px_rgba(0,0,0,0.4)]" />
+    </div>
+    <div class="flex flex-col items-start gap-[18px] lg:gap-[22px] lg:flex-[1_1_440px] min-w-0 lg:py-[88px]">
+      <span class="font-condensed text-[17px] lg:text-lg font-bold tracking-widest uppercase text-brand-yellow">
+        Monteluna · chocolates de Colombia
+      </span>
+      <h2 id="cacao-inicio" class="m-0 text-4xl lg:text-[56px] leading-none font-extrabold tracking-[-0.015em]">
+        Chocolate oscuro, del 65 al 100 % de cacao.
+      </h2>
+      <p class="m-0 lg:max-w-[480px] text-[17px] lg:text-lg leading-normal">
+        Cacao fino de aroma de origen colombiano. Sin gluten, con ingredientes naturales, en barras de 80 g.
+      </p>
+      <ul class="hidden lg:flex flex-wrap gap-2.5 list-none m-0 p-0">
+        {percentages.map((value) => (
+          <li class="px-4 py-2 border-2 border-brand-yellow rounded-md text-xl font-extrabold">{value}</li>
+        ))}
+      </ul>
+      <a
+        href="/tienda"
+        class="flex lg:inline-flex self-stretch lg:self-auto items-center justify-center min-h-14 px-[26px] rounded-md bg-brand-yellow text-foreground hover:text-foreground text-base font-bold tracking-[0.02em] uppercase no-underline"
+      >
+        Ver el cacao
+      </a>
+    </div>
+    <img src={image.src} alt={image.alt} class="lg:hidden self-center h-[400px] max-w-none mt-2 -mb-9 drop-shadow-[0_20px_18px_rgba(0,0,0,0.4)]" />
+  </div>
+</section>

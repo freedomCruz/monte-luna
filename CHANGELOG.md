@@ -32,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Order placement: "Continuar al pago" creates the order and reserves its stock for 30 minutes; unpaid orders expire and release their stock automatically. Payment is not available yet, and the payment step says so.
 - Guest order page (`/pedido?token=…`) with order number, reservation countdown, status steps, delivery details, lines, and totals.
 - Orders API: checkout quote and order placement with idempotency keys, plus the guest order view, described in `contracts/openapi/orders.yaml`.
+- Storefront home page (`/`) from the Monteluna design: hero, marquee, the first four catalog products with live prices and savings badges, benefits, chocolate panel, and a band for the first published origin. The header marks "Inicio" as the current page.
 
 ### Changed
 

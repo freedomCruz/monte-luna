@@ -1,0 +1,44 @@
+---
+// Decorative marquee band; the sequence is repeated twice so the -50% loop is seamless.
+// Mobile (M-Inicio-390) stops after "100 % arábica ✦"; desktop continues the sequence.
+type Item =
+  | { kind: 'text'; label: string; desktopOnly?: boolean }
+  | { kind: 'pill'; label: string; rotate: string; desktopOnly?: boolean };
+
+const items: Item[] = [
+  { kind: 'text', label: 'Café tostado en grano' },
+  { kind: 'pill', label: 'Finca El Mirador', rotate: '-rotate-3' },
+  { kind: 'text', label: 'Cacao fino de aroma' },
+  { kind: 'pill', label: 'Monteluna 65 %', rotate: 'rotate-2' },
+  { kind: 'text', label: '100 % arábica' },
+  { kind: 'pill', label: 'Finca La María', rotate: '-rotate-2', desktopOnly: true },
+  { kind: 'text', label: 'Origen Colombia', desktopOnly: true },
+  { kind: 'pill', label: 'Monteluna 100 %', rotate: 'rotate-3', desktopOnly: true },
+];
+---
+
+<div aria-hidden="true" class="overflow-hidden bg-foreground text-primary-foreground">
+  <div class="cinta flex items-center w-max py-3 lg:py-4 text-2xl lg:text-[34px] leading-none font-extrabold whitespace-nowrap">
+    {[0, 1].map(() => (
+      <span class="inline-flex items-center gap-4 pr-4 lg:gap-[22px] lg:pr-[22px]">
+        {items.map((item) =>
+          item.kind === 'text' ? (
+            <span class:list={['items-center gap-4 lg:gap-[22px]', item.desktopOnly ? 'hidden lg:inline-flex' : 'inline-flex']}>
+              {item.label} <span class="text-brand-yellow">✦</span>
+            </span>
+          ) : (
+            <span
+              class:list={[
+                'px-2.5 py-1 lg:px-3.5 lg:py-[5px] rounded-sm bg-secondary text-foreground text-sm lg:text-base font-semibold',
+                item.rotate,
+                item.desktopOnly ? 'hidden lg:inline-block' : 'inline-block',
+              ]}
+            >
+              {item.label}
+            </span>
+          )
+        )}
+      </span>
+    ))}
+  </div>
+</div>

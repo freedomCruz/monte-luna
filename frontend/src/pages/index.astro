@@ -1,12 +1,35 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import HomePromoBar from '../components/home/HomePromoBar.astro';
+import HomeHero from '../components/home/HomeHero.astro';
+import HomeMarquee from '../components/home/HomeMarquee.astro';
+import HomeProducts from '../components/home/HomeProducts.astro';
+import HomeBenefits from '../components/home/HomeBenefits.astro';
+import HomeCacaoSplit from '../components/home/HomeCacaoSplit.astro';
+import HomeOriginBand from '../components/home/HomeOriginBand.astro';
+import { getCatalogOrigins, getCatalogProducts, getCatalogProductsByOrigin } from '../lib/catalog/catalog';
+import { buildOriginBand, selectHomeProducts } from '../lib/catalog/home';
+
+const products = selectHomeProducts((await getCatalogProducts()).items);
+const firstOrigin = (await getCatalogOrigins()).items[0];
+const originBand = buildOriginBand(
+  firstOrigin,
+  firstOrigin ? await getCatalogProductsByOrigin(firstOrigin.slug) : []
+);
 ---
 
-<Layout title="Monteluna · Café y cacao de Colombia" currentPage="inicio">
-  <section class="bg-hero px-5 py-16 md:px-12 md:py-24">
-    <div class="mx-auto max-w-[1320px]">
-      <h1 class="text-5xl font-extrabold tracking-tight md:text-7xl">Monteluna</h1>
-      <p class="mt-4 text-lg">Café y cacao</p>
-    </div>
-  </section>
+<Layout
+  title="Monteluna · Café y cacao de Colombia"
+  currentPage="inicio"
+  flushFooter={originBand !== null}
+>
+  <HomePromoBar />
+  <main>
+    <HomeHero />
+    <HomeMarquee />
+    <HomeProducts products={products} />
+    <HomeBenefits />
+    <HomeCacaoSplit />
+    {originBand && <HomeOriginBand band={originBand} />}
+  </main>
 </Layout>

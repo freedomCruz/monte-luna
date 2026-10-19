@@ -1,0 +1,47 @@
+---
+import type { OriginBand } from '../../lib/catalog/home';
+
+interface Props {
+  band: OriginBand;
+}
+
+const { band } = Astro.props;
+---
+
+<section id="origen" aria-labelledby="origen-inicio" class="surface-dark bg-brand-green text-primary-foreground pt-16 pb-[72px] lg:pt-[104px] lg:pb-[120px]">
+  <div class="max-w-[1320px] mx-auto px-5 lg:px-12 flex flex-col lg:flex-row lg:flex-wrap lg:items-center gap-[18px] lg:gap-x-16 lg:gap-y-[72px]">
+    <div class="contents lg:flex lg:flex-col lg:items-start lg:gap-[22px] lg:flex-[1_1_440px] lg:min-w-0">
+      <span class="font-condensed text-[17px] lg:text-lg font-bold tracking-widest uppercase text-brand-yellow">{band.eyebrow}</span>
+      <h2 id="origen-inicio" class="m-0 text-4xl lg:text-[56px] leading-none font-extrabold tracking-[-0.015em]">
+        Nuestras montañas también cuentan historias.
+      </h2>
+      {band.photo && (
+        <img src={band.photo.url} alt={band.photo.alt} class="lg:hidden block w-full aspect-[5/4] object-cover rounded-xl" />
+      )}
+      {band.story && <p class="m-0 lg:max-w-[480px] text-[17px] lg:text-lg leading-normal">{band.story}</p>}
+      <ul class="flex flex-wrap gap-2 lg:gap-2.5 list-none m-0 p-0">
+        {band.chips.map((chip) => (
+          <li class="px-3 lg:px-3.5 py-2 rounded-sm bg-primary-foreground/12 text-[15px] lg:text-base font-semibold">{chip}</li>
+        ))}
+      </ul>
+      <a
+        href={band.href}
+        class="flex lg:inline-flex self-stretch lg:self-auto items-center justify-center min-h-14 px-[26px] rounded-md bg-background text-foreground hover:text-foreground text-base font-bold tracking-[0.02em] uppercase no-underline"
+      >
+        {band.ctaLabel}
+      </a>
+    </div>
+    {band.photo && (
+      <div class="hidden lg:block relative lg:flex-[1_1_480px] min-w-0">
+        <img src={band.photo.url} alt={band.photo.alt} class="block w-full aspect-[5/4] object-cover rounded-xl" />
+        {band.packageImage && (
+          <img
+            src={band.packageImage.url}
+            alt={band.packageImage.alt}
+            class="absolute -left-14 -bottom-16 h-[300px] max-w-none -rotate-6 drop-shadow-[0_20px_18px_rgba(0,0,0,0.45)]"
+          />
+        )}
+      </div>
+    )}
+  </div>
+</section>
