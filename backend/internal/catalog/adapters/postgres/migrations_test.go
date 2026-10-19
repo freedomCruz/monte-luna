@@ -77,8 +77,8 @@ func TestMigrationsRoundTrip(t *testing.T) {
 			}
 		}
 		for _, table := range []string{"outbox", "processed_events"} {
-			if scalar[bool](t, db, `SELECT to_regclass($1) IS NOT NULL`, "catalog."+table) {
-				t.Errorf("unexpected catalog.%s", table)
+			if !scalar[bool](t, db, `SELECT to_regclass($1) IS NOT NULL`, "catalog."+table) {
+				t.Errorf("missing catalog.%s", table)
 			}
 		}
 		if scalar[bool](t, db, `SELECT to_regclass('public.goose_db_version') IS NOT NULL`) {
