@@ -1,8 +1,14 @@
+import React from 'react';
+
 export interface PaymentCtaBlockProps {
   totalDisplay: string;
   orderNumber?: string;
   trackingToken?: string;
   onBackToDatos: () => void;
+  onPay?: () => void;
+  isLoading?: boolean;
+  errorMessage?: string | null;
+  reservationExpired?: boolean;
 }
 
 export function PaymentCtaBlock({
@@ -10,36 +16,58 @@ export function PaymentCtaBlock({
   orderNumber,
   trackingToken,
   onBackToDatos,
+  onPay,
+  isLoading,
+  errorMessage,
+  reservationExpired,
 }: PaymentCtaBlockProps) {
   return (
     <div className="flex flex-col gap-4">
-      {/* Informative notice that online payment is coming soon (S5) */}
-      <div
-        role="status"
-        aria-live="polite"
-        className="flex flex-col items-center justify-center p-4 rounded-xl bg-hero/20 border border-hero/40 text-center gap-1.5"
-      >
-        <span className="text-sm font-semibold text-hero">
-          El pago en línea estará disponible pronto.
-        </span>
-        {orderNumber && trackingToken && (
-          <span className="text-xs text-primary-foreground/90">
-            Tu pedido <strong className="font-mono text-hero">{orderNumber}</strong> ha sido apartado por 30 minutos.{' '}
-            <a
-              href={`/pedido?token=${encodeURIComponent(trackingToken)}`}
-              className="font-bold underline underline-offset-2 text-brand-yellow hover:opacity-80"
-            >
-              Ver estado del pedido →
-            </a>
+      {/* Expiry alert if reservation time ran out */}
+      {reservationExpired && (
+        <div
+          role="alert"
+          className="flex flex-col items-center justify-center p-4 rounded-xl bg-destructive/15 border-2 border-destructive text-center gap-1.5"
+        >
+          <span className="text-sm font-bold text-destructive">
+            Se acabó el tiempo de reserva de este pedido.
           </span>
-        )}
-      </div>
+          <span className="text-xs text-primary-foreground/90">
+            El inventario fue liberado. Por favor regresa al carrito para armar tu pedido de nuevo.
+          </span>
+        </div>
+      )}
 
+      {/* Error message alert */}
+      {errorMessage && (
+        <div
+          role="alert"
+          className="flex items-center gap-3 p-4 rounded-xl bg-destructive/15 border border-destructive text-destructive text-sm font-medium"
+        >
+          <svg
+            width="20"
+            height="20"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2.2"
+            aria-hidden="true"
+            className="shrink-0"
+          >
+            <circle cx="12" cy="12" r="9" />
+            <path d="M12 8v4M12 16h.01" />
+          </svg>
+          <span className="flex-1">{errorMessage}</span>
+        </div>
+      )}
+
+      {/* Active Pagar CTA */}
       <button
         type="button"
-        disabled
-        aria-disabled="true"
-        className="w-full flex items-center justify-center gap-3 min-h-[64px] px-8 rounded-xl bg-accent text-white font-condensed text-2xl font-extrabold uppercase tracking-wide opacity-50 cursor-not-allowed select-none"
+        disabled={isLoading || reservationExpired}
+        aria-busy={isLoading ? 'true' : undefined}
+        onClick={onPay}
+        className="w-full flex items-center justify-center gap-3 min-h-[64px] md:min-h-[72px] px-8 rounded-xl bg-[#C1272D] hover:bg-[#a81f25] text-white font-condensed text-2xl font-extrabold uppercase tracking-wide cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed transition-colors select-none"
       >
         <svg
           width="22"
@@ -52,10 +80,10 @@ export function PaymentCtaBlock({
           strokeLinejoin="round"
           aria-hidden="true"
         >
-          <rect x="5" y="10.5" width="14" height="10" rx="2"></rect>
-          <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path>
+          <rect x="5" y="10.5" width="14" height="10" rx="2" />
+          <path d="M8 10.5V7.5a4 4 0 0 1 8 0v3" />
         </svg>
-        Pagar {totalDisplay}
+        {isLoading ? 'Abriendo Wompi…' : `Pagar ${totalDisplay}`}
       </button>
 
       {trackingToken && (

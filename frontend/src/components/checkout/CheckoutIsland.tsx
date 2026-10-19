@@ -1,10 +1,6 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { useStore } from '@nanostores/react';
 import { $cartItems, clearCart } from '../../lib/cart/store';
-import { fetchCartAvailabilities } from '../../lib/cart/pricing';
-import type { VariantAvailability } from '../../lib/catalog/availabilities';
-import { formatMoneyCop } from '../../lib/shared/formatters';
-import { generateUuid } from '../../lib/shared/utils';
 import {
   type CheckoutFormData,
   type CheckoutFormErrors,
@@ -24,56 +20,84 @@ import {
   getDepartmentByCode,
   getMunicipalityByCode,
 } from '../../lib/checkout/divipola';
-import { requestOrderQuote, placeOrder, type OrderQuote } from '../../lib/orders/client';
+import { fetchCartAvailabilities } from '../../lib/cart/pricing';
+import type { VariantAvailability } from '../../lib/catalog/availabilities';
+import {
+  requestOrderQuote,
+  placeOrder,
+  type OrderQuote,
+} from '../../lib/orders/client';
+import {
+  startPayment,
+  loadWompiWidgetScript,
+  openWompiWidget,
+  verifyPayment,
+  type WompiWidgetResult,
+} from '../../lib/payments/client';
+import { formatMoneyCop } from '../../lib/shared/formatters';
+import { generateUuid } from '../../lib/shared/utils';
 import { CheckoutDatosStep } from './CheckoutDatosStep';
 import { CheckoutPaymentStep } from './CheckoutPaymentStep';
 
 export function CheckoutIsland() {
   const items = useStore($cartItems);
 
-  // Live variant pricing & stock
-  const [availabilities, setAvailabilities] = useState<Map<string, VariantAvailability>>(new Map());
-  const [loadingAvailabilities, setLoadingAvailabilities] = useState(false);
+  const [formData, setFormData] = useState<CheckoutFormData>(() => {
+    const saved = loadCheckoutData();
+    return saved ?? getDefaultCheckoutFormData();
+  });
+  const [errors, setErrors] = useState<CheckoutFormErrors>({});
+  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
 
-  // Placed order from storage only if cart is empty (e.g. arriving directly at Step 3 for a previously placed order)
+  // Quote state
+  const [quote, setQuote] = useState<OrderQuote | null>(null);
+  const [quoteLoading, setQuoteLoading] = useState(false);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+
+  // Order submission state
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+  const [idempotencyKey, setIdempotencyKey] = useState<string>(() => generateUuid());
+
+  // Placed order from storage
   const [placedOrder, setPlacedOrder] = useState<StoredPlacedOrder | null>(() => {
     if (items.length > 0) {
       clearPlacedOrder();
       return null;
     }
-    return loadPlacedOrder();
+    const existing = loadPlacedOrder();
+    // Validate stored order expiry: if expired, clear it
+    if (existing && existing.reservation_expires_at) {
+      const expires = new Date(existing.reservation_expires_at).getTime();
+      if (expires <= Date.now()) {
+        clearPlacedOrder();
+        return null;
+      }
+    }
+    return existing;
   });
 
-  // Multi-step flow: if there are items in cart, always start at 'datos' (step 2)
+  // Flow step: 'datos' (Step 2) | 'pago' (Step 3)
   const [step, setStep] = useState<'datos' | 'pago'>(() => {
     if (items.length > 0) return 'datos';
     const savedPlaced = loadPlacedOrder();
     return savedPlaced ? 'pago' : 'datos';
   });
 
-  // Form data initialized from sessionStorage if available
-  const [formData, setFormData] = useState<CheckoutFormData>(() => {
-    const saved = loadCheckoutData();
-    return saved ?? getDefaultCheckoutFormData();
-  });
+  // Wompi payment interaction state (Step 3)
+  const [isPaymentLoading, setIsPaymentLoading] = useState(false);
+  const [paymentError, setPaymentError] = useState<string | null>(null);
+  const [isPaymentWindowOpen, setIsPaymentWindowOpen] = useState(false);
+  const [paymentIdempotencyKey, setPaymentIdempotencyKey] = useState<string>(() => generateUuid());
 
-  const [errors, setErrors] = useState<CheckoutFormErrors>({});
-  const [hasAttemptedSubmit, setHasAttemptedSubmit] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitError, setSubmitError] = useState<string | null>(null);
-
-  // Idempotency key per checkout session attempt
-  const [idempotencyKey, setIdempotencyKey] = useState<string>(() => generateUuid());
-
-  // Live order quote state (from backend /api/v1/orders/quote)
-  const [quote, setQuote] = useState<OrderQuote | null>(null);
-  const [quoteLoading, setQuoteLoading] = useState(false);
-  const [quoteError, setQuoteError] = useState<string | null>(null);
+  // Catalog live availability
+  const [availabilities, setAvailabilities] = useState<Map<string, VariantAvailability>>(new Map());
+  const [, setLoadingAvailabilities] = useState(false);
 
   // Departments from DIVIPOLA
   const departments = useMemo(() => getDepartments(), []);
 
-  // Municipalities for the selected department
+  // Municipalities for chosen department
   const municipalities = useMemo(() => {
     if (!formData.departmentCode) return [];
     return getMunicipalitiesByDepartment(formData.departmentCode);
@@ -247,6 +271,81 @@ export function CheckoutIsland() {
     }
   };
 
+  // Handle clicking "Pagar" in Step 3 (Task F1 / Spec S7)
+  const handlePay = async () => {
+    if (!placedOrder || !placedOrder.tracking_token) {
+      setPaymentError('No hay un pedido activo para pagar.');
+      return;
+    }
+
+    // Check if reservation already expired
+    if (placedOrder.reservation_expires_at) {
+      if (new Date(placedOrder.reservation_expires_at).getTime() <= Date.now()) {
+        setPaymentError('La reserva de este pedido ya expiró. El inventario fue liberado.');
+        return;
+      }
+    }
+
+    setIsPaymentLoading(true);
+    setPaymentError(null);
+
+    try {
+      // 1. Dynamic script injection of Wompi widget (Gate G2, L6)
+      await loadWompiWidgetScript();
+
+      // 2. Call POST /api/v1/payments with idempotency key
+      const startResult = await startPayment(placedOrder.tracking_token, paymentIdempotencyKey);
+
+      if (!startResult.ok) {
+        if (startResult.code === 'order_not_pending_payment') {
+          setPaymentError('El pedido no se encuentra en estado pendiente de pago.');
+        } else if (startResult.code === 'reservation_expired') {
+          setPaymentError('El tiempo de reserva de este pedido ha expirado.');
+        } else {
+          setPaymentError(
+            startResult.problem?.detail || 'No fue posible iniciar el pago. Intenta nuevamente.'
+          );
+        }
+        // Regenerate idempotency key on failure for clean re-attempt
+        setPaymentIdempotencyKey(generateUuid());
+        setIsPaymentLoading(false);
+        return;
+      }
+
+      // 3. Mark modal open ("Ventana de pago" state in canvas)
+      setIsPaymentWindowOpen(true);
+      setIsPaymentLoading(false);
+
+      // 4. Open Wompi Widget
+      openWompiWidget(startResult.checkout, async (widgetResult: WompiWidgetResult) => {
+        // Modal closes when widget returns callback or buyer finishes
+        setIsPaymentWindowOpen(false);
+
+        const txId = widgetResult?.transaction?.id || null;
+
+        // Verify payment in background/callback
+        if (placedOrder?.tracking_token) {
+          try {
+            await verifyPayment(placedOrder.tracking_token, txId);
+          } catch (vErr) {
+            console.error('Failed to verify payment after widget callback:', vErr);
+          }
+        }
+
+        // Navigate to /pedido tracking view with token
+        if (typeof window !== 'undefined' && placedOrder?.tracking_token) {
+          const redirectUrl = `/pedido?token=${encodeURIComponent(placedOrder.tracking_token)}`;
+          window.location.href = redirectUrl;
+        }
+      });
+    } catch (err) {
+      console.error('Error starting Wompi payment:', err);
+      setPaymentError('Ocurrió un error al preparar la pasarela de pago. Intenta de nuevo.');
+      setPaymentIdempotencyKey(generateUuid());
+      setIsPaymentLoading(false);
+    }
+  };
+
   // If cart is empty and not already on pago step with placed order, show empty state
   if (items.length === 0 && (!placedOrder || step !== 'pago')) {
     return (
@@ -292,12 +391,18 @@ export function CheckoutIsland() {
         totalDisplay={totalDisplay}
         orderNumber={placedOrder?.order_number}
         trackingToken={placedOrder?.tracking_token}
+        reservationExpiresAt={placedOrder?.reservation_expires_at}
         onBackToDatos={() => {
           setStep('datos');
           if (typeof window !== 'undefined') {
             window.scrollTo({ top: 0, behavior: 'smooth' });
           }
         }}
+        onPay={handlePay}
+        isPaymentLoading={isPaymentLoading}
+        paymentError={paymentError}
+        isPaymentWindowOpen={isPaymentWindowOpen}
+        onClosePaymentWindow={() => setIsPaymentWindowOpen(false)}
       />
     );
   }
