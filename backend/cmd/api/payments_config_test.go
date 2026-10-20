@@ -8,6 +8,8 @@ import (
 
 func paymentEnvironment(t *testing.T) {
 	t.Helper()
+	// Keep startup tests hermetic: a developer shell may select the Resend sender.
+	t.Setenv("NOTIFICATIONS_EMAIL_SENDER", "")
 	for key, value := range map[string]string{"WOMPI_PUBLIC_KEY": "pub_test_fixture", "WOMPI_PRIVATE_KEY": "prv_test_fixture", "WOMPI_INTEGRITY_SECRET": "fixture-integrity", "WOMPI_EVENTS_SECRET": "fixture-events", "WOMPI_ENVIRONMENT": "sandbox", "STOREFRONT_BASE_URL": "https://store.test"} {
 		t.Setenv(key, value)
 	}

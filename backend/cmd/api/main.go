@@ -14,6 +14,7 @@ import (
 
 	"github.com/freedomCruz/monte-luna/backend/internal/catalog"
 	"github.com/freedomCruz/monte-luna/backend/internal/invoicing"
+	"github.com/freedomCruz/monte-luna/backend/internal/notifications"
 	"github.com/freedomCruz/monte-luna/backend/internal/orders"
 	"github.com/freedomCruz/monte-luna/backend/internal/payments"
 	"github.com/freedomCruz/monte-luna/backend/internal/platform"
@@ -64,6 +65,12 @@ func run(logger *slog.Logger) error {
 	}
 	defer payment.Close()
 	checkout.EnablePayments(orderPayments{module: payment})
+	notify, err := notifications.New(ctx, cfg.databaseURL, cfg.notifications, logger, notifications.Options{})
+	if err != nil {
+		return err
+	}
+	defer notify.Close()
+	logger.Info("notifications email sender selected", "sender", cfg.notifications.Sender)
 	relayPool, err := pgxpool.New(ctx, cfg.databaseURL)
 	if err != nil {
 		return errors.New("initialize outbox connection pool")
@@ -87,12 +94,17 @@ func run(logger *slog.Logger) error {
 	jobsDone := make(chan struct{})
 	go func() { defer close(jobsDone); checkout.RunJobs(jobsCtx, cfg.maintenanceInterval) }()
 	defer func() { cancelJobs(); <-jobsDone }()
+	notifyJobsCtx, cancelNotifyJobs := context.WithCancel(ctx)
+	notifyJobsDone := make(chan struct{})
+	go func() { defer close(notifyJobsDone); notify.RunJobs(notifyJobsCtx, cfg.notifications.CleanupInterval) }()
+	defer func() { cancelNotifyJobs(); <-notifyJobsDone }()
 
 	mux := http.NewServeMux()
 	platform.RegisterRoutes(mux)
 	module.RegisterRoutes(mux)
 	checkout.RegisterRoutes(mux)
 	payment.RegisterRoutes(mux)
+	notify.RegisterRoutes(mux)
 
 	srv := &http.Server{
 		Addr:              addr,
@@ -133,6 +145,7 @@ type config struct {
 	maintenanceInterval             time.Duration
 	relay                           platform.RelayConfig
 	payments                        payments.Config
+	notifications                   notifications.Config
 }
 
 func loadConfig() (config, error) {
@@ -160,6 +173,10 @@ func loadConfig() (config, error) {
 		cfg.maintenanceInterval = interval
 	}
 	cfg.payments, err = payments.LoadConfig(os.Getenv)
+	if err != nil {
+		return cfg, err
+	}
+	cfg.notifications, err = notifications.LoadConfig(os.Getenv)
 	if err != nil {
 		return cfg, err
 	}
