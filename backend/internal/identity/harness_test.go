@@ -6,6 +6,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"log/slog"
+	"net"
 	"net/http"
 	"net/http/httptest"
 	"strings"
@@ -120,7 +121,8 @@ func (e exchange) str(key string) string {
 
 type option func(*http.Request)
 
-func header(name, value string) option { return func(r *http.Request) { r.Header.Set(name, value) } }
+func header(name, value string) option    { return func(r *http.Request) { r.Header.Set(name, value) } }
+func addHeader(name, value string) option { return func(r *http.Request) { r.Header.Add(name, value) } }
 
 func (c *client) send(valid bool, method, path, body string, options ...option) exchange {
 	c.h.t.Helper()
@@ -131,7 +133,11 @@ func (c *client) send(valid bool, method, path, body string, options ...option) 
 		reader = strings.NewReader("")
 	}
 	r := httptest.NewRequest(method, path, reader)
-	r.RemoteAddr = c.ip + ":40000"
+	remote := c.ip
+	if _, _, err := net.SplitHostPort(remote); err != nil {
+		remote = net.JoinHostPort(remote, "40000")
+	}
+	r.RemoteAddr = remote
 	if body != "" {
 		media := "application/json"
 		if method == http.MethodPatch {
