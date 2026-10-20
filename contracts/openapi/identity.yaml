@@ -1,0 +1,997 @@
+openapi: 3.1.0
+info:
+  title: Monteluna admin identity API
+  version: 1.0.0
+  description: |
+    Backend-only administrator authentication and authorization contract proposed
+    for Gate G1. Rules: docs/domain/identity.md and
+    docs/architecture/api-conventions.md. No customer accounts, frontend,
+    permanent administrator deletion, or HTTP bootstrap/emergency endpoints.
+
+    Authorization: owner has full system access, including administrator
+    management and fiscal configuration. Staff has operational access only to
+    catalog, inventory, and orders, plus its own identity credential actions.
+    Role checks are server-side; the role in a response is not authorization.
+    Only active administrators with completed mandatory 2FA have an authorized
+    admin session. Password verification alone issues a restricted pending
+    session, usable only for its next authentication/enrollment step or logout.
+    Neither pending state grants access to admin resources, including this
+    contract's current-user and credential-management endpoints.
+
+    All responses, including errors and anonymous authentication responses,
+    send Cache-Control: no-store. Sensitive request/response bodies, cookies,
+    passwords, TOTP secrets/codes, recovery codes, and reset tokens must never
+    be logged. No password hash, encrypted secret, reset token, session token,
+    session_version, or login counters are returned in JSON. Enrollment is the
+    sole exception for the current administrator's new plaintext TOTP secret;
+    recovery codes are disclosed only when created, never on later reads.
+    All unsafe methods, including anonymous login/reset, are wrapped by
+    http.CrossOriginProtection; cross-origin requests fail with 403.
+    GET, HEAD, and OPTIONS never change state. Same-origin API; no CORS.
+
+    Cookies: __Host-session; Path=/; Secure; HttpOnly; SameSite=Lax; no Domain.
+    SCS keeps state server-side in identity.sessions. Regenerate the token on
+    password login and on successful 2FA/enrollment; destroy it at logout.
+    Pending state cannot survive session_version changes. Password changes,
+    disabling, role changes, and 2FA reset invalidate all affected sessions on
+    their next request, including pending sessions. No JWT or browser storage.
+    Session durations, password policy, lockout thresholds, and recovery-code
+    count/format are deliberately not assigned unapproved numeric values.
+
+    Stable Problem.code values (RFC 9457, common.yaml Problem):
+    - bad_request (400): malformed JSON, path, query, or precondition header.
+    - invalid_credentials (401): uniform failure for unknown email, incorrect
+      password, disabled account, or invalid/replayed second-factor proof.
+    - authentication_required (401): absent, expired, revoked, or wrong-stage
+      session. A pending session is not an authenticated admin session.
+    - forbidden (403): insufficient role or attempting to reset one's own 2FA.
+    - cross_origin_rejected (403): CrossOriginProtection denied the request.
+    - admin_user_not_found (404): authorized owner cannot find target user.
+    - email_conflict (409): an administrator already uses the email.
+    - last_active_owner (409): cannot disable or demote the last active owner.
+    - totp_already_enrolled (409): enrollment cannot replace confirmed 2FA.
+    - version_conflict (412): missing or stale If-Match; no target changes.
+    - validation_failed (422): invalid or unknown request fields.
+    - invalid_reset_token (422): invalid, expired, superseded, or consumed token;
+      never reveal which condition occurred or whether the account exists.
+    - rate_limited (429): per-account or per-IP limit, including persisted
+      temporary account lockout; Retry-After is always supplied.
+    - internal_error (500): unexpected failure; no internal details or secrets.
+security:
+  - adminSession: []
+tags:
+  - name: identity-auth
+    description: Staged login, mandatory 2FA, and emailed password recovery.
+  - name: identity-self
+    description: Fully authenticated owner or staff managing their credentials.
+  - name: identity-admin
+    description: Owner-only administrator management; no permanent deletion.
+paths:
+  /api/v1/admin/sessions:
+    post:
+      operationId: loginAdmin
+      tags: [identity-auth]
+      summary: Verify password and start a restricted pending session
+      security: []
+      description: |
+        Verify an active administrator's email/password without granting admin
+        access. Replace any existing session and regenerate its token. Return
+        totp_required if enrollment is confirmed, otherwise enrollment_required.
+        Pending state is bound to this administrator and current session_version.
+        Both incorrect passwords and unknown/disabled accounts return the same
+        invalid_credentials problem; lockout/rate-limit responses must not
+        reveal account existence. Apply limits per account and per IP, with
+        persisted locked_until. No numeric thresholds are fixed here.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: Password verified; restricted pending session, not admin authorization.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+            Set-Cookie:
+              $ref: '#/components/headers/SessionCookie'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/LoginProgress'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/admin/sessions/verify:
+    post:
+      operationId: verifyAdminSecondFactor
+      tags: [identity-auth]
+      summary: Complete a pending login with TOTP or a recovery code
+      security:
+        - pendingSession: []
+      description: |
+        Requires the restricted totp_required session from loginAdmin. Accept
+        exactly one TOTP or recovery code. Reject TOTP reuse in the same
+        30-second step using last_used_step; consume recovery codes atomically
+        once. An invalid or already consumed proof returns invalid_credentials
+        without authenticating. Recheck active status and session_version,
+        regenerate the session token, and grant admin access only on success.
+        A recovery code does not disable mandatory TOTP. Rate limit per account
+        and per IP. Log login success/failure and recovery-code use, not proofs.
+      requestBody:
+        $ref: '#/components/requestBodies/SecondFactor'
+      responses:
+        '200':
+          $ref: '#/components/responses/Authenticated'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/admin/sessions/current:
+    get:
+      operationId: getCurrentAdmin
+      tags: [identity-self]
+      summary: Read the fully authenticated administrator
+      description: |
+        Owner or staff. Recheck active status and session_version on every
+        request. Pending enrollment/login sessions return authentication_required.
+      responses:
+        '200':
+          $ref: '#/components/responses/AdminUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    delete:
+      operationId: logoutAdmin
+      tags: [identity-auth]
+      summary: Destroy the current full or pending session
+      security: []
+      description: |
+        Idempotently destroy the presented full or pending session, expire its
+        cookie, and record logout when a session exists. An absent or expired
+        session also returns 204. This deletes no administrator record.
+      responses:
+        '204':
+          description: Logged out; no response body.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+            Set-Cookie:
+              $ref: '#/components/headers/ExpiredCookie'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/admin/totp/enroll:
+    post:
+      operationId: enrollAdminTOTP
+      tags: [identity-auth]
+      summary: Obtain the pending administrator's TOTP enrollment secret
+      security:
+        - pendingSession: []
+      description: |
+        Requires enrollment_required pending session after password verification.
+        Generate a secret for an administrator without confirmed enrollment,
+        encrypt it with AES-256-GCM at rest, and return it with an otpauth URI
+        suitable for rendering a QR code. Repeating this action before
+        confirmation replaces the unconfirmed secret. Cannot replace confirmed
+        2FA (totp_already_enrolled); reset by another owner or SSH first.
+        No admin privileges are granted. Rate limit per account and per IP.
+      responses:
+        '200':
+          description: New unconfirmed secret; sensitive enrollment material.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TOTPEnrollment'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/admin/totp/confirm:
+    post:
+      operationId: confirmAdminTOTP
+      tags: [identity-auth]
+      summary: Confirm enrollment with the first valid six-digit TOTP code
+      security:
+        - pendingSession: []
+      description: |
+        Requires enrollment_required pending session and its unconfirmed secret.
+        Verify code, set confirmed_at and last_used_step, create single-use
+        recovery codes (store only SHA-256 hashes), and establish a full session
+        atomically. Regenerate the session token. Recheck active status and
+        session_version. An invalid/replayed proof returns invalid_credentials;
+        no confirmed secret or completed session is created on failure.
+        Return recovery codes only once and record totp_enabled and login.
+        Rate limit per account and per IP.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TOTPCodeRequest'
+      responses:
+        '200':
+          description: Enrollment confirmed and session authenticated; save recovery codes now.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+            Set-Cookie:
+              $ref: '#/components/headers/SessionCookie'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EnrollmentCompleted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/admin/password-resets:
+    post:
+      operationId: requestAdminPasswordReset
+      tags: [identity-auth]
+      summary: Request an emailed password reset link without account enumeration
+      security: []
+      description: |
+        Always return the same 200 body for syntactically valid requests,
+        whether the email exists, is disabled, or cannot receive a reset.
+        For an eligible account invalidate prior unused tokens and create a
+        cryptographically random token of at least 32 bytes, hashed with SHA-256,
+        valid 30 minutes. Commit it with identity.password_reset_requested in
+        the transactional outbox. Only raw_token_encrypted, never plaintext,
+        enters that payload; notifications alone delivers the emailed link.
+        No email delivery is promised by this response. Never return a token.
+        Apply non-enumerating per-account and per-IP rate limiting. A 500 must
+        not expose account existence or partial success; token/outbox are atomic.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetRequest'
+      responses:
+        '200':
+          description: Uniform acknowledgement; does not confirm an account or email delivery.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ResetAcknowledgement'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/admin/password-resets/complete:
+    post:
+      operationId: completeAdminPasswordReset
+      tags: [identity-auth]
+      summary: Consume an emailed reset token and change the password
+      security: []
+      description: |
+        Token is supplied only in the JSON body, never an API path/query.
+        Atomically verify the SHA-256 hash and 30-minute validity, consume once,
+        replace the Argon2id password hash, set password_changed_at, increment
+        session_version, and record password_reset_completed. Invalid, expired,
+        superseded, consumed, or ineligible-account tokens share one error;
+        rejection changes neither password nor token state. Do not create an
+        authenticated or pending session, disable TOTP, or return recovery
+        codes. Next login still requires mandatory 2FA or initial enrollment.
+        Rate limit per IP and per account when a valid token identifies one,
+        without disclosing account existence.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordResetCompletion'
+      responses:
+        '200':
+          $ref: '#/components/responses/ActionCompleted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          description: Invalid input (validation_failed) or unusable token (invalid_reset_token); no changes.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/problem+json:
+              schema:
+                $ref: ./common.yaml#/components/schemas/Problem
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/admin/password/change:
+    post:
+      operationId: changeAdminPassword
+      tags: [identity-self]
+      summary: Change one's own password with current password and second-factor proof
+      description: |
+        Fully authenticated owner or staff only. Verify current_password and
+        exactly one fresh TOTP or recovery code. Atomically change the Argon2id
+        hash and password_changed_at, consume the proof, increment session_version,
+        and audit password_changed. All existing sessions, including this one,
+        become invalid; next login requires both factors. Do not reset TOTP.
+        Failed validation changes no credential. Rate limit per account/IP.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChangeRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/ActionCompleted'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/admin/recovery-codes/regenerate:
+    post:
+      operationId: regenerateAdminRecoveryCodes
+      tags: [identity-self]
+      summary: Replace one's own recovery codes after credential verification
+      description: |
+        Fully authenticated owner or staff only. Verify current password and
+        exactly one fresh TOTP or recovery code. Atomically consume the proof,
+        delete all existing recovery codes, and store only hashes of a new set.
+        Prior unused codes immediately stop working. Return plaintext codes
+        only in this response; no read endpoint exposes them. Invalid proof
+        leaves the old set unchanged. Rate limit per account and per IP.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReauthenticationRequest'
+      responses:
+        '200':
+          description: New single-use recovery codes; store securely now.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RecoveryCodes'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/admin/users:
+    get:
+      operationId: listAdminUsers
+      tags: [identity-admin]
+      summary: List administrators (owner only)
+      description: Staff is forbidden. Cursor pagination ordered by UUIDv7 id ascending.
+      parameters:
+        - $ref: ./common.yaml#/components/parameters/Limit
+        - $ref: ./common.yaml#/components/parameters/Cursor
+      responses:
+        '200':
+          description: Administrator page; never contains password or session data.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUserPage'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    post:
+      operationId: createAdminUser
+      tags: [identity-admin]
+      summary: Create an active administrator with mandatory enrollment (owner only)
+      description: |
+        Owner supplies the initial password and fixed role; normalize email to
+        lowercase and enforce uniqueness. Store Argon2id hash, never plaintext.
+        Record user_created. No full session or TOTP bypass is granted to the
+        new user; first password login requires enrollment. No invitation/email
+        delivery is implied. Initial owner bootstrap remains SSH CLI only.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateAdminUserRequest'
+      responses:
+        '201':
+          description: Administrator created, without confirmed TOTP credentials.
+          headers:
+            Cache-Control:
+              $ref: '#/components/headers/NoStore'
+            ETag:
+              $ref: '#/components/headers/VersionETag'
+            Location:
+              description: URI of the created administrator under /api/v1/admin/users/{id}.
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AdminUser'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/admin/users/{id}:
+    parameters:
+      - $ref: '#/components/parameters/AdminUserId'
+    get:
+      operationId: getAdminUser
+      tags: [identity-admin]
+      summary: Read an administrator and its version (owner only)
+      responses:
+        '200':
+          $ref: '#/components/responses/AdminUser'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/InternalError'
+    patch:
+      operationId: updateAdminUser
+      tags: [identity-admin]
+      summary: Update an administrator without deleting it (owner only)
+      description: |
+        JSON Merge Patch semantics: absent fields are unchanged; null is invalid
+        because all editable fields are non-nullable. Email is normalized to
+        lowercase. Require the exact current ETag in If-Match. Enforce last
+        active owner invariant atomically across concurrent changes. Disabling
+        or changing a role increments session_version; all target sessions
+        (even the caller's if updating self) fail on next request. Increment
+        record version and audit role_changed/user_disabled when applicable.
+        Rejected updates, including stale preconditions, change nothing.
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/merge-patch+json:
+            schema:
+              $ref: '#/components/schemas/UpdateAdminUserRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/AdminUser'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '409':
+          $ref: '#/components/responses/Conflict'
+        '412':
+          $ref: '#/components/responses/VersionConflict'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+        '500':
+          $ref: '#/components/responses/InternalError'
+  /api/v1/admin/users/{id}/totp/reset:
+    parameters:
+      - $ref: '#/components/parameters/AdminUserId'
+    post:
+      operationId: resetAdminUserTOTP
+      tags: [identity-admin]
+      summary: Reset another administrator's 2FA (owner only)
+      description: |
+        Cannot target self. Verify the acting owner's current password and
+        fresh TOTP/recovery proof. Require target If-Match. Atomically remove
+        the target's TOTP credential and recovery codes, increment its
+        session_version and record version, and record totp_reset. All target
+        sessions are invalid on next request; its next password login requires
+        fresh enrollment, never immediate admin access. Do not change password,
+        role, or status. Rejection leaves target credentials/version unchanged.
+        SSH CLI remains available for emergency recovery. Rate limit per
+        acting account and per IP. No secret is returned for the target.
+      parameters:
+        - $ref: '#/components/parameters/IfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ReauthenticationRequest'
+      responses:
+        '200':
+          $ref: '#/components/responses/AdminUser'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '401':
+          $ref: '#/components/responses/Unauthorized'
+        '403':
+          $ref: '#/components/responses/Forbidden'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '412':
+          $ref: '#/components/responses/VersionConflict'
+        '422':
+          $ref: '#/components/responses/ValidationFailed'
+        '429':
+          $ref: '#/components/responses/RateLimited'
+        '500':
+          $ref: '#/components/responses/InternalError'
+components:
+  securitySchemes:
+    adminSession:
+      $ref: ./common.yaml#/components/securitySchemes/adminSession
+    pendingSession:
+      type: apiKey
+      in: cookie
+      name: __Host-session
+      description: |
+        Restricted server-side password-verified session, NOT adminSession.
+        Only the stage-specific verification/enrollment action is authorized.
+        Same cookie transport; the backend must enforce stage and session_version.
+  headers:
+    NoStore:
+      schema:
+        type: string
+        const: no-store
+    SessionCookie:
+      description: |
+        Regenerated opaque SCS token, not JSON; __Host-session=<opaque>;
+        Path=/; Secure; HttpOnly; SameSite=Lax. No Domain attribute.
+      schema:
+        type: string
+    ExpiredCookie:
+      description: |
+        __Host-session=; Path=/; Secure; HttpOnly; SameSite=Lax; Max-Age=0.
+        No Domain attribute. Server-side session is also destroyed.
+      schema:
+        type: string
+    VersionETag:
+      description: Strong quoted admin_users record version; send verbatim in If-Match.
+      schema:
+        type: string
+        pattern: '^"[1-9][0-9]*"$'
+  parameters:
+    AdminUserId:
+      name: id
+      in: path
+      required: true
+      schema:
+        $ref: ./common.yaml#/components/schemas/Id
+    IfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: Exact strong ETag of the target; missing/stale returns 412 version_conflict. Wildcards are not accepted.
+      schema:
+        type: string
+        pattern: '^"[1-9][0-9]*"$'
+  requestBodies:
+    SecondFactor:
+      required: true
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/SecondFactorProof'
+  schemas:
+    Email:
+      type: string
+      format: email
+      description: Administrator email; normalized to lowercase before lookup/storage.
+    Password:
+      type: string
+      minLength: 1
+      writeOnly: true
+      description: Secret password; application policy validation applies, without unapproved numeric thresholds in this contract.
+    TOTPCode:
+      type: string
+      pattern: '^[0-9]{6}$'
+      writeOnly: true
+      description: Six-digit TOTP; replay within a previously accepted 30-second step is forbidden.
+    RecoveryCode:
+      type: string
+      minLength: 1
+      description: Secret single-use recovery code; format/count are not fixed by this contract. Never log.
+    SecondFactorProof:
+      oneOf:
+        - $ref: '#/components/schemas/TOTPCodeRequest'
+        - $ref: '#/components/schemas/RecoveryCodeRequest'
+    TOTPCodeRequest:
+      type: object
+      additionalProperties: false
+      required: [totp_code]
+      properties:
+        totp_code:
+          $ref: '#/components/schemas/TOTPCode'
+    RecoveryCodeRequest:
+      type: object
+      additionalProperties: false
+      required: [recovery_code]
+      properties:
+        recovery_code:
+          $ref: '#/components/schemas/RecoveryCode'
+    LoginRequest:
+      type: object
+      additionalProperties: false
+      required: [email, password]
+      properties:
+        email:
+          $ref: '#/components/schemas/Email'
+        password:
+          $ref: '#/components/schemas/Password'
+    LoginProgress:
+      type: object
+      additionalProperties: false
+      required: [next_step]
+      properties:
+        next_step:
+          type: string
+          enum: [totp_required, enrollment_required]
+    TOTPEnrollment:
+      type: object
+      additionalProperties: false
+      required: [secret, otpauth_uri]
+      properties:
+        secret:
+          type: string
+          minLength: 1
+          description: New unconfirmed Base32 TOTP secret; disclosed only to its password-verified administrator.
+        otpauth_uri:
+          type: string
+          format: uri
+          description: otpauth URI containing the same secret for authenticator QR enrollment; never log.
+    RecoveryCodes:
+      type: object
+      additionalProperties: false
+      required: [recovery_codes]
+      properties:
+        recovery_codes:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/RecoveryCode'
+    EnrollmentCompleted:
+      type: object
+      additionalProperties: false
+      required: [admin_user, recovery_codes]
+      properties:
+        admin_user:
+          $ref: '#/components/schemas/AdminUser'
+        recovery_codes:
+          type: array
+          minItems: 1
+          uniqueItems: true
+          items:
+            $ref: '#/components/schemas/RecoveryCode'
+    ReauthenticationRequest:
+      type: object
+      additionalProperties: false
+      required: [current_password, second_factor]
+      properties:
+        current_password:
+          $ref: '#/components/schemas/Password'
+        second_factor:
+          $ref: '#/components/schemas/SecondFactorProof'
+    PasswordChangeRequest:
+      type: object
+      additionalProperties: false
+      required: [current_password, new_password, second_factor]
+      properties:
+        current_password:
+          $ref: '#/components/schemas/Password'
+        new_password:
+          $ref: '#/components/schemas/Password'
+        second_factor:
+          $ref: '#/components/schemas/SecondFactorProof'
+    PasswordResetRequest:
+      type: object
+      additionalProperties: false
+      required: [email]
+      properties:
+        email:
+          $ref: '#/components/schemas/Email'
+    PasswordResetCompletion:
+      type: object
+      additionalProperties: false
+      required: [token, new_password]
+      properties:
+        token:
+          type: string
+          minLength: 1
+          writeOnly: true
+          description: Opaque emailed random token (at least 32 random bytes before encoding); never log or persist plaintext.
+        new_password:
+          $ref: '#/components/schemas/Password'
+    ResetAcknowledgement:
+      type: object
+      additionalProperties: false
+      required: [message]
+      properties:
+        message:
+          type: string
+          const: If the account is eligible, a password reset link will be emailed.
+    ActionCompleted:
+      type: object
+      additionalProperties: false
+      required: [completed]
+      properties:
+        completed:
+          type: boolean
+          const: true
+    AdminRole:
+      type: string
+      enum: [owner, staff]
+      description: Fixed roles; owner has full access, staff only catalog/inventory/orders and own credentials.
+    AdminStatus:
+      type: string
+      enum: [active, disabled]
+    AdminUser:
+      type: object
+      additionalProperties: false
+      required: [id, email, display_name, role, status, totp_confirmed_at, last_login_at, password_changed_at, version, created_at, updated_at]
+      properties:
+        id:
+          $ref: ./common.yaml#/components/schemas/Id
+        email:
+          $ref: '#/components/schemas/Email'
+        display_name:
+          type: string
+          minLength: 1
+        role:
+          $ref: '#/components/schemas/AdminRole'
+        status:
+          $ref: '#/components/schemas/AdminStatus'
+        totp_confirmed_at:
+          type: [string, 'null']
+          format: date-time
+          description: UTC enrollment confirmation timestamp, or null before confirmation/reset.
+        last_login_at:
+          type: [string, 'null']
+          format: date-time
+        password_changed_at:
+          $ref: ./common.yaml#/components/schemas/Timestamp
+        version:
+          type: integer
+          minimum: 1
+        created_at:
+          $ref: ./common.yaml#/components/schemas/Timestamp
+        updated_at:
+          $ref: ./common.yaml#/components/schemas/Timestamp
+    AdminUserPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor]
+      properties:
+        items:
+          type: array
+          items:
+            $ref: '#/components/schemas/AdminUser'
+        next_cursor:
+          $ref: ./common.yaml#/components/schemas/NextCursor
+    CreateAdminUserRequest:
+      type: object
+      additionalProperties: false
+      required: [email, display_name, role, password]
+      properties:
+        email:
+          $ref: '#/components/schemas/Email'
+        display_name:
+          type: string
+          minLength: 1
+        role:
+          $ref: '#/components/schemas/AdminRole'
+        password:
+          $ref: '#/components/schemas/Password'
+    UpdateAdminUserRequest:
+      type: object
+      additionalProperties: false
+      minProperties: 1
+      properties:
+        email:
+          $ref: '#/components/schemas/Email'
+        display_name:
+          type: string
+          minLength: 1
+        role:
+          $ref: '#/components/schemas/AdminRole'
+        status:
+          $ref: '#/components/schemas/AdminStatus'
+  responses:
+    Authenticated:
+      description: Full owner/staff session established after successful second factor.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+        Set-Cookie:
+          $ref: '#/components/headers/SessionCookie'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AdminUser'
+    AdminUser:
+      description: Administrator's safe public-to-admin fields, with current record version.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+        ETag:
+          $ref: '#/components/headers/VersionETag'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/AdminUser'
+    ActionCompleted:
+      description: Action completed; no session is created or renewed.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/ActionCompleted'
+    BadRequest:
+      description: Malformed request (bad_request).
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/problem+json:
+          schema:
+            $ref: ./common.yaml#/components/schemas/Problem
+    Unauthorized:
+      description: Missing/invalid/wrong-stage session (authentication_required), or uniform credential/proof failure (invalid_credentials).
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/problem+json:
+          schema:
+            $ref: ./common.yaml#/components/schemas/Problem
+    Forbidden:
+      description: Insufficient role or own-2FA reset (forbidden), or rejected cross-origin request (cross_origin_rejected).
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/problem+json:
+          schema:
+            $ref: ./common.yaml#/components/schemas/Problem
+    NotFound:
+      description: Target administrator not found (admin_user_not_found); check owner authorization before existence.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/problem+json:
+          schema:
+            $ref: ./common.yaml#/components/schemas/Problem
+    Conflict:
+      description: Duplicate email (email_conflict), last active owner change (last_active_owner), or confirmed TOTP replacement (totp_already_enrolled). No changes.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/problem+json:
+          schema:
+            $ref: ./common.yaml#/components/schemas/Problem
+    VersionConflict:
+      description: Missing or stale target If-Match (version_conflict); no target changes.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/problem+json:
+          schema:
+            $ref: ./common.yaml#/components/schemas/Problem
+    ValidationFailed:
+      description: Invalid or unknown request fields (validation_failed), with safe field errors.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/problem+json:
+          schema:
+            $ref: ./common.yaml#/components/schemas/Problem
+    RateLimited:
+      description: Per-account/IP limit or persisted temporary account lockout (rate_limited); non-enumerating response.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+        Retry-After:
+          description: Number of seconds before retry; never expose account existence or counters.
+          required: true
+          schema:
+            type: integer
+            minimum: 1
+      content:
+        application/problem+json:
+          schema:
+            $ref: ./common.yaml#/components/schemas/Problem
+    InternalError:
+      description: Unexpected failure (internal_error); never expose internal details or secrets.
+      headers:
+        Cache-Control:
+          $ref: '#/components/headers/NoStore'
+      content:
+        application/problem+json:
+          schema:
+            $ref: ./common.yaml#/components/schemas/Problem
