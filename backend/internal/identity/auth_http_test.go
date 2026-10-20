@@ -1,6 +1,7 @@
 package identity_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 )
@@ -214,5 +215,110 @@ func TestRateLimitingHTTP(t *testing.T) {
 		other := h.client()
 		other.ip = "198.51.100.8"
 		expect(t, other.do("POST", "/api/v1/admin/sessions", `{"email":"other@example.test","password":"wrong password"}`), 401, "invalid_credentials")
+	})
+	h.step("public peer ignores forged forwarded header", func(t *testing.T) {
+		c := h.client()
+		c.ip = "198.51.100.50"
+		for i := range 20 {
+			expect(t, c.do("POST", "/api/v1/admin/sessions", fmt.Sprintf(`{"email":"forged_%d@example.test","password":"wrong password"}`, i), header("X-Forwarded-For", fmt.Sprintf("192.0.2.1, 203.0.113.%d", 1+i))), 401, "invalid_credentials")
+		}
+		limited := c.do("POST", "/api/v1/admin/sessions", `{"email":"forged_final@example.test","password":"wrong password"}`, header("X-Forwarded-For", "203.0.113.99"))
+		expect(t, limited, 429, "rate_limited")
+
+		other := h.client()
+		other.ip = "198.51.100.51"
+		expect(t, other.do("POST", "/api/v1/admin/sessions", `{"email":"forged_other@example.test","password":"wrong password"}`, header("X-Forwarded-For", "203.0.113.1")), 401, "invalid_credentials")
+	})
+	h.step("loopback peer trusts last forwarded entry", func(t *testing.T) {
+		c := h.client()
+		c.ip = "127.0.0.1"
+		for i := range 20 {
+			expect(t, c.do("POST", "/api/v1/admin/sessions", fmt.Sprintf(`{"email":"loopback_v4_%d@example.test","password":"wrong password"}`, i), header("X-Forwarded-For", "198.51.100.1, 203.0.113.100")), 401, "invalid_credentials")
+		}
+		limited := c.do("POST", "/api/v1/admin/sessions", `{"email":"loopback_v4_final@example.test","password":"wrong password"}`, header("X-Forwarded-For", "198.51.100.2, 203.0.113.100"))
+		expect(t, limited, 429, "rate_limited")
+
+		expect(t, c.do("POST", "/api/v1/admin/sessions", `{"email":"loopback_v4_other@example.test","password":"wrong password"}`, header("X-Forwarded-For", "198.51.100.1, 203.0.113.101")), 401, "invalid_credentials")
+
+		c6 := h.client()
+		c6.ip = "::1"
+		for i := range 20 {
+			expect(t, c6.do("POST", "/api/v1/admin/sessions", fmt.Sprintf(`{"email":"loopback_v6_%d@example.test","password":"wrong password"}`, i), header("X-Forwarded-For", "198.51.100.1"), addHeader("X-Forwarded-For", "198.51.100.2, 203.0.113.110")), 401, "invalid_credentials")
+		}
+		limited6 := c6.do("POST", "/api/v1/admin/sessions", `{"email":"loopback_v6_final@example.test","password":"wrong password"}`, header("X-Forwarded-For", "198.51.100.1, 203.0.113.110"))
+		expect(t, limited6, 429, "rate_limited")
+
+		expect(t, c6.do("POST", "/api/v1/admin/sessions", `{"email":"loopback_v6_other@example.test","password":"wrong password"}`, header("X-Forwarded-For", "198.51.100.1, 203.0.113.111")), 401, "invalid_credentials")
+	})
+	h.step("private peer trusts last forwarded entry", func(t *testing.T) {
+		c10 := h.client()
+		c10.ip = "10.0.1.25"
+		for i := range 20 {
+			expect(t, c10.do("POST", "/api/v1/admin/sessions", fmt.Sprintf(`{"email":"priv10_%d@example.test","password":"wrong password"}`, i), header("X-Forwarded-For", "70.41.3.18, 203.0.113.120")), 401, "invalid_credentials")
+		}
+		limited10 := c10.do("POST", "/api/v1/admin/sessions", `{"email":"priv10_final@example.test","password":"wrong password"}`, header("X-Forwarded-For", "70.41.3.18, 203.0.113.120"))
+		expect(t, limited10, 429, "rate_limited")
+
+		expect(t, c10.do("POST", "/api/v1/admin/sessions", `{"email":"priv10_other@example.test","password":"wrong password"}`, header("X-Forwarded-For", "70.41.3.18, 203.0.113.121")), 401, "invalid_credentials")
+
+		c192 := h.client()
+		c192.ip = "192.168.1.50"
+		for i := range 20 {
+			expect(t, c192.do("POST", "/api/v1/admin/sessions", fmt.Sprintf(`{"email":"priv192_%d@example.test","password":"wrong password"}`, i), header("X-Forwarded-For", "70.41.3.18"), addHeader("X-Forwarded-For", "198.51.100.5, 203.0.113.130")), 401, "invalid_credentials")
+		}
+		limited192 := c192.do("POST", "/api/v1/admin/sessions", `{"email":"priv192_final@example.test","password":"wrong password"}`, header("X-Forwarded-For", "70.41.3.18, 203.0.113.130"))
+		expect(t, limited192, 429, "rate_limited")
+
+		expect(t, c192.do("POST", "/api/v1/admin/sessions", `{"email":"priv192_other@example.test","password":"wrong password"}`, header("X-Forwarded-For", "70.41.3.18, 203.0.113.131")), 401, "invalid_credentials")
+	})
+	h.step("malformed forwarded header falls back to private peer", func(t *testing.T) {
+		c := h.client()
+		c.ip = "10.0.2.75"
+		for i := range 20 {
+			expect(t, c.do("POST", "/api/v1/admin/sessions", fmt.Sprintf(`{"email":"malformed_%d@example.test","password":"wrong password"}`, i), header("X-Forwarded-For", "not-an-ip")), 401, "invalid_credentials")
+		}
+		limited := c.do("POST", "/api/v1/admin/sessions", `{"email":"malformed_final@example.test","password":"wrong password"}`, header("X-Forwarded-For", "also-malformed"))
+		expect(t, limited, 429, "rate_limited")
+
+		expect(t, c.do("POST", "/api/v1/admin/sessions", `{"email":"malformed_no_header@example.test","password":"wrong password"}`), 429, "rate_limited")
+
+		other := h.client()
+		other.ip = "10.0.2.76"
+		expect(t, other.do("POST", "/api/v1/admin/sessions", `{"email":"malformed_other@example.test","password":"wrong password"}`, header("X-Forwarded-For", "not-an-ip")), 401, "invalid_credentials")
+	})
+	h.step("ipv4-mapped ipv6 peers and headers", func(t *testing.T) {
+		cLoop := h.client()
+		cLoop.ip = "::ffff:127.0.0.1"
+		for i := range 20 {
+			expect(t, cLoop.do("POST", "/api/v1/admin/sessions", fmt.Sprintf(`{"email":"mapped_loop_%d@example.test","password":"wrong password"}`, i), header("X-Forwarded-For", "198.51.100.1, 203.0.113.140")), 401, "invalid_credentials")
+		}
+		limitedLoop := cLoop.do("POST", "/api/v1/admin/sessions", `{"email":"mapped_loop_final@example.test","password":"wrong password"}`, header("X-Forwarded-For", "203.0.113.140"))
+		expect(t, limitedLoop, 429, "rate_limited")
+		expect(t, cLoop.do("POST", "/api/v1/admin/sessions", `{"email":"mapped_loop_other@example.test","password":"wrong password"}`, header("X-Forwarded-For", "203.0.113.141")), 401, "invalid_credentials")
+
+		cPriv := h.client()
+		cPriv.ip = "::ffff:10.0.3.1"
+		for i := range 20 {
+			expect(t, cPriv.do("POST", "/api/v1/admin/sessions", fmt.Sprintf(`{"email":"mapped_priv_%d@example.test","password":"wrong password"}`, i), header("X-Forwarded-For", "203.0.113.150")), 401, "invalid_credentials")
+		}
+		limitedPriv := cPriv.do("POST", "/api/v1/admin/sessions", `{"email":"mapped_priv_final@example.test","password":"wrong password"}`, header("X-Forwarded-For", "203.0.113.150"))
+		expect(t, limitedPriv, 429, "rate_limited")
+		expect(t, cPriv.do("POST", "/api/v1/admin/sessions", `{"email":"mapped_priv_other@example.test","password":"wrong password"}`, header("X-Forwarded-For", "203.0.113.151")), 401, "invalid_credentials")
+
+		cPub := h.client()
+		cPub.ip = "::ffff:198.51.100.90"
+		for i := range 20 {
+			expect(t, cPub.do("POST", "/api/v1/admin/sessions", fmt.Sprintf(`{"email":"mapped_pub_%d@example.test","password":"wrong password"}`, i), header("X-Forwarded-For", fmt.Sprintf("203.0.113.%d", 1+i))), 401, "invalid_credentials")
+		}
+		limitedPub := cPub.do("POST", "/api/v1/admin/sessions", `{"email":"mapped_pub_final@example.test","password":"wrong password"}`, header("X-Forwarded-For", "203.0.113.99"))
+		expect(t, limitedPub, 429, "rate_limited")
+
+		cMapForward := h.client()
+		cMapForward.ip = "127.0.0.1"
+		for i := range 20 {
+			expect(t, cMapForward.do("POST", "/api/v1/admin/sessions", fmt.Sprintf(`{"email":"map_fwd_%d@example.test","password":"wrong password"}`, i), header("X-Forwarded-For", "::ffff:203.0.113.160")), 401, "invalid_credentials")
+		}
+		limitedMapForward := cMapForward.do("POST", "/api/v1/admin/sessions", `{"email":"map_fwd_final@example.test","password":"wrong password"}`, header("X-Forwarded-For", "203.0.113.160"))
+		expect(t, limitedMapForward, 429, "rate_limited")
 	})
 }
