@@ -25,7 +25,7 @@ No worker may read, print, copy, log, or place real environment values in Git, t
 
 | ID | Task | Specs | Route | Depends on | Commit |
 | --- | --- | --- | --- | --- | --- |
-| T1 | Create this feature document, Engram mirror, Orca Run, and isolated worktrees | S1–S3 | coordinator | — | pending |
+| T1 | Create this feature document, Engram mirror, Orca Run, and isolated worktrees (done) | S1–S3 | coordinator | — | `22658c2` |
 | C1 | Write `contracts/openapi/identity.yaml` for the approved backend-only identity surface; no implementation → Gate G1 | S1, S2 | backend worker | T1 | pending |
 | A1 | Audit every new Go dependency and request explicit approval before installation → Gate G2 | S2 | coordinator | C1 | pending |
 | B1 | Implement identity schema, repositories, password/encryption primitives, and last-owner invariants using TDD | S2, S3 | backend worker | C1, A1 | pending |
@@ -50,3 +50,4 @@ Gates: G1 user approval of the OpenAPI contract; G2 user approval of dependency 
 - L2 (user): "Continua"
 - L3 (coordinator plan accepted by next user message): Identity v1 is backend-only in this wave; contracts precede implementation; dependency additions require a separate approval gate; independent verification is required for the security risk.
 - L4 (user): "listo empecemos. Las nuevas variable de entornos están seteadas."
+- L5 (coordinator): Orca Run `run_ee0898b006f5`; T1 `task_92e5c47b4085` completed; C1 `task_36c3db7673c6`. Coordinator worktree `identity-v1`; worker worktree `identity-v1-backend` on `feat/identity-v1-backend`. An earlier empty Run `run_015e47d215b3` was superseded before any Task was created because a coordinator terminal can be bound to only one Run.
