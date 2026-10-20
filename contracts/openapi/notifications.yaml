@@ -8,13 +8,27 @@ info:
     Canonical rules: docs/domain/notifications.md, docs/domain/identity.md,
     docs/architecture/api-conventions.md, and data-modeling.md section 11.
 
-    The only initially consumed domain event is identity.password_reset_requested
-    from identity.outbox. Its payload contains admin_user_id (UUIDv7), email
-    (text), display_name (text), and raw_token_encrypted (text). The producer
-    encrypts the raw reset token before persisting the outbox payload. The
-    consumer decrypts it only in memory to construct the reset link; neither
-    plaintext tokens nor reset links may be persisted in template_data or logs.
-    This internal boundary is not an HTTP operation and adds no identity route.
+    The initially consumed domain events from identity.outbox are
+    identity.password_reset_requested and identity.admin_invited. These internal
+    boundaries are not HTTP operations and add no identity routes.
+
+    identity.password_reset_requested selects the Spanish password-recovery
+    template. Its payload contains admin_user_id (UUIDv7), email (text),
+    display_name (text), and raw_token_encrypted (text). The producer encrypts
+    the raw reset token before persisting the outbox payload.
+
+    identity.admin_invited selects a distinct Spanish administrator-invitation
+    template, not the password-recovery template. This boundary does not define
+    or change the invitation producer's payload, token lifecycle, or acceptance
+    endpoint. Exact subject, HTML copy, and plain-text copy for both templates
+    require separate approval; this contract supplies no email copy.
+
+    Both templates use Go html/template with a mandatory plain-text alternative,
+    embedded in the binary. For either event, the consumer decrypts the token
+    only in memory to construct its single-use link. Decrypted tokens, complete
+    links, and rendered HTML/text containing them remain memory-only during
+    rendering and dispatch; they must never be persisted in template_data,
+    other database fields, logs, or local email captures.
 
     Delivery is asynchronous and at least once. The consumer records the source
     event ID in notifications.processed_events atomically with its local effect
