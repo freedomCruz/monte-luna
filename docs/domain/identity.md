@@ -58,6 +58,9 @@ Canonical requirements and data model for the `identity` module. Conventions in 
   - Login rate limiting: per account 5 attempts per minute (burst 5) and per IP 20 attempts per minute (burst 20); the in-memory limiter keeps at most 10,000 keys and evicts keys idle for 15 minutes.
   - Recovery codes: 10 single-use codes, each generated from 10 random bytes.
   - Passwords: 12 to 128 characters (Unicode code points); no composition rules.
+  - TOTP issuer label: `Monteluna`.
+  - Client IP for rate limiting: `X-Forwarded-For` is trusted only when the direct peer is loopback or a private network address (the Caddy reverse proxy); otherwise the direct peer address is used.
+  - One-time token retention: expired or consumed rows in `password_reset_tokens` are deleted 7 days after expiry or consumption by the periodic cleanup job.
 - **One-time link routes (approved 2026-10-20):** Password-reset and invitation links carry the raw token in the URL fragment so it never reaches server logs or the `Referer` header: `{STOREFRONT_BASE_URL}/admin/restablecer-contrasena#token=<token>` and `{STOREFRONT_BASE_URL}/admin/invitacion#token=<token>`. Identity owns these routes; Notifications builds links only through Identity's public facade.
 - **Session invalidation:** Because SCS session data is serialized and opaque in PostgreSQL, individual sessions cannot be queried by user ID. Invalidation uses a `session_version` counter in `admin_users`, mirrored inside the session payload. Incrementing `session_version` on password changes, user disabling, role modification, or 2FA reset immediately invalidates all active sessions for that user on their next request.
 
