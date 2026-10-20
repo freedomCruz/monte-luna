@@ -36,10 +36,10 @@ The initial handled events are the canonically approved `identity.password_reset
 | G1 | Gate: user approves Notifications OpenAPI contract (`80a402f`) | S1, S3 | coordinator | C3 | `gate_beae6e32aa44` (approved) |
 | A1 | Confirm standard-library implementation and audit any proposed dependency before installation → Gate G2 only if a dependency is needed | S2, S3 | coordinator | G1 | completed |
 | B1 | Implement notifications schema, repositories, idempotent event intake, suppression checks, and retention using TDD | S1–S3 | backend worker | C1, A1 | `490b444`, `79a7713` |
-| B2 | Implement embedded Spanish password-reset HTML/text templates, local capture sender, and secret-safe consumer using TDD → Gate G3 for exact copy | S1–S3 | backend worker | B1 | pending |
-| B3 | Implement Resend `net/http` sender, stable idempotency key, retries, and failure isolation using TDD | S1–S3 | backend worker | B2 | pending |
-| B4 | Implement signed Resend webhook processing, deduplication, delivery states, bounce/complaint suppressions, and cleanup using TDD | S1–S3 | backend worker | B1, B3 | pending |
-| I1 | Wire migrations, consumer registration, configuration, routes, docs, and run all backend verification gates | S1–S3 | backend worker + coordinator-owned docs/root files | B4 | pending |
+| B2 | Implement embedded Spanish password-reset HTML/text templates, local capture sender, and secret-safe consumer using TDD → Gate G3 for exact copy | S1–S3 | backend worker | B1 | `69b89df`, `8fb5203` |
+| B3 | Implement Resend `net/http` sender, stable idempotency key, retries, and failure isolation using TDD | S1–S3 | backend worker | B2 | `af03879` |
+| B4 | Implement signed Resend webhook processing, deduplication, delivery states, bounce/complaint suppressions, and cleanup using TDD | S1–S3 | backend worker | B1, B3 | `62b823c`, `e39bfce` |
+| I1 | Wire migrations, consumer registration, configuration, routes, docs, and run all backend verification gates | S1–S3 | backend worker + coordinator-owned docs/root files | B4 | in progress |
 | V1 | Independently verify every spec and canonical notification invariant on the integrated feature branch | S1–S3 | verifier (read-only) | I1 | pending |
 
 Gates: G1 user approval of the OpenAPI contract; G2 applies only if a new dependency is proposed; G3 user approval of the exact Spanish subject, HTML copy, and text copy. Any later contract change creates a new task and gate.
@@ -66,4 +66,8 @@ Gates: G1 user approval of the OpenAPI contract; G2 applies only if a new depend
 - L11 (backend C3): worker commit `80a402f` clarifies process-memory capture only, with restart clearing and durable persistence prohibited (+5/-3 lines in `contracts/openapi/notifications.yaml`). Worker and coordinator contract tests passed; diff check passed; worktree clean. Gate G1 created in Orca as `gate_beae6e32aa44` blocking `task_5e211e8fb776` (A1 dependency review).
 - L12 (coordinator): User explicitly approved OpenAPI contracts (Gate G1). `gate_beae6e32aa44` resolved as approved. A1 completed confirming Notifications v1 uses exclusively Go standard library (`net/http`, `crypto/hmac`, `crypto/sha256`, `html/template`, `text/template`, `sync`) with zero new external dependencies; no Gate G2 required for Notifications.
 - L13 (backend B1): Worker implemented canonical 4-table persistence in commits `490b444` and `79a7713`. Integration and schema tests passed against PostgreSQL 18 Testcontainers with adapter coverage 72% and domain coverage 90%. Independent verification passed. Task `task_83f3e41e82cd` completed.
+- L14 (backend B2): Gate G3 approved by user (`gate_41b8a5643fd3`). Worker implemented approved Spanish templates, memory-only local capture, and secret-safe consumer in commits `69b89df` and `8fb5203`. Independent verification passed. Task `task_ec94ee1d47af` completed.
+- L15 (backend B3): Worker implemented standard-library Resend HTTP sender with stable idempotency key, outbox retry isolation, and redirect refusal in commit `af03879`. Independent verification passed. Task `task_e4d1a2b0878c` completed.
+- L16 (backend B4): Worker implemented atomic provider deduplication, monotonic delivery states, suppression records, and signed Svix webhook route with raw-body HMAC in commits `62b823c` and `e39bfce`. Independent verification passed. Task `task_140dbeb43f20` completed.
+- L17 (coordinator): Integrated worker branch `feat/notifications-v1-backend` into `feat/notifications-v1` via merge commit `ef8f95e`. Commencing I1 wiring and verification.
 
