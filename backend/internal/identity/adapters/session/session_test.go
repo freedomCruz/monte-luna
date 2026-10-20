@@ -42,7 +42,9 @@ func TestSCSStagesRotationAndCookies(t *testing.T) {
 	if err := s.Replace(ctx, pending); err != nil {
 		t.Fatal(err)
 	}
-	if remaining := time.Until(s.Manager.Deadline(ctx)); remaining > config.PendingLifetime || remaining < config.PendingLifetime-time.Second { t.Fatal("pending lifetime not applied") }
+	if remaining := time.Until(s.Manager.Deadline(ctx)); remaining > config.PendingLifetime || remaining < config.PendingLifetime-time.Second {
+		t.Fatal("pending lifetime not applied")
+	}
 	pendingToken, _, err := s.Manager.Commit(ctx)
 	if err != nil {
 		t.Fatal(err)
@@ -67,10 +69,16 @@ func TestSCSStagesRotationAndCookies(t *testing.T) {
 		t.Fatal("token was not rotated")
 	}
 	old, err := s.Manager.Load(t.Context(), pendingToken)
-	if err != nil || s.State(old).UserID != "" { t.Fatal("old token still valid") }
+	if err != nil || s.State(old).UserID != "" {
+		t.Fatal("old token still valid")
+	}
 	loaded, err := s.Manager.Load(t.Context(), token)
-	if err != nil { t.Fatal(err) }
-	if _, err := s.Current(loaded, domain.Authenticated); err != nil { t.Fatal("new token unusable") }
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, err := s.Current(loaded, domain.Authenticated); err != nil {
+		t.Fatal("new token unusable")
+	}
 	w := httptest.NewRecorder()
 	s.Manager.WriteSessionCookie(ctx, w, token, expiry)
 	cookie := w.Result().Cookies()[0]
@@ -85,7 +93,9 @@ func TestSCSStagesRotationAndCookies(t *testing.T) {
 		t.Fatal(err)
 	}
 	loggedOut, err := s.Manager.Load(t.Context(), token)
-	if err != nil || s.State(loggedOut).UserID != "" { t.Fatal("logout did not delete session") }
+	if err != nil || s.State(loggedOut).UserID != "" {
+		t.Fatal("logout did not delete session")
+	}
 	if err := s.Destroy(ctx); err != nil {
 		t.Fatal("logout not idempotent")
 	}
