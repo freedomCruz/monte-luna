@@ -26,9 +26,11 @@ info:
     Both templates use Go html/template with a mandatory plain-text alternative,
     embedded in the binary. For either event, the consumer decrypts the token
     only in memory to construct its single-use link. Decrypted tokens, complete
-    links, and rendered HTML/text containing them remain memory-only during
-    rendering and dispatch; they must never be persisted in template_data,
-    other database fields, logs, or local email captures.
+    links, and rendered HTML/text containing them remain memory-only. The local
+    capture adapter may retain rendered messages, including their one-time links,
+    only in process memory for local inspection and tests; restart clears them.
+    They must never be persisted in PostgreSQL (including template_data or other
+    database fields), files, logs, or any other durable storage.
 
     Delivery is asynchronous and at least once. The consumer records the source
     event ID in notifications.processed_events atomically with its local effect
