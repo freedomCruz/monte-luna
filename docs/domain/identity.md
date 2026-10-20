@@ -17,6 +17,7 @@ Canonical requirements and data model for the `identity` module. Conventions in 
 | Data model (section 3) | Approved |
 | Secret management for application encryption key: protected environment variable (`0600`) in v1 | Approved |
 | Retention policy for `security_events`: 1 year | Approved |
+| Security policy values and one-time link routes (section 2) | Approved |
 | Customer accounts | Deferred (post-v1) |
 
 ## 2. Approved Requirements
@@ -50,6 +51,14 @@ Canonical requirements and data model for the `identity` module. Conventions in 
 - **Cookies:** `HttpOnly`, `Secure`, and `SameSite` flags with the strict OWASP prefix `__Host-session` (no `Domain` attribute, `Path=/`, HTTPS only). Session tokens are regenerated on login to prevent session fixation.
 - **Rate limiting:** Implemented in the Go application layer to prevent brute-force attacks per account and per IP. Account-level lockout is persisted in `admin_users` (`locked_until`) to survive process restarts and deployments.
 - **Application encryption key:** The AES-256-GCM master key used to encrypt TOTP secrets and outbox password reset tokens is injected via an environment variable (`APP_ENCRYPTION_KEY`) from an env file with `0600` permissions on the VPS, validated at startup.
+- **Security policy values (approved 2026-10-20, OWASP/NIST baseline):**
+  - Authenticated admin session: 12-hour absolute lifetime and 30-minute idle timeout.
+  - Pending session (password verified, 2FA or enrollment not completed): 10-minute lifetime.
+  - Account lockout: 5 consecutive failed attempts lock the account for 15 minutes.
+  - Login rate limiting: per account 5 attempts per minute (burst 5) and per IP 20 attempts per minute (burst 20); the in-memory limiter keeps at most 10,000 keys and evicts keys idle for 15 minutes.
+  - Recovery codes: 10 single-use codes, each generated from 10 random bytes.
+  - Passwords: 12 to 128 characters (Unicode code points); no composition rules.
+- **One-time link routes (approved 2026-10-20):** Password-reset and invitation links carry the raw token in the URL fragment so it never reaches server logs or the `Referer` header: `{STOREFRONT_BASE_URL}/admin/restablecer-contrasena#token=<token>` and `{STOREFRONT_BASE_URL}/admin/invitacion#token=<token>`. Identity owns these routes; Notifications builds links only through Identity's public facade.
 - **Session invalidation:** Because SCS session data is serialized and opaque in PostgreSQL, individual sessions cannot be queried by user ID. Invalidation uses a `session_version` counter in `admin_users`, mirrored inside the session payload. Incrementing `session_version` on password changes, user disabling, role modification, or 2FA reset immediately invalidates all active sessions for that user on their next request.
 
 **Bootstrap and emergency recovery**
