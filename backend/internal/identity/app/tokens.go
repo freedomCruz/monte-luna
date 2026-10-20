@@ -36,5 +36,9 @@ func (t *TokenIssuer) Issue(user domain.User, eventType string, now time.Time) (
 	if err != nil {
 		return domain.PasswordToken{}, domain.TokenEvent{}, domain.ErrResetUnavailable
 	}
-	return domain.PasswordToken{UserID: user.ID, Hash: hash, CreatedAt: now, ExpiresAt: now.Add(domain.PasswordResetLifetime)}, domain.TokenEvent{Type: eventType, OccurredAt: now, Payload: domain.PasswordTokenPayload{AdminUserID: user.ID, Email: user.Email, DisplayName: user.DisplayName, RawTokenEncrypted: base64.StdEncoding.EncodeToString(encrypted)}}, nil
+	payload := domain.PasswordTokenPayload{AdminUserID: user.ID, Email: user.Email, DisplayName: user.DisplayName, RawTokenEncrypted: base64.StdEncoding.EncodeToString(encrypted)}
+	if eventType == "identity.admin_invited" {
+		payload.Role = user.Role
+	}
+	return domain.PasswordToken{UserID: user.ID, Hash: hash, CreatedAt: now, ExpiresAt: now.Add(domain.PasswordResetLifetime)}, domain.TokenEvent{Type: eventType, OccurredAt: now, Payload: payload}, nil
 }

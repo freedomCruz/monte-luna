@@ -183,6 +183,11 @@ func (t *adminTx) InsertTokenEvent(ctx context.Context, event domain.TokenEvent)
 	if event.Type != "identity.admin_invited" && event.Type != "identity.password_reset_requested" {
 		return domain.ErrValidation
 	}
+	// Invitations must name the assigned fixed role; reset events never carry one.
+	invited := event.Type == "identity.admin_invited"
+	if invited != (event.Payload.Role == domain.Owner || event.Payload.Role == domain.Staff) || (!invited && event.Payload.Role != "") {
+		return domain.ErrValidation
+	}
 	encrypted, err := base64.StdEncoding.Strict().DecodeString(event.Payload.RawTokenEncrypted)
 	if err != nil || len(encrypted) < 28 || event.OccurredAt.IsZero() {
 		return domain.ErrValidation

@@ -19,10 +19,15 @@ type PasswordResetIssue struct {
 	TokenHash         string
 	RawTokenEncrypted string
 }
+
+// PasswordTokenPayload is shared by both token events. Role is set only for
+// identity.admin_invited (the role assigned at creation) and is omitted from
+// identity.password_reset_requested.
 type PasswordTokenPayload struct {
 	AdminUserID       string `json:"admin_user_id"`
 	Email             string `json:"email"`
 	DisplayName       string `json:"display_name"`
+	Role              Role   `json:"role,omitempty"`
 	RawTokenEncrypted string `json:"raw_token_encrypted"`
 }
 
