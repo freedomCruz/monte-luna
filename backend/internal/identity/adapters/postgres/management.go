@@ -249,3 +249,16 @@ func (r *Repository) DeleteOldSecurityEvents(ctx context.Context, now time.Time,
 	}
 	return n, nil
 }
+
+// DeleteOldPasswordTokens removes one batch of reset/invitation tokens whose
+// consumption time, or expiry when unconsumed, is more than 7 days old.
+func (r *Repository) DeleteOldPasswordTokens(ctx context.Context, now time.Time, batch int32) (int64, error) {
+	if batch < 1 || batch > 10000 || now.IsZero() {
+		return 0, domain.ErrValidation
+	}
+	n, err := identitysql.New(r.pool).DeleteOldPasswordTokens(ctx, identitysql.DeleteOldPasswordTokensParams{ReferenceTime: pgtype.Timestamptz{Time: now, Valid: true}, BatchSize: batch})
+	if err != nil {
+		return 0, mapError(err)
+	}
+	return n, nil
+}

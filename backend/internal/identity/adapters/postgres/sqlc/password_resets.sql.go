@@ -33,6 +33,27 @@ func (q *Queries) CreatePasswordToken(ctx context.Context, arg CreatePasswordTok
 	return err
 }
 
+const deleteOldPasswordTokens = `-- name: DeleteOldPasswordTokens :execrows
+DELETE FROM identity.password_reset_tokens WHERE id IN (
+ SELECT id FROM identity.password_reset_tokens
+ WHERE coalesce(used_at,expires_at) < ($1::timestamptz - interval '7 days')
+ ORDER BY coalesce(used_at,expires_at),id LIMIT $2
+)
+`
+
+type DeleteOldPasswordTokensParams struct {
+	ReferenceTime pgtype.Timestamptz
+	BatchSize     int32
+}
+
+func (q *Queries) DeleteOldPasswordTokens(ctx context.Context, arg DeleteOldPasswordTokensParams) (int64, error) {
+	result, err := q.db.Exec(ctx, deleteOldPasswordTokens, arg.ReferenceTime, arg.BatchSize)
+	if err != nil {
+		return 0, err
+	}
+	return result.RowsAffected(), nil
+}
+
 const findPasswordToken = `-- name: FindPasswordToken :one
 SELECT id, admin_user_id, token_hash, expires_at, used_at, created_at FROM identity.password_reset_tokens WHERE token_hash=$1
 `
