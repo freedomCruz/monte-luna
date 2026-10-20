@@ -39,8 +39,9 @@ The initial handled events are the canonically approved `identity.password_reset
 | B2 | Implement embedded Spanish password-reset HTML/text templates, local capture sender, and secret-safe consumer using TDD → Gate G3 for exact copy | S1–S3 | backend worker | B1 | `69b89df`, `8fb5203` |
 | B3 | Implement Resend `net/http` sender, stable idempotency key, retries, and failure isolation using TDD | S1–S3 | backend worker | B2 | `af03879` |
 | B4 | Implement signed Resend webhook processing, deduplication, delivery states, bounce/complaint suppressions, and cleanup using TDD | S1–S3 | backend worker | B1, B3 | `62b823c`, `e39bfce` |
-| I1 | Wire migrations, consumer registration, configuration, routes, docs, and run all backend verification gates | S1–S3 | backend worker + coordinator-owned docs/root files | B4 | in progress |
-| V1 | Independently verify every spec and canonical notification invariant on the integrated feature branch | S1–S3 | verifier (read-only) | I1 | pending |
+| I1 | Wire migrations, sender selection (L18), conditional webhook route, hourly cleanup, and run all backend verification gates; no Identity consumer yet | S1–S3 | backend worker + coordinator-owned docs/root files | B4 | in progress |
+| I2 | Merge integrated `feat/identity-v1`, subscribe the consumer to Identity's outbox through Identity's public facade, and rerun all gates | S1–S3 | backend worker | I1, Identity I1 | pending |
+| V1 | Independently verify every spec and canonical notification invariant on the integrated feature branch | S1–S3 | verifier (read-only) | I2 | pending |
 
 Gates: G1 user approval of the OpenAPI contract; G2 applies only if a new dependency is proposed; G3 user approval of the exact Spanish subject, HTML copy, and text copy. Any later contract change creates a new task and gate.
 
@@ -70,4 +71,5 @@ Gates: G1 user approval of the OpenAPI contract; G2 applies only if a new depend
 - L15 (backend B3): Worker implemented standard-library Resend HTTP sender with stable idempotency key, outbox retry isolation, and redirect refusal in commit `af03879`. Independent verification passed. Task `task_e4d1a2b0878c` completed.
 - L16 (backend B4): Worker implemented atomic provider deduplication, monotonic delivery states, suppression records, and signed Svix webhook route with raw-body HMAC in commits `62b823c` and `e39bfce`. Independent verification passed. Task `task_140dbeb43f20` completed.
 - L17 (coordinator): Integrated worker branch `feat/notifications-v1-backend` into `feat/notifications-v1` via merge commit `ef8f95e`. Commencing I1 wiring and verification.
+- L18 (user, I1 decisions): Sender question answered "Aquí es porque de esta manera podemos probar en local de lo contrario necesitariamos los certificadods de dominio y del servidor de correo ¿cierto?" — coordinator confirmed the reasoning (no mail server or certificates are needed, but Resend requires a verified domain via DNS and a public HTTPS webhook URL) and applied the recommended option: in-memory capture by default; `NOTIFICATIONS_EMAIL_SENDER=resend` requires `RESEND_API_KEY`, `RESEND_FROM`, `RESEND_WEBHOOK_SECRET`; the webhook route mounts only with Resend. "Apilar sobre Identity (Recomendado)" — I1 wires the Identity-independent parts now; new task I2 merges integrated `feat/identity-v1` and wires the consumer; this PR is chained on Identity. Link routes are owned by Identity (`docs/domain/identity.md`). `.env.example` edits were blocked by the harness safety policy and await a user decision.
 
