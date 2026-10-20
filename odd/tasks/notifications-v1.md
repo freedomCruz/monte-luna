@@ -1,0 +1,52 @@
+# Feature: Notifications v1 (password reset email)
+
+Transactional email backend for the initial `identity.password_reset_requested` event; real production delivery remains blocked by domain/DNS and legal prerequisites.
+Rules: `AGENTS.md` section 5 and the `parallel-agents-orca` skill. Read this whole document through `## Log` before working.
+Canonical acceptance: `docs/domain/notifications.md`, `docs/domain/identity.md`, `docs/architecture/system-architecture.md`, `docs/architecture/data-modeling.md`, and `docs/architecture/api-conventions.md`.
+
+## Specs
+
+### S1: Parallel Notifications scope
+> "En este momento estoy desarrollando el sistema de diseño para el back office y el dashboard. Entonces, más bien lancemos solamente notificaciones, identidad, ¿vale? Con los agentes en paralelo, como te dije. Y primero muéstrame el plan y lo ejecutamos."
+
+The exact backend behavior and data model are the approved requirements in `docs/domain/notifications.md`; frontend files are outside this feature.
+
+### S2: Environment readiness
+> "listo empecemos. Las nuevas variable de entornos están seteadas."
+
+No worker may read, print, copy, log, or place real environment values in Git, task specifications, fixtures, or reports. Automated tests use fake local HTTP services and never call Resend.
+
+### S3: Initial integration boundary
+> "Entonces, más bien lancemos solamente notificaciones, identidad, ¿vale?"
+
+The initial handled event is the canonically approved `identity.password_reset_requested`; order, payment, shipment, and marketing emails are outside this feature.
+
+## Tasks
+
+| ID | Task | Specs | Route | Depends on | Commit |
+| --- | --- | --- | --- | --- | --- |
+| T1 | Create this feature document, Engram mirror, Orca Run, and isolated worktrees | S1–S3 | coordinator | — | pending |
+| C1 | Write `contracts/openapi/notifications.yaml` for the Resend webhook and document the canonical consumed-event boundary; no implementation → Gate G1 | S1, S3 | backend worker | T1 | pending |
+| A1 | Confirm standard-library implementation and audit any proposed dependency before installation → Gate G2 only if a dependency is needed | S2, S3 | coordinator | C1 | pending |
+| B1 | Implement notifications schema, repositories, idempotent event intake, suppression checks, and retention using TDD | S1–S3 | backend worker | C1, A1 | pending |
+| B2 | Implement embedded Spanish password-reset HTML/text templates, local capture sender, and secret-safe consumer using TDD → Gate G3 for exact copy | S1–S3 | backend worker | B1 | pending |
+| B3 | Implement Resend `net/http` sender, stable idempotency key, retries, and failure isolation using TDD | S1–S3 | backend worker | B2 | pending |
+| B4 | Implement signed Resend webhook processing, deduplication, delivery states, bounce/complaint suppressions, and cleanup using TDD | S1–S3 | backend worker | B1, B3 | pending |
+| I1 | Wire migrations, consumer registration, configuration, routes, docs, and run all backend verification gates | S1–S3 | backend worker + coordinator-owned docs/root files | B4 | pending |
+| V1 | Independently verify every spec and canonical notification invariant on the integrated feature branch | S1–S3 | verifier (read-only) | I1 | pending |
+
+Gates: G1 user approval of the OpenAPI contract; G2 applies only if a new dependency is proposed; G3 user approval of the exact Spanish subject, HTML copy, and text copy. Any later contract change creates a new task and gate.
+
+## Allowed edit surfaces
+
+- Backend worker: `contracts/openapi/notifications.yaml`, `contracts/openapi/common.yaml` only when strictly necessary, `backend/internal/notifications/**`, and explicitly assigned backend integration files.
+- Coordinator: `odd/tasks/notifications-v1.md`, canonical/project documentation, changelog, and root configuration files.
+- Verifier: read-only.
+- Forbidden in this feature: `frontend/**`, `backend/internal/identity/**`, real `.env` files, real network calls in tests, production DNS/deployment, push, PR creation, and merge to `main` without a later user decision.
+
+## Log
+
+- L1 (user): "En este momento estoy desarrollando el sistema de diseño para el back office y el dashboard. Entonces, más bien lancemos solamente notificaciones, identidad, ¿vale? Con los agentes en paralelo, como te dije. Y primero muéstrame el plan y lo ejecutamos."
+- L2 (user): "Continua"
+- L3 (coordinator plan accepted by next user message): Notifications v1 is backend-only and initially handles password reset; real production delivery is deferred; contracts and copy have explicit gates; independent verification is required for data, webhook, and failure-isolation risk.
+- L4 (user): "listo empecemos. Las nuevas variable de entornos están seteadas."
