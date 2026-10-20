@@ -13,8 +13,10 @@ The exact backend behavior and data model are the approved requirements in `docs
 
 ### S2: Authentication and authorization
 > "Cuando me hablas de identidad, estamos hablando de todo lo que tiene que ver con autorización y con autenticación o solo autenticación?"
+>
+> "Desactivar + restablecer 2FA (Recomendado)"
 
-Both authentication and the fixed `owner`/`staff` authorization model are in scope exactly as approved in `docs/domain/identity.md`.
+Both authentication and the fixed `owner`/`staff` authorization model are in scope exactly as approved in `docs/domain/identity.md`. V1 preserves administrator records: an `owner` disables accounts instead of permanently deleting them and can reset another administrator's 2FA, which invalidates that administrator's sessions and forces fresh enrollment.
 
 ### S3: Environment readiness
 > "listo empecemos. Las nuevas variable de entornos están seteadas."
@@ -51,3 +53,4 @@ Gates: G1 user approval of the OpenAPI contract; G2 user approval of dependency 
 - L3 (coordinator plan accepted by next user message): Identity v1 is backend-only in this wave; contracts precede implementation; dependency additions require a separate approval gate; independent verification is required for the security risk.
 - L4 (user): "listo empecemos. Las nuevas variable de entornos están seteadas."
 - L5 (coordinator): Orca Run `run_ee0898b006f5`; T1 `task_92e5c47b4085` completed; C1 `task_36c3db7673c6`. Coordinator worktree `identity-v1`; worker worktree `identity-v1-backend` on `feat/identity-v1-backend`. An earlier empty Run `run_015e47d215b3` was superseded before any Task was created because a coordinator terminal can be bound to only one Run.
+- L6 (user, C1 decision): "Desactivar + restablecer 2FA (Recomendado)" — no permanent deletion endpoint in v1; an `owner` can reset another administrator's 2FA, invalidating the target's sessions and requiring fresh TOTP enrollment. Emergency CLI remains available.

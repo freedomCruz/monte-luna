@@ -26,6 +26,7 @@ Canonical requirements and data model for the `identity` module. Conventions in 
   - `owner`: Full system access, including administrator management and fiscal configuration.
   - `staff`: Operational access restricted to catalog, inventory, and order management.
 - **Invariant:** At least one active `owner` must always exist in the system. The Go domain layer strictly enforces that the last active owner cannot be disabled, demoted, or deleted.
+- **Admin lifecycle (approved 2026-10-20):** The v1 admin API preserves administrator records for auditability and supports disabling rather than permanent deletion. An `owner` can reset another administrator's 2FA; the reset invalidates that administrator's active sessions and requires fresh TOTP enrollment. Bootstrap and emergency recovery remain available through the SSH CLI.
 
 **Storefront buyer authentication (v1)**
 - Guest checkout only in v1: no customer accounts or buyer credentials exist.
