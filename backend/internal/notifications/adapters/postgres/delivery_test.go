@@ -15,7 +15,7 @@ import (
 
 type localDecryptor struct{}
 
-func (localDecryptor) Decrypt(context.Context, string) (string, error) { return "FAKE_TOKEN", nil }
+func (localDecryptor) Decrypt(context.Context, string, string) (string, error) { return "FAKE_TOKEN", nil }
 
 type localLinks struct{}
 
