@@ -27,6 +27,7 @@ Canonical requirements and data model for the `identity` module. Conventions in 
   - `staff`: Operational access restricted to catalog, inventory, and order management.
 - **Invariant:** At least one active `owner` must always exist in the system. The Go domain layer strictly enforces that the last active owner cannot be disabled, demoted, or deleted.
 - **Admin lifecycle (approved 2026-10-20):** The v1 admin API preserves administrator records for auditability and supports disabling rather than permanent deletion. An `owner` can reset another administrator's 2FA; the reset invalidates that administrator's active sessions and requires fresh TOTP enrollment. Bootstrap and emergency recovery remain available through the SSH CLI.
+- **Administrator invitation (approved 2026-10-20):** An `owner` creates an administrator with display name, email, and role but never chooses or sees that person's password. In the same transaction, Identity stores an unknown random Argon2id password hash, creates a single-use 30-minute password token, and publishes `identity.admin_invited`. Notifications emails the one-time link. Completing it sets the password but creates no session and does not bypass mandatory TOTP enrollment. An expired invitation can be recovered through the ordinary password-reset flow.
 
 **Storefront buyer authentication (v1)**
 - Guest checkout only in v1: no customer accounts or buyer credentials exist.
@@ -157,7 +158,10 @@ Outbox table follows [data-modeling.md](../architecture/data-modeling.md) sectio
 
 - **`identity.password_reset_requested`**: Published upon valid password reset requests.
   - Payload attributes: `admin_user_id` (uuid), `email` (text), `display_name` (text), `raw_token_encrypted` (text).
-  - Security invariant: The raw reset token is encrypted with the application secret key before being written to the outbox payload. It is never stored in plaintext in the database or outbox. The `notifications` consumer decrypts the token in memory solely to construct the reset link and never persists the secret.
+- **`identity.admin_invited`**: Published atomically with owner-created administrator records so the recipient can establish the first password.
+  - Payload attributes: `admin_user_id` (uuid), `email` (text), `display_name` (text), `raw_token_encrypted` (text).
+  - The invitation uses the same single-use token storage and 30-minute validity as password recovery; consuming it sets the password but creates no authenticated session.
+- **Security invariant for both token events:** The raw token is encrypted with the application secret key before being written to the outbox payload. It is never stored in plaintext in the database or outbox. The `notifications` consumer decrypts the token in memory solely to construct the action link and never persists the secret.
 
 ## 4. Open Items
 
