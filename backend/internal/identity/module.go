@@ -153,12 +153,14 @@ func (m *Module) RunCLI(ctx context.Context, args []string, stdin io.Reader, std
 	return m.cli.Run(ctx, args, stdin, stdout, stderr)
 }
 
-// Cleanup removes one bounded batch of expired sessions and of security
-// events older than the 1-year retention.
+// Cleanup removes one bounded batch each of expired sessions, security events
+// older than the 1-year retention, and password tokens consumed or expired
+// more than 7 days ago.
 func (m *Module) Cleanup(ctx context.Context) error {
 	_, sessionErr := m.sessions.DeleteExpired(ctx, MaintenanceBatch)
 	_, eventErr := m.management.CleanupSecurityEvents(ctx, MaintenanceBatch)
-	return errors.Join(sessionErr, eventErr)
+	_, tokenErr := m.management.CleanupPasswordTokens(ctx, MaintenanceBatch)
+	return errors.Join(sessionErr, eventErr, tokenErr)
 }
 
 // RunJobs must be joined before Close; it never starts its own goroutines.

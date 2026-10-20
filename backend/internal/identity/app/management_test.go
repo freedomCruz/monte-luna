@@ -131,6 +131,9 @@ func (m *adminMemory) Audit(_ context.Context, e domain.SecurityEvent) error {
 	m.events = append(m.events, e)
 	return nil
 }
+func (m *adminMemory) DeleteOldPasswordTokens(context.Context, time.Time, int32) (int64, error) {
+	return 0, nil
+}
 func (m *adminMemory) DeleteOldSecurityEvents(context.Context, time.Time, int32) (int64, error) {
 	return 0, nil
 }

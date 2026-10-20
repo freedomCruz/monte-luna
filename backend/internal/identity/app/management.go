@@ -466,3 +466,12 @@ func (a *Management) ChangePassword(ctx context.Context, p domain.Session, curre
 	}
 	return rejected
 }
+
+// CleanupPasswordTokens deletes one bounded batch of tokens past their 7-day
+// retention after expiry or consumption. Live tokens are never touched.
+func (a *Management) CleanupPasswordTokens(ctx context.Context, batch int32) (int64, error) {
+	if batch < 1 || batch > 10000 {
+		return 0, domain.ErrValidation
+	}
+	return a.repo.DeleteOldPasswordTokens(ctx, a.config.Now(), batch)
+}

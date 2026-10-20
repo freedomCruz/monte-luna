@@ -81,6 +81,9 @@ type AdminTx interface {
 type AdminRepository interface {
 	Manage(context.Context, func(AdminTx) error) error
 	DeleteOldSecurityEvents(context.Context, time.Time, int32) (int64, error)
+	// DeleteOldPasswordTokens removes tokens consumed, or expired if never
+	// consumed, more than 7 days before the reference time.
+	DeleteOldPasswordTokens(context.Context, time.Time, int32) (int64, error)
 }
 
 // LengthPolicy counts Unicode code points and applies no composition rules.
