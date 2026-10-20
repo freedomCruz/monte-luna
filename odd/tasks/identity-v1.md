@@ -37,9 +37,9 @@ No worker may read, print, copy, log, or place real environment values in Git, t
 | G2 | Gate: user approves Identity Go dependencies (`gate_5dfbb967ea44`) | S2 | coordinator | A1 | `gate_5dfbb967ea44` (approved) |
 | B1 | Implement identity schema, repositories, password/encryption primitives, and last-owner invariants using TDD | S2, S3 | backend worker | C1, A1 | `1408718`, `00e8cbc` |
 | B2 | Implement PostgreSQL SCS sessions, login/logout, TOTP, recovery codes, lockout, rate limiting, and session invalidation using TDD | S2, S3 | backend worker | B1 | `350d676` |
-| B3 | Implement owner/staff authorization, admin management, security events, retention, and bootstrap/emergency CLI using TDD | S2, S3 | backend worker | B2 | pending |
-| B4 | Implement password reset tokens and atomic encrypted `identity.password_reset_requested` outbox publication using TDD | S2, S3 | backend worker | B2 | pending |
-| I1 | Wire configuration, migrations, routes, middleware, relay integration, docs, and run all backend verification gates | S1–S3 | backend worker + coordinator-owned docs/root files | B3, B4 | pending |
+| B3 | Implement owner/staff authorization, admin management, security events, retention, and bootstrap/emergency CLI using TDD | S2, S3 | backend worker | B2 | `6fab275`, `fb1ceda`, `92685ad`, `1aa9eb7` |
+| B4 | Implement password reset tokens and atomic encrypted `identity.password_reset_requested` outbox publication using TDD | S2, S3 | backend worker | B2 | `c46567c` |
+| I1 | Wire configuration, migrations, routes, middleware, relay integration, docs, and run all backend verification gates | S1–S3 | backend worker + coordinator-owned docs/root files | B3, B4 | in progress |
 | V1 | Independently verify every spec and canonical identity invariant on the integrated feature branch | S1–S3 | verifier (read-only) | I1 | pending |
 
 Gates: G1 user approval of the OpenAPI contract; G2 user approval of dependency audit and exact versions. Any later contract change creates a new task and gate.
@@ -67,4 +67,7 @@ Gates: G1 user approval of the OpenAPI contract; G2 user approval of dependency 
 - L12 (coordinator): User explicitly approved Identity Go dependencies (Gate G2). `gate_5dfbb967ea44` resolved as approved. Dependencies authorized for installation in `backend/go.mod`.
 - L13 (backend B1): Worker implemented identity schema, domain invariants, Argon2id/AES-GCM, sqlc queries, and safe administrator persistence in commits `1408718` and `00e8cbc`. Independent verification passed. Task `task_6baf52f669aa` completed.
 - L14 (backend B2): Approved dependencies pinned in `backend/go.mod` (commit `736c754`). Worker implemented SCS PostgreSQL sessions, authentication services, TOTP with replay prevention, single-use hashed recovery codes, lockout, rate limiting, and session invalidation in commit `350d676`. Independent verification passed. Task `task_cec1c6f5c111` completed.
+- L15 (backend B4): Worker implemented canonical 32-byte single-use 30-minute password reset tokens, shared `identity.password-token` AAD, atomic encrypted `identity.password_reset_requested` outbox events, and session-invalidation primitives in commit `c46567c`. Independent verification passed. Task `task_b58e0d8dde52` completed.
+- L16 (backend B3): Worker implemented live owner/staff authorization, atomic encrypted invitations reusing B4 token primitives, optimistic administrator management, fresh-MFA TOTP reset, audit logging with 1-year retention, and stdin-only emergency CLI in commits `6fab275`, `fb1ceda`, `92685ad`, and `1aa9eb7`. Independent verification passed. Task `task_b6d8a24c0f8d` completed.
+- L17 (coordinator): Integrated worker branch `feat/identity-v1-backend` into `feat/identity-v1` via merge commit `a6157e9`. Commencing I1 wiring and verification.
 
