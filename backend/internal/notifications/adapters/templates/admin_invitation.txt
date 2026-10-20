@@ -1,0 +1,10 @@
+Hola {{.DisplayName}},
+
+Has sido invitado como administrador con el rol de {{.Role}} en el panel de Monteluna.
+
+Completar mi registro
+{{.ActionURL}}
+
+Al definir tu contrasena, se te solicitara configurar tu autenticacion en dos pasos (TOTP).
+
+Este enlace vencera en 30 minutos.

@@ -1,0 +1,22 @@
+# Module-local generation while backend/sqlc.yaml remains coordinator-owned.
+version: "2"
+sql:
+  - engine: postgresql
+    schema:
+      - schema.sql
+      - migrations
+    queries: queries
+    gen:
+      go:
+        package: notificationssql
+        out: sqlc
+        sql_package: pgx/v5
+        emit_pointers_for_null_types: true
+        overrides:
+          - db_type: uuid
+            go_type: string
+          - db_type: uuid
+            nullable: true
+            go_type:
+              type: string
+              pointer: true
