@@ -178,3 +178,7 @@ func (m *Module) RunJobs(ctx context.Context, interval time.Duration) {
 }
 
 func (m *Module) Close() { m.pool.Close() }
+
+// CLIUsage documents the SSH administration commands; printing it needs no
+// configuration or database.
+const CLIUsage = cli.Usage
