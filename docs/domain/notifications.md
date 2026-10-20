@@ -24,7 +24,7 @@ Canonical requirements and data model for the `notifications` module. Convention
 
 **Module and consumer architecture**
 - Resides in `internal/notifications`, with dedicated database schema `notifications`.
-- Consumes domain events emitted to PostgreSQL transactional outbox tables by other modules (`identity.password_reset_requested` initially; order confirmations, shipment notices, and payment receipts in subsequent iterations).
+- Consumes domain events emitted to PostgreSQL transactional outbox tables by other modules (`identity.password_reset_requested` and `identity.admin_invited` initially; order confirmations, shipment notices, and payment receipts in subsequent iterations).
 - Operates as an idempotent consumer tracking handled messages in `notifications.processed_events`.
 
 **Provider and integration strategy**
@@ -54,6 +54,7 @@ Canonical requirements and data model for the `notifications` module. Convention
 - Standard library `html/template` combined with a mandatory plain-text alternative.
 - Templates are embedded into the Go application binary via `embed`, eliminating external template dependencies.
 - Customer-facing emails are written in Spanish. Template identifiers, code, and comments stay in English. Copy and tone are defined with each template.
+- Identity v1 includes two distinct templates: password recovery and administrator invitation. Both decrypt the event token only in memory to build a single-use link and never persist the plaintext token or complete link.
 
 ## 3. Approved Data Model (schema `notifications`)
 

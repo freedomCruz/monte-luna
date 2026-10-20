@@ -20,16 +20,19 @@ No worker may read, print, copy, log, or place real environment values in Git, t
 > "Entonces, más bien lancemos solamente notificaciones, identidad, ¿vale?"
 >
 > "Aprobar las tres reglas (Recomendado)"
+>
+> "Invitación por correo (Recomendado)"
 
-The initial handled event is the canonically approved `identity.password_reset_requested`; order, payment, shipment, and marketing emails are outside this feature. A signed unknown Resend event returns 200 without effects; a supported event for an unknown provider email ID returns 503 without deduplication so it can retry; signature timestamps have a ±5-minute tolerance.
+The initial handled events are the canonically approved `identity.password_reset_requested` and `identity.admin_invited`; order, payment, shipment, and marketing emails are outside this feature. A signed unknown Resend event returns 200 without effects; a supported event for an unknown provider email ID returns 503 without deduplication so it can retry; signature timestamps have a ±5-minute tolerance.
 
 ## Tasks
 
 | ID | Task | Specs | Route | Depends on | Commit |
 | --- | --- | --- | --- | --- | --- |
 | T1 | Create this feature document, Engram mirror, Orca Run, and isolated worktrees (done) | S1–S3 | coordinator | — | `fabdea1` |
-| C1 | Write `contracts/openapi/notifications.yaml` for the Resend webhook and document the canonical consumed-event boundary; no implementation → Gate G1 (draft complete; approval pending) | S1, S3 | backend worker | T1 | `ed9f322` |
-| A1 | Confirm standard-library implementation and audit any proposed dependency before installation → Gate G2 only if a dependency is needed | S2, S3 | coordinator | C1 | pending |
+| C1 | Write `contracts/openapi/notifications.yaml` for the Resend webhook and canonical consumed-event boundary (draft complete; superseded by C2 onboarding decision) | S1, S3 | backend worker | T1 | `ed9f322` |
+| C2 | Contract change: add `identity.admin_invited` and its secret-safe invitation-template boundary → Gate G1 | S1, S3 | backend worker | C1 | pending |
+| A1 | Confirm standard-library implementation and audit any proposed dependency before installation → Gate G2 only if a dependency is needed | S2, S3 | coordinator | C2 | pending |
 | B1 | Implement notifications schema, repositories, idempotent event intake, suppression checks, and retention using TDD | S1–S3 | backend worker | C1, A1 | pending |
 | B2 | Implement embedded Spanish password-reset HTML/text templates, local capture sender, and secret-safe consumer using TDD → Gate G3 for exact copy | S1–S3 | backend worker | B1 | pending |
 | B3 | Implement Resend `net/http` sender, stable idempotency key, retries, and failure isolation using TDD | S1–S3 | backend worker | B2 | pending |
@@ -54,4 +57,5 @@ Gates: G1 user approval of the OpenAPI contract; G2 applies only if a new depend
 - L4 (user): "listo empecemos. Las nuevas variable de entornos están seteadas."
 - L5 (coordinator): Orca Run `run_fc90ff0e7fad`; T1 `task_197acecd8888` completed; C1 `task_a34bba5de2c0`. Coordinator worktree `notifications-v1`; worker worktree `notifications-v1-backend` on `feat/notifications-v1-backend`.
 - L6 (user, C1 decision): "Aprobar las tres reglas (Recomendado)" — signed unknown event types return 200 without effects; supported events for an unmatched provider email ID return 503 without a deduplication commit; signature timestamps accept a ±5-minute tolerance.
-- L7 (backend C1): worker commit `ed9f322` adds only `contracts/openapi/notifications.yaml` (316 lines). Worker and coordinator checks: contract test `go test -mod=readonly ./internal/contracttest -count=1` passed, `git diff --check` passed, worktree clean. Coordinator compared the signature algorithm and delivered/bounced/complained payload fields with the official Resend and Svix documentation; no discrepancy found. Orca Gate G1 is `gate_f053a7426453`; approval pending.
+- L7 (backend C1): worker commit `ed9f322` adds only `contracts/openapi/notifications.yaml` (316 lines). Worker and coordinator checks: contract test `go test -mod=readonly ./internal/contracttest -count=1` passed, `git diff --check` passed, worktree clean. Coordinator compared the signature algorithm and delivered/bounced/complained payload fields with the official Resend and Svix documentation; no discrepancy found. Original Orca Gate G1 `gate_f053a7426453` is superseded by C2.
+- L8 (user, onboarding decision): "Invitación por correo (Recomendado)" — Notifications also consumes `identity.admin_invited` and renders a distinct Spanish invitation email; decrypted token/link remains memory-only. C2 reopens the contract before Gate G1.
