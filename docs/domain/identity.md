@@ -168,7 +168,7 @@ Outbox table follows [data-modeling.md](../architecture/data-modeling.md) sectio
 - **`identity.password_reset_requested`**: Published upon valid password reset requests.
   - Payload attributes: `admin_user_id` (uuid), `email` (text), `display_name` (text), `raw_token_encrypted` (text).
 - **`identity.admin_invited`**: Published atomically with owner-created administrator records so the recipient can establish the first password.
-  - Payload attributes: `admin_user_id` (uuid), `email` (text), `display_name` (text), `raw_token_encrypted` (text).
+  - Payload attributes: `admin_user_id` (uuid), `email` (text), `display_name` (text), `role` (`owner` | `staff`, the role assigned at creation; approved 2026-10-20 so the invitation email can name it), `raw_token_encrypted` (text).
   - The invitation uses the same single-use token storage and 30-minute validity as password recovery; consuming it sets the password but creates no authenticated session.
 - **Security invariant for both token events:** The raw token is encrypted with the application secret key before being written to the outbox payload. It is never stored in plaintext in the database or outbox. The `notifications` consumer decrypts the token in memory solely to construct the action link and never persists the secret.
 
