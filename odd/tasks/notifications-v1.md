@@ -35,7 +35,7 @@ The initial handled events are the canonically approved `identity.password_reset
 | C3 | Contract correction: permit process-memory-only local capture while prohibiting durable secret persistence → Gate G1 | S1, S3 | backend worker | C2 | `80a402f` |
 | G1 | Gate: user approves Notifications OpenAPI contract (`80a402f`) | S1, S3 | coordinator | C3 | `gate_beae6e32aa44` (approved) |
 | A1 | Confirm standard-library implementation and audit any proposed dependency before installation → Gate G2 only if a dependency is needed | S2, S3 | coordinator | G1 | completed |
-| B1 | Implement notifications schema, repositories, idempotent event intake, suppression checks, and retention using TDD | S1–S3 | backend worker | C1, A1 | pending |
+| B1 | Implement notifications schema, repositories, idempotent event intake, suppression checks, and retention using TDD | S1–S3 | backend worker | C1, A1 | `490b444`, `79a7713` |
 | B2 | Implement embedded Spanish password-reset HTML/text templates, local capture sender, and secret-safe consumer using TDD → Gate G3 for exact copy | S1–S3 | backend worker | B1 | pending |
 | B3 | Implement Resend `net/http` sender, stable idempotency key, retries, and failure isolation using TDD | S1–S3 | backend worker | B2 | pending |
 | B4 | Implement signed Resend webhook processing, deduplication, delivery states, bounce/complaint suppressions, and cleanup using TDD | S1–S3 | backend worker | B1, B3 | pending |
@@ -65,3 +65,5 @@ Gates: G1 user approval of the OpenAPI contract; G2 applies only if a new depend
 - L10 (coordinator review): C2 commit `63c879d` passed the worker and coordinator contract tests and diff checks, but its prohibition on retaining links in local captures contradicted L8's approved local email-capture behavior. C3 must clarify that local capture is process-memory-only and restart-cleared while PostgreSQL, file, and log persistence remain prohibited.
 - L11 (backend C3): worker commit `80a402f` clarifies process-memory capture only, with restart clearing and durable persistence prohibited (+5/-3 lines in `contracts/openapi/notifications.yaml`). Worker and coordinator contract tests passed; diff check passed; worktree clean. Gate G1 created in Orca as `gate_beae6e32aa44` blocking `task_5e211e8fb776` (A1 dependency review).
 - L12 (coordinator): User explicitly approved OpenAPI contracts (Gate G1). `gate_beae6e32aa44` resolved as approved. A1 completed confirming Notifications v1 uses exclusively Go standard library (`net/http`, `crypto/hmac`, `crypto/sha256`, `html/template`, `text/template`, `sync`) with zero new external dependencies; no Gate G2 required for Notifications.
+- L13 (backend B1): Worker implemented canonical 4-table persistence in commits `490b444` and `79a7713`. Integration and schema tests passed against PostgreSQL 18 Testcontainers with adapter coverage 72% and domain coverage 90%. Independent verification passed. Task `task_83f3e41e82cd` completed.
+
