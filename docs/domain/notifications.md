@@ -47,6 +47,7 @@ Canonical requirements and data model for the `notifications` module. Convention
 - Inbound HTTP endpoint under `/api` (exact path finalized at implementation) receives Resend delivery webhooks.
 - Signatures verified via Resend webhook signing secret using Go standard library crypto (https://resend.com/docs/webhooks/verify-webhooks-requests).
 - Webhook events are deduplicated via `notifications.provider_webhook_events` by `(provider, external_event_id)`.
+- **Webhook edge behavior (approved 2026-10-20):** A correctly signed but unsupported event type returns HTTP 200 without effects, so future provider event types do not cause retries. A supported event whose provider email ID is not yet present returns HTTP 503 and is not recorded in the deduplication ledger, allowing recovery from the send/webhook race on retry. Signature timestamps are accepted only within five minutes before or after server time to reject replayed or implausibly future requests.
 - Permanent delivery failures (`email.bounced` with hard bounce) and spam complaints (`email.complained`) automatically record the recipient in `notifications.email_suppressions`. Successful deliveries (`email.delivered`) update `email_messages.status` to `'delivered'`.
 
 **Templates**

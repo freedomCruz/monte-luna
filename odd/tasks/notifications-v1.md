@@ -16,10 +16,12 @@ The exact backend behavior and data model are the approved requirements in `docs
 
 No worker may read, print, copy, log, or place real environment values in Git, task specifications, fixtures, or reports. Automated tests use fake local HTTP services and never call Resend.
 
-### S3: Initial integration boundary
+### S3: Initial integration boundary and webhook resilience
 > "Entonces, más bien lancemos solamente notificaciones, identidad, ¿vale?"
+>
+> "Aprobar las tres reglas (Recomendado)"
 
-The initial handled event is the canonically approved `identity.password_reset_requested`; order, payment, shipment, and marketing emails are outside this feature.
+The initial handled event is the canonically approved `identity.password_reset_requested`; order, payment, shipment, and marketing emails are outside this feature. A signed unknown Resend event returns 200 without effects; a supported event for an unknown provider email ID returns 503 without deduplication so it can retry; signature timestamps have a ±5-minute tolerance.
 
 ## Tasks
 
@@ -51,3 +53,4 @@ Gates: G1 user approval of the OpenAPI contract; G2 applies only if a new depend
 - L3 (coordinator plan accepted by next user message): Notifications v1 is backend-only and initially handles password reset; real production delivery is deferred; contracts and copy have explicit gates; independent verification is required for data, webhook, and failure-isolation risk.
 - L4 (user): "listo empecemos. Las nuevas variable de entornos están seteadas."
 - L5 (coordinator): Orca Run `run_fc90ff0e7fad`; T1 `task_197acecd8888` completed; C1 `task_a34bba5de2c0`. Coordinator worktree `notifications-v1`; worker worktree `notifications-v1-backend` on `feat/notifications-v1-backend`.
+- L6 (user, C1 decision): "Aprobar las tres reglas (Recomendado)" — signed unknown event types return 200 without effects; supported events for an unmatched provider email ID return 503 without a deduplication commit; signature timestamps accept a ±5-minute tolerance.
