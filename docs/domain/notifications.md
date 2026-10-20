@@ -54,7 +54,8 @@ Canonical requirements and data model for the `notifications` module. Convention
 - Standard library `html/template` combined with a mandatory plain-text alternative.
 - Templates are embedded into the Go application binary via `embed`, eliminating external template dependencies.
 - Customer-facing emails are written in Spanish. Template identifiers, code, and comments stay in English. Copy and tone are defined with each template.
-- Identity v1 includes two distinct templates: password recovery and administrator invitation. Both decrypt the event token only in memory to build a single-use link and never persist the plaintext token or complete link.
+- Identity v1 includes two distinct templates: password recovery and administrator invitation. Both decrypt the event token only in memory to build a single-use link and never persist the plaintext token or complete link durably.
+- The local capture adapter may retain a rendered message, including its one-time link, only in process memory for local inspection and tests. It never writes that content to PostgreSQL, files, or logs, and restart clears it.
 
 ## 3. Approved Data Model (schema `notifications`)
 
