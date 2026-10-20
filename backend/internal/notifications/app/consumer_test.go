@@ -58,9 +58,9 @@ type decryptor struct {
 	err   error
 }
 
-func (d *decryptor) Decrypt(_ context.Context, value string) (string, error) {
+func (d *decryptor) Decrypt(_ context.Context, adminUserID, value string) (string, error) {
 	d.calls++
-	if value != "FAKE_CIPHERTEXT" {
+	if adminUserID == "" || value != "FAKE_CIPHERTEXT" {
 		return "", errors.New("unexpected ciphertext")
 	}
 	return fakeToken, d.err
@@ -123,12 +123,39 @@ func TestConsumerKeepsSecretsInMemoryAndDeduplicates(t *testing.T) {
 					t.Fatalf("secret persisted: %s", secret)
 				}
 			}
-			if kind == "identity.admin_invited" && (!strings.Contains(email.Text, "rol de staff") || s.input.TemplateKey != "admin_invitation") {
+			if kind == "identity.admin_invited" && (!strings.Contains(email.Text, "rol de equipo") || s.input.TemplateKey != "admin_invitation") {
 				t.Fatal("invitation template/role missing")
 			}
 		})
 	}
 }
+func TestConsumerAdminInvitedOwnerRendersPropietario(t *testing.T) {
+	s := &store{}
+	d := &decryptor{}
+	l := &links{}
+	capture := adapters.NewCaptureSender()
+	renderer, err := adapters.NewTemplateRenderer()
+	if err != nil {
+		t.Fatal(err)
+	}
+	consumer := app.NewConsumer(s, renderer, capture, d, l, func() time.Time { return fixedNow })
+	ownerEv := domain.Event{
+		ID:   "019a0000-0000-7000-8000-000000000001",
+		Type: "identity.admin_invited",
+		Payload: []byte(`{"admin_user_id":"019a0000-0000-7000-8000-000000000002","email":"owner@example.test","display_name":"Owner","raw_token_encrypted":"FAKE_CIPHERTEXT","role":"owner"}`),
+	}
+	if err := consumer.Handle(t.Context(), ownerEv); err != nil {
+		t.Fatal(err)
+	}
+	if s.sent != 1 || len(capture.Messages()) != 1 {
+		t.Fatalf("sent=%d messages=%d", s.sent, len(capture.Messages()))
+	}
+	email := capture.Messages()[0]
+	if !strings.Contains(email.HTML, "rol de propietario") || !strings.Contains(email.Text, "rol de propietario") {
+		t.Fatalf("expected 'rol de propietario' in HTML and text, got text=%q", email.Text)
+	}
+}
+
 func TestSuppressedConsumerSkipsDecryptionAndDispatch(t *testing.T) {
 	s := &store{suppressed: true}
 	d := &decryptor{}
@@ -154,7 +181,10 @@ func TestConsumerRejectsInvalidInputWithoutEffects(t *testing.T) {
 		{"unsupported", event("orders.order_paid")},
 		{"malformed", domain.Event{ID: event("").ID, Type: "identity.password_reset_requested", Payload: []byte("{")}},
 		{"missing ciphertext", domain.Event{ID: event("").ID, Type: "identity.password_reset_requested", Payload: []byte(`{"email":"admin@example.test"}`)}},
-		{"invalid role", domain.Event{ID: event("").ID, Type: "identity.admin_invited", Payload: []byte(`{"admin_user_id":"019a0000-0000-7000-8000-000000000002","email":"admin@example.test","raw_token_encrypted":"FAKE_CIPHERTEXT","role":"other"}`)}},
+		{"missing role", domain.Event{ID: event("").ID, Type: "identity.admin_invited", Payload: []byte(`{"admin_user_id":"019a0000-0000-7000-8000-000000000002","email":"admin@example.test","raw_token_encrypted":"FAKE_CIPHERTEXT"}`)}},
+		{"empty role", domain.Event{ID: event("").ID, Type: "identity.admin_invited", Payload: []byte(`{"admin_user_id":"019a0000-0000-7000-8000-000000000002","email":"admin@example.test","raw_token_encrypted":"FAKE_CIPHERTEXT","role":""}`)}},
+		{"unknown role", domain.Event{ID: event("").ID, Type: "identity.admin_invited", Payload: []byte(`{"admin_user_id":"019a0000-0000-7000-8000-000000000002","email":"admin@example.test","raw_token_encrypted":"FAKE_CIPHERTEXT","role":"other"}`)}},
+		{"spanish role in payload", domain.Event{ID: event("").ID, Type: "identity.admin_invited", Payload: []byte(`{"admin_user_id":"019a0000-0000-7000-8000-000000000002","email":"admin@example.test","raw_token_encrypted":"FAKE_CIPHERTEXT","role":"equipo"}`)}},
 	} {
 		t.Run(tt.name, func(t *testing.T) {
 			s := &store{}

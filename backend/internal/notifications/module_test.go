@@ -125,7 +125,7 @@ func TestRunJobsRejectsNonPositiveInterval(t *testing.T) {
 
 type fakeDecryptor struct{}
 
-func (fakeDecryptor) Decrypt(context.Context, string) (string, error) { return "token", nil }
+func (fakeDecryptor) Decrypt(context.Context, string, string) (string, error) { return "token", nil }
 
 type fakeLinks struct{}
 

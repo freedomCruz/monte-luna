@@ -17,6 +17,21 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 )
 
+// EmailSender delivers an email to an upstream provider or test capture.
+type EmailSender = domain.EmailSender
+
+// NewCaptureSender returns a process-local in-memory capture sender for tests and development.
+func NewCaptureSender() domain.EmailSender {
+	return adapters.NewCaptureSender()
+}
+
+// CapturedMessages returns the captured emails if sender is a capture sender.
+func CapturedMessages(sender domain.EmailSender) []Email {
+	if c, ok := sender.(interface{ Messages() []domain.Email }); ok {
+		return c.Messages()
+	}
+	return nil
+}
 // TokenDecryptor and LinkBuilder are implemented by the composition root on top
 // of Identity's public facade; Notifications never guesses token URLs.
 type TokenDecryptor = domain.TokenDecryptor
@@ -25,7 +40,8 @@ type Email = domain.Email
 
 // Options overrides runtime collaborators; the zero value uses the wall clock.
 type Options struct {
-	Clock func() time.Time
+	Clock  func() time.Time
+	Sender domain.EmailSender
 }
 
 // cleanupBatchSize bounds each retention policy per scheduled run.
@@ -87,6 +103,10 @@ func build(pool *pgxpool.Pool, cfg Config, logger *slog.Logger, options Options)
 	}
 	repository := postgres.NewRepository(pool)
 	module := &Module{pool: pool, repository: repository, renderer: renderer, cleanup: repository.Cleanup, now: now, logger: logger}
+	if options.Sender != nil {
+		module.sender = options.Sender
+		return module, nil
+	}
 	switch cfg.Sender {
 	case SenderResend:
 		sender, err := adapters.NewResendSender(cfg.ResendAPIKey, cfg.ResendFrom, &http.Client{Timeout: cfg.HTTPTimeout})

@@ -86,8 +86,22 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	decryptor, err := newIdentityTokenDecryptor(admins.Links())
+	if err != nil {
+		return err
+	}
+	linkBuilder, err := newIdentityLinkBuilder(admins.Links())
+	if err != nil {
+		return err
+	}
+	notifyConsumer, err := notify.Consumer(decryptor, linkBuilder)
+	if err != nil {
+		return err
+	}
 	relay.Subscribe("payments.payment_approved", checkout.HandlePaymentApproved)
 	relay.Subscribe("orders.order_cancelled", payment.HandleOrderCancelled)
+	relay.Subscribe("identity.password_reset_requested", notifyConsumer)
+	relay.Subscribe("identity.admin_invited", notifyConsumer)
 	relayCtx, cancelRelay := context.WithCancel(ctx)
 	relayDone := make(chan struct{})
 	go func() { defer close(relayDone); relay.Run(relayCtx) }()

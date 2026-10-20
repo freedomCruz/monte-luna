@@ -16,14 +16,15 @@ func TestApprovedEmbeddedTemplates(t *testing.T) {
 		t.Fatal(err)
 	}
 	for _, tt := range []struct {
-		key, subject string
-		copy         []string
+		key, subject, role string
+		copy               []string
 	}{
-		{"password_reset", "Restablece tu contraseña de administrador de Monteluna", []string{"Recibimos una solicitud para restablecer la contraseña de tu cuenta de administrador en Monteluna.", "Restablecer mi contrasena", "Este enlace es de un solo uso y vencera en 30 minutos.", "Si tu no solicitaste este cambio, puedes ignorar este correo; tu contrasena actual continuara siendo segura."}},
-		{"admin_invitation", "Invitacion para administrar Monteluna", []string{"Has sido invitado como administrador con el rol de staff en el panel de Monteluna.", "Completar mi registro", "Al definir tu contrasena, se te solicitara configurar tu autenticacion en dos pasos (TOTP).", "Este enlace vencera en 30 minutos."}},
+		{"password_reset", "Restablece tu contraseña de administrador de Monteluna", "", []string{"Recibimos una solicitud para restablecer la contraseña de tu cuenta de administrador en Monteluna.", "Restablecer mi contrasena", "Este enlace es de un solo uso y vencera en 30 minutos.", "Si tu no solicitaste este cambio, puedes ignorar este correo; tu contrasena actual continuara siendo segura."}},
+		{"admin_invitation", "Invitacion para administrar Monteluna", "staff", []string{"Has sido invitado como administrador con el rol de equipo en el panel de Monteluna.", "Completar mi registro", "Al definir tu contrasena, se te solicitara configurar tu autenticacion en dos pasos (TOTP).", "Este enlace vencera en 30 minutos."}},
+		{"admin_invitation", "Invitacion para administrar Monteluna", "owner", []string{"Has sido invitado como administrador con el rol de propietario en el panel de Monteluna.", "Completar mi registro", "Al definir tu contrasena, se te solicitara configurar tu autenticacion en dos pasos (TOTP).", "Este enlace vencera en 30 minutos."}},
 	} {
-		t.Run(tt.key, func(t *testing.T) {
-			email, err := renderer.Render(context.Background(), tt.key, domain.TemplateView{DisplayName: "<script>alert(1)</script>", Role: "staff", ActionURL: "https://example.test/action?token=FAKE_TOKEN"})
+		t.Run(tt.key+"_"+tt.role, func(t *testing.T) {
+			email, err := renderer.Render(context.Background(), tt.key, domain.TemplateView{DisplayName: "<script>alert(1)</script>", Role: tt.role, ActionURL: "https://example.test/action?token=FAKE_TOKEN"})
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -42,6 +43,11 @@ func TestApprovedEmbeddedTemplates(t *testing.T) {
 				t.Fatal("missing one-time link")
 			}
 		})
+	}
+	for _, invalidRole := range []string{"", "superadmin", "admin", "equipo", "propietario", "guest"} {
+		if _, err := renderer.Render(t.Context(), "admin_invitation", domain.TemplateView{Role: invalidRole, ActionURL: "https://example.test/action"}); err == nil {
+			t.Fatalf("accepted invalid role %q", invalidRole)
+		}
 	}
 	for _, url := range []string{"javascript:alert(1)", "data:text/html,secret", "/relative", "https://user:secret@example.test/action"} {
 		if _, err := renderer.Render(t.Context(), "password_reset", domain.TemplateView{ActionURL: url}); err == nil {
