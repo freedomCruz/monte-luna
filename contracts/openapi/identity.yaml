@@ -52,8 +52,8 @@ info:
     - totp_already_enrolled (409): enrollment cannot replace confirmed 2FA.
     - version_conflict (412): missing or stale If-Match; no target changes.
     - validation_failed (422): invalid or unknown request fields.
-    - invalid_reset_token (422): invalid, expired, superseded, or consumed token;
-      never reveal which condition occurred or whether the account exists.
+    - invalid_reset_token (422): invalid, expired, superseded, or consumed reset
+      or invitation token; never reveal the condition or account existence.
     - rate_limited (429): per-account or per-IP limit, including persisted
       temporary account lockout; Retry-After is always supplied.
     - internal_error (500): unexpected failure; no internal details or secrets.
@@ -273,7 +273,9 @@ paths:
       description: |
         Always return the same 200 body for syntactically valid requests,
         whether the email exists, is disabled, or cannot receive a reset.
-        For an eligible account invalidate prior unused tokens and create a
+        For an eligible account, including an administrator whose invitation
+        expired before the first password was set, invalidate prior unused
+        tokens (including invitation tokens) and create a
         cryptographically random token of at least 32 bytes, hashed with SHA-256,
         valid 30 minutes. Commit it with identity.password_reset_requested in
         the transactional outbox. Only raw_token_encrypted, never plaintext,
@@ -311,9 +313,14 @@ paths:
     post:
       operationId: completeAdminPasswordReset
       tags: [identity-auth]
-      summary: Consume an emailed reset token and change the password
+      summary: Consume an emailed reset or invitation token to set the password
       security: []
       description: |
+        Shared completion action for password recovery and administrator
+        invitations. The invitation email directs its recipient to set the
+        first password using this same token/body contract, not an owner-chosen
+        password. Both token flows use identity.password_reset_tokens; no
+        separate invitation completion endpoint or session is needed.
         Token is supplied only in the JSON body, never an API path/query.
         Atomically verify the SHA-256 hash and 30-minute validity, consume once,
         replace the Argon2id password hash, set password_changed_at, increment
@@ -453,13 +460,28 @@ paths:
     post:
       operationId: createAdminUser
       tags: [identity-admin]
-      summary: Create an active administrator with mandatory enrollment (owner only)
+      summary: Create an administrator and enqueue an emailed invitation (owner only)
       description: |
-        Owner supplies the initial password and fixed role; normalize email to
-        lowercase and enforce uniqueness. Store Argon2id hash, never plaintext.
-        Record user_created. No full session or TOTP bypass is granted to the
-        new user; first password login requires enrollment. No invitation/email
-        delivery is implied. Initial owner bootstrap remains SSH CLI only.
+        Owner supplies only display_name, email, and the fixed role; normalize
+        email to lowercase and enforce uniqueness. A password field is rejected
+        as an unknown field with 422 validation_failed. The owner never chooses
+        or sees the recipient's password. In one transaction create the active
+        administrator with an Argon2id hash of an unknown cryptographically
+        random password, create a single-use 30-minute token (at least 32 random
+        bytes, stored only as a SHA-256 hash in identity.password_reset_tokens),
+        record user_created, and publish identity.admin_invited to the outbox.
+        All changes commit together or none do. Encrypt the raw token with the
+        application key before placing raw_token_encrypted in the event payload
+        alongside admin_user_id, email, and display_name. Never return or log
+        the random password, its hash, token, or encrypted event payload.
+        Notifications sends a distinct invitation email asynchronously; 201
+        confirms creation and enqueueing, not email delivery. The recipient
+        completes POST /api/v1/admin/password-resets/complete to set the first
+        password. Completion creates no session and never bypasses mandatory
+        TOTP: first password login still requires enrollment. An expired
+        invitation is recovered through POST /api/v1/admin/password-resets;
+        the new reset token supersedes the invitation. Initial owner bootstrap
+        remains SSH CLI only.
       requestBody:
         required: true
         content:
@@ -468,7 +490,7 @@ paths:
               $ref: '#/components/schemas/CreateAdminUserRequest'
       responses:
         '201':
-          description: Administrator created, without confirmed TOTP credentials.
+          description: Administrator created and invitation atomically queued; no password or token returned and no confirmed TOTP credentials.
           headers:
             Cache-Control:
               $ref: '#/components/headers/NoStore'
@@ -779,7 +801,7 @@ components:
           type: string
           minLength: 1
           writeOnly: true
-          description: Opaque emailed random token (at least 32 random bytes before encoding); never log or persist plaintext.
+          description: Opaque emailed reset or invitation token (at least 32 random bytes before encoding); never log or persist plaintext.
         new_password:
           $ref: '#/components/schemas/Password'
     ResetAcknowledgement:
@@ -851,7 +873,7 @@ components:
     CreateAdminUserRequest:
       type: object
       additionalProperties: false
-      required: [email, display_name, role, password]
+      required: [email, display_name, role]
       properties:
         email:
           $ref: '#/components/schemas/Email'
@@ -860,8 +882,6 @@ components:
           minLength: 1
         role:
           $ref: '#/components/schemas/AdminRole'
-        password:
-          $ref: '#/components/schemas/Password'
     UpdateAdminUserRequest:
       type: object
       additionalProperties: false
