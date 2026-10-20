@@ -158,7 +158,7 @@ func TestAdministratorManagement(t *testing.T) {
 		if _, err := repo.PasswordResetAccount(ctx, hash, now.Add(domain.PasswordResetLifetime)); !errors.Is(err, domain.ErrInvalidResetToken) {
 			t.Fatal("invitation expiry boundary bypassed")
 		}
-		resets, err := app.NewPasswordResets(repo, hasher, cipher, generator, managementLimiter{}, clock)
+		resets, err := app.NewPasswordResets(repo, hasher, cipher, generator, managementLimiter{}, clock, func(string) error { return nil })
 		if err != nil {
 			t.Fatal(err)
 		}

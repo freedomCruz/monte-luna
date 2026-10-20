@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/freedomCruz/monte-luna/backend/internal/catalog"
+	"github.com/freedomCruz/monte-luna/backend/internal/identity"
 	"github.com/freedomCruz/monte-luna/backend/internal/invoicing"
 	"github.com/freedomCruz/monte-luna/backend/internal/orders"
 	"github.com/freedomCruz/monte-luna/backend/internal/payments"
@@ -64,12 +65,17 @@ func run(logger *slog.Logger) error {
 	}
 	defer payment.Close()
 	checkout.EnablePayments(orderPayments{module: payment})
+	admins, err := identity.New(ctx, cfg.databaseURL, cfg.identity, logger, identity.Options{})
+	if err != nil {
+		return err
+	}
+	defer admins.Close()
 	relayPool, err := pgxpool.New(ctx, cfg.databaseURL)
 	if err != nil {
 		return errors.New("initialize outbox connection pool")
 	}
 	defer relayPool.Close()
-	relay, err := platform.NewRelay(relayPool, []string{"catalog", "orders", "payments"}, cfg.relay, logger)
+	relay, err := platform.NewRelay(relayPool, outboxSchemas, cfg.relay, logger)
 	if err != nil {
 		return err
 	}
@@ -87,12 +93,17 @@ func run(logger *slog.Logger) error {
 	jobsDone := make(chan struct{})
 	go func() { defer close(jobsDone); checkout.RunJobs(jobsCtx, cfg.maintenanceInterval) }()
 	defer func() { cancelJobs(); <-jobsDone }()
+	identityJobsCtx, cancelIdentityJobs := context.WithCancel(ctx)
+	identityJobsDone := make(chan struct{})
+	go func() { defer close(identityJobsDone); admins.RunJobs(identityJobsCtx, cfg.relay.CleanupInterval) }()
+	defer func() { cancelIdentityJobs(); <-identityJobsDone }()
 
 	mux := http.NewServeMux()
 	platform.RegisterRoutes(mux)
 	module.RegisterRoutes(mux)
 	checkout.RegisterRoutes(mux)
 	payment.RegisterRoutes(mux)
+	admins.RegisterRoutes(mux)
 
 	srv := &http.Server{
 		Addr:              addr,
@@ -127,12 +138,16 @@ func run(logger *slog.Logger) error {
 	return nil
 }
 
+// outboxSchemas lists every module outbox the relay drains.
+var outboxSchemas = []string{"catalog", "orders", "payments", "identity"}
+
 type config struct {
 	addr, databaseURL, mediaBaseURL string
 	trackingSecret                  []byte
 	maintenanceInterval             time.Duration
 	relay                           platform.RelayConfig
 	payments                        payments.Config
+	identity                        identity.Config
 }
 
 func loadConfig() (config, error) {
@@ -160,6 +175,10 @@ func loadConfig() (config, error) {
 		cfg.maintenanceInterval = interval
 	}
 	cfg.payments, err = payments.LoadConfig(os.Getenv)
+	if err != nil {
+		return cfg, err
+	}
+	cfg.identity, err = identity.LoadConfig(os.Getenv)
 	if err != nil {
 		return cfg, err
 	}

@@ -147,7 +147,8 @@ from the environment and are never logged. The redirect is always the server-bui
 `/pedido?token=...` capability URL; the browser never supplies prices or status.
 
 Apply payments migrations with `go run ./cmd/migrate -module payments`; the default
-`all` now migrates catalog, shipping, orders and payments. The payments migration
+`all` now migrates catalog, shipping, orders, payments and identity, in that order
+(`-module identity` applies identity alone). The payments migration
 creates attempts, refunds (including `duplicate_payment`), webhook deduplication,
 outbox, consumer guards and the payment-start replay ledger. Settlements are deferred.
 Seed behavior and its module filters are unchanged; payments has no demo seed.

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"time"
+	"unicode/utf8"
 )
 
 var (
@@ -80,4 +81,18 @@ type AdminTx interface {
 type AdminRepository interface {
 	Manage(context.Context, func(AdminTx) error) error
 	DeleteOldSecurityEvents(context.Context, time.Time, int32) (int64, error)
+}
+
+// LengthPolicy counts Unicode code points and applies no composition rules.
+// Invalid UTF-8 is rejected so stored hashes always derive from valid text.
+func LengthPolicy(minimum, maximum int) PasswordPolicy {
+	return func(password string) error {
+		if !utf8.ValidString(password) {
+			return ErrValidation
+		}
+		if n := utf8.RuneCountInString(password); n < minimum || n > maximum {
+			return ErrValidation
+		}
+		return nil
+	}
 }

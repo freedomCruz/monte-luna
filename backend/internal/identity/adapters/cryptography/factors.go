@@ -52,7 +52,7 @@ func (f *Factors) Verify(secret, code string, now time.Time) (int64, bool) {
 	return now.Unix() / 30, err == nil && valid
 }
 func (f *Factors) RecoveryCodes(count, size int) ([]string, error) {
-	if count < 1 || count > 100 || size < 16 || size > 128 {
+	if count < 1 || count > 100 || size < 10 || size > 128 {
 		return nil, domain.ErrValidation
 	}
 	codes := make([]string, count)

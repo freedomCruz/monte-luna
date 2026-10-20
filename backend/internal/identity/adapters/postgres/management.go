@@ -58,8 +58,10 @@ func (t *adminTx) FindByEmail(ctx context.Context, email string) (domain.AuthSta
 	}
 	return loadAuth(ctx, t.q, fromRow(row))
 }
+
+// List accepts one record beyond the public page maximum for next-page lookahead.
 func (t *adminTx) List(ctx context.Context, after string, limit int) ([]domain.AdminRecord, error) {
-	if limit < 1 || limit > 100 {
+	if limit < 1 || limit > 101 {
 		return nil, domain.ErrValidation
 	}
 	var cursor pgtype.UUID

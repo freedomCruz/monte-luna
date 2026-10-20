@@ -64,7 +64,9 @@ func (r *Repository) TransactAuth(ctx context.Context, lookup domain.AuthLookup,
 	// Match the lifecycle writer's table-before-row lock order. Without this,
 	// a lifecycle update can hold its table lock while waiting for our row,
 	// while our later UPDATE waits for that same table lock.
-	if _, err := tx.Exec(ctx, `LOCK TABLE identity.admin_users IN ROW EXCLUSIVE MODE`); err != nil { return mapError(err) }
+	if _, err := tx.Exec(ctx, `LOCK TABLE identity.admin_users IN ROW EXCLUSIVE MODE`); err != nil {
+		return mapError(err)
+	}
 	q := identitysql.New(tx)
 	var row identitysql.IdentityAdminUser
 	if lookup.ID != "" {

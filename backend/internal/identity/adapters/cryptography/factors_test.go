@@ -40,7 +40,7 @@ func TestFactorsRFC6238AndEntropy(t *testing.T) {
 		}
 		seen[code] = true
 	}
-	for _, tc := range []struct{ count, size int }{{0, 32}, {101, 32}, {1, 15}, {1, 129}} {
+	for _, tc := range []struct{ count, size int }{{0, 32}, {101, 32}, {1, 9}, {1, 129}} {
 		if _, err := f.RecoveryCodes(tc.count, tc.size); err == nil {
 			t.Fatal("invalid recovery configuration accepted")
 		}

@@ -18,13 +18,14 @@ type PasswordResets struct {
 	tokens    domain.ResetTokens
 	limiter   domain.AuthLimiter
 	now       func() time.Time
+	policy    domain.PasswordPolicy
 }
 
-func NewPasswordResets(repo domain.PasswordResetRepository, passwords domain.Passwords, cipher domain.SecretCipher, tokens domain.ResetTokens, limiter domain.AuthLimiter, now func() time.Time) (*PasswordResets, error) {
-	if repo == nil || passwords == nil || cipher == nil || tokens == nil || limiter == nil || now == nil {
+func NewPasswordResets(repo domain.PasswordResetRepository, passwords domain.Passwords, cipher domain.SecretCipher, tokens domain.ResetTokens, limiter domain.AuthLimiter, now func() time.Time, policy domain.PasswordPolicy) (*PasswordResets, error) {
+	if repo == nil || passwords == nil || cipher == nil || tokens == nil || limiter == nil || now == nil || policy == nil {
 		return nil, domain.ErrValidation
 	}
-	return &PasswordResets{repo, passwords, cipher, tokens, limiter, now}, nil
+	return &PasswordResets{repo, passwords, cipher, tokens, limiter, now, policy}, nil
 }
 func (p *PasswordResets) limit(ctx context.Context, account, ip string) error {
 	delay, err := p.limiter.Allow(ctx, account, ip, p.now())
@@ -89,7 +90,7 @@ func (p *PasswordResets) Complete(ctx context.Context, raw, password, ip string)
 	if lookupErr != nil {
 		return domain.ErrResetUnavailable
 	}
-	if password == "" {
+	if password == "" || p.policy(password) != nil {
 		return domain.ErrValidation
 	}
 	encoded, err := p.passwords.Hash(password)
