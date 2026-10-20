@@ -25,7 +25,7 @@ The initial handled event is the canonically approved `identity.password_reset_r
 
 | ID | Task | Specs | Route | Depends on | Commit |
 | --- | --- | --- | --- | --- | --- |
-| T1 | Create this feature document, Engram mirror, Orca Run, and isolated worktrees | S1–S3 | coordinator | — | pending |
+| T1 | Create this feature document, Engram mirror, Orca Run, and isolated worktrees (done) | S1–S3 | coordinator | — | `fabdea1` |
 | C1 | Write `contracts/openapi/notifications.yaml` for the Resend webhook and document the canonical consumed-event boundary; no implementation → Gate G1 | S1, S3 | backend worker | T1 | pending |
 | A1 | Confirm standard-library implementation and audit any proposed dependency before installation → Gate G2 only if a dependency is needed | S2, S3 | coordinator | C1 | pending |
 | B1 | Implement notifications schema, repositories, idempotent event intake, suppression checks, and retention using TDD | S1–S3 | backend worker | C1, A1 | pending |
@@ -50,3 +50,4 @@ Gates: G1 user approval of the OpenAPI contract; G2 applies only if a new depend
 - L2 (user): "Continua"
 - L3 (coordinator plan accepted by next user message): Notifications v1 is backend-only and initially handles password reset; real production delivery is deferred; contracts and copy have explicit gates; independent verification is required for data, webhook, and failure-isolation risk.
 - L4 (user): "listo empecemos. Las nuevas variable de entornos están seteadas."
+- L5 (coordinator): Orca Run `run_fc90ff0e7fad`; T1 `task_197acecd8888` completed; C1 `task_a34bba5de2c0`. Coordinator worktree `notifications-v1`; worker worktree `notifications-v1-backend` on `feat/notifications-v1-backend`.
