@@ -161,7 +161,7 @@ func TestSeedCommand(t *testing.T) {
 	db, url := database(t)
 	migrate := buildCommand(t, "migrate")
 	code, stdout, stderr = command(t, migrate, url)
-	assertLog(t, code, stdout, stderr, "INFO", "catalog, shipping, orders and payments migrations applied", "")
+	assertLog(t, code, stdout, stderr, "INFO", "catalog, shipping, orders, payments and identity migrations applied", "")
 	code, stdout, stderr = command(t, binary, url)
 	assertLog(t, code, stdout, stderr, "INFO", "demo catalog, shipping and orders seeded", "")
 	assertDemo(t, db)
