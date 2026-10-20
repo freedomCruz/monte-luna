@@ -74,6 +74,11 @@ func (h *HTTP) RegisterRoutes(mux *http.ServeMux) {
 		"POST /api/v1/admin/password-resets/complete":  h.completeReset,
 		"POST /api/v1/admin/password/change":           h.changePassword,
 		"POST /api/v1/admin/recovery-codes/regenerate": h.regenerate,
+		"GET /api/v1/admin/users":                      h.listUsers,
+		"POST /api/v1/admin/users":                     h.createUser,
+		"GET /api/v1/admin/users/{id}":                 h.getUser,
+		"PATCH /api/v1/admin/users/{id}":               h.updateUser,
+		"POST /api/v1/admin/users/{id}/totp/reset":     h.resetTOTP,
 	} {
 		mux.Handle(pattern, noStore(h.origin.Handler(h.Sessions.Manager.LoadAndSave(handler))))
 	}
