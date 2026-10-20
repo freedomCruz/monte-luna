@@ -32,7 +32,8 @@ No worker may read, print, copy, log, or place real environment values in Git, t
 | T1 | Create this feature document, Engram mirror, Orca Run, and isolated worktrees (done) | S1–S3 | coordinator | — | `22658c2` |
 | C1 | Write `contracts/openapi/identity.yaml` for the approved backend-only identity surface; no implementation (draft complete; superseded by C2 onboarding decision) | S1, S2 | backend worker | T1 | `1ef92ba` |
 | C2 | Contract change: replace owner-supplied initial password with one-time emailed administrator invitation → Gate G1 | S1, S2 | backend worker | C1 | `1791f6f` |
-| A1 | Audit every new Go dependency and request explicit approval before installation → Gate G2 | S2 | coordinator | C2 | pending |
+| G1 | Gate: user approves Identity OpenAPI contract (`1791f6f`) | S1, S2 | coordinator | C2 | pending |
+| A1 | Audit every new Go dependency and request explicit approval before installation → Gate G2 | S2 | coordinator | G1 | pending |
 | B1 | Implement identity schema, repositories, password/encryption primitives, and last-owner invariants using TDD | S2, S3 | backend worker | C1, A1 | pending |
 | B2 | Implement PostgreSQL SCS sessions, login/logout, TOTP, recovery codes, lockout, rate limiting, and session invalidation using TDD | S2, S3 | backend worker | B1 | pending |
 | B3 | Implement owner/staff authorization, admin management, security events, retention, and bootstrap/emergency CLI using TDD | S2, S3 | backend worker | B2 | pending |
@@ -60,3 +61,4 @@ Gates: G1 user approval of the OpenAPI contract; G2 user approval of dependency 
 - L7 (backend C1): worker commit `1ef92ba` adds only `contracts/openapi/identity.yaml` (997 lines, 15 operations across 12 paths). Worker and coordinator checks: `go test -mod=readonly ./internal/contracttest -count=1` passed; `git diff --check` passed; worktree clean; worker's read-only contract verification reported no blockers. TypeScript generation is explicitly deferred because frontend is out of scope and the current generator has no Identity target.
 - L8 (user, onboarding decision): "Invitación por correo (Recomendado)" — the owner creates name/email/role and never chooses the person's password; Identity atomically creates a one-time 30-minute token and `identity.admin_invited`; Notifications delivers a distinct invitation email; completion sets the password but creates no session and mandatory TOTP still follows. C2 reopens the contract before Gate G1.
 - L9 (coordinator): C2 Orca task `task_b5833f097806`, dispatch `ctx_cf7a1b5616e5`, reusing the proven Identity backend terminal. Worker commit `1791f6f` changes only `contracts/openapi/identity.yaml` (+35/-15); worker and coordinator contract tests and diff checks passed; independent worker review approved S1/S2 with no blockers.
+- L10 (coordinator): Gate G1 created in Orca as `gate_9627c10949df` blocking `task_b93c762ba41b` (A1 dependency audit).
