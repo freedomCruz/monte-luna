@@ -25,17 +25,17 @@ The current root access depends on a password, and Contabo console/recovery acce
 
 | ID | Task | Specs | Route | Commit |
 | --- | --- | --- | --- | --- |
-| T1 | Record the observed host baseline, hardening blockers, safety gates, and recovery constraints | S1–S3 | coordinator | working tree (uncommitted) |
+| T1 | Record the observed host baseline, hardening blockers, safety gates, and recovery constraints | S1–S3 | coordinator | f02d4e2 |
 | G1 | Gate: user verifies Contabo console or recovery access | S1, S3 | user | passed (L9); VNC remains enabled during hardening |
-| T2 | Generate or select a dedicated local SSH key without disclosing private key material | S1–S3 | user + coordinator | fingerprint verified; working tree (uncommitted) |
-| T3 | Create `monteluna`, install its public key, grant sudo, and preserve the existing root session | S1–S3 | user + coordinator | verified on host; working tree (uncommitted) |
+| T2 | Generate or select a dedicated local SSH key without disclosing private key material | S1–S3 | user + coordinator | fingerprint verified; f02d4e2 |
+| T3 | Create `monteluna`, install its public key, grant sudo, and preserve the existing root session | S1–S3 | user + coordinator | verified on host; f02d4e2 |
 | G2 | Gate: second terminal proves `monteluna` key login and sudo before any lockout-sensitive change | S1–S3 | user | passed (L6) |
-| T4 | Apply pending Ubuntu updates, reboot when required, and re-run time, services, kernel, and CPU mitigation checks | S1 | user + coordinator | passed (L10); working tree (uncommitted) |
-| T5 | Configure the host firewall while preserving verified SSH access; keep application/database ports private | S1–S3 | user + coordinator | passed (L11); working tree (uncommitted) |
-| T6 | Harden SSH by disabling password and direct root login only after G1 and G2; verify another fresh session | S1–S3 | user + coordinator | passed (L12); working tree (uncommitted) |
+| T4 | Apply pending Ubuntu updates, reboot when required, and re-run time, services, kernel, and CPU mitigation checks | S1 | user + coordinator | passed (L10); f02d4e2 |
+| T5 | Configure the host firewall while preserving verified SSH access; keep application/database ports private | S1–S3 | user + coordinator | passed (L11); f02d4e2 |
+| T6 | Harden SSH by disabling password and direct root login only after G1 and G2; verify another fresh session | S1–S3 | user + coordinator | passed (L12); f02d4e2 |
 | T7 | Diagnose or document the cloud-init and network-wait failures without exposing provisioning secrets | S1 | user + coordinator | documented (L14); provider remediation pending |
-| T8 | Decide swap policy from measured resource behavior; Docker and deployment remain separate audited work | S1 | coordinator + user | passed (L16); working tree (uncommitted) |
-| V1 | Read back effective SSH/firewall/services state and verify recovery, access, updates, and exposure invariants | S1–S3 | coordinator | passed (L17); working tree (uncommitted) |
+| T8 | Decide swap policy from measured resource behavior; Docker and deployment remain separate audited work | S1 | coordinator + user | passed (L16); f02d4e2 |
+| V1 | Read back effective SSH/firewall/services state and verify recovery, access, updates, and exposure invariants | S1–S3 | coordinator | passed (L17); f02d4e2 |
 
 ## Allowed edit surfaces
 
@@ -62,3 +62,4 @@ The current root access depends on a password, and Contabo console/recovery acce
 - L15 (user, T8 measurements): Idle post-hardening sample with no application services: 7.8 GiB RAM total, 418 MiB used, 7.3 GiB available; no swap configured; root filesystem 96 GB with 2.3 GB used (3%); memory PSI `some` and `full` averages 0.00; `vmstat` showed no swap activity, no I/O wait, and ~100% idle CPU; no kernel OOM events this boot. The baseline does not show memory pressure, but it does not represent PostgreSQL, Go, Caddy, image loads, migrations, or `pg_dump` load.
 - L16 (user, T8): After an explanation of swap trade-offs, the user approved "si hagamoslo" for a 2 GiB swap file with `vm.swappiness=10`. The guarded block refused to overwrite an existing file, created `/swapfile` (root-owned, mode `600`, 2147483648 bytes), activated it, backed up `/etc/fstab` to `/etc/fstab.bak-swap`, appended `/swapfile none swap sw 0 0`, and applied swappiness through `/etc/sysctl.d/99-monteluna-swap.conf`. Readback showed 2.0 GiB swap with 0 B used and swappiness `10`. `findmnt --verify` reported 0 parse errors and 0 errors; its two warnings are expected (a regular-file swap source, and systemd not yet reloaded after the fstab edit). Persistence across reboot will be confirmed at the next planned reboot. T8 passed.
 - L17 (user, V1): After `systemctl daemon-reload`, the final read-only readback showed kernel `6.8.0-147-generic` with NTP synchronized; SSH active with `permitrootlogin no`, `passwordauthentication no`, `kbdinteractiveauthentication no`, `pubkeyauthentication yes`, and the drop-in owned by `root:root` with mode `644`; UFW active with deny incoming, allow outgoing, routed disabled, and only OpenSSH TCP/22 on IPv4/IPv6; the only externally bound sockets are SSH on `0.0.0.0:22` and `[::]:22`, with DNS resolver sockets on loopback only; the only failed unit is the documented provider `cloud-init.service`; `/swapfile` 2 GiB active through `swapfile.swap` with swappiness `10`; only phased `cloud-init` 26.2 pending; no reboot required; unattended upgrades active. VNC recovery remains verified (L9). V1 passed. Open provider follow-ups before production: Contabo remediation for the NoCloud `bootcmd` failure and the missing CPU microcode mitigation for Spec rstack overflow; swap persistence is confirmed at the next planned reboot.
+- L18 (user): "redacta los tickets y envía commits y paramos por ahora". Documentation committed locally as `f02d4e2` on `feat/vps-hardening-v1`; no push or pull request was made. Contabo ticket drafts were provided in chat for the user to submit. Work paused at the user's request; next feature is `deploy-v1`.
