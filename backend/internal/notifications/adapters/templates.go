@@ -43,7 +43,7 @@ func (r *TemplateRenderer) Render(ctx context.Context, key string, view domain.T
 	case "password_reset":
 		subject = "Restablece tu contraseña de administrador de Monteluna"
 	case "admin_invitation":
-		subject = "Invitacion para administrar Monteluna"
+		subject = "Invitación para administrar Monteluna"
 		switch view.Role {
 		case "owner":
 			view.Role = "propietario"

@@ -5,6 +5,6 @@ Has sido invitado como administrador con el rol de {{.Role}} en el panel de Mont
 Completar mi registro
 {{.ActionURL}}
 
-Al definir tu contrasena, se te solicitara configurar tu autenticacion en dos pasos (TOTP).
+Al definir tu contraseña, se te solicitará configurar tu autenticación en dos pasos (TOTP).
 
-Este enlace vencera en 30 minutos.
+Este enlace vencerá en 30 minutos.
