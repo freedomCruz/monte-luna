@@ -104,7 +104,7 @@ func assemble(pool *pgxpool.Pool, cfg Config, logger *slog.Logger, now func() ti
 	if err != nil {
 		return nil, err
 	}
-	sessions, err := session.New(store, auth, session.Config{Lifetime: SessionLifetime, IdleTimeout: SessionIdleTimeout, PendingLifetime: PendingSessionLifetime})
+	sessions, err := session.New(store, auth, session.Config{Lifetime: SessionLifetime, IdleTimeout: SessionIdleTimeout, PendingLifetime: PendingSessionLifetime, Now: now})
 	if err != nil {
 		return nil, err
 	}
