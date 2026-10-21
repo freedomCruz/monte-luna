@@ -2,6 +2,13 @@ import { defineConfig, devices } from '@playwright/test';
 
 const PORT = 4321;
 const BASE_URL = `http://127.0.0.1:${PORT}`;
+const WEB_SERVER_ENV = Object.fromEntries(
+  Object.entries(process.env).filter((entry): entry is [string, string] => entry[1] !== undefined)
+);
+
+// E2E availability mocks use deterministic fixture variant IDs. Keep the
+// Playwright server isolated even when the preceding release build uses a live API.
+WEB_SERVER_ENV.CATALOG_API_URL = '';
 
 export default defineConfig({
   testDir: './e2e',
@@ -37,6 +44,7 @@ export default defineConfig({
   webServer: {
     command: 'npm run build && npx astro preview --port 4321 --host 127.0.0.1',
     url: BASE_URL,
+    env: WEB_SERVER_ENV,
     reuseExistingServer: !process.env.CI,
     stdout: 'pipe',
     stderr: 'pipe',
