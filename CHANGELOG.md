@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-rc.2] - 2026-10-21
+
+### Fixed
+
+- Made the local deployment preflight run fresh package-serial Go tests to prevent intermittent Testcontainers provider detection failures on Windows.
+
 ## [0.1.0-rc.1] - 2026-10-21
 
 ### Added
@@ -49,5 +55,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the backend toolchain to Go 1.27.3 to resolve reachable standard-library vulnerabilities.
 - Rebuilt Caddy 2.11.7 with Go 1.27.3 and `golang.org/x/net` 0.60.0 instead of deploying the vulnerable upstream binary.
 
-[Unreleased]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.1...HEAD
+[Unreleased]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.2...HEAD
+[0.1.0-rc.2]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.1...v0.1.0-rc.2
 [0.1.0-rc.1]: https://github.com/freedomCruz/monte-luna/releases/tag/v0.1.0-rc.1
