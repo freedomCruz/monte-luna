@@ -63,6 +63,7 @@ func New(d Deps) (*HTTP, error) {
 }
 
 func (h *HTTP) RegisterRoutes(mux *http.ServeMux) {
+	allowed := map[string][]string{}
 	for pattern, handler := range map[string]http.HandlerFunc{
 		"POST /api/v1/admin/sessions":                  h.login,
 		"POST /api/v1/admin/sessions/verify":           h.verify,
@@ -81,6 +82,20 @@ func (h *HTTP) RegisterRoutes(mux *http.ServeMux) {
 		"POST /api/v1/admin/users/{id}/totp/reset":     h.resetTOTP,
 	} {
 		mux.Handle(pattern, noStore(h.origin.Handler(h.Sessions.Manager.LoadAndSave(handler))))
+		method, path, _ := strings.Cut(pattern, " ")
+		allowed[path] = append(allowed[path], method)
+		if method == http.MethodGet {
+			allowed[path] = append(allowed[path], http.MethodHead)
+		}
+	}
+	// Method-less fallbacks keep the mux's 405 answer but pin no-store on it.
+	for path, methods := range allowed {
+		slices.Sort(methods)
+		allow := strings.Join(methods, ", ")
+		mux.Handle(path, noStore(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			w.Header().Set("Allow", allow)
+			http.Error(w, http.StatusText(http.StatusMethodNotAllowed), http.StatusMethodNotAllowed)
+		})))
 	}
 }
 
