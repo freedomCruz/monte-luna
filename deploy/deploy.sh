@@ -233,6 +233,10 @@ if [ -f "\${CURRENT_FILE}" ] && [ -s "\${CURRENT_FILE}" ]; then
   CURRENT_RUNNING="\$(cat "\${CURRENT_FILE}")"
   echo "Active release '\${CURRENT_RUNNING}' found. Creating pre-deploy database dump..."
   docker compose -p monteluna exec -T postgres pg_dump -U "\${POSTGRES_USER}" -Fc "\${POSTGRES_DB}" > "\${BACKUPS_PREDEPLOY_DIR}/\${MONTELUNA_RELEASE}.dump"
+  if [ ! -s "\${BACKUPS_PREDEPLOY_DIR}/\${MONTELUNA_RELEASE}.dump" ]; then
+    echo "Error: Pre-deploy database dump is empty or was not created. Aborting before migrations." >&2
+    exit 1
+  fi
   echo "Pre-deploy dump saved to \${BACKUPS_PREDEPLOY_DIR}/\${MONTELUNA_RELEASE}.dump"
 else
   echo "No active release recorded in \${CURRENT_FILE}. Skipping pre-deploy dump (first deploy)."
@@ -282,9 +286,11 @@ if [ "\$HEALTH_OK" -ne 1 ]; then
 
   PREV_RELEASE="\$(cat "\${PREVIOUS_FILE}")"
   echo "==> Rollback: Restarting previous release \${PREV_RELEASE} for both images..." >&2
+  # Keep the failed release id for the log before Compose switches back.
+  FAILED_RELEASE="\${MONTELUNA_RELEASE}"
   export MONTELUNA_RELEASE="\${PREV_RELEASE}"
   docker compose -p monteluna -f "\${RELEASES_DIR}/\${PREV_RELEASE}/compose.yaml" up -d
-  printf "%s %s %s FAILED_ROLLED_BACK_TO_%s\n" "\${MONTELUNA_RELEASE}" "\${COMMIT_SHA}" "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\${PREV_RELEASE}" >> "\${RELEASES_LOG}"
+  printf "%s %s %s FAILED_ROLLED_BACK_TO_%s\n" "\${FAILED_RELEASE}" "\${COMMIT_SHA}" "\$(date -u +%Y-%m-%dT%H:%M:%SZ)" "\${PREV_RELEASE}" >> "\${RELEASES_LOG}"
   echo "Rollback to \${PREV_RELEASE} completed." >&2
   exit 1
 fi

@@ -412,6 +412,22 @@ else
   fail "restore-drill.sh drops restore_drill on failure via trap" "DROP DATABASE not called on failure"
 fi
 
+# Review regressions
+if grep -qx 'Environment=RESTIC_CACHE_DIR=/var/cache/restic' "$SCRIPT_DIR/monteluna-backup.service" \
+  && grep -qx 'CacheDirectory=restic' "$SCRIPT_DIR/monteluna-backup.service"; then
+  pass "Service gives restic a writable cache outside ProtectHome"
+else
+  fail "Service restic cache" "Expected Environment=RESTIC_CACHE_DIR=/var/cache/restic and CacheDirectory=restic"
+fi
+for bad_db in postgres monteluna; do
+  drill_out="$(DRILL_DB="$bad_db" POSTGRES_DB=monteluna BACKUP_DIR="$TEST_TMP" bash "$SCRIPT_DIR/restore-drill.sh" 2>&1)" && drill_rc=0 || drill_rc=$?
+  if [[ "$drill_rc" -ne 0 ]] && printf '%s' "$drill_out" | grep -q 'cannot be the production'; then
+    pass "restore-drill.sh refuses DRILL_DB=$bad_db"
+  else
+    fail "restore-drill.sh refuses DRILL_DB=$bad_db" "rc=$drill_rc output=$drill_out"
+  fi
+done
+
 # Cleanup
 export PATH="$CLEAN_PATH"
 rm -rf "$TEST_TMP"

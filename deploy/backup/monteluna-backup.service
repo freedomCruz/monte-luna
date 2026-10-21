@@ -7,6 +7,9 @@ After=docker.service
 Type=oneshot
 User=root
 ExecStart=/srv/monteluna/backup.sh
+# ProtectHome hides /root/.cache, so restic gets a systemd-managed cache.
+CacheDirectory=restic
+Environment=RESTIC_CACHE_DIR=/var/cache/restic
 
 # Systemd hardening while preserving Docker daemon access
 NoNewPrivileges=true

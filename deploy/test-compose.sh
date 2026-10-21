@@ -192,4 +192,11 @@ for (const req of requiredVars) {
 console.log("ALL COMPOSE AND ENV ASSERTIONS PASSED");
 ' "$CONFIG_JSON" "$COMPOSE_FILE" "$ENV_EXAMPLE"
 
+CADDYFILE="$(dirname "$0")/caddy/Caddyfile"
+if ! grep -q $'^\troot \* /srv$' "$CADDYFILE"; then
+  echo "FAIL: Caddyfile must set 'root * /srv' at site scope so handle_errors finds /404.html" >&2; exit 1
+fi
+if grep -q 'preload' "$CADDYFILE"; then
+  echo "FAIL: HSTS must not commit the domain to the preload list" >&2; exit 1
+fi
 echo "PASS: deploy/test-compose.sh succeeded"

@@ -14,6 +14,18 @@ if [[ -f "/srv/monteluna/.env" && "$POSTGRES_USER" == "postgres" ]]; then
   [[ -n "$val" ]] && POSTGRES_USER="$val"
 fi
 
+# Refuse names that could point the drill at a real database: it ends with
+# DROP DATABASE.
+PROTECTED_DB="${POSTGRES_DB:-}"
+if [[ -z "$PROTECTED_DB" && -f "/srv/monteluna/.env" ]]; then
+  PROTECTED_DB="$(grep -E '^POSTGRES_DB=' /srv/monteluna/.env 2>/dev/null | cut -d= -f2- || true)"
+fi
+if [[ "$DRILL_DB" == "postgres" || "$DRILL_DB" == "template0" || "$DRILL_DB" == "template1" \
+  || ( -n "$PROTECTED_DB" && "$DRILL_DB" == "$PROTECTED_DB" ) ]]; then
+  echo "ERROR: DRILL_DB '${DRILL_DB}' cannot be the production or a system database." >&2
+  exit 1
+fi
+
 # Locate the newest dump file
 NEWEST_DUMP="$(find "$BACKUP_DIR" -maxdepth 1 -name "*.dump" -type f 2>/dev/null | sort | tail -n 1 || true)"
 if [[ -z "$NEWEST_DUMP" || ! -f "$NEWEST_DUMP" ]]; then
