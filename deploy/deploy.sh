@@ -59,6 +59,11 @@ compute_release_id() {
   printf "%s-%s" "$tag" "$sha7"
 }
 
+make_cleanup_command() {
+  local target="$1"
+  printf 'rm -f -- %q' "$target"
+}
+
 validate_git_preflight() {
   local repo_dir="${1:-.}"
   local tag="${2:-}"
@@ -149,6 +154,7 @@ generate_remote_script() {
 set -euo pipefail
 
 MONTELUNA_RELEASE="${release_id}"
+readonly DEPLOY_RELEASE_ID="${release_id}"
 COMMIT_SHA="${commit_sha}"
 STAGING_DIR="${staging_dir}"
 ENV_FILE="/srv/monteluna/.env"
@@ -204,6 +210,8 @@ set +x
 set -a
 . "\${ENV_FILE}"
 set +a
+# The env template intentionally leaves this blank; deployment authority owns it.
+MONTELUNA_RELEASE="\${DEPLOY_RELEASE_ID}"
 
 if [ -z "\${SITE_ADDRESS:-}" ]; then
   echo "Error: SITE_ADDRESS is missing in \${ENV_FILE}." >&2
@@ -369,7 +377,7 @@ main() {
 
   local local_images_tar
   local_images_tar="$(mktemp /tmp/monteluna-images-XXXXXX.tar.gz)"
-  trap 'rm -f "${local_images_tar}"' EXIT INT TERM HUP
+  trap "$(make_cleanup_command "$local_images_tar")" EXIT INT TERM HUP
 
   build_and_package_images "$repo_root" "$release_id" "$local_images_tar"
 
