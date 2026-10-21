@@ -107,7 +107,7 @@ run_local_ci_gates() {
     (cd "$repo_dir" && task verify)
   else
     echo "Running backend verification..."
-    (cd "${repo_dir}/backend" && go mod verify && go build -mod=readonly ./... && go vet ./... && go test -mod=readonly ./... && go tool govulncheck ./...)
+    (cd "${repo_dir}/backend" && go mod verify && go build -mod=readonly ./... && go vet ./... && go test -p 1 -count=1 -mod=readonly ./... && go tool govulncheck ./...)
     echo "Running frontend verification..."
     (cd "${repo_dir}/frontend" && npm run build && npm run test)
   fi

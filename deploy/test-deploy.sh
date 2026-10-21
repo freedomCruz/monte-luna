@@ -345,6 +345,21 @@ test_security_rules() {
   pass "Security checks (no sshpass, no StrictHostKeyChecking=no, no \$(ssh -t), no docker group, no secrets)"
 }
 
+test_ci_gate_determinism() {
+  local repo_root
+  repo_root="$(cd "$SCRIPT_DIR/.." && pwd)"
+  local deterministic_test='go test -p 1 -count=1 -mod=readonly ./...'
+
+  if ! grep -Fq -- "$deterministic_test" "$repo_root/Taskfile.yml"; then
+    fail "Taskfile backend gate must run fresh package-serial Go tests"
+  fi
+  if ! grep -Fq -- "$deterministic_test" "$DEPLOY_SCRIPT"; then
+    fail "deploy.sh fallback gate must run fresh package-serial Go tests"
+  fi
+
+  pass "Local CI gates run fresh package-serial Go tests"
+}
+
 # ==============================================================================
 # Runner
 # ==============================================================================
@@ -359,6 +374,7 @@ main() {
   run_test test_health_check_spec
   run_test test_security_rules
   run_test test_review_regressions
+  run_test test_ci_gate_determinism
 
   echo "=== All $TESTS_PASSED/$TESTS_RUN tests passed ==="
 }
