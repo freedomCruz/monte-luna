@@ -5,7 +5,7 @@ Canonical source of truth for project infrastructure resources, agreed operation
 ## 1. Scope and Status
 
 - **Purpose:** Host a functional demonstration environment for an e-commerce platform (backend, database, external services, and webhooks), with potential future evolution into a personal production store.
-- **Acquisition and provisioning status:** NOT CONFIRMED. Server purchase, provisioning, and deployment are currently unconfirmed. Do not assume services are active or purchased.
+- **Acquisition and provisioning status:** PURCHASED. The user confirmed on 2026-10-20 that the VPS has been bought. Billing term, the exact purchased configuration (region, OS release), provisioning, hardening, and deployment are not yet recorded or confirmed. Do not assume any service is installed or running.
 - **Capacity and performance:** No benchmarked capacity or concurrency measurements exist. Performance is not guaranteed.
 - **Precedence over historical documents:** `docs/plan-payload.md` represents an early historical proposal (e.g., references to Cloudflare/Vercel). It does not override decisions in this document or approve any pending technology stack.
 
@@ -46,7 +46,8 @@ The following safeguards mitigate single-node failure risks and resource content
 
 The following items require explicit user authorization before implementation, provisioning, or stack commitment:
 
-- [ ] Confirmation of VPS purchase, billing term, provisioning, and activation.
+- [x] VPS purchase: confirmed by the user on 2026-10-20.
+- [ ] Record of billing term and exact purchased configuration (region, OS release); provisioning and activation.
 - [ ] Selection of specific Ubuntu release version.
 - [x] Backend framework and runtime selection: Go Modular Monolith (Pragmatic Hexagonal Architecture, standard library `net/http`, `pgx/v5` + `sqlc`, `goose` migrations, in-memory cache via `CachePort`). Detailed in [system-architecture.md](system-architecture.md).
 - [x] Frontend architecture and rendering framework selection: Astro with React Islands (`@astrojs/react`), shadcn/ui (Radix primitives), and Tailwind CSS. Detailed in [system-architecture.md](system-architecture.md).
