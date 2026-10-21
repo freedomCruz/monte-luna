@@ -19,9 +19,9 @@ func TestApprovedEmbeddedTemplates(t *testing.T) {
 		key, subject, role string
 		copy               []string
 	}{
-		{"password_reset", "Restablece tu contraseña de administrador de Monteluna", "", []string{"Recibimos una solicitud para restablecer la contraseña de tu cuenta de administrador en Monteluna.", "Restablecer mi contrasena", "Este enlace es de un solo uso y vencera en 30 minutos.", "Si tu no solicitaste este cambio, puedes ignorar este correo; tu contrasena actual continuara siendo segura."}},
-		{"admin_invitation", "Invitacion para administrar Monteluna", "staff", []string{"Has sido invitado como administrador con el rol de equipo en el panel de Monteluna.", "Completar mi registro", "Al definir tu contrasena, se te solicitara configurar tu autenticacion en dos pasos (TOTP).", "Este enlace vencera en 30 minutos."}},
-		{"admin_invitation", "Invitacion para administrar Monteluna", "owner", []string{"Has sido invitado como administrador con el rol de propietario en el panel de Monteluna.", "Completar mi registro", "Al definir tu contrasena, se te solicitara configurar tu autenticacion en dos pasos (TOTP).", "Este enlace vencera en 30 minutos."}},
+		{"password_reset", "Restablece tu contraseña de administrador de Monteluna", "", []string{"Recibimos una solicitud para restablecer la contraseña de tu cuenta de administrador en Monteluna.", "Restablecer mi contraseña", "Este enlace es de un solo uso y vencerá en 30 minutos.", "Si tú no solicitaste este cambio, puedes ignorar este correo; tu contraseña actual continuará siendo segura."}},
+		{"admin_invitation", "Invitación para administrar Monteluna", "staff", []string{"Has sido invitado como administrador con el rol de equipo en el panel de Monteluna.", "Completar mi registro", "Al definir tu contraseña, se te solicitará configurar tu autenticación en dos pasos (TOTP).", "Este enlace vencerá en 30 minutos."}},
+		{"admin_invitation", "Invitación para administrar Monteluna", "owner", []string{"Has sido invitado como administrador con el rol de propietario en el panel de Monteluna.", "Completar mi registro", "Al definir tu contraseña, se te solicitará configurar tu autenticación en dos pasos (TOTP).", "Este enlace vencerá en 30 minutos."}},
 	} {
 		t.Run(tt.key+"_"+tt.role, func(t *testing.T) {
 			email, err := renderer.Render(context.Background(), tt.key, domain.TemplateView{DisplayName: "<script>alert(1)</script>", Role: tt.role, ActionURL: "https://example.test/action?token=FAKE_TOKEN"})

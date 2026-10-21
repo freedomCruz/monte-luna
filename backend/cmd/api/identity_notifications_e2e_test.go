@@ -215,6 +215,21 @@ func TestIdentityNotificationsIntegrationE2E(t *testing.T) {
 			t.Fatalf("expected 1 captured email, got %d", len(msgs))
 		}
 		captured := msgs[0]
+		if captured.Subject != "Restablece tu contraseña de administrador de Monteluna" {
+			t.Fatalf("unexpected password reset subject: %s", captured.Subject)
+		}
+		if !strings.Contains(captured.Text, "Restablecer mi contraseña") || !strings.Contains(captured.HTML, "Restablecer mi contraseña") {
+			t.Fatalf("expected 'Restablecer mi contraseña' in password reset email")
+		}
+		if !strings.Contains(captured.Text, "vencerá en 30 minutos") || !strings.Contains(captured.HTML, "vencerá en 30 minutos") {
+			t.Fatalf("expected 'vencerá' in password reset email")
+		}
+		if !strings.Contains(captured.Text, "Si tú no solicitaste este cambio") || !strings.Contains(captured.HTML, "Si tú no solicitaste este cambio") {
+			t.Fatalf("expected 'Si tú no' in password reset email")
+		}
+		if !strings.Contains(captured.Text, "tu contraseña actual continuará siendo segura") || !strings.Contains(captured.HTML, "tu contraseña actual continuará siendo segura") {
+			t.Fatalf("expected 'contraseña actual continuará' in password reset email")
+		}
 		if !strings.Contains(captured.Text, storefrontURL+"/admin/restablecer-contrasena#token=") {
 			t.Fatalf("link does not match approved URL format: %s", captured.Text)
 		}
@@ -353,8 +368,19 @@ func TestIdentityNotificationsIntegrationE2E(t *testing.T) {
 			t.Fatalf("expected 3 captured messages now, got %d", len(msgs))
 		}
 		staffEmail := msgs[2]
+		if staffEmail.Subject != "Invitación para administrar Monteluna" {
+			t.Fatalf("unexpected staff invite subject: %s", staffEmail.Subject)
+		}
 		if !strings.Contains(staffEmail.HTML, "rol de equipo") || !strings.Contains(staffEmail.Text, "rol de equipo") {
 			t.Fatalf("staff invitation did not render 'rol de equipo': %s", staffEmail.Text)
+		}
+		if !strings.Contains(staffEmail.HTML, "Al definir tu contraseña, se te solicitará configurar tu autenticación en dos pasos (TOTP).") ||
+			!strings.Contains(staffEmail.Text, "Al definir tu contraseña, se te solicitará configurar tu autenticación en dos pasos (TOTP).") {
+			t.Fatalf("staff invitation did not render accented TOTP copy: %s", staffEmail.Text)
+		}
+		if !strings.Contains(staffEmail.HTML, "Este enlace vencerá en 30 minutos.") ||
+			!strings.Contains(staffEmail.Text, "Este enlace vencerá en 30 minutos.") {
+			t.Fatalf("staff invitation did not render 'vencerá': %s", staffEmail.Text)
 		}
 		if !strings.Contains(staffEmail.Text, storefrontURL+"/admin/invitacion#token=") {
 			t.Fatalf("staff invitation did not render approved link: %s", staffEmail.Text)
@@ -399,8 +425,19 @@ func TestIdentityNotificationsIntegrationE2E(t *testing.T) {
 			t.Fatalf("expected 4 captured messages now, got %d", len(msgs))
 		}
 		ownerEmail := msgs[3]
+		if ownerEmail.Subject != "Invitación para administrar Monteluna" {
+			t.Fatalf("unexpected owner invite subject: %s", ownerEmail.Subject)
+		}
 		if !strings.Contains(ownerEmail.HTML, "rol de propietario") || !strings.Contains(ownerEmail.Text, "rol de propietario") {
 			t.Fatalf("owner invitation did not render 'rol de propietario': %s", ownerEmail.Text)
+		}
+		if !strings.Contains(ownerEmail.HTML, "Al definir tu contraseña, se te solicitará configurar tu autenticación en dos pasos (TOTP).") ||
+			!strings.Contains(ownerEmail.Text, "Al definir tu contraseña, se te solicitará configurar tu autenticación en dos pasos (TOTP).") {
+			t.Fatalf("owner invitation did not render accented TOTP copy: %s", ownerEmail.Text)
+		}
+		if !strings.Contains(ownerEmail.HTML, "Este enlace vencerá en 30 minutos.") ||
+			!strings.Contains(ownerEmail.Text, "Este enlace vencerá en 30 minutos.") {
+			t.Fatalf("owner invitation did not render 'vencerá': %s", ownerEmail.Text)
 		}
 		if !strings.Contains(ownerEmail.Text, storefrontURL+"/admin/invitacion#token=") {
 			t.Fatalf("owner invitation did not render approved link: %s", ownerEmail.Text)
