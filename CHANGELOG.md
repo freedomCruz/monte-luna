@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-rc.6] - 2026-10-22
+
+### Verification
+
+- Prepared an immutable staging-only candidate for the final controlled failed-health rollback drill, with a failure watchdog bound to Compose labels and the exact candidate image; it is expected never to become the active release.
+
 ## [0.1.0-rc.5] - 2026-10-22
 
 ### Verification
