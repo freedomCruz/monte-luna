@@ -5,8 +5,26 @@ import * as path from 'path';
 
 describe('Pre-rendered HTML output invariants', () => {
   const fixtureDir = path.resolve('node_modules/.cache/test-prerender-dist');
+  let expectedHomeProductSlugs = [
+    'finca-el-mirador',
+    'finca-la-maria',
+    'chocolate-70',
+    'chocolate-85',
+  ];
 
   beforeAll(async () => {
+    // When verifying an API-backed build, assert the exact order supplied by
+    // that source instead of imposing fixture order on production data.
+    const apiBase = process.env.CATALOG_API_URL?.replace(/\/+$/, '');
+    if (apiBase) {
+      const response = await fetch(`${apiBase}/api/v1/products?limit=100`);
+      if (!response.ok) {
+        throw new Error(`Failed to read catalog order: ${response.status} ${response.statusText}`);
+      }
+      const page = (await response.json()) as { items: Array<{ slug: string }> };
+      expectedHomeProductSlugs = page.items.slice(0, 4).map((product) => product.slug);
+    }
+
     // Perform an isolated build to a private cache fixture so tests never depend on stale pre-existing dist
     const { build } = await import('astro');
     await build({
@@ -93,9 +111,9 @@ describe('Pre-rendered HTML output invariants', () => {
     expect(text).toContain('Monteluna 65 %, 75 % y 100 %');
     expect(homeHtml).toMatch(/Dos cafés y tres chocolates oscuros\. <\/span>Entra a cada uno/);
 
-    // First four products of the fixture catalog, in API order, with live price slots only
+    // First four products preserve the active catalog source order, with live price slots only.
     const cards = [...homeHtml.matchAll(/<article[^>]*id="inicio-([^"]+)"/g)].map((m) => m[1]);
-    expect(cards).toEqual(['finca-el-mirador', 'finca-la-maria', 'chocolate-70', 'chocolate-85']);
+    expect(cards).toEqual(expectedHomeProductSlugs);
     expect(homeHtml).toContain('data-live-price-slot="chocolate-85"');
     expect(homeHtml).toContain('client="load"');
     expect(homeHtml).not.toMatch(/\$\s?\d{1,3}\.\d{3}/);

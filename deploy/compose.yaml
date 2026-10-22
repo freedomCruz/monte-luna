@@ -1,0 +1,63 @@
+name: monteluna
+
+services:
+  caddy:
+    image: monteluna-caddy:${MONTELUNA_RELEASE}
+    restart: unless-stopped
+    sysctls:
+      net.ipv4.ip_unprivileged_port_start: 0
+    ports:
+      - "80:80"
+      - "443:443"
+      - "443:443/udp"
+    networks:
+      - web
+    volumes:
+      - caddy_data:/data
+      - caddy_config:/config
+    mem_limit: 256m
+    memswap_limit: 256m
+    env_file:
+      - /srv/monteluna/.env
+
+  api:
+    image: monteluna-api:${MONTELUNA_RELEASE}
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - web
+      - db
+    mem_limit: 512m
+    memswap_limit: 512m
+    env_file:
+      - /srv/monteluna/.env
+
+  postgres:
+    image: postgres:18.6-trixie@sha256:1267c7e692de235fda2a50dbcdbcbca4672ea6a0298576a6bd9d07cafc319b32
+    restart: unless-stopped
+    networks:
+      - db
+    volumes:
+      - pgdata:/var/lib/postgresql
+    mem_limit: 2g
+    memswap_limit: 2g
+    env_file:
+      - /srv/monteluna/.env
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U \"$${POSTGRES_USER}\" -d \"$${POSTGRES_DB}\""]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+networks:
+  web:
+    driver: bridge
+  db:
+    internal: true
+
+volumes:
+  pgdata:
+  caddy_data:
+  caddy_config:

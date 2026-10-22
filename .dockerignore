@@ -1,0 +1,13 @@
+.git
+.gitignore
+.env
+.env.*
+node_modules
+frontend/node_modules
+frontend/.astro
+frontend/dist
+.astro
+dist
+test-results
+frontend/test-results
+backend/bin

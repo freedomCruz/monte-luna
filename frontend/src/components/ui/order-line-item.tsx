@@ -101,13 +101,13 @@ export function OrderLineItem({
     return (
       <article
         key={id}
-        className="relative flex flex-col gap-2 pt-4 pb-4 pr-3 pl-28 md:pl-32 bg-card rounded-[20px] shadow-sm border border-foreground/5 mt-4"
+        className="relative flex flex-col gap-2 pt-4 pb-4 pr-3 pl-[76px] sm:pl-28 md:pl-32 bg-card rounded-[20px] shadow-sm border border-foreground/5 mt-4"
       >
         {image && (
           <img
             src={image}
             alt={title}
-            className="absolute left-1 md:left-2 -top-5 h-36 md:h-40 object-contain -rotate-6 drop-shadow-md pointer-events-none"
+            className="absolute -left-1 sm:left-1 md:left-2 -top-2 sm:-top-5 h-20 sm:h-36 md:h-40 object-contain -rotate-6 drop-shadow-md pointer-events-none"
           />
         )}
 
@@ -201,13 +201,13 @@ export function OrderLineItem({
   return (
     <article
       key={id}
-      className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-7 mt-8 sm:mt-9 pt-6 pb-6 pr-4 sm:pr-16 pl-28 sm:pl-48 bg-card rounded-[20px] shadow-sm border border-foreground/5 min-h-[170px]"
+      className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4 sm:gap-7 mt-8 sm:mt-9 pt-6 pb-6 pr-4 sm:pr-16 pl-20 sm:pl-48 bg-card rounded-[20px] shadow-sm border border-foreground/5 min-h-[170px]"
     >
       {image && (
         <img
           src={image}
           alt={title}
-          className="absolute left-1 sm:left-3 -top-6 h-40 sm:h-52 object-contain -rotate-6 drop-shadow-md pointer-events-none"
+          className="absolute -left-1 sm:left-3 -top-2 sm:-top-6 h-22 sm:h-52 object-contain -rotate-6 drop-shadow-md pointer-events-none"
         />
       )}
 
@@ -250,7 +250,7 @@ export function OrderLineItem({
         </div>
       </div>
 
-      <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3">
+      <div className="flex flex-wrap sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-3">
         <div className="flex items-baseline gap-2">
           {hasDiscount && (
             <s
@@ -260,7 +260,7 @@ export function OrderLineItem({
               {formattedCompareTotal}
             </s>
           )}
-          <span className="text-2xl sm:text-[28px] font-extrabold tracking-tight text-foreground leading-none">
+          <span className="text-xl sm:text-[28px] font-extrabold tracking-tight text-foreground leading-none">
             {formattedTotal}
           </span>
         </div>
