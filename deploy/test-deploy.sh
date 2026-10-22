@@ -345,6 +345,49 @@ test_security_rules() {
   pass "Security checks (no sshpass, no StrictHostKeyChecking=no, no \$(ssh -t), no docker group, no secrets)"
 }
 
+test_release_env_and_cleanup_isolation() {
+  local release_id="v0.1.0-rc.3-deadbee"
+  local script
+  script="$(generate_remote_script "$release_id" deadbeefdeadbeefdeadbeefdeadbeefdeadbeef "/tmp/stage")"
+
+  if ! printf '%s\n' "$script" | grep -Fq 'readonly DEPLOY_RELEASE_ID="v0.1.0-rc.3-deadbee"'; then
+    fail "Remote script must preserve an immutable release id before sourcing .env"
+  fi
+  if ! printf '%s\n' "$script" | grep -Fq 'MONTELUNA_RELEASE="${DEPLOY_RELEASE_ID}"'; then
+    fail "Remote script must restore MONTELUNA_RELEASE after sourcing .env"
+  fi
+
+  if ! declare -F make_cleanup_command >/dev/null; then
+    fail "deploy.sh must provide a cleanup command independent of local scope"
+  fi
+  local cleanup_target cleanup_command
+  cleanup_target="$(mktemp -d)/image archive.tar.gz"
+  : > "$cleanup_target"
+  cleanup_command="$(make_cleanup_command "$cleanup_target")"
+  bash -c "$cleanup_command"
+  if [[ -e "$cleanup_target" ]]; then
+    fail "Cleanup command did not remove its captured path"
+  fi
+  rmdir "$(dirname "$cleanup_target")"
+
+  pass "Release id survives env loading and cleanup captures its path"
+}
+
+test_ci_gate_determinism() {
+  local repo_root
+  repo_root="$(cd "$SCRIPT_DIR/.." && pwd)"
+  local deterministic_test='go test -p 1 -count=1 -mod=readonly ./...'
+
+  if ! grep -Fq -- "$deterministic_test" "$repo_root/Taskfile.yml"; then
+    fail "Taskfile backend gate must run fresh package-serial Go tests"
+  fi
+  if ! grep -Fq -- "$deterministic_test" "$DEPLOY_SCRIPT"; then
+    fail "deploy.sh fallback gate must run fresh package-serial Go tests"
+  fi
+
+  pass "Local CI gates run fresh package-serial Go tests"
+}
+
 # ==============================================================================
 # Runner
 # ==============================================================================
@@ -359,6 +402,8 @@ main() {
   run_test test_health_check_spec
   run_test test_security_rules
   run_test test_review_regressions
+  run_test test_release_env_and_cleanup_isolation
+  run_test test_ci_gate_determinism
 
   echo "=== All $TESTS_PASSED/$TESTS_RUN tests passed ==="
 }
