@@ -165,7 +165,9 @@ const requiredVars = [
   "OUTBOX_INITIAL_BACKOFF",
   "OUTBOX_MAX_BACKOFF",
   "OUTBOX_BATCH_SIZE",
-  "OUTBOX_MAX_ATTEMPTS"
+  "OUTBOX_MAX_ATTEMPTS",
+  "APP_ENCRYPTION_KEY",
+  "NOTIFICATIONS_EMAIL_SENDER"
 ];
 
 const envLines = rawEnvExample.split("\n");
@@ -189,6 +191,9 @@ for (const req of requiredVars) {
   assert(!val.includes("ghp_"), `deploy/env.example variable ${req} contains a token: ${val}`);
 }
 
+// Staging must not send real email until a sending domain is verified in Resend.
+assert(envVars.get("NOTIFICATIONS_EMAIL_SENDER") === "capture", "deploy/env.example must default NOTIFICATIONS_EMAIL_SENDER to capture");
+
 console.log("ALL COMPOSE AND ENV ASSERTIONS PASSED");
 ' "$CONFIG_JSON" "$COMPOSE_FILE" "$ENV_EXAMPLE"
 
@@ -198,5 +203,16 @@ if ! grep -q $'^\troot \* /srv$' "$CADDYFILE"; then
 fi
 if grep -q 'preload' "$CADDYFILE"; then
   echo "FAIL: HSTS must not commit the domain to the preload list" >&2; exit 1
+fi
+# The SSH-only administrator CLI must ship in the API image so the first owner can be created on the host.
+API_DOCKERFILE="$REPO_ROOT/backend/Dockerfile"
+if ! grep -q -- '-o /app/admin ./cmd/admin' "$API_DOCKERFILE"; then
+  echo "FAIL: backend/Dockerfile must build ./cmd/admin to /app/admin" >&2; exit 1
+fi
+if ! grep -q '^COPY --from=builder /app/admin /app/admin$' "$API_DOCKERFILE"; then
+  echo "FAIL: backend/Dockerfile must copy /app/admin into the runtime image" >&2; exit 1
+fi
+if ! grep -q '^ENTRYPOINT \["/app/api"\]$' "$API_DOCKERFILE"; then
+  echo "FAIL: backend/Dockerfile entrypoint must stay /app/api" >&2; exit 1
 fi
 echo "PASS: deploy/test-compose.sh succeeded"
