@@ -233,6 +233,26 @@ test_generated_remote_script() {
   pass "Generated remote script passes bash -n and follows strict step order"
 }
 
+test_review_regressions() {
+  local script
+  script="$(generate_remote_script v1.0.0-482318a 482318ab9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f /tmp/monteluna-staging-test)"
+  # The rollback log must record the failed release, not the one restored.
+  if ! printf '%s
+' "$script" | grep -q 'FAILED_RELEASE="${MONTELUNA_RELEASE}"'; then
+    fail "Rollback must capture FAILED_RELEASE before switching MONTELUNA_RELEASE"
+  fi
+  if ! printf '%s
+' "$script" | grep -q '"${FAILED_RELEASE}" "${COMMIT_SHA}"'; then
+    fail "Rollback log line must start with FAILED_RELEASE"
+  fi
+  # An empty pre-deploy dump must stop the deploy before migrations.
+  if ! printf '%s
+' "$script" | grep -q 'Pre-deploy database dump is empty'; then
+    fail "Pre-deploy dump must be checked for non-zero size"
+  fi
+  pass "Review regressions: rollback log records the failed release; empty dump stops the deploy"
+}
+
 test_rollback_and_first_deploy_behavior() {
   local release_id="v1.0.0-482318a"
   local commit_sha="482318ab9c0d1e2f3a4b5c6d7e8f9a0b1c2d3e4f"
@@ -338,6 +358,7 @@ main() {
   run_test test_rollback_and_first_deploy_behavior
   run_test test_health_check_spec
   run_test test_security_rules
+  run_test test_review_regressions
 
   echo "=== All $TESTS_PASSED/$TESTS_RUN tests passed ==="
 }

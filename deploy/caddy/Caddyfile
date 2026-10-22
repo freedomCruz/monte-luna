@@ -3,10 +3,12 @@
 }
 
 {$SITE_ADDRESS} {
+	# Site-wide root so handle_errors can serve /404.html as well.
+	root * /srv
 	encode zstd gzip
 
 	header {
-		Strict-Transport-Security "max-age=31536000; includeSubDomains; preload"
+		Strict-Transport-Security "max-age=31536000; includeSubDomains"
 		X-Content-Type-Options "nosniff"
 		Referrer-Policy "strict-origin-when-cross-origin"
 		X-Frame-Options "DENY"
@@ -17,7 +19,6 @@
 	}
 
 	handle {
-		root * /srv
 		file_server {
 			precompressed zstd gzip
 		}
