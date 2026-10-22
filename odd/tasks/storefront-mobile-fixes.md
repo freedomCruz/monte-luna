@@ -21,8 +21,8 @@ Fixes follow the original desktop and mobile HTML references under `docs/design/
 
 | ID | Task | Specs | Route | Commit |
 |---|---|---|---|---|
-| T1 | Reproduce both defects at exact failing widths with RED evidence (Playwright), fix the shared components, compare desktop/mobile renders against the canvas references | S1–S3 | worker | done (L3–L5) |
-| T2 | Coordinator review, full frontend gate, commit | S1–S3 | coordinator | pending |
+| T1 | Reproduce both defects at exact failing widths with RED evidence (Playwright), fix the shared components, compare desktop/mobile renders against the canvas references | S1–S3 | worker | `16f5275` (L3–L5) |
+| T2 | Coordinator review, full frontend gate, commit | S1–S3 | coordinator | `16f5275` (L6) |
 
 ## Log
 
