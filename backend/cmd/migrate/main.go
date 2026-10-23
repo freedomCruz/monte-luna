@@ -13,6 +13,7 @@ import (
 	"time"
 
 	"github.com/freedomCruz/monte-luna/backend/internal/catalog"
+	"github.com/freedomCruz/monte-luna/backend/internal/identity"
 	"github.com/freedomCruz/monte-luna/backend/internal/orders"
 	"github.com/freedomCruz/monte-luna/backend/internal/payments"
 	"github.com/freedomCruz/monte-luna/backend/internal/shipping"
@@ -20,9 +21,9 @@ import (
 
 func main() {
 	flags := flag.NewFlagSet("migrate", flag.ContinueOnError)
-	module := flags.String("module", "all", "module to migrate: all, catalog, shipping, orders or payments")
+	module := flags.String("module", "all", "module to migrate: all, catalog, shipping, orders, payments or identity")
 	flags.Usage = func() {
-		if _, err := fmt.Fprint(flags.Output(), "Usage: migrate\nApply embedded migrations in order: catalog, shipping, orders, payments (no demo data).\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping|orders|payments (default all).\n"); err != nil {
+		if _, err := fmt.Fprint(flags.Output(), "Usage: migrate\nApply embedded migrations in order: catalog, shipping, orders, payments, identity (no demo data).\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping|orders|payments|identity (default all).\n"); err != nil {
 			os.Exit(1)
 		}
 	}
@@ -39,7 +40,7 @@ func main() {
 	defer cancel()
 	label := *module
 	if label == "all" {
-		label = "catalog, shipping, orders and payments"
+		label = "catalog, shipping, orders, payments and identity"
 	}
 	if err := runModule(ctx, *module); err != nil {
 		logger.Error(label+" migration failed", "error", err)
@@ -49,8 +50,8 @@ func main() {
 }
 
 func runModule(ctx context.Context, module string) (err error) {
-	if module != "all" && module != "catalog" && module != "shipping" && module != "orders" && module != "payments" {
-		return errors.New("module must be all, catalog, shipping, orders or payments")
+	if module != "all" && module != "catalog" && module != "shipping" && module != "orders" && module != "payments" && module != "identity" {
+		return errors.New("module must be all, catalog, shipping, orders, payments or identity")
 	}
 	db, err := catalog.OpenDatabase(ctx, os.Getenv("DATABASE_URL"))
 	if err != nil {
@@ -73,7 +74,12 @@ func runModule(ctx context.Context, module string) (err error) {
 		}
 	}
 	if module == "all" || module == "payments" {
-		return payments.Migrate(ctx, db)
+		if err := payments.Migrate(ctx, db); err != nil {
+			return err
+		}
+	}
+	if module == "all" || module == "identity" {
+		return identity.Migrate(ctx, db)
 	}
 	return nil
 }

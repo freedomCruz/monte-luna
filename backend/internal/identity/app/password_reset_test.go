@@ -89,7 +89,7 @@ func TestPasswordResetUseCases(t *testing.T) {
 	}
 	limiter := &resetLimiter{}
 	tokens := cryptography.NewResetTokens(nil)
-	service, err := app.NewPasswordResets(repo, cryptography.NewHasher(nil), cipher, tokens, limiter, func() time.Time { return now })
+	service, err := app.NewPasswordResets(repo, cryptography.NewHasher(nil), cipher, tokens, limiter, func() time.Time { return now }, allowPasswords)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -144,6 +144,9 @@ func TestPasswordResetUseCases(t *testing.T) {
 			t.Fatal("expiry boundary accepted or mutated state")
 		}
 		now = now.Add(-time.Second)
+		if err := service.Complete(t.Context(), current, "rejected", "127.0.0.1"); !errors.Is(err, domain.ErrValidation) || !reflect.DeepEqual(before, *repo) {
+			t.Fatal("password policy rejection consumed the token or changed state")
+		}
 		if err := service.Complete(t.Context(), current, "new password", "127.0.0.1"); err != nil {
 			t.Fatal(err)
 		}
@@ -180,7 +183,7 @@ func TestPasswordResetUseCases(t *testing.T) {
 		}
 	})
 	t.Run("dependency error redaction", func(t *testing.T) {
-		bad, err := app.NewPasswordResets(repo, cryptography.NewHasher(nil), cipher, resetBadTokens{}, limiter, func() time.Time { return now })
+		bad, err := app.NewPasswordResets(repo, cryptography.NewHasher(nil), cipher, resetBadTokens{}, limiter, func() time.Time { return now }, allowPasswords)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -207,4 +210,11 @@ func TestResetTokenEntropy(t *testing.T) {
 	if _, _, err := cryptography.NewResetTokens(bytes.NewReader(nil)).Generate(); err == nil {
 		t.Fatal("entropy failure ignored")
 	}
+}
+
+func allowPasswords(password string) error {
+	if password == "rejected" {
+		return domain.ErrValidation
+	}
+	return nil
 }

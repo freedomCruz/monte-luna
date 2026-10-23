@@ -29,7 +29,7 @@ type Auth struct {
 }
 
 func NewAuth(repo domain.AuthRepository, passwords domain.Passwords, cipher domain.SecretCipher, factors domain.Factors, limiter domain.AuthLimiter, now func() time.Time, config AuthConfig) (*Auth, error) {
-	if repo == nil || passwords == nil || cipher == nil || factors == nil || limiter == nil || now == nil || config.LockoutThreshold < 1 || config.LockoutDuration <= 0 || config.RecoveryCount < 1 || config.RecoveryCount > 100 || config.RecoveryBytes < 16 || config.RecoveryBytes > 128 || config.DummyPasswordHash == "" {
+	if repo == nil || passwords == nil || cipher == nil || factors == nil || limiter == nil || now == nil || config.LockoutThreshold < 1 || config.LockoutDuration <= 0 || config.RecoveryCount < 1 || config.RecoveryCount > 100 || config.RecoveryBytes < 10 || config.RecoveryBytes > 128 || config.DummyPasswordHash == "" {
 		return nil, domain.ErrValidation
 	}
 	if _, _, err := passwords.Verify("", config.DummyPasswordHash); err != nil {

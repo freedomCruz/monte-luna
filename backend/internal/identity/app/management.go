@@ -357,3 +357,121 @@ func (a *Management) CleanupSecurityEvents(ctx context.Context, batch int32) (in
 	}
 	return a.repo.DeleteOldSecurityEvents(ctx, a.config.Now(), batch)
 }
+
+// Profile returns the caller's safe administrator record. Only a fully
+// authenticated session with the current session_version qualifies.
+func (a *Auth) Profile(ctx context.Context, p domain.Session) (domain.AdminRecord, error) {
+	if p.UserID == "" {
+		return domain.AdminRecord{}, domain.ErrAuthenticationRequired
+	}
+	s, err := a.repo.ReadAuth(ctx, p.UserID)
+	if err != nil {
+		return domain.AdminRecord{}, authNotFound(err)
+	}
+	if err := check(s, p, domain.Authenticated); err != nil {
+		return domain.AdminRecord{}, err
+	}
+	return record(s), nil
+}
+
+// Page reads one more record than requested so callers can tell whether a
+// following page exists without issuing an empty trailing page.
+func (a *Management) Page(ctx context.Context, p domain.Session, after string, limit int) ([]domain.AdminRecord, bool, error) {
+	if limit < 1 || limit > 100 {
+		if err := a.repo.Manage(ctx, func(tx domain.AdminTx) error { _, err := owner(ctx, tx, p); return err }); err != nil {
+			return nil, false, err
+		}
+		return nil, false, domain.ErrValidation
+	}
+	var out []domain.AdminRecord
+	err := a.repo.Manage(ctx, func(tx domain.AdminTx) error {
+		if _, err := owner(ctx, tx, p); err != nil {
+			return err
+		}
+		var err error
+		out, err = tx.List(ctx, after, limit+1)
+		return err
+	})
+	if err != nil {
+		return nil, false, err
+	}
+	if len(out) > limit {
+		return out[:limit], true, nil
+	}
+	return out, false, nil
+}
+
+// ChangePassword requires the current password and one fresh second factor.
+// Success revokes every session, including the caller's; failures count toward
+// lockout and change no credential.
+func (a *Management) ChangePassword(ctx context.Context, p domain.Session, current, next string, proof domain.Proof, audit domain.AuditContext) error {
+	if !proof.Valid() || current == "" {
+		return domain.ErrValidation
+	}
+	if err := a.validatePassword(next); err != nil {
+		return err
+	}
+	if err := a.auth.limit(ctx, p.UserID, audit.IP); err != nil {
+		return err
+	}
+	hash, err := a.passwords.Hash(next)
+	if err != nil {
+		return err
+	}
+	var rejected error
+	err = a.repo.Manage(ctx, func(tx domain.AdminTx) error {
+		actor, err := tx.Get(ctx, p.UserID)
+		if err != nil {
+			return authNotFound(err)
+		}
+		if err := check(actor, p, domain.Authenticated); err != nil {
+			return err
+		}
+		if err := a.auth.locked(actor.User); err != nil {
+			return err
+		}
+		matches, _, err := a.passwords.Verify(current, actor.User.PasswordHash)
+		if err != nil {
+			return err
+		}
+		valid := false
+		if matches {
+			valid, err = a.auth.consume(&actor, proof)
+			if err != nil {
+				return err
+			}
+		}
+		if !valid {
+			a.auth.failed(&actor, audit.IP)
+			rejected = domain.ErrInvalidCredentials
+			return tx.SaveProof(ctx, actor)
+		}
+		if proof.RecoveryCode != "" {
+			actor.Events = append(actor.Events, domain.AuthEvent{Type: "recovery_code_used", IP: audit.IP})
+		}
+		if err := tx.SaveProof(ctx, actor); err != nil {
+			return err
+		}
+		expected := actor.User.Version
+		actor.User.PasswordHash = hash
+		actor.User.PasswordChangedAt = a.config.Now()
+		actor.User.SessionVersion++
+		if _, err := tx.SaveUser(ctx, actor.User, expected); err != nil {
+			return err
+		}
+		return tx.Audit(ctx, domain.SecurityEvent{UserID: p.UserID, Type: "password_changed", Context: audit})
+	})
+	if err != nil {
+		return err
+	}
+	return rejected
+}
+
+// CleanupPasswordTokens deletes one bounded batch of tokens past their 7-day
+// retention after expiry or consumption. Live tokens are never touched.
+func (a *Management) CleanupPasswordTokens(ctx context.Context, batch int32) (int64, error) {
+	if batch < 1 || batch > 10000 {
+		return 0, domain.ErrValidation
+	}
+	return a.repo.DeleteOldPasswordTokens(ctx, a.config.Now(), batch)
+}

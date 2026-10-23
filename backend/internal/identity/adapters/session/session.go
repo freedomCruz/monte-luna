@@ -10,10 +10,14 @@ import (
 	"github.com/freedomCruz/monte-luna/backend/internal/identity/domain"
 )
 
+// Config limits are enforced twice: SCS applies them with real time as the
+// outer bound, and Current applies them with Now (the module clock).
 type Config struct {
 	Lifetime        time.Duration
 	IdleTimeout     time.Duration
 	PendingLifetime time.Duration
+	// Now defaults to time.Now.
+	Now func() time.Time
 }
 type Validator interface {
 	Validate(context.Context, domain.Session, domain.Stage) (domain.User, error)
@@ -27,6 +31,9 @@ type Sessions struct {
 func New(store scs.Store, validator Validator, config Config) (*Sessions, error) {
 	if store == nil || validator == nil || config.Lifetime <= 0 || config.IdleTimeout <= 0 || config.IdleTimeout > config.Lifetime || config.PendingLifetime <= 0 || config.PendingLifetime > config.Lifetime {
 		return nil, domain.ErrValidation
+	}
+	if config.Now == nil {
+		config.Now = time.Now
 	}
 	manager := scs.New()
 	manager.Store = store
@@ -66,6 +73,9 @@ func (s *Sessions) Replace(ctx context.Context, state domain.Session) error {
 	s.Manager.Put(ctx, "identity_user", state.UserID)
 	s.Manager.Put(ctx, "identity_version", state.Version)
 	s.Manager.Put(ctx, "identity_stage", string(state.Stage))
+	now := s.config.Now().UnixNano()
+	s.Manager.Put(ctx, "identity_issued", now)
+	s.Manager.Put(ctx, "identity_seen", now)
 	lifetime := s.config.Lifetime
 	if state.Stage != domain.Authenticated {
 		lifetime = s.config.PendingLifetime
@@ -87,9 +97,29 @@ func (s *Sessions) Current(ctx context.Context, stage domain.Stage) (domain.Sess
 	if !s.Manager.Deadline(ctx).After(time.Now()) {
 		return domain.Session{}, domain.ErrAuthenticationRequired
 	}
+	if !s.fresh(ctx, stage) {
+		return domain.Session{}, domain.ErrAuthenticationRequired
+	}
 	if _, err := s.validator.Validate(ctx, state, stage); err != nil {
 		return domain.Session{}, err
+	}
+	if stage == domain.Authenticated {
+		s.Manager.Put(ctx, "identity_seen", s.config.Now().UnixNano())
 	}
 	return state, nil
 }
 func (s *Sessions) Destroy(ctx context.Context) error { return s.Manager.Destroy(ctx) }
+
+// fresh applies the absolute, idle and pending limits with the module clock.
+// A limit reached exactly is still valid; sessions lacking timestamps are not.
+func (s *Sessions) fresh(ctx context.Context, stage domain.Stage) bool {
+	issued, seen := s.Manager.GetInt64(ctx, "identity_issued"), s.Manager.GetInt64(ctx, "identity_seen")
+	if issued == 0 || seen == 0 {
+		return false
+	}
+	now := s.config.Now()
+	if stage != domain.Authenticated {
+		return now.Sub(time.Unix(0, issued)) <= s.config.PendingLifetime
+	}
+	return now.Sub(time.Unix(0, issued)) <= s.config.Lifetime && now.Sub(time.Unix(0, seen)) <= s.config.IdleTimeout
+}

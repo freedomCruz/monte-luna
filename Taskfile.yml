@@ -67,10 +67,17 @@ tasks:
       - npm run build
 
   backend:migrate:
-    desc: Apply embedded database migrations (catalog, shipping, orders, then payments) to this worktree's database
+    desc: Apply embedded database migrations (catalog, shipping, orders, payments, then identity) to this worktree's database
     dir: backend
     cmds:
       - go run ./cmd/migrate
+
+  backend:admin:
+    desc: "Run an administrator command against this worktree's database, e.g. task backend:admin -- create-owner --email you@example.com --name Owner (the password is read from stdin)"
+    dir: backend
+    interactive: true
+    cmds:
+      - go run ./cmd/admin {{.CLI_ARGS}}
 
   backend:seed:
     desc: Load idempotent demo data (catalog, shipping, orders) into this worktree's database (never production)

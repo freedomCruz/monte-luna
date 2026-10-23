@@ -25,3 +25,10 @@ SELECT * FROM identity.password_reset_tokens WHERE token_hash=$1 FOR UPDATE;
 UPDATE identity.admin_users SET password_hash=$2,password_changed_at=$3,
     session_version=session_version+1,version=version+1,updated_at=$3
 WHERE id=$1;
+
+-- name: DeleteOldPasswordTokens :execrows
+DELETE FROM identity.password_reset_tokens WHERE id IN (
+ SELECT id FROM identity.password_reset_tokens
+ WHERE coalesce(used_at,expires_at) < (sqlc.arg(reference_time)::timestamptz - interval '7 days')
+ ORDER BY coalesce(used_at,expires_at),id LIMIT sqlc.arg(batch_size)
+);

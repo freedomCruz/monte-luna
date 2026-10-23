@@ -84,7 +84,7 @@ func TestPasswordResetPersistence(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	service, err := app.NewPasswordResets(repo, hasher, cipher, cryptography.NewResetTokens(nil), resetTestLimiter{}, func() time.Time { return now })
+	service, err := app.NewPasswordResets(repo, hasher, cipher, cryptography.NewResetTokens(nil), resetTestLimiter{}, func() time.Time { return now }, allowPasswords)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -223,3 +223,5 @@ func TestPasswordResetPersistence(t *testing.T) {
 		t.Fatal("reset created a session or duplicated completion audit")
 	}
 }
+
+func allowPasswords(string) error { return nil }

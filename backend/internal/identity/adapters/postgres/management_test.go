@@ -158,7 +158,7 @@ func TestAdministratorManagement(t *testing.T) {
 		if _, err := repo.PasswordResetAccount(ctx, hash, now.Add(domain.PasswordResetLifetime)); !errors.Is(err, domain.ErrInvalidResetToken) {
 			t.Fatal("invitation expiry boundary bypassed")
 		}
-		resets, err := app.NewPasswordResets(repo, hasher, cipher, generator, managementLimiter{}, clock)
+		resets, err := app.NewPasswordResets(repo, hasher, cipher, generator, managementLimiter{}, clock, func(string) error { return nil })
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -246,6 +246,54 @@ func TestAdministratorManagement(t *testing.T) {
 		}
 		if !strings.Contains(string(metadata), target.User.ID) || ua != "fixture-agent" || strings.Contains(string(metadata), proof) {
 			t.Fatal("audit lost target/context or leaked proof")
+		}
+	})
+	t.Run("invitation payload names the assigned role; reset payload does not", func(t *testing.T) {
+		keys := func(eventType, id string) map[string]any {
+			t.Helper()
+			var payloadBytes []byte
+			if err := pool.QueryRow(ctx, `SELECT payload FROM identity.outbox WHERE type=$1 AND payload->>'admin_user_id'=$2 ORDER BY occurred_at DESC, id DESC LIMIT 1`, eventType, id).Scan(&payloadBytes); err != nil {
+				t.Fatal(err)
+			}
+			var payload map[string]any
+			if err := json.Unmarshal(payloadBytes, &payload); err != nil {
+				t.Fatal(err)
+			}
+			return payload
+		}
+		for _, tc := range []struct {
+			email string
+			role  domain.Role
+		}{{"role-staff@example.test", domain.Staff}, {"role-owner@example.test", domain.Owner}} {
+			invited, err := service.Invite(ctx, session, tc.email, "Role", tc.role, audit)
+			if err != nil {
+				t.Fatal(err)
+			}
+			payload := keys("identity.admin_invited", invited.User.ID)
+			if len(payload) != 5 || payload["role"] != string(tc.role) || payload["email"] != tc.email || payload["display_name"] != "Role" || payload["raw_token_encrypted"] == "" {
+				t.Fatalf("invitation payload %v", payload)
+			}
+			if tc.role == domain.Owner {
+				// Later subtests rely on the original active-owner count.
+				disabled := domain.Disabled
+				if _, err := service.Update(ctx, session, invited.User.ID, invited.User.Version, domain.UserChanges{Status: &disabled}, audit); err != nil {
+					t.Fatal(err)
+				}
+			}
+		}
+		resets, err := app.NewPasswordResets(repo, hasher, cipher, generator, managementLimiter{}, clock, func(string) error { return nil })
+		if err != nil {
+			t.Fatal(err)
+		}
+		if err := resets.Request(ctx, "role-staff@example.test", "127.0.0.1"); err != nil {
+			t.Fatal(err)
+		}
+		staff, err := repo.FindByEmail(ctx, "role-staff@example.test")
+		if err != nil {
+			t.Fatal(err)
+		}
+		if payload := keys("identity.password_reset_requested", staff.ID); len(payload) != 4 || payload["role"] != nil {
+			t.Fatalf("reset payload changed: %v", payload)
 		}
 	})
 	t.Run("stdin-only emergency commands preserve MFA and revoke prior links", func(t *testing.T) {

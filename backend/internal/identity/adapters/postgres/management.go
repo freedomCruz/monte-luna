@@ -58,8 +58,10 @@ func (t *adminTx) FindByEmail(ctx context.Context, email string) (domain.AuthSta
 	}
 	return loadAuth(ctx, t.q, fromRow(row))
 }
+
+// List accepts one record beyond the public page maximum for next-page lookahead.
 func (t *adminTx) List(ctx context.Context, after string, limit int) ([]domain.AdminRecord, error) {
-	if limit < 1 || limit > 100 {
+	if limit < 1 || limit > 101 {
 		return nil, domain.ErrValidation
 	}
 	var cursor pgtype.UUID
@@ -181,6 +183,11 @@ func (t *adminTx) InsertTokenEvent(ctx context.Context, event domain.TokenEvent)
 	if event.Type != "identity.admin_invited" && event.Type != "identity.password_reset_requested" {
 		return domain.ErrValidation
 	}
+	// Invitations must name the assigned fixed role; reset events never carry one.
+	invited := event.Type == "identity.admin_invited"
+	if invited != (event.Payload.Role == domain.Owner || event.Payload.Role == domain.Staff) || (!invited && event.Payload.Role != "") {
+		return domain.ErrValidation
+	}
 	encrypted, err := base64.StdEncoding.Strict().DecodeString(event.Payload.RawTokenEncrypted)
 	if err != nil || len(encrypted) < 28 || event.OccurredAt.IsZero() {
 		return domain.ErrValidation
@@ -237,6 +244,19 @@ func (r *Repository) DeleteOldSecurityEvents(ctx context.Context, now time.Time,
 		return 0, domain.ErrValidation
 	}
 	n, err := identitysql.New(r.pool).DeleteOldSecurityEvents(ctx, identitysql.DeleteOldSecurityEventsParams{ReferenceTime: pgtype.Timestamptz{Time: now, Valid: true}, BatchSize: batch})
+	if err != nil {
+		return 0, mapError(err)
+	}
+	return n, nil
+}
+
+// DeleteOldPasswordTokens removes one batch of reset/invitation tokens whose
+// consumption time, or expiry when unconsumed, is more than 7 days old.
+func (r *Repository) DeleteOldPasswordTokens(ctx context.Context, now time.Time, batch int32) (int64, error) {
+	if batch < 1 || batch > 10000 || now.IsZero() {
+		return 0, domain.ErrValidation
+	}
+	n, err := identitysql.New(r.pool).DeleteOldPasswordTokens(ctx, identitysql.DeleteOldPasswordTokensParams{ReferenceTime: pgtype.Timestamptz{Time: now, Valid: true}, BatchSize: batch})
 	if err != nil {
 		return 0, mapError(err)
 	}

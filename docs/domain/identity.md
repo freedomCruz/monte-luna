@@ -17,6 +17,7 @@ Canonical requirements and data model for the `identity` module. Conventions in 
 | Data model (section 3) | Approved |
 | Secret management for application encryption key: protected environment variable (`0600`) in v1 | Approved |
 | Retention policy for `security_events`: 1 year | Approved |
+| Security policy values and one-time link routes (section 2) | Approved |
 | Customer accounts | Deferred (post-v1) |
 
 ## 2. Approved Requirements
@@ -50,6 +51,17 @@ Canonical requirements and data model for the `identity` module. Conventions in 
 - **Cookies:** `HttpOnly`, `Secure`, and `SameSite` flags with the strict OWASP prefix `__Host-session` (no `Domain` attribute, `Path=/`, HTTPS only). Session tokens are regenerated on login to prevent session fixation.
 - **Rate limiting:** Implemented in the Go application layer to prevent brute-force attacks per account and per IP. Account-level lockout is persisted in `admin_users` (`locked_until`) to survive process restarts and deployments.
 - **Application encryption key:** The AES-256-GCM master key used to encrypt TOTP secrets and outbox password reset tokens is injected via an environment variable (`APP_ENCRYPTION_KEY`) from an env file with `0600` permissions on the VPS, validated at startup.
+- **Security policy values (approved 2026-10-20, OWASP/NIST baseline):**
+  - Authenticated admin session: 12-hour absolute lifetime and 30-minute idle timeout.
+  - Pending session (password verified, 2FA or enrollment not completed): 10-minute lifetime.
+  - Account lockout: 5 consecutive failed attempts lock the account for 15 minutes.
+  - Login rate limiting: per account 5 attempts per minute (burst 5) and per IP 20 attempts per minute (burst 20); the in-memory limiter keeps at most 10,000 keys and evicts keys idle for 15 minutes.
+  - Recovery codes: 10 single-use codes, each generated from 10 random bytes.
+  - Passwords: 12 to 128 characters (Unicode code points); no composition rules.
+  - TOTP issuer label: `Monteluna`.
+  - Client IP for rate limiting: `X-Forwarded-For` is trusted only when the direct peer is loopback or a private network address (the Caddy reverse proxy); otherwise the direct peer address is used.
+  - One-time token retention: expired or consumed rows in `password_reset_tokens` are deleted 7 days after expiry or consumption by the periodic cleanup job.
+- **One-time link routes (approved 2026-10-20):** Password-reset and invitation links carry the raw token in the URL fragment so it never reaches server logs or the `Referer` header: `{STOREFRONT_BASE_URL}/admin/restablecer-contrasena#token=<token>` and `{STOREFRONT_BASE_URL}/admin/invitacion#token=<token>`. Identity owns these routes; Notifications builds links only through Identity's public facade.
 - **Session invalidation:** Because SCS session data is serialized and opaque in PostgreSQL, individual sessions cannot be queried by user ID. Invalidation uses a `session_version` counter in `admin_users`, mirrored inside the session payload. Incrementing `session_version` on password changes, user disabling, role modification, or 2FA reset immediately invalidates all active sessions for that user on their next request.
 
 **Bootstrap and emergency recovery**
@@ -159,7 +171,7 @@ Outbox table follows [data-modeling.md](../architecture/data-modeling.md) sectio
 - **`identity.password_reset_requested`**: Published upon valid password reset requests.
   - Payload attributes: `admin_user_id` (uuid), `email` (text), `display_name` (text), `raw_token_encrypted` (text).
 - **`identity.admin_invited`**: Published atomically with owner-created administrator records so the recipient can establish the first password.
-  - Payload attributes: `admin_user_id` (uuid), `email` (text), `display_name` (text), `raw_token_encrypted` (text).
+  - Payload attributes: `admin_user_id` (uuid), `email` (text), `display_name` (text), `role` (`owner` | `staff`, the role assigned at creation; approved 2026-10-20 so the invitation email can name it), `raw_token_encrypted` (text).
   - The invitation uses the same single-use token storage and 30-minute validity as password recovery; consuming it sets the password but creates no authenticated session.
 - **Security invariant for both token events:** The raw token is encrypted with the application secret key before being written to the outbox payload. It is never stored in plaintext in the database or outbox. The `notifications` consumer decrypts the token in memory solely to construct the action link and never persists the secret.
 
