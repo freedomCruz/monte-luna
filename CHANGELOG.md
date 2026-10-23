@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-rc.8] - 2026-10-22
+
+### Added
+
+- Administrator authentication backend: invitations by email, password login with lockout and rate limiting, TOTP two-factor authentication with recovery codes, owner and staff roles, audited security events, password resets, and an SSH-only command to create the first owner.
+- Transactional email backend for administrator invitations and password resets, with Resend delivery, signed delivery webhooks, and bounce and complaint suppressions; staging keeps emails in local capture mode.
+
 ## [0.1.0-rc.7] - 2026-10-22
 
 ### Fixed
