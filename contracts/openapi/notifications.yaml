@@ -1,0 +1,332 @@
+openapi: 3.1.0
+info:
+  title: Monteluna notifications API
+  version: 1.0.0
+  description: |
+    Contract-first Notifications v1: one inbound Resend delivery webhook and an
+    internal consumed-event boundary, not a public email-sending API.
+    Canonical rules: docs/domain/notifications.md, docs/domain/identity.md,
+    docs/architecture/api-conventions.md, and data-modeling.md section 11.
+
+    The initially consumed domain events from identity.outbox are
+    identity.password_reset_requested and identity.admin_invited. These internal
+    boundaries are not HTTP operations and add no identity routes.
+
+    identity.password_reset_requested selects the Spanish password-recovery
+    template. Its payload contains admin_user_id (UUIDv7), email (text),
+    display_name (text), and raw_token_encrypted (text). The producer encrypts
+    the raw reset token before persisting the outbox payload.
+
+    identity.admin_invited selects a distinct Spanish administrator-invitation
+    template, not the password-recovery template. This boundary does not define
+    or change the invitation producer's payload, token lifecycle, or acceptance
+    endpoint. Exact subject, HTML copy, and plain-text copy for both templates
+    require separate approval; this contract supplies no email copy.
+
+    Both templates use Go html/template with a mandatory plain-text alternative,
+    embedded in the binary. For either event, the consumer decrypts the token
+    only in memory to construct its single-use link. Decrypted tokens, complete
+    links, and rendered HTML/text containing them remain memory-only. The local
+    capture adapter may retain rendered messages, including their one-time links,
+    only in process memory for local inspection and tests; restart clears them.
+    They must never be persisted in PostgreSQL (including template_data or other
+    database fields), files, logs, or any other durable storage.
+
+    Delivery is asynchronous and at least once. The consumer records the source
+    event ID in notifications.processed_events atomically with its local effect
+    (7-day ledger retention); email_messages.source_event_id is also unique.
+    Suppressed recipients are recorded as suppressed without provider dispatch.
+    Resend dispatch uses Idempotency-Key: <email_messages.id>, reusing the same
+    message ID on retries; provider keys expire after 24 hours. Provider failure
+    is retried through the outbox and never fails, rolls back, or blocks the
+    originating identity transaction. No cross-schema queries or foreign keys.
+
+    Order, payment, shipment, marketing emails, frontend screens, and public or
+    admin email-management endpoints are outside v1. Spanish email copy requires
+    separate approval. Production sending remains gated by domain/DNS and legal
+    prerequisites; this contract does not authorize production delivery.
+externalDocs:
+  description: Resend webhook event types and provider-owned payloads
+  url: https://resend.com/docs/webhooks/event-types
+tags:
+  - name: notifications
+    description: Signed transactional email delivery callbacks.
+paths:
+  /api/v1/notifications/webhooks/resend:
+    post:
+      operationId: receiveResendWebhook
+      tags: [notifications]
+      summary: Receive a signed Resend delivery event
+      description: |
+        Authenticate with the Resend webhook signing secret using Go standard
+        library crypto, never an admin session or an inbound Idempotency-Key.
+        All three svix headers are required. Verify the untouched raw request
+        body before JSON parsing, deduplication, or any state changes.
+        The signed bytes are svix-id + "." + svix-timestamp + "." + raw_body.
+        Strip the whsec_ prefix from the configured secret and base64-decode the
+        remainder as the HMAC-SHA256 key. Decode each space-delimited v1,<base64>
+        signature and accept if any matches using constant-time comparison;
+        unsupported signature versions alone never authenticate a request.
+        Require the attempt timestamp to be within 300 seconds of server time
+        in either direction (inclusive), independent of payload.created_at.
+        Missing/malformed headers, invalid signatures, and stale or future
+        timestamps return 401 without changing stored data or counters.
+        References: https://resend.com/docs/webhooks/verify-webhooks-requests
+        and https://docs.svix.com/receiving/verifying-payloads/how-manual.
+
+        Provider-owned payloads retain additional fields, including provider
+        camelCase bounce keys; they are not storefront request objects.
+        Correctly signed unsupported event types return 200 without effects.
+        A malformed supported event is rejected without committing deduplication.
+
+        Deduplicate supported events by (provider = resend, external_event_id =
+        svix-id), NOT data.email_id: multiple events refer to the same email.
+        Retain webhook ledger entries for 30 days. Authenticate every attempt,
+        including duplicates; a valid duplicate returns 200 with no repeated
+        effects. Commit the ledger insertion, message update, and any suppression
+        together; on failure roll back all of them so provider retry can recover.
+        Concurrent attempts for the same event produce at most one local effect.
+
+        Match data.email_id to email_messages.provider_message_id. A supported
+        event with no matching message returns 503 without committing the ledger
+        so retry can recover the send/webhook race. A transient database failure
+        likewise returns 503 without committing effects; never acknowledge an
+        event whose supported effects have not been committed.
+
+        email.delivered sets status delivered. email.bounced sets status bounced;
+        bounce.type = Permanent additionally upserts lowercased impacted addresses
+        from data.to into email_suppressions with reason hard_bounce.
+        Temporary or unknown bounce types must not create hard-bounce suppressions.
+        email.complained sets status complained and upserts impacted addresses
+        with reason complaint. Suppressions are unique by lowercased email and
+        retained indefinitely. A delayed/repeated event cannot undo a suppression
+        or move a terminal delivery state backwards; in particular delivered
+        cannot overwrite bounced or complained, and bounced cannot overwrite
+        complained. Suppression effects still apply to late permanent bounces.
+        These callbacks never send email or mutate the originating identity data.
+      security:
+        - resendSignature: []
+      parameters:
+        - name: svix-id
+          in: header
+          required: true
+          description: Stable provider event identifier, unchanged across retries; deduplication key.
+          schema:
+            type: string
+            minLength: 1
+        - name: svix-timestamp
+          in: header
+          required: true
+          description: Attempt time in Unix seconds, signed verbatim; accepted only within +/-300 seconds.
+          schema:
+            type: string
+            pattern: '^[0-9]+$'
+        - name: svix-signature
+          in: header
+          required: true
+          description: Space-delimited versioned signatures; at least one valid v1 HMAC is required.
+          schema:
+            type: string
+            minLength: 1
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendEvent'
+            examples:
+              delivered:
+                summary: Synthetic delivered event (no live recipient or credentials)
+                value:
+                  type: email.delivered
+                  created_at: '2026-10-13T15:04:05Z'
+                  data:
+                    email_id: 56761188-7520-42d8-8898-ff6fc54ce618
+                    to: [recipient@example.com]
+              hardBounce:
+                summary: Permanent bounce creates a suppression
+                value:
+                  type: email.bounced
+                  created_at: '2026-10-13T15:04:05Z'
+                  data:
+                    email_id: 56761188-7520-42d8-8898-ff6fc54ce618
+                    to: [recipient@example.com]
+                    bounce:
+                      type: Permanent
+                      subType: General
+                      message: Mailbox unavailable
+              complaint:
+                summary: Spam complaint creates a suppression
+                value:
+                  type: email.complained
+                  created_at: '2026-10-13T15:04:05Z'
+                  data:
+                    email_id: 56761188-7520-42d8-8898-ff6fc54ce618
+                    to: [recipient@example.com]
+              unsupported:
+                summary: Authenticated event acknowledged without effects
+                value:
+                  type: email.opened
+                  created_at: '2026-10-13T15:04:05Z'
+                  data:
+                    email_id: 56761188-7520-42d8-8898-ff6fc54ce618
+      responses:
+        '200':
+          description: Committed supported event, authenticated duplicate, or unsupported event ignored; empty body.
+        '400':
+          description: Malformed JSON (invalid_json); no state changes.
+          content:
+            application/problem+json:
+              schema:
+                $ref: ./common.yaml#/components/schemas/Problem
+        '401':
+          description: Missing/malformed signature headers, invalid HMAC, or timestamp outside the window (invalid_webhook_signature); no state changes.
+          content:
+            application/problem+json:
+              schema:
+                $ref: ./common.yaml#/components/schemas/Problem
+        '422':
+          description: Invalid event envelope or supported event data (validation_failed); no state changes. Provider extra fields are allowed.
+          content:
+            application/problem+json:
+              schema:
+                $ref: ./common.yaml#/components/schemas/Problem
+        '500':
+          description: Unexpected error (internal_error); no partial effects or committed deduplication. Safe details never expose payloads or secrets.
+          content:
+            application/problem+json:
+              schema:
+                $ref: ./common.yaml#/components/schemas/Problem
+        '503':
+          description: Unmatched provider email ID (notification_message_not_found) or transient persistence failure (dependency_unavailable); retry without committed effects or deduplication.
+          content:
+            application/problem+json:
+              schema:
+                $ref: ./common.yaml#/components/schemas/Problem
+components:
+  securitySchemes:
+    resendSignature:
+      type: apiKey
+      in: header
+      name: svix-signature
+      description: HMAC-SHA256 signature over svix-id, svix-timestamp, and raw body, verified with the Resend webhook secret; not a static API key.
+  schemas:
+    ResendEvent:
+      description: Provider wire envelope. Known types must match their specific schema; unknown types are acknowledged without effects.
+      oneOf:
+        - $ref: '#/components/schemas/DeliveredEvent'
+        - $ref: '#/components/schemas/BouncedEvent'
+        - $ref: '#/components/schemas/ComplainedEvent'
+        - $ref: '#/components/schemas/UnsupportedEvent'
+    EventEnvelope:
+      type: object
+      additionalProperties: true
+      required: [type, created_at, data]
+      properties:
+        type:
+          type: string
+          minLength: 1
+        created_at:
+          $ref: ./common.yaml#/components/schemas/Timestamp
+          description: Event occurrence time, not the attempt timestamp used for authentication.
+        data:
+          type: object
+          additionalProperties: true
+    DeliveredEvent:
+      allOf:
+        - $ref: '#/components/schemas/EventEnvelope'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum: [email.delivered]
+            data:
+              $ref: '#/components/schemas/EmailEventData'
+    BouncedEvent:
+      allOf:
+        - $ref: '#/components/schemas/EventEnvelope'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum: [email.bounced]
+            data:
+              allOf:
+                - $ref: '#/components/schemas/EmailEventData'
+                - type: object
+                  required: [bounce]
+                  properties:
+                    bounce:
+                      $ref: '#/components/schemas/BounceDetails'
+    ComplainedEvent:
+      allOf:
+        - $ref: '#/components/schemas/EventEnvelope'
+        - type: object
+          properties:
+            type:
+              type: string
+              enum: [email.complained]
+            data:
+              $ref: '#/components/schemas/EmailEventData'
+    UnsupportedEvent:
+      allOf:
+        - $ref: '#/components/schemas/EventEnvelope'
+        - type: object
+          properties:
+            type:
+              type: string
+              not:
+                enum: [email.delivered, email.bounced, email.complained]
+    EmailEventData:
+      type: object
+      additionalProperties: true
+      description: Only fields consumed by v1 are required; other provider fields may be absent and are not stored as raw payloads.
+      required: [email_id, to]
+      properties:
+        email_id:
+          type: string
+          minLength: 1
+          description: Provider-owned identifier, not a Monteluna UUIDv7 or a webhook event ID.
+        to:
+          type: array
+          minItems: 1
+          description: Impacted recipient addresses, normalized to lowercase for suppression lookup/upsert.
+          items:
+            type: string
+            format: email
+        created_at:
+          $ref: ./common.yaml#/components/schemas/Timestamp
+        from:
+          type: string
+          description: Provider sender string, which may include a display name.
+        subject:
+          type: string
+        message_id:
+          type: string
+        broadcast_id:
+          type: string
+        template_id:
+          type: string
+        tags:
+          type: object
+          additionalProperties:
+            type: string
+    BounceDetails:
+      type: object
+      additionalProperties: true
+      required: [type]
+      properties:
+        type:
+          type: string
+          minLength: 1
+          description: Provider value Permanent denotes a hard bounce; Temporary and unknown values do not trigger hard-bounce suppression.
+        subType:
+          type: string
+          description: Provider-owned camelCase key; optional diagnostic only.
+        message:
+          type: string
+          description: Provider diagnostic; never expose it in problem responses or log raw payloads.
+        diagnosticCode:
+          type: array
+          items:
+            type: string
