@@ -92,16 +92,16 @@ func TestCatalogModuleFilter(t *testing.T) {
 func TestMigrateCommand(t *testing.T) {
 	binary := buildCommand(t, "migrate")
 	code, stdout, stderr := command(t, binary, "")
-	assertLog(t, code, stdout, stderr, "ERROR", "catalog, shipping, orders, payments and identity migration failed", "DATABASE_URL is required")
+	assertLog(t, code, stdout, stderr, "ERROR", "catalog, shipping, orders, payments, identity and notifications migration failed", "DATABASE_URL is required")
 	code, stdout, stderr = command(t, binary, "", "-h")
-	wantHelp := "Usage: migrate\nApply embedded migrations in order: catalog, shipping, orders, payments, identity (no demo data).\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping|orders|payments|identity (default all).\n"
+	wantHelp := "Usage: migrate\nApply embedded migrations in order: catalog, shipping, orders, payments, identity, notifications (no demo data).\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping|orders|payments|identity|notifications (default all).\n"
 	if code != 0 || stdout != "" || stderr != wantHelp {
 		t.Fatalf("help exit/stdout/stderr = %d/%q/%q", code, stdout, stderr)
 	}
 	db, url := database(t)
 	for range 2 {
 		code, stdout, stderr = command(t, binary, url)
-		assertLog(t, code, stdout, stderr, "INFO", "catalog, shipping, orders, payments and identity migrations applied", "")
+		assertLog(t, code, stdout, stderr, "INFO", "catalog, shipping, orders, payments, identity and notifications migrations applied", "")
 	}
 	if got := scalar[int](t, db, `SELECT count(*) FROM catalog.products`); got != 0 {
 		t.Errorf("migrations loaded %d demo products", got)

@@ -75,7 +75,7 @@ func (c *Consumer) Handle(ctx context.Context, event domain.Event) error {
 	if message.RecipientEmail == nil {
 		return fail()
 	}
-	token, err := c.decryptor.Decrypt(ctx, payload.EncryptedToken)
+	token, err := c.decryptor.Decrypt(ctx, payload.AdminUserID, payload.EncryptedToken)
 	if err != nil || token == "" {
 		return fail()
 	}

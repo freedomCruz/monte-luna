@@ -91,7 +91,7 @@ func TestShippingCommands(t *testing.T) {
 	db, url := database(t)
 	migrate, seed := buildCommand(t, "migrate"), buildCommand(t, "seed")
 	for _, tc := range []struct{ binary, name, success, failure, help string }{
-		{migrate, "migrate", "shipping migrations applied", "shipping migration failed", "Usage: migrate\nApply embedded migrations in order: catalog, shipping, orders, payments, identity (no demo data).\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping|orders|payments|identity (default all).\n"},
+		{migrate, "migrate", "shipping migrations applied", "shipping migration failed", "Usage: migrate\nApply embedded migrations in order: catalog, shipping, orders, payments, identity, notifications (no demo data).\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping|orders|payments|identity|notifications (default all).\n"},
 		{seed, "seed", "demo shipping seeded", "demo shipping seed failed", "Usage: seed\nLoad idempotent demo data in order: catalog, shipping, orders, into an already migrated development database.\nNever run against production. Existing rows, prices and stock are not reset.\nEnvironment: DATABASE_URL is required.\nOptions: -module all|catalog|shipping|orders (default all).\n"},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
@@ -102,7 +102,7 @@ func TestShippingCommands(t *testing.T) {
 			if tc.name == "seed" {
 				failure = "demo unknown seed failed"
 			}
-			invalidModule := "module must be all, catalog, shipping, orders, payments or identity"
+			invalidModule := "module must be all, catalog, shipping, orders, payments, identity or notifications"
 			if tc.name == "seed" {
 				invalidModule = "module must be all, catalog, shipping or orders"
 			}

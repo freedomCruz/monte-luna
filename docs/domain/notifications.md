@@ -14,6 +14,7 @@ Canonical requirements and data model for the `notifications` module. Convention
 | Template system: Go `html/template` + plain text embedded in binary | Approved |
 | Data model (section 3) | Approved |
 | Retention policy: `template_data` cleared after 90 days; `recipient_email` anonymized after 2 years; suppressions kept without expiry | Approved |
+| Runtime sender selection: in-memory capture by default, Resend by explicit configuration | Approved |
 | Domain configuration and DNS records (SPF, DKIM, DMARC) | Pending (blocks delivery) |
 | Dedicated sending subdomain recommendation | Pending (domain decision) |
 | Customer-facing email language: Spanish | Approved |
@@ -44,7 +45,8 @@ Canonical requirements and data model for the `notifications` module. Convention
 9. **Critical isolation invariant:** An external email outage or delivery failure never fails, rolls back, or blocks a business transaction (e.g., placing an order, confirming a payment, or generating a password reset token).
 
 **Delivery webhooks**
-- Inbound HTTP endpoint under `/api` (exact path finalized at implementation) receives Resend delivery webhooks.
+- Inbound HTTP endpoint `POST /api/v1/notifications/webhooks/resend` receives Resend delivery webhooks (`contracts/openapi/notifications.yaml`). It is mounted only when the Resend sender is configured, because Resend needs a public HTTPS URL to reach it.
+- **Sender selection (approved 2026-10-20):** `NOTIFICATIONS_EMAIL_SENDER` unset or `capture` uses the in-memory capture adapter, so local development needs no verified domain, DNS records, or public webhook URL. `resend` requires `RESEND_API_KEY`, `RESEND_FROM`, and `RESEND_WEBHOOK_SECRET`; the API refuses to start if any is missing. Production uses `resend` only after the pending domain and legal items are resolved.
 - Signatures verified via Resend webhook signing secret using Go standard library crypto (https://resend.com/docs/webhooks/verify-webhooks-requests).
 - Webhook events are deduplicated via `notifications.provider_webhook_events` by `(provider, external_event_id)`.
 - **Webhook edge behavior (approved 2026-10-20):** A correctly signed but unsupported event type returns HTTP 200 without effects, so future provider event types do not cause retries. A supported event whose provider email ID is not yet present returns HTTP 503 and is not recorded in the deduplication ledger, allowing recovery from the send/webhook race on retry. Signature timestamps are accepted only within five minutes before or after server time to reject replayed or implausibly future requests.

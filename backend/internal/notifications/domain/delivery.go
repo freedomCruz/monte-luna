@@ -26,7 +26,7 @@ type EmailSender interface {
 	Send(context.Context, Email) (SendResult, error)
 }
 type TokenDecryptor interface {
-	Decrypt(context.Context, string) (string, error)
+	Decrypt(ctx context.Context, adminUserID, encrypted string) (string, error)
 }
 
 // LinkBuilder owns approved Identity routing. Consumers never guess token URLs.

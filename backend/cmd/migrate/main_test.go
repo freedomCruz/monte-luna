@@ -12,12 +12,12 @@ import (
 )
 
 func TestRunModuleRejectsUnknownModule(t *testing.T) {
-	if err := runModule(t.Context(), "invoicing"); err == nil || err.Error() != "module must be all, catalog, shipping, orders, payments or identity" {
+	if err := runModule(t.Context(), "invoicing"); err == nil || err.Error() != "module must be all, catalog, shipping, orders, payments, identity or notifications" {
 		t.Fatalf("error=%v", err)
 	}
 }
 
-func TestRunModuleAppliesIdentityAfterExistingModules(t *testing.T) {
+func TestRunModuleAppliesIdentityAndNotificationsAfterExistingModules(t *testing.T) {
 	ctx, cancel := context.WithTimeout(t.Context(), 3*time.Minute)
 	defer cancel()
 	container, err := pgcontainer.Run(ctx, "postgres:18.6-bookworm@sha256:afc7e2d441324c0388fa80c3d24f733b4194a4eb7f47dd8ee2b08eb1a24a647c", pgcontainer.WithDatabase("migrate_test"), pgcontainer.WithUsername("migrate_test"), pgcontainer.WithPassword("migrate_test"), pgcontainer.BasicWaitStrategies())
@@ -58,15 +58,32 @@ func TestRunModuleAppliesIdentityAfterExistingModules(t *testing.T) {
 	if got := schemas(); len(got) != 1 || !got["identity"] {
 		t.Fatalf("identity-only run applied %v", got)
 	}
+	if err := runModule(ctx, "notifications"); err != nil {
+		t.Fatal(err)
+	}
+	if got := schemas(); len(got) != 2 || !got["notifications"] {
+		t.Fatalf("notifications-only run applied %v", got)
+	}
 	for range 2 {
 		if err := runModule(ctx, "all"); err != nil {
 			t.Fatal(err)
 		}
 	}
 	got := schemas()
-	for _, schema := range []string{"catalog", "shipping", "orders", "payments", "identity"} {
+	for _, schema := range []string{"catalog", "shipping", "orders", "payments", "identity", "notifications"} {
 		if !got[schema] {
 			t.Fatalf("all did not migrate %s: %v", schema, got)
 		}
+	}
+}
+
+func TestRunModuleAcceptsIdentityAndNotifications(t *testing.T) {
+	t.Setenv("DATABASE_URL", "")
+	for _, module := range []string{"identity", "notifications", "payments"} {
+		t.Run(module, func(t *testing.T) {
+			if err := runModule(t.Context(), module); err == nil || err.Error() != "DATABASE_URL is required" {
+				t.Fatalf("error=%v", err)
+			}
+		})
 	}
 }

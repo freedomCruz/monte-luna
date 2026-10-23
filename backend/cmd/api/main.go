@@ -15,6 +15,7 @@ import (
 	"github.com/freedomCruz/monte-luna/backend/internal/catalog"
 	"github.com/freedomCruz/monte-luna/backend/internal/identity"
 	"github.com/freedomCruz/monte-luna/backend/internal/invoicing"
+	"github.com/freedomCruz/monte-luna/backend/internal/notifications"
 	"github.com/freedomCruz/monte-luna/backend/internal/orders"
 	"github.com/freedomCruz/monte-luna/backend/internal/payments"
 	"github.com/freedomCruz/monte-luna/backend/internal/platform"
@@ -70,6 +71,12 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	defer admins.Close()
+	notify, err := notifications.New(ctx, cfg.databaseURL, cfg.notifications, logger, notifications.Options{})
+	if err != nil {
+		return err
+	}
+	defer notify.Close()
+	logger.Info("notifications email sender selected", "sender", cfg.notifications.Sender)
 	relayPool, err := pgxpool.New(ctx, cfg.databaseURL)
 	if err != nil {
 		return errors.New("initialize outbox connection pool")
@@ -79,8 +86,22 @@ func run(logger *slog.Logger) error {
 	if err != nil {
 		return err
 	}
+	decryptor, err := newIdentityTokenDecryptor(admins.Links())
+	if err != nil {
+		return err
+	}
+	linkBuilder, err := newIdentityLinkBuilder(admins.Links())
+	if err != nil {
+		return err
+	}
+	notifyConsumer, err := notify.Consumer(decryptor, linkBuilder)
+	if err != nil {
+		return err
+	}
 	relay.Subscribe("payments.payment_approved", checkout.HandlePaymentApproved)
 	relay.Subscribe("orders.order_cancelled", payment.HandleOrderCancelled)
+	relay.Subscribe("identity.password_reset_requested", notifyConsumer)
+	relay.Subscribe("identity.admin_invited", notifyConsumer)
 	relayCtx, cancelRelay := context.WithCancel(ctx)
 	relayDone := make(chan struct{})
 	go func() { defer close(relayDone); relay.Run(relayCtx) }()
@@ -97,6 +118,10 @@ func run(logger *slog.Logger) error {
 	identityJobsDone := make(chan struct{})
 	go func() { defer close(identityJobsDone); admins.RunJobs(identityJobsCtx, cfg.relay.CleanupInterval) }()
 	defer func() { cancelIdentityJobs(); <-identityJobsDone }()
+	notifyJobsCtx, cancelNotifyJobs := context.WithCancel(ctx)
+	notifyJobsDone := make(chan struct{})
+	go func() { defer close(notifyJobsDone); notify.RunJobs(notifyJobsCtx, cfg.notifications.CleanupInterval) }()
+	defer func() { cancelNotifyJobs(); <-notifyJobsDone }()
 
 	mux := http.NewServeMux()
 	platform.RegisterRoutes(mux)
@@ -104,6 +129,7 @@ func run(logger *slog.Logger) error {
 	checkout.RegisterRoutes(mux)
 	payment.RegisterRoutes(mux)
 	admins.RegisterRoutes(mux)
+	notify.RegisterRoutes(mux)
 
 	srv := &http.Server{
 		Addr:              addr,
@@ -148,6 +174,7 @@ type config struct {
 	relay                           platform.RelayConfig
 	payments                        payments.Config
 	identity                        identity.Config
+	notifications                   notifications.Config
 }
 
 func loadConfig() (config, error) {
@@ -179,6 +206,10 @@ func loadConfig() (config, error) {
 		return cfg, err
 	}
 	cfg.identity, err = identity.LoadConfig(os.Getenv)
+	if err != nil {
+		return cfg, err
+	}
+	cfg.notifications, err = notifications.LoadConfig(os.Getenv)
 	if err != nil {
 		return cfg, err
 	}
