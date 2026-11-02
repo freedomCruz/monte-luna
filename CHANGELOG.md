@@ -7,6 +7,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-rc.9] - 2026-11-02
+
+### Added
+
+- Monteluna administrative panel (`/admin`):
+  - Shared responsive shell with role-aware navigation (desktop sidebar, tablet rail, mobile bottom bar).
+  - Client-hydrated session and role guards ensuring zero private administrator data is prerendered in static HTML.
+  - Sign-in with password policy (12–128 Unicode code points) and rate limiting.
+  - Two-factor authentication (TOTP) with RFC 6238 QR enrollment via `uqr`, single-use recovery codes, and emergency recovery toggle.
+  - Password recovery requests with anti-enumeration responses and one-time token handling via URL fragments (`#token=...`) stripped from browser history on mount.
+  - Administrator invitations onboarding flow.
+  - Account security settings (`/admin/cuenta/`): profile summary, password change with reauthentication, and recovery code regeneration.
+  - Mobile read-only policy at 390px directing users to tablet or desktop for security-sensitive actions.
+  - Administrator management view (`/admin/administradores/`) for owners: administrator listing, invitations, and owner-reauthenticated 2FA reset with optimistic concurrency (`If-Match` ETags).
+  - Role-gated access denial screen (`/admin/sin-acceso/`).
+- End-to-end Playwright test suite for administrator flows (14 browser tests across desktop, tablet, and mobile).
+- Exported Monteluna admin design system specification, canvas artboards, and tokens.
+
+### Fixed
+
+- Preserved one-time password reset and invitation tokens under React Strict Mode double-render by extracting URL fragments in a guarded mount effect.
+
+### Security
+
+- Audited and installed `uqr@0.1.3` with zero transitive dependencies for project-owned QR matrix rendering without `innerHTML`.
+- Fixed high npm security advisories in build tooling (`undici`, `zod`, `fast-uri`).
+
 ## [0.1.0-rc.8] - 2026-10-22
 
 ### Added
@@ -93,7 +120,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the backend toolchain to Go 1.27.3 to resolve reachable standard-library vulnerabilities.
 - Rebuilt Caddy 2.11.7 with Go 1.27.3 and `golang.org/x/net` 0.60.0 instead of deploying the vulnerable upstream binary.
 
-[Unreleased]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.5...HEAD
+[Unreleased]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.9...HEAD
+[0.1.0-rc.9]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.8...v0.1.0-rc.9
+[0.1.0-rc.8]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.7...v0.1.0-rc.8
+[0.1.0-rc.7]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.6...v0.1.0-rc.7
+[0.1.0-rc.6]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.5...v0.1.0-rc.6
 [0.1.0-rc.5]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.4...v0.1.0-rc.5
 [0.1.0-rc.4]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.3...v0.1.0-rc.4
 [0.1.0-rc.3]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.2...v0.1.0-rc.3
