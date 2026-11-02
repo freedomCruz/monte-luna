@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Admin Monteluna · pedido</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1510}a:hover{color:#C1272D}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #1B1510;outline-offset:2px}
+nav a:focus-visible,nav button:focus-visible,header.oscuro a:focus-visible{outline-color:#F2B632}
+</style>
+</helmet>
+<div style="position: relative; width: 100%; min-height: {{alto}}; box-sizing: border-box; display: flex; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif; font-variant-numeric: tabular-nums">
+
+<sc-if value="{{escritorio}}" hint-placeholder-val="{{true}}">
+  <nav aria-label="Secciones del panel" style="flex: none; width: {{sb.ancho}}; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px; padding: 16px {{sb.padX}}; background: #1B1510; color: #FAF3E3">
+    <a href="A-Inicio.dc.html" aria-label="Monteluna Admin, inicio" style="display: flex; align-items: center; justify-content: {{sb.just}}; gap: 8px; min-height: 44px; padding: 0 6px 10px; color: #FAF3E3; text-decoration: none">
+      <sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 26px; line-height: 1; font-weight: 800; text-transform: uppercase; color: #F2B632">Monteluna</span><span style="padding: 2px 6px; border-radius: 6px; background: #F2B632; color: #1B1510; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase">Admin</span></sc-if>
+      <sc-if value="{{sb.cerrada}}" hint-placeholder-val="{{false}}"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; line-height: 1; font-weight: 800; color: #F2B632">M</span></sc-if>
+    </a>
+    <sc-for list="{{sb.grupos}}" as="g" hint-placeholder-count="4">
+      <sc-if value="{{g.conLabel}}" hint-placeholder-val="{{true}}"><span style="padding: 12px 10px 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #A8997C">{{g.label}}</span></sc-if>
+      <sc-if value="{{g.divisor}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="align-self: center; width: 28px; height: 1px; margin: 8px 0; background: rgba(250,243,227,0.2)"></span></sc-if>
+      <sc-for list="{{g.items}}" as="it" hint-placeholder-count="4">
+        <a href="{{it.href}}" aria-current="{{it.cur}}" aria-label="{{it.aria}}" title="{{it.t}}" style="position: relative; display: flex; align-items: center; justify-content: {{sb.just}}; gap: 12px; min-height: 40px; padding: 0 10px; border-radius: 8px; background: {{it.bg}}; color: {{it.fg}}; font-size: 15px; font-weight: {{it.fw}}; text-decoration: none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="{{it.d}}"></path></svg>
+          <sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span style="flex: 1">{{it.t}}</span></sc-if>
+          <sc-if value="{{it.nA}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="min-width: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: #C1272D; color: #FFFFFF; font-size: 12px; line-height: 20px; font-weight: 800; text-align: center">{{it.nA}}</span></sc-if>
+          <sc-if value="{{it.nC}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="position: absolute; top: 6px; right: 10px; width: 8px; height: 8px; border-radius: 50%; background: #C1272D; outline: 2px solid #1B1510"></span></sc-if>
+        </a>
+      </sc-for>
+    </sc-for>
+    <span style="flex: 1"></span>
+    <button type="button" onClick="{{sb.toggle}}" aria-label="{{sb.toggleTxt}}" style="display: flex; align-items: center; justify-content: {{sb.just}}; gap: 12px; min-height: 44px; margin-top: 12px; padding: 0 10px; border: 0; border-top: 1px solid rgba(250,243,227,0.16); background: transparent; color: #E9DDC3; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{sb.flecha}}"></path></svg><sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span>{{sb.toggleTxt}}</span></sc-if></button>
+  </nav>
+
+  <div style="flex: 999 1 0; min-width: 0; display: flex; flex-direction: column">
+    <header style="display: flex; align-items: center; gap: 12px; min-height: 64px; box-sizing: border-box; padding: 10px {{pad}}; background: #FFFFFF; border-bottom: 1px solid #E6D9BC">
+      <label role="search" style="flex: 1 1 auto; max-width: 560px; display: flex; align-items: center; gap: 10px; height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">Buscar en el panel</span><input type="search" placeholder="{{buscador}}" style="flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: #1B1510; font-family: inherit; font-size: 15px"><span aria-hidden="true" style="padding: 1px 7px; border: 1px solid #A8997C; border-radius: 6px; font-size: 13px; font-weight: 700">/</span></label>
+      <span style="flex: 1"></span>
+      <button type="button" aria-label="Avisos pendientes: 7" style="position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7M10 20a2 2 0 0 0 4 0"></path></svg><span aria-hidden="true" style="position: absolute; top: -6px; right: -6px; min-width: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #C1272D; color: #FFFFFF; font-size: 12px; line-height: 20px; font-weight: 800; text-align: center">7</span></button>
+      <button type="button" aria-label="Menú de Laura Ríos" style="flex: none; display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 6px 0 4px; border: 0; border-radius: 8px; background: transparent; color: #1B1510; font-family: inherit; cursor: pointer"><span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: #4B1C52; color: #FAF3E3; font-size: 14px; font-weight: 800">LR</span><sc-if value="{{conNombre}}" hint-placeholder-val="{{true}}"><span style="display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15"><span style="font-size: 14px; font-weight: 700">Laura Ríos</span><span style="font-size: 12px; color: #5F554A">Propietaria</span></span></sc-if><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+    </header>
+
+    <main style="flex: 1; display: flex; flex-direction: column; gap: 16px; padding: 22px {{pad}} 48px">
+      <nav aria-label="Ruta" style="display: flex; align-items: center; gap: 8px; font-size: 14px; font-weight: 600"><a href="A-Pedidos.dc.html" style="display: inline-flex; align-items: center; min-height: 32px">Pedidos</a><span aria-hidden="true">/</span><span style="color: #5F554A">ORD-7K2M9Q4X</span></nav>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 6px"><span style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px"><h1 style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 36px; line-height: 1; font-weight: 800; letter-spacing: 0.02em">ORD-7K2M9Q4X</h1><span style="display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 8px; background: #F2B632; font-size: 13px; font-weight: 700"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: #1B1510"></span>Pagado · por despachar</span><span style="display: inline-flex; align-items: center; gap: 6px; height: 28px; padding: 0 10px; border-radius: 8px; background: #1E6B45; color: #FFFFFF; font-size: 13px; font-weight: 700"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: #FFFFFF"></span>Pago aprobado</span></span><span style="font-size: 14px; color: #5F554A">20 oct 2026, 9:03 a. m. · María Fernanda Ruiz · <span style="padding: 1px 7px; border-radius: 6px; border: 1px dashed #A8997C; font-size: 12px; font-weight: 700">Datos de ejemplo</span></span></div>
+        <div style="display: flex; flex-wrap: wrap; gap: 8px"><button type="button" style="height: 44px; padding: 0 14px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Pasar a «En preparación»</button><button type="button" onClick="{{abrirDespacho}}" style="height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Registrar despacho</button><button type="button" onClick="{{abrirCancelar}}" aria-label="Más acciones: cancelar pedido" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg></button></div>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+        <div style="flex: 2 1 520px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+          <section aria-labelledby="h-lineas" style="background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px">
+            <h2 id="h-lineas" style="margin: 0; padding: 16px 20px; font-size: 18px; font-weight: 800">Productos · 3 unidades</h2>
+            <div style="overflow-x: auto"><table style="width: 100%; border-collapse: collapse; font-size: 14px">
+              <thead><tr style="background: #F3E6C4; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase"><th style="height: 40px; padding: 0 12px 0 20px">Producto</th><th style="padding: 0 10px">Lote asignado</th><th style="padding: 0 10px; text-align: right">Cant.</th><sc-if value="{{col.unit}}" hint-placeholder-val="{{true}}"><th style="padding: 0 10px; text-align: right">Precio</th></sc-if><th style="padding: 0 20px 0 10px; text-align: right">Total</th></tr></thead>
+              <tbody><sc-for list="{{lineas}}" as="l" hint-placeholder-count="2"><tr style="border-top: 1px solid #E6D9BC"><td style="padding: 12px 12px 12px 20px"><span style="display: flex; align-items: center; gap: 12px"><span style="position: relative; flex: none; width: 48px; height: 48px; border-radius: 8px; background: #F3E6C4; overflow: hidden"><img src="{{l.img}}" alt="" style="position: absolute; left: 50%; top: 2px; height: 58px; transform: translateX(-50%)"></span><span style="display: flex; flex-direction: column"><span style="font-weight: 800">{{l.n}}</span><span style="font-size: 13px; color: #5F554A">{{l.v}} · {{l.sku}}</span></span></span></td><td style="padding: 12px 10px"><span style="display: flex; flex-direction: column; gap: 2px"><sc-for list="{{l.lotes}}" as="lt" hint-placeholder-count="2"><span style="font-size: 13px"><span style="font-weight: 800">{{lt.c}}</span> × {{lt.q}} <span style="color: #5F554A">· tostado {{lt.f}}</span></span></sc-for></span></td><td style="padding: 12px 10px; text-align: right; font-weight: 700">{{l.q}}</td><sc-if value="{{col.unit}}" hint-placeholder-val="{{true}}"><td style="padding: 12px 10px; text-align: right">{{l.p}}</td></sc-if><td style="padding: 12px 20px 12px 10px; text-align: right; font-weight: 800">{{l.t}}</td></tr></sc-for></tbody>
+            </table></div>
+            <dl style="margin: 0; display: grid; grid-template-columns: 1fr auto; gap: 8px 20px; padding: 16px 20px; border-top: 1px solid #E6D9BC; font-size: 15px">
+              <dt>Subtotal</dt><dd style="margin: 0; text-align: right; font-weight: 600">$114.000</dd>
+              <dt>Descuento · cupón BIENVENIDA10</dt><dd style="margin: 0; text-align: right; font-weight: 700; color: #C1272D">−$11.400</dd>
+              <dt>Envío · Antioquia, 0 a 1.000 g</dt><dd style="margin: 0; text-align: right; font-weight: 600">$9.500</dd>
+              <dt>Impuestos</dt><dd style="margin: 0; text-align: right; font-weight: 600">$0</dd>
+              <dt style="padding-top: 10px; border-top: 2px solid #1B1510; font-size: 17px; font-weight: 800">Total</dt><dd style="margin: 0; padding-top: 10px; border-top: 2px solid #1B1510; text-align: right; font-size: 22px; font-weight: 800">$112.100</dd>
+            </dl>
+          </section>
+
+          <section aria-labelledby="h-pagos" style="background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px">
+            <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 16px 20px"><h2 id="h-pagos" style="margin: 0; font-size: 18px; font-weight: 800">Intentos de pago · 2</h2><span style="font-size: 13px; color: #5F554A">Puede haber varios intentos; solo uno queda aprobado.</span></div>
+            <div style="overflow-x: auto"><table style="width: 100%; border-collapse: collapse; font-size: 14px">
+              <thead><tr style="background: #F3E6C4; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase"><th style="height: 40px; padding: 0 12px 0 20px">Referencia</th><th style="padding: 0 10px">Método</th><th style="padding: 0 10px">Estado</th><sc-if value="{{col.wompi}}" hint-placeholder-val="{{true}}"><th style="padding: 0 10px">ID de Wompi</th></sc-if><th style="padding: 0 20px 0 10px">Hora</th></tr></thead>
+              <tbody><sc-for list="{{intentos}}" as="p" hint-placeholder-count="2"><tr style="height: 52px; border-top: 1px solid #E6D9BC"><td style="padding: 0 12px 0 20px; font-weight: 700">{{p.ref}}</td><td style="padding: 0 10px">{{p.m}}</td><td style="padding: 0 10px"><span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px; border-radius: 8px; background: {{p.bg}}; color: {{p.fg}}; font-size: 12px; font-weight: 700"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 50%; background: {{p.fg}}"></span>{{p.e}}</span></td><sc-if value="{{col.wompi}}" hint-placeholder-val="{{true}}"><td style="padding: 0 10px; color: #5F554A">{{p.w}}</td></sc-if><td style="padding: 0 20px 0 10px; color: #5F554A; white-space: nowrap">{{p.h}}</td></tr></sc-for></tbody>
+            </table></div>
+          </section>
+
+          <section aria-labelledby="h-linea" style="display: flex; flex-direction: column; gap: 14px; padding: 18px 20px; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px">
+            <h2 id="h-linea" style="margin: 0; font-size: 18px; font-weight: 800">Línea de tiempo</h2>
+            <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column">
+              <sc-for list="{{tiempo}}" as="t" hint-placeholder-count="5">
+                <li style="display: flex; gap: 14px; min-height: 58px"><span style="display: flex; flex-direction: column; align-items: center"><span style="width: 16px; height: 16px; box-sizing: border-box; border-radius: 50%; border: 2px solid {{t.bd}}; background: {{t.bg}}"></span><sc-if value="{{t.conLinea}}" hint-placeholder-val="{{true}}"><span style="flex: 1; width: 2px; background: #E6D9BC"></span></sc-if></span><span style="display: flex; flex-direction: column; gap: 2px; padding-bottom: 12px"><span style="font-size: 15px; font-weight: 800; color: {{t.fg}}">{{t.e}}</span><span style="font-size: 13px; color: #5F554A">{{t.d}}</span></span></li>
+              </sc-for>
+            </ol>
+          </section>
+        </div>
+
+        <div style="flex: 1 1 320px; min-width: 0; display: flex; flex-direction: column; gap: 16px">
+          <section aria-labelledby="h-cliente" style="display: flex; flex-direction: column; gap: 4px; padding: 18px 20px; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px"><h2 id="h-cliente" style="margin: 0 0 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5F554A">Cliente</h2><span style="font-size: 16px; font-weight: 800">María Fernanda Ruiz</span><span style="font-size: 14px">mafe.ruiz@correo.com</span><span style="font-size: 14px">300 555 0187</span><span style="font-size: 13px; color: #5F554A">Compra como invitada</span></section>
+          <section aria-labelledby="h-entrega" style="display: flex; flex-direction: column; gap: 4px; padding: 18px 20px; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px"><h2 id="h-entrega" style="margin: 0 0 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5F554A">Entrega</h2><span style="font-size: 16px; font-weight: 800">Carrera 43A # 1-50, Torre 2 Apto 804</span><span style="font-size: 14px">Medellín, Antioquia · 05001</span><span style="font-size: 14px">Recibe María Fernanda Ruiz · 300 555 0187</span><span style="font-size: 13px; color: #5F554A">Nota: dejar en portería si no hay nadie.</span><span style="margin-top: 8px; padding: 10px 12px; border-radius: 8px; background: #FAF3E3; font-size: 13px; line-height: 1.4">Tarifa Antioquia · 0 a 1.000 g · llega en 2 a 4 días hábiles después del despacho.</span></section>
+          <section aria-labelledby="h-envio" style="display: flex; flex-direction: column; gap: 8px; padding: 18px 20px; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px"><h2 id="h-envio" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5F554A">Envío</h2><span style="font-size: 15px; font-weight: 700">Aún no se despacha</span><span style="font-size: 13px; line-height: 1.4; color: #5F554A">Pagado hace 3 días. Al registrar la guía, la cliente recibe un correo con el seguimiento.</span></section>
+          <section aria-labelledby="h-factura" style="display: flex; flex-direction: column; gap: 4px; padding: 18px 20px; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px"><h2 id="h-factura" style="margin: 0 0 6px; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5F554A">Factura</h2><span style="font-size: 14px">Pidió factura · persona natural</span><span style="font-size: 14px">Cédula de ciudadanía 1.023.456.789</span><span style="align-self: flex-start; display: inline-flex; align-items: center; gap: 6px; height: 24px; margin-top: 6px; padding: 0 9px; border-radius: 8px; background: #1E6B45; color: #FFFFFF; font-size: 12px; font-weight: 700"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 50%; background: #FFFFFF"></span>Emitida · FE-1042</span></section>
+        </div>
+      </div>
+    </main>
+  </div>
+</sc-if>
+
+<sc-if value="{{movil}}" hint-placeholder-val="{{false}}">
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+    <header class="oscuro" style="position: sticky; top: 0; z-index: 5; display: flex; align-items: center; gap: 8px; min-height: 60px; padding: 0 12px; background: #1B1510; color: #FAF3E3">
+      <a href="A-Pedidos-390.dc.html" aria-label="Volver a pedidos" style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; color: #FAF3E3"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"></path></svg></a>
+      <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 22px; font-weight: 800; letter-spacing: 0.02em">ORD-7K2M9Q4X</span>
+    </header>
+    <main style="flex: 1; display: flex; flex-direction: column; gap: 12px; padding: 16px 16px 112px">
+      <div style="display: flex; flex-wrap: wrap; gap: 6px"><span style="display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 9px; border-radius: 8px; background: #F2B632; font-size: 12px; font-weight: 700"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 50%; background: #1B1510"></span>Pagado · por despachar</span><span style="display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 9px; border-radius: 8px; background: #1E6B45; color: #FFFFFF; font-size: 12px; font-weight: 700"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 50%; background: #FFFFFF"></span>Pago aprobado · Nequi</span></div>
+      <span style="font-size: 13px; color: #5F554A">20 oct, 9:03 a. m. · datos de ejemplo</span>
+      <section style="display: flex; flex-direction: column; gap: 10px; padding: 14px; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 800">Productos · 3 unidades</h2>
+        <sc-for list="{{lineas}}" as="lm" hint-placeholder-count="2"><div style="display: flex; gap: 10px"><span style="position: relative; flex: none; width: 44px; height: 44px; border-radius: 8px; background: #F3E6C4; overflow: hidden"><img src="{{lm.img}}" alt="" style="position: absolute; left: 50%; top: 2px; height: 52px; transform: translateX(-50%)"></span><span style="flex: 1; display: flex; flex-direction: column; gap: 1px"><span style="font-size: 14px; font-weight: 800">{{lm.n}} × {{lm.q}}</span><span style="font-size: 12px; color: #5F554A">{{lm.v}} · lotes {{lm.lotesTxt}}</span></span><span style="font-size: 14px; font-weight: 800">{{lm.t}}</span></div></sc-for>
+        <div style="display: flex; justify-content: space-between; padding-top: 10px; border-top: 2px solid #1B1510; font-size: 16px; font-weight: 800"><span>Total</span><span>$112.100</span></div>
+        <span style="font-size: 12px; color: #5F554A">Incluye cupón −$11.400 y envío $9.500.</span>
+      </section>
+      <section style="display: flex; flex-direction: column; gap: 3px; padding: 14px; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px"><h2 style="margin: 0 0 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5F554A">Entrega</h2><span style="font-size: 15px; font-weight: 800">Carrera 43A # 1-50, Torre 2 Apto 804</span><span style="font-size: 14px">Medellín, Antioquia</span><span style="font-size: 14px">María Fernanda Ruiz · <a href="tel:3005550187" style="font-weight: 700">300 555 0187</a></span><span style="font-size: 12px; color: #5F554A">Dejar en portería si no hay nadie.</span></section>
+      <section style="display: flex; flex-direction: column; gap: 10px; padding: 14px; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px">
+        <h2 style="margin: 0; font-size: 16px; font-weight: 800">Línea de tiempo</h2>
+        <ol style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 10px"><sc-for list="{{tiempo}}" as="tm" hint-placeholder-count="5"><li style="display: flex; align-items: flex-start; gap: 10px"><span style="flex: none; width: 14px; height: 14px; margin-top: 3px; box-sizing: border-box; border-radius: 50%; border: 2px solid {{tm.bd}}; background: {{tm.bg}}"></span><span style="display: flex; flex-direction: column"><span style="font-size: 14px; font-weight: 800; color: {{tm.fg}}">{{tm.e}}</span><span style="font-size: 12px; color: #5F554A">{{tm.d}}</span></span></li></sc-for></ol>
+      </section>
+      <div style="display: flex; align-items: flex-start; gap: 10px; padding: 12px; border-radius: 12px; background: #F3E6C4; font-size: 13px; line-height: 1.45"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><rect x="2" y="4" width="20" height="13" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg><span>Cancelar el pedido o ver los intentos de pago se hace desde un computador o una tablet.</span></div>
+    </main>
+    <div style="position: sticky; bottom: 0; z-index: 5; padding: 10px 16px 14px; background: #FFFFFF; border-top: 2px solid #1B1510"><button type="button" onClick="{{abrirDespacho}}" style="width: 100%; height: 52px; border: 0; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Registrar despacho</button></div>
+  </div>
+</sc-if>
+
+  <sc-if value="{{despacho}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; z-index: 20; display: flex; justify-content: flex-end; background: rgba(27,21,16,0.5)">
+      <div role="dialog" aria-modal="true" aria-labelledby="h-desp" style="width: {{sheetAncho}}; max-width: 100%; box-sizing: border-box; display: flex; flex-direction: column; background: #FFFFFF; border-radius: {{sheetRadio}}">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 24px"><div style="display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5F554A">ORD-7K2M9Q4X · Medellín, Antioquia</span><h2 id="h-desp" style="margin: 0; font-size: 24px; font-weight: 800">Registrar despacho</h2></div><button type="button" aria-label="Cerrar" onClick="{{cerrar}}" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; border-radius: 8px; background: #F3E6C4; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+        <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 0 24px 20px">
+          <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Transportadora</span><input type="text" value="Coordinadora" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 16px"><span style="font-size: 13px; color: #5F554A">Nombre de ejemplo.</span></label>
+          <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Número de guía <span style="font-weight: 500; color: #5F554A">(opcional)</span></span><input type="text" value="54872013369" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 16px"></label>
+          <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Enlace de seguimiento <span style="font-weight: 500; color: #5F554A">(opcional)</span></span><input type="url" placeholder="https://" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 16px"></label>
+          <div style="display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 12px; background: #FAF3E3; font-size: 14px; line-height: 1.45"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M3 6h18v12H3zM3 7l9 6 9-6"></path></svg><span>Al registrar, el pedido pasa a <span style="font-weight: 800">Enviado</span> y María Fernanda recibe un correo con la transportadora y la guía.</span></div>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; padding: 14px 24px; border-top: 1px solid #E6D9BC"><button type="button" onClick="{{cerrar}}" style="height: 44px; padding: 0 16px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Cancelar</button><button type="button" onClick="{{registrar}}" style="height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Registrar despacho</button></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{cancelar}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; z-index: 30; display: flex; align-items: flex-start; justify-content: center; padding: 180px 16px; background: rgba(27,21,16,0.5)">
+      <div role="alertdialog" aria-modal="true" aria-labelledby="h-canc" aria-describedby="p-canc" style="width: 100%; max-width: 500px; box-sizing: border-box; display: flex; flex-direction: column; gap: 12px; padding: 24px; background: #FFFFFF; border-radius: 20px">
+        <h2 id="h-canc" style="margin: 0; font-size: 20px; font-weight: 800">¿Cancelar el pedido ORD-7K2M9Q4X?</h2>
+        <p id="p-canc" style="margin: 0; font-size: 15px; line-height: 1.5; color: #5F554A">El pago ya está aprobado: se crea un reembolso de $112.100 que debes completar en Pagos. Las 3 unidades vuelven al inventario y la cliente recibe un correo. No se puede deshacer.</p>
+        <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Motivo <span style="font-weight: 500; color: #5F554A">(opcional)</span></span><input type="text" placeholder="Queda en la línea de tiempo" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 15px"></label>
+        <div style="display: flex; flex-wrap: wrap; justify-content: flex-end; gap: 8px"><button type="button" onClick="{{cerrar}}" style="height: 44px; padding: 0 14px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Volver</button><button type="button" onClick="{{cerrar}}" style="height: 44px; padding: 0 14px; border: 0; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Cancelar pedido</button></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{toast}}" hint-placeholder-val="{{false}}">
+    <div role="status" style="position: absolute; right: 16px; bottom: 96px; left: {{toastLeft}}; z-index: 40; display: flex; align-items: center; gap: 12px; padding: 14px 16px; border-radius: 12px; background: #1B1510; color: #FAF3E3; box-shadow: 0 10px 28px rgba(27,21,16,0.16)"><span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 50%; background: #1E6B45"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#FFFFFF" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg></span><span style="font-size: 15px; font-weight: 700">Despacho registrado. Le avisamos a María Fernanda por correo.</span></div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"panel":{"editor":"enum","options":["Ninguno","Registrar despacho","Cancelar pedido"],"default":"Ninguno"},"ancho":{"editor":"enum","options":["1440","1024","768","390"],"default":"1440"},"$preview":{"width":1440,"height":2000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const ancho = String(this.props.ancho ?? '1440');
+    const movil = ancho === '390';
+    const abierta = st.sb ?? (ancho === '1440');
+    const P = { inicio: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z', productos: 'M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10', inventario: 'M3 4h18v4H3zM5 8v12h14V8M10 12h4', categorias: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z', origenes: 'M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z', marcas: 'M20.5 13.5l-7 7-10-10V3.5h7zM7.5 7.5h.01', pedidos: 'M6 7h12l-1 14H7zM9 7a3 3 0 0 1 6 0', pagos: 'M3 6h18v12H3zM3 10h18M7 15h3', envios: 'M2.5 6.5h11v9h-11zM13.5 9.5h4l3 3v3h-7M7 15.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM17 15.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4z', cupones: 'M3 6h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zM14 6v12', informes: 'M4 20V11M10 20V5M16 20v-6M21 20H3', admins: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M17 3.5a4 4 0 0 1 0 7.5M22 21a6 6 0 0 0-4-5.7', fiscal: 'M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6', factura: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6', correos: 'M3 6h18v12H3zM3 7l9 6 9-6', seguridad: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z' };
+    const it = (t, k, href, n) => ({ t, k, href, n: n || '' });
+    const grupos = [
+      { label: '', items: [it('Inicio', 'inicio', 'A-Inicio.dc.html')] },
+      { label: 'Catálogo', items: [it('Productos', 'productos', 'A-Productos.dc.html'), it('Inventario', 'inventario', 'A-Inventario.dc.html', '4'), it('Categorías', 'categorias', 'A-Categorias.dc.html'), it('Orígenes', 'origenes', 'A-Origenes.dc.html'), it('Marcas y tipos', 'marcas', 'A-Marcas-Tipos.dc.html')] },
+      { label: 'Ventas', items: [it('Pedidos', 'pedidos', 'A-Pedidos.dc.html', '6'), it('Pagos', 'pagos', 'A-Pagos.dc.html', '1'), it('Envíos', 'envios', 'A-Envios.dc.html'), it('Cupones', 'cupones', 'A-Cupones.dc.html'), it('Informes', 'informes', 'A-Informes.dc.html')] },
+      { label: 'Configuración', items: [it('Administradores', 'admins', 'A-Admins.dc.html'), it('Perfil fiscal', 'fiscal', 'A-Fiscal.dc.html'), it('Facturación', 'factura', 'A-Facturacion.dc.html', '1'), it('Correos', 'correos', 'A-Correos.dc.html'), it('Seguridad', 'seguridad', 'A-Seguridad.dc.html')] }
+    ];
+    const activo = 'pedidos';
+    const sb = {
+      abierta, cerrada: !abierta, ancho: abierta ? '248px' : '72px', padX: abierta ? '12px' : '14px', just: abierta ? 'flex-start' : 'center',
+      toggle: () => this.setState({ sb: !abierta }), toggleTxt: abierta ? 'Colapsar menú' : 'Expandir menú', flecha: abierta ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6',
+      grupos: grupos.map((g) => ({ label: g.label, conLabel: !!g.label && abierta, divisor: !!g.label && !abierta,
+        items: g.items.map((x) => { const on = x.k === activo; return { t: x.t, href: x.href, d: P[x.k], cur: on ? 'page' : 'false', aria: x.n ? x.t + ', ' + x.n + ' pendientes' : x.t, bg: on ? '#F2B632' : 'transparent', fg: on ? '#1B1510' : '#FAF3E3', fw: on ? 800 : 600, nA: abierta && x.n ? x.n : '', nC: !abierta && !!x.n }; }) }))
+    };
+    const tl = (e, d, s, ultimo) => ({ e, d, conLinea: !ultimo, bg: s === 'hecho' ? '#0F3B2C' : '#FFFFFF', bd: s === 'pendiente' ? '#A8997C' : '#0F3B2C', fg: s === 'pendiente' ? '#5F554A' : '#1B1510' });
+    const panel = this.props.panel ?? 'Ninguno';
+    const modo = st.modo ?? panel;
+    return {
+      escritorio: !movil, movil, sb,
+      alto: movil ? '2800px' : (ancho === '768' ? '2600px' : (ancho === '1024' ? '2200px' : '2000px')), pad: ancho === '1440' ? '32px' : (ancho === '1024' ? '24px' : '20px'),
+      buscador: ancho === '768' ? 'Buscar' : 'Buscar pedido (ORD-…), producto o SKU', conNombre: ancho !== '768',
+      col: { unit: ancho !== '768', wompi: ancho === '1440' },
+      lineas: [
+        { n: 'Finca El Mirador – Geisha Lavado', v: '250 g · Grano entero', sku: 'ML-MIR-250-GE', q: '3', p: '$38.000', t: '$114.000', img: '/_blob/4599aac869a16a1f06d18202d2ecbc9b', lotes: [{ c: 'MIR-0915', q: '2', f: '15 sep' }, { c: 'MIR-0930', q: '1', f: '30 sep' }], lotesTxt: 'MIR-0915 ×2, MIR-0930 ×1' }
+      ],
+      intentos: [
+        { ref: 'REF-ORD-7K2M9Q4X-1', m: 'Tarjeta', e: 'Rechazado', bg: '#9B1C1C', fg: '#FFFFFF', w: '128734-1729…-38231', h: '20 oct, 9:05 a. m.' },
+        { ref: 'REF-ORD-7K2M9Q4X-2', m: 'Nequi', e: 'Aprobado', bg: '#1E6B45', fg: '#FFFFFF', w: '128734-1729…-41907', h: '20 oct, 9:12 a. m.' }
+      ],
+      tiempo: [
+        tl('Pendiente de pago', '20 oct, 9:03 a. m. · Cliente creó el pedido · apartado 30 min', 'hecho'),
+        tl('Pagado', '20 oct, 9:12 a. m. · Sistema (pago aprobado por Wompi)', 'hecho'),
+        tl('En preparación', 'Pendiente', 'pendiente'),
+        tl('Enviado', 'Pendiente · al registrar el despacho', 'pendiente'),
+        tl('Entregado', 'Pendiente · lo marca una persona del equipo', 'pendiente', true)
+      ],
+      despacho: modo === 'Registrar despacho', cancelar: modo === 'Cancelar pedido', toast: !!st.toast,
+      abrirDespacho: () => this.setState({ modo: 'Registrar despacho', toast: false }), abrirCancelar: () => this.setState({ modo: 'Cancelar pedido' }),
+      cerrar: () => this.setState({ modo: 'Ninguno' }), registrar: () => this.setState({ modo: 'Ninguno', toast: true }),
+      sheetAncho: ancho === '768' || movil ? '100%' : '520px', sheetRadio: ancho === '768' || movil ? '0' : '20px 0 0 20px', toastLeft: movil ? '16px' : 'auto'
+    };
+  }
+}
+</script>
+</body>
+</html>

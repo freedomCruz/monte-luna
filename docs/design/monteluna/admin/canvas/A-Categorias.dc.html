@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Admin Monteluna · categorías</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1510}a:hover{color:#C1272D}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #1B1510;outline-offset:2px}
+nav a:focus-visible,nav button:focus-visible{outline-color:#F2B632}
+</style>
+</helmet>
+<div style="position: relative; width: 100%; min-height: 1000px; box-sizing: border-box; display: flex; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif; font-variant-numeric: tabular-nums">
+
+  <nav aria-label="Secciones del panel" style="flex: none; width: {{sb.ancho}}; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px; padding: 16px {{sb.padX}}; background: #1B1510; color: #FAF3E3">
+    <a href="A-Inicio.dc.html" aria-label="Monteluna Admin, inicio" style="display: flex; align-items: center; justify-content: {{sb.just}}; gap: 8px; min-height: 44px; padding: 0 6px 10px; color: #FAF3E3; text-decoration: none">
+      <sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 26px; line-height: 1; font-weight: 800; text-transform: uppercase; color: #F2B632">Monteluna</span><span style="padding: 2px 6px; border-radius: 6px; background: #F2B632; color: #1B1510; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase">Admin</span></sc-if>
+      <sc-if value="{{sb.cerrada}}" hint-placeholder-val="{{false}}"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; line-height: 1; font-weight: 800; color: #F2B632">M</span></sc-if>
+    </a>
+    <sc-for list="{{sb.grupos}}" as="g" hint-placeholder-count="4">
+      <sc-if value="{{g.conLabel}}" hint-placeholder-val="{{true}}"><span style="padding: 12px 10px 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #A8997C">{{g.label}}</span></sc-if>
+      <sc-if value="{{g.divisor}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="align-self: center; width: 28px; height: 1px; margin: 8px 0; background: rgba(250,243,227,0.2)"></span></sc-if>
+      <sc-for list="{{g.items}}" as="it" hint-placeholder-count="4">
+        <a href="{{it.href}}" aria-current="{{it.cur}}" aria-label="{{it.aria}}" title="{{it.t}}" style="position: relative; display: flex; align-items: center; justify-content: {{sb.just}}; gap: 12px; min-height: 40px; padding: 0 10px; border-radius: 8px; background: {{it.bg}}; color: {{it.fg}}; font-size: 15px; font-weight: {{it.fw}}; text-decoration: none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="{{it.d}}"></path></svg>
+          <sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span style="flex: 1">{{it.t}}</span></sc-if>
+          <sc-if value="{{it.nA}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="min-width: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: #C1272D; color: #FFFFFF; font-size: 12px; line-height: 20px; font-weight: 800; text-align: center">{{it.nA}}</span></sc-if>
+          <sc-if value="{{it.nC}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="position: absolute; top: 6px; right: 10px; width: 8px; height: 8px; border-radius: 50%; background: #C1272D; outline: 2px solid #1B1510"></span></sc-if>
+        </a>
+      </sc-for>
+    </sc-for>
+    <span style="flex: 1"></span>
+    <button type="button" onClick="{{sb.toggle}}" aria-label="{{sb.toggleTxt}}" style="display: flex; align-items: center; justify-content: {{sb.just}}; gap: 12px; min-height: 44px; margin-top: 12px; padding: 0 10px; border: 0; border-top: 1px solid rgba(250,243,227,0.16); background: transparent; color: #E9DDC3; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{sb.flecha}}"></path></svg><sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span>{{sb.toggleTxt}}</span></sc-if></button>
+  </nav>
+
+  <div style="flex: 999 1 0; min-width: 0; display: flex; flex-direction: column">
+    <header style="display: flex; align-items: center; gap: 12px; min-height: 64px; box-sizing: border-box; padding: 10px 32px; background: #FFFFFF; border-bottom: 1px solid #E6D9BC">
+      <label role="search" style="flex: 1 1 auto; max-width: 560px; display: flex; align-items: center; gap: 10px; height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">Buscar en el panel</span><input type="search" placeholder="Buscar pedido (ORD-…), producto o SKU" style="flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: #1B1510; font-family: inherit; font-size: 15px"><span aria-hidden="true" style="padding: 1px 7px; border: 1px solid #A8997C; border-radius: 6px; font-size: 13px; font-weight: 700">/</span></label>
+      <span style="flex: 1"></span>
+      <button type="button" aria-label="Avisos pendientes: 7" style="position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7M10 20a2 2 0 0 0 4 0"></path></svg><span aria-hidden="true" style="position: absolute; top: -6px; right: -6px; min-width: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #C1272D; color: #FFFFFF; font-size: 12px; line-height: 20px; font-weight: 800; text-align: center">7</span></button>
+      <button type="button" aria-label="Menú de Laura Ríos" style="flex: none; display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 6px 0 4px; border: 0; border-radius: 8px; background: transparent; color: #1B1510; font-family: inherit; cursor: pointer"><span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: #4B1C52; color: #FAF3E3; font-size: 14px; font-weight: 800">LR</span><span style="display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15"><span style="font-size: 14px; font-weight: 700">Laura Ríos</span><span style="font-size: 12px; color: #5F554A">Propietaria</span></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+    </header>
+
+    <main style="flex: 1; display: flex; flex-direction: column; gap: 16px; padding: 28px 32px 48px">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px"><h1 style="margin: 0; font-size: 32px; line-height: 1.1; font-weight: 800; letter-spacing: -0.01em">Categorías</h1><span style="padding: 3px 8px; border-radius: 8px; border: 1px dashed #A8997C; font-size: 12px; font-weight: 700; color: #5F554A">Datos de ejemplo</span></span><p style="margin: 0; font-size: 15px; color: #5F554A">El orden de este árbol es el orden de los filtros en la tienda.</p></div>
+        <button type="button" style="display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Nueva categoría</button>
+      </div>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: flex-start">
+        <section aria-labelledby="h-arbol" style="flex: 2 1 560px; min-width: 0; display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 8px; padding: 14px 18px; border-bottom: 1px solid #E6D9BC"><h2 id="h-arbol" style="margin: 0; font-size: 18px; font-weight: 800">Árbol de categorías</h2><span style="font-size: 13px; color: #5F554A">Con teclado: enfoca la manija, Espacio para tomar, flechas para mover, Espacio para soltar.</span></div>
+          <ul role="tree" aria-label="Categorías" style="list-style: none; margin: 0; padding: 8px; display: flex; flex-direction: column; gap: 2px">
+            <sc-for list="{{arbol}}" as="n" hint-placeholder-count="8">
+              <li role="treeitem" aria-level="{{n.nivel}}" aria-selected="{{n.sel}}" aria-expanded="{{n.exp}}" style="display: flex; flex-direction: column">
+                <sc-if value="{{n.lineaAntes}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="height: 3px; margin: 2px 0 2px {{n.ind}}; border-radius: 2px; background: #C1272D"></span></sc-if>
+                <span style="display: flex; align-items: center; gap: 8px; min-height: 52px; padding: 0 8px 0 {{n.ind}}; border-radius: 8px; background: {{n.bg}}; border: {{n.bd}}; box-shadow: {{n.sombra}}">
+                  <button type="button" aria-label="Mover {{n.t}}" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 32px; height: 44px; border: 0; background: transparent; cursor: grab"><svg width="16" height="16" viewBox="0 0 24 24" fill="#5F554A" aria-hidden="true"><circle cx="9" cy="6" r="1.6"></circle><circle cx="15" cy="6" r="1.6"></circle><circle cx="9" cy="12" r="1.6"></circle><circle cx="15" cy="12" r="1.6"></circle><circle cx="9" cy="18" r="1.6"></circle><circle cx="15" cy="18" r="1.6"></circle></svg></button>
+                  <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 24px"><sc-if value="{{n.hijos}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></sc-if></span>
+                  <button type="button" onClick="{{n.pick}}" style="flex: 1; min-width: 0; height: 44px; padding: 0; border: 0; background: transparent; color: #1B1510; font-family: inherit; font-size: 15px; font-weight: {{n.fw}}; text-align: left; cursor: pointer">{{n.t}}</button>
+                  <span style="font-size: 13px; color: #5F554A; white-space: nowrap">{{n.productos}}</span>
+                  <sc-if value="{{n.archivada}}" hint-placeholder-val="{{false}}"><span style="display: inline-flex; align-items: center; gap: 6px; height: 24px; padding: 0 9px; border-radius: 8px; background: #F3E6C4; font-size: 12px; font-weight: 700"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 50%; background: #1B1510"></span>Archivada</span></sc-if>
+                  <sc-if value="{{n.moviendo}}" hint-placeholder-val="{{false}}"><span style="display: inline-flex; align-items: center; height: 24px; padding: 0 9px; border-radius: 8px; background: #1B1510; color: #FAF3E3; font-size: 12px; font-weight: 700">Moviendo…</span></sc-if>
+                  <button type="button" aria-label="Acciones de {{n.t}}" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; border-radius: 8px; background: transparent; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><circle cx="5" cy="12" r="1"></circle><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle></svg></button>
+                </span>
+              </li>
+            </sc-for>
+          </ul>
+        </section>
+
+        <section aria-labelledby="h-edit" style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 14px; padding: 20px; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px">
+          <h2 id="h-edit" style="margin: 0; font-size: 18px; font-weight: 800">Editar «{{actual.t}}»</h2>
+          <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Nombre</span><input type="text" value="{{actual.t}}" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 15px"></label>
+          <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Slug</span><input type="text" value="{{actual.slug}}" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 15px"><span style="font-size: 13px; color: #5F554A">monteluna.co/tienda/{{actual.slug}}</span></label>
+          <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Dentro de</span><span style="position: relative; display: block"><select style="appearance: none; -webkit-appearance: none; width: 100%; height: 44px; box-sizing: border-box; padding: 0 36px 0 12px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 15px"><option>{{actual.padre}}</option><option>Ninguna (primer nivel)</option><option>Café</option><option>Cacao</option></select><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="position: absolute; right: 12px; top: 14px; pointer-events: none"><path d="M6 9l6 6 6-6"></path></svg></span></label>
+          <span style="font-size: 14px; line-height: 1.45; color: #5F554A">{{actual.productos}}. Archivar la categoría la oculta de la tienda; los productos siguen publicados en sus otras categorías.</span>
+          <div style="display: flex; flex-wrap: wrap; justify-content: space-between; gap: 8px; padding-top: 6px; border-top: 1px solid #E6D9BC"><button type="button" style="height: 44px; padding: 0 12px; border: 0; background: transparent; color: #9B1C1C; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Archivar…</button><button type="button" style="height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: #1B1510; color: #FAF3E3; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Guardar categoría</button></div>
+        </section>
+      </div>
+    </main>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"arrastre":{"editor":"boolean","default":true},"$preview":{"width":1440,"height":1000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const abierta = st.sb ?? true;
+    const P = { inicio: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z', productos: 'M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10', inventario: 'M3 4h18v4H3zM5 8v12h14V8M10 12h4', categorias: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z', origenes: 'M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z', marcas: 'M20.5 13.5l-7 7-10-10V3.5h7zM7.5 7.5h.01', pedidos: 'M6 7h12l-1 14H7zM9 7a3 3 0 0 1 6 0', pagos: 'M3 6h18v12H3zM3 10h18M7 15h3', envios: 'M2.5 6.5h11v9h-11zM13.5 9.5h4l3 3v3h-7M7 15.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM17 15.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4z', cupones: 'M3 6h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zM14 6v12', informes: 'M4 20V11M10 20V5M16 20v-6M21 20H3', admins: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M17 3.5a4 4 0 0 1 0 7.5M22 21a6 6 0 0 0-4-5.7', fiscal: 'M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6', factura: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6', correos: 'M3 6h18v12H3zM3 7l9 6 9-6', seguridad: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z' };
+    const it = (t, k, href, n) => ({ t, k, href, n: n || '' });
+    const grupos = [
+      { label: '', items: [it('Inicio', 'inicio', 'A-Inicio.dc.html')] },
+      { label: 'Catálogo', items: [it('Productos', 'productos', 'A-Productos.dc.html'), it('Inventario', 'inventario', 'A-Inventario.dc.html', '4'), it('Categorías', 'categorias', 'A-Categorias.dc.html'), it('Orígenes', 'origenes', 'A-Origenes.dc.html'), it('Marcas y tipos', 'marcas', 'A-Marcas-Tipos.dc.html')] },
+      { label: 'Ventas', items: [it('Pedidos', 'pedidos', 'A-Pedidos.dc.html', '6'), it('Pagos', 'pagos', 'A-Pagos.dc.html', '1'), it('Envíos', 'envios', 'A-Envios.dc.html'), it('Cupones', 'cupones', 'A-Cupones.dc.html'), it('Informes', 'informes', 'A-Informes.dc.html')] },
+      { label: 'Configuración', items: [it('Administradores', 'admins', 'A-Admins.dc.html'), it('Perfil fiscal', 'fiscal', 'A-Fiscal.dc.html'), it('Facturación', 'factura', 'A-Facturacion.dc.html', '1'), it('Correos', 'correos', 'A-Correos.dc.html'), it('Seguridad', 'seguridad', 'A-Seguridad.dc.html')] }
+    ];
+    const activo = 'categorias';
+    const sb = {
+      abierta, cerrada: !abierta, ancho: abierta ? '248px' : '72px', padX: abierta ? '12px' : '14px', just: abierta ? 'flex-start' : 'center',
+      toggle: () => this.setState({ sb: !abierta }), toggleTxt: abierta ? 'Colapsar menú' : 'Expandir menú', flecha: abierta ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6',
+      grupos: grupos.map((g) => ({ label: g.label, conLabel: !!g.label && abierta, divisor: !!g.label && !abierta,
+        items: g.items.map((x) => { const on = x.k === activo; return { t: x.t, href: x.href, d: P[x.k], cur: on ? 'page' : 'false', aria: x.n ? x.t + ', ' + x.n + ' pendientes' : x.t, bg: on ? '#F2B632' : 'transparent', fg: on ? '#1B1510' : '#FAF3E3', fw: on ? 800 : 600, nA: abierta && x.n ? x.n : '', nC: !abierta && !!x.n }; }) }))
+    };
+    const arrastre = this.props.arrastre ?? true;
+    const sel = st.sel ?? 1;
+    const nodos = [
+      { t: 'Café', slug: 'cafe', nivel: 1, hijos: true, prod: 3, padre: 'Ninguna (primer nivel)' },
+      { t: 'Cafés de origen', slug: 'cafes-de-origen', nivel: 2, hijos: false, prod: 3, padre: 'Café' },
+      { t: 'Por proceso', slug: 'por-proceso', nivel: 2, hijos: true, prod: 0, padre: 'Café' },
+      { t: 'Lavados', slug: 'lavados', nivel: 3, hijos: false, prod: 1, padre: 'Por proceso', mov: true },
+      { t: 'Naturales y honey', slug: 'naturales-y-honey', nivel: 3, hijos: false, prod: 0, padre: 'Por proceso', antes: true },
+      { t: 'Cacao', slug: 'cacao', nivel: 1, hijos: true, prod: 3, padre: 'Ninguna (primer nivel)' },
+      { t: 'Chocolates', slug: 'chocolates', nivel: 2, hijos: false, prod: 3, padre: 'Cacao' },
+      { t: 'Ediciones especiales', slug: 'ediciones-especiales', nivel: 1, hijos: false, prod: 0, padre: 'Ninguna (primer nivel)', arch: true }
+    ];
+    const arbol = nodos.map((n, i) => { const on = i === sel; const mov = arrastre && !!n.mov;
+      return { t: n.t, nivel: String(n.nivel), hijos: n.hijos, exp: n.hijos ? 'true' : 'false', sel: on ? 'true' : 'false', ind: ((n.nivel - 1) * 28 + 4) + 'px', fw: n.nivel === 1 ? 800 : 600,
+        productos: n.prod === 1 ? '1 producto' : n.prod + ' productos', archivada: !!n.arch, moviendo: mov, lineaAntes: arrastre && !!n.antes,
+        bg: mov ? '#F8E4AE' : (on ? '#F3E6C4' : 'transparent'), bd: mov ? '1px solid #1B1510' : '1px solid transparent', sombra: mov ? '0 10px 24px rgba(27,21,16,0.18)' : 'none',
+        pick: () => this.setState({ sel: i }) }; });
+    const a = nodos[sel];
+    return { sb, arbol, actual: { t: a.t, slug: a.slug, padre: a.padre, productos: a.prod === 1 ? '1 producto en esta categoría' : a.prod + ' productos en esta categoría' } };
+  }
+}
+</script>
+</body>
+</html>

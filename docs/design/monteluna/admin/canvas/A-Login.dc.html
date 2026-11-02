@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Admin Monteluna · iniciar sesión</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1510}a:hover{color:#C1272D}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #1B1510;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 100%; min-height: {{alto}}; box-sizing: border-box; display: flex; flex-wrap: wrap; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif">
+
+  <div aria-hidden="{{decoOculta}}" style="position: relative; flex: 1 1 520px; min-height: {{marcaAlto}}; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; gap: 24px; padding: {{marcaPad}}; overflow: hidden; background: #F2B632">
+    <div style="display: flex; align-items: center; gap: 10px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: {{logoTam}}; line-height: 1; font-weight: 800; text-transform: uppercase">Monteluna</span><span style="padding: 3px 8px; border-radius: 8px; background: #1B1510; color: #F2B632; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase">Admin</span></div>
+    <sc-if value="{{conArte}}" hint-placeholder-val="{{true}}">
+      <div style="position: relative; height: 420px">
+        <img src="/_blob/4599aac869a16a1f06d18202d2ecbc9b" alt="" style="position: absolute; left: 50%; top: 0; height: 420px; margin-left: -150px; transform: rotate(-6deg); filter: drop-shadow(0 22px 16px rgba(27,21,16,0.28))">
+        <span style="position: absolute; left: 8%; bottom: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 168px; height: 168px; border-radius: 50%; background: #1B1510; color: #F2B632; outline: 2px dashed #F2B632; outline-offset: -11px; transform: rotate(-10deg)"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase">Panel de</span><span style="font-size: 32px; line-height: 0.95; font-weight: 800; color: #FAF3E3">la tienda</span><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.12em; text-transform: uppercase">café · cacao</span></span>
+      </div>
+      <p style="margin: 0; max-width: 420px; font-size: 18px; line-height: 1.45; font-weight: 600">Catálogo, pedidos, pagos y envíos de Monteluna en un solo lugar.</p>
+    </sc-if>
+  </div>
+
+  <main style="flex: 1 1 420px; box-sizing: border-box; display: flex; align-items: center; justify-content: center; padding: {{formPad}}">
+    <div style="width: 100%; max-width: 440px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; padding: {{cardPad}}; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 20px">
+      <div style="display: flex; flex-direction: column; gap: 6px">
+        <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #5F554A">Panel de administración</span>
+        <h1 style="margin: 0; font-size: 32px; line-height: 1.05; font-weight: 800; letter-spacing: -0.01em">Inicia sesión</h1>
+      </div>
+
+      <sc-if value="{{error}}" hint-placeholder-val="{{false}}">
+        <div role="alert" style="display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border: 2px solid #9B1C1C; border-radius: 12px">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#9B1C1C" stroke-width="2.2" stroke-linecap="round" aria-hidden="true" style="flex: none"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5v.2"></path></svg>
+          <span style="font-size: 15px; line-height: 1.4; font-weight: 700">Correo o contraseña incorrectos.</span>
+        </div>
+      </sc-if>
+      <sc-if value="{{bloqueada}}" hint-placeholder-val="{{false}}">
+        <div role="alert" style="display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 12px; background: #F3E6C4">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><rect x="5" y="10.5" width="14" height="10" rx="2"></rect><path d="M8 10.5V7.5a4 4 0 0 1 8 0v3"></path></svg>
+          <span style="display: flex; flex-direction: column; gap: 3px"><span style="font-size: 15px; font-weight: 800">Acceso bloqueado por unos minutos</span><span style="font-size: 14px; line-height: 1.45">Hubo varios intentos fallidos. Por seguridad, vuelve a intentarlo en <span style="font-weight: 800">14:32</span>. Si no recuerdas tu contraseña, recupérala.</span></span>
+        </div>
+      </sc-if>
+
+      <form style="display: flex; flex-direction: column; gap: 16px; margin: 0">
+        <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Correo</span>
+          <input type="email" autocomplete="username" value="laura@monteluna.co" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 16px">
+        </label>
+        <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Contraseña</span>
+          <span style="display: flex; align-items: center; height: 44px; box-sizing: border-box; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF">
+            <input type="{{tipoClave}}" autocomplete="current-password" value="cafedemontana26" style="flex: 1; min-width: 0; height: 100%; box-sizing: border-box; padding: 0 12px; border: 0; border-radius: 8px; background: transparent; color: #1B1510; font-family: inherit; font-size: 16px">
+            <button type="button" onClick="{{verClave}}" aria-pressed="{{vista}}" style="height: 100%; padding: 0 12px; border: 0; border-left: 1px solid #E6D9BC; background: transparent; color: #1B1510; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">{{textoVer}}</button>
+          </span>
+        </label>
+        <a href="A-Recuperar.dc.html" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 700; text-underline-offset: 4px">¿Olvidaste tu contraseña?</a>
+        <sc-if value="{{puedeEntrar}}" hint-placeholder-val="{{true}}">
+          <a href="A-2FA.dc.html" style="display: flex; align-items: center; justify-content: center; height: 48px; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-size: 16px; font-weight: 700; text-decoration: none">Iniciar sesión</a>
+        </sc-if>
+        <sc-if value="{{bloqueada}}" hint-placeholder-val="{{false}}">
+          <button type="button" disabled="" style="height: 48px; border: 0; border-radius: 8px; background: #E6D9BC; color: #5F554A; font-family: inherit; font-size: 16px; font-weight: 700">Disponible en 14:32</button>
+        </sc-if>
+      </form>
+      <p style="margin: 0; padding-top: 14px; border-top: 1px solid #E6D9BC; font-size: 14px; line-height: 1.45; color: #5F554A">Después te pediremos el código de tu app autenticadora.</p>
+    </div>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"estado":{"editor":"enum","options":["Normal","Error","Bloqueada"],"default":"Normal"},"ancho":{"editor":"enum","options":["1440","390"],"default":"1440"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const estado = this.props.estado ?? 'Normal';
+    const movil = String(this.props.ancho ?? '1440') === '390';
+    const vista = !!st.vista;
+    return {
+      error: estado === 'Error', bloqueada: estado === 'Bloqueada', puedeEntrar: estado !== 'Bloqueada',
+      tipoClave: vista ? 'text' : 'password', vista: vista ? 'true' : 'false', textoVer: vista ? 'Ocultar' : 'Mostrar',
+      verClave: () => this.setState({ vista: !vista }),
+      alto: movil ? '844px' : '900px',
+      conArte: !movil, decoOculta: movil ? 'false' : 'false',
+      marcaAlto: movil ? '0px' : '900px',
+      marcaPad: movil ? '18px 20px' : '48px 56px',
+      logoTam: movil ? '28px' : '40px',
+      formPad: movil ? '20px 16px 32px' : '48px',
+      cardPad: movil ? '24px 20px' : '36px'
+    };
+  }
+}
+</script>
+</body>
+</html>

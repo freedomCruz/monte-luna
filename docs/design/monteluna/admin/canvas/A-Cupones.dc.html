@@ -1,0 +1,154 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Admin Monteluna · cupones</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1510}a:hover{color:#C1272D}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #1B1510;outline-offset:2px}
+nav a:focus-visible,nav button:focus-visible{outline-color:#F2B632}
+</style>
+</helmet>
+<div style="position: relative; width: 100%; min-height: {{alto}}; box-sizing: border-box; display: flex; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif; font-variant-numeric: tabular-nums">
+
+  <nav aria-label="Secciones del panel" style="flex: none; width: {{sb.ancho}}; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px; padding: 16px {{sb.padX}}; background: #1B1510; color: #FAF3E3">
+    <a href="A-Inicio.dc.html" aria-label="Monteluna Admin, inicio" style="display: flex; align-items: center; justify-content: {{sb.just}}; gap: 8px; min-height: 44px; padding: 0 6px 10px; color: #FAF3E3; text-decoration: none">
+      <sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 26px; line-height: 1; font-weight: 800; text-transform: uppercase; color: #F2B632">Monteluna</span><span style="padding: 2px 6px; border-radius: 6px; background: #F2B632; color: #1B1510; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase">Admin</span></sc-if>
+      <sc-if value="{{sb.cerrada}}" hint-placeholder-val="{{false}}"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; line-height: 1; font-weight: 800; color: #F2B632">M</span></sc-if>
+    </a>
+    <sc-for list="{{sb.grupos}}" as="g" hint-placeholder-count="4">
+      <sc-if value="{{g.conLabel}}" hint-placeholder-val="{{true}}"><span style="padding: 12px 10px 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #A8997C">{{g.label}}</span></sc-if>
+      <sc-if value="{{g.divisor}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="align-self: center; width: 28px; height: 1px; margin: 8px 0; background: rgba(250,243,227,0.2)"></span></sc-if>
+      <sc-for list="{{g.items}}" as="it" hint-placeholder-count="4">
+        <a href="{{it.href}}" aria-current="{{it.cur}}" aria-label="{{it.aria}}" title="{{it.t}}" style="position: relative; display: flex; align-items: center; justify-content: {{sb.just}}; gap: 12px; min-height: 40px; padding: 0 10px; border-radius: 8px; background: {{it.bg}}; color: {{it.fg}}; font-size: 15px; font-weight: {{it.fw}}; text-decoration: none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="{{it.d}}"></path></svg>
+          <sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span style="flex: 1">{{it.t}}</span></sc-if>
+          <sc-if value="{{it.nA}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="min-width: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: #C1272D; color: #FFFFFF; font-size: 12px; line-height: 20px; font-weight: 800; text-align: center">{{it.nA}}</span></sc-if>
+          <sc-if value="{{it.nC}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="position: absolute; top: 6px; right: 10px; width: 8px; height: 8px; border-radius: 50%; background: #C1272D; outline: 2px solid #1B1510"></span></sc-if>
+        </a>
+      </sc-for>
+    </sc-for>
+    <span style="flex: 1"></span>
+    <button type="button" onClick="{{sb.toggle}}" aria-label="{{sb.toggleTxt}}" style="display: flex; align-items: center; justify-content: {{sb.just}}; gap: 12px; min-height: 44px; margin-top: 12px; padding: 0 10px; border: 0; border-top: 1px solid rgba(250,243,227,0.16); background: transparent; color: #E9DDC3; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{sb.flecha}}"></path></svg><sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span>{{sb.toggleTxt}}</span></sc-if></button>
+  </nav>
+
+  <div style="flex: 999 1 0; min-width: 0; display: flex; flex-direction: column">
+    <header style="display: flex; align-items: center; gap: 12px; min-height: 64px; box-sizing: border-box; padding: 10px {{pad}}; background: #FFFFFF; border-bottom: 1px solid #E6D9BC">
+      <label role="search" style="flex: 1 1 auto; max-width: 560px; display: flex; align-items: center; gap: 10px; height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">Buscar en el panel</span><input type="search" placeholder="{{buscador}}" style="flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: #1B1510; font-family: inherit; font-size: 15px"><span aria-hidden="true" style="padding: 1px 7px; border: 1px solid #A8997C; border-radius: 6px; font-size: 13px; font-weight: 700">/</span></label>
+      <span style="flex: 1"></span>
+      <button type="button" aria-label="Avisos pendientes: 7" style="position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7M10 20a2 2 0 0 0 4 0"></path></svg><span aria-hidden="true" style="position: absolute; top: -6px; right: -6px; min-width: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #C1272D; color: #FFFFFF; font-size: 12px; line-height: 20px; font-weight: 800; text-align: center">7</span></button>
+      <button type="button" aria-label="Menú de Laura Ríos" style="flex: none; display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 6px 0 4px; border: 0; border-radius: 8px; background: transparent; color: #1B1510; font-family: inherit; cursor: pointer"><span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: #4B1C52; color: #FAF3E3; font-size: 14px; font-weight: 800">LR</span><sc-if value="{{conNombre}}" hint-placeholder-val="{{true}}"><span style="display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15"><span style="font-size: 14px; font-weight: 700">Laura Ríos</span><span style="font-size: 12px; color: #5F554A">Propietaria</span></span></sc-if><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+    </header>
+
+    <main style="flex: 1; display: flex; flex-direction: column; gap: 16px; padding: 28px {{pad}} 48px">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px"><h1 style="margin: 0; font-size: 32px; line-height: 1.1; font-weight: 800; letter-spacing: -0.01em">Cupones</h1><span style="padding: 3px 8px; border-radius: 8px; border: 1px dashed #A8997C; font-size: 12px; font-weight: 700; color: #5F554A">Datos de ejemplo</span></span><p style="margin: 0; font-size: 15px; color: #5F554A">Un cupón por pedido. Se escribe en el pago, nunca se aplica solo.</p></div>
+        <button type="button" onClick="{{abrir}}" style="display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Nuevo cupón</button>
+      </div>
+      <div style="display: flex; flex-wrap: wrap; gap: 8px"><span style="display: inline-flex; align-items: center; height: 44px; box-sizing: border-box; padding: 0 14px; border-radius: 8px; background: #0F3B2C; color: #FAF3E3; font-size: 14px; font-weight: 700">Activos y pausados</span><span style="display: inline-flex; align-items: center; height: 44px; box-sizing: border-box; padding: 0 14px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; font-size: 14px; font-weight: 700">Tipo ▾</span></div>
+      <section aria-label="Lista de cupones" style="background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px">
+        <div style="overflow-x: auto"><table style="width: 100%; border-collapse: collapse; font-size: 15px">
+          <thead><tr style="background: #F3E6C4; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase"><th style="height: 44px; padding: 0 12px 0 20px">Código</th><th style="padding: 0 12px">Descuento</th><sc-if value="{{col.vig}}" hint-placeholder-val="{{true}}"><th style="padding: 0 12px">Vigencia</th></sc-if><sc-if value="{{col.min}}" hint-placeholder-val="{{true}}"><th style="padding: 0 12px; text-align: right">Mínimo</th></sc-if><th style="padding: 0 12px; text-align: right">Usos</th><sc-if value="{{col.correo}}" hint-placeholder-val="{{true}}"><th style="padding: 0 12px; text-align: right">Por correo</th></sc-if><th style="padding: 0 20px 0 12px">Estado</th></tr></thead>
+          <tbody><sc-for list="{{cupones}}" as="c" hint-placeholder-count="5"><tr style="height: 60px; border-top: 1px solid #E6D9BC">
+            <td style="padding: 0 12px 0 20px"><button type="button" onClick="{{abrir}}" style="display: inline-flex; align-items: center; height: 36px; padding: 0 10px; border: 1px dashed #1B1510; border-radius: 8px; background: #F8E4AE; color: #1B1510; font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 800; letter-spacing: 0.06em; cursor: pointer">{{c.cod}}</button></td>
+            <td style="padding: 0 12px"><span style="display: flex; flex-direction: column"><span style="font-weight: 700">{{c.desc}}</span><span style="font-size: 12px; color: #5F554A">{{c.tope}}</span></span></td>
+            <sc-if value="{{col.vig}}" hint-placeholder-val="{{true}}"><td style="padding: 0 12px; white-space: nowrap; color: #5F554A">{{c.vig}}</td></sc-if>
+            <sc-if value="{{col.min}}" hint-placeholder-val="{{true}}"><td style="padding: 0 12px; text-align: right">{{c.min}}</td></sc-if>
+            <td style="padding: 0 12px; text-align: right"><span style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px"><span style="font-weight: 800">{{c.usos}}</span><sc-if value="{{c.conBarra}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="display: block; width: 80px; height: 6px; border-radius: 999px; background: #E6D9BC; overflow: hidden"><span style="display: block; width: {{c.pct}}; height: 100%; background: #1B1510"></span></span></sc-if></span></td>
+            <sc-if value="{{col.correo}}" hint-placeholder-val="{{true}}"><td style="padding: 0 12px; text-align: right">{{c.porCorreo}}</td></sc-if>
+            <td style="padding: 0 20px 0 12px"><span style="display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 8px; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 700"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: {{c.fg}}"></span>{{c.estado}}</span></td>
+          </tr></sc-for></tbody>
+        </table></div>
+        <div style="padding: 12px 20px; border-top: 1px solid #E6D9BC; font-size: 14px; color: #5F554A"><span style="font-weight: 700; color: #1B1510">1–4</span> de 4 cupones · los archivados se ven con el filtro de estado</div>
+      </section>
+    </main>
+  </div>
+
+  <sc-if value="{{hoja}}" hint-placeholder-val="{{true}}">
+    <div style="position: absolute; inset: 0; z-index: 20; display: flex; justify-content: flex-end; background: rgba(27,21,16,0.5)">
+      <div role="dialog" aria-modal="true" aria-labelledby="h-cup" style="width: {{sheetAncho}}; max-width: 100%; box-sizing: border-box; display: flex; flex-direction: column; background: #FFFFFF; border-radius: {{sheetRadio}}">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 24px 0"><div style="display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5F554A">Cupón</span><h2 id="h-cup" style="margin: 0; font-family: 'Barlow Condensed', sans-serif; font-size: 30px; font-weight: 800; letter-spacing: 0.06em">BIENVENIDA10</h2></div><button type="button" aria-label="Cerrar" onClick="{{cerrar}}" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; border-radius: 8px; background: #F3E6C4; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+        <div role="tablist" style="display: flex; gap: 4px; padding: 8px 24px 0; border-bottom: 1px solid #E6D9BC"><sc-for list="{{tabs}}" as="t" hint-placeholder-count="2"><button type="button" role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}" style="height: 44px; padding: 0 12px; border: 0; border-bottom: 3px solid {{t.bd}}; background: transparent; color: {{t.fg}}; font-family: inherit; font-size: 15px; font-weight: {{t.fw}}; cursor: pointer">{{t.t}}</button></sc-for></div>
+        <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 20px 24px">
+          <sc-if value="{{tab.config}}" hint-placeholder-val="{{true}}">
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 12px 14px; border-radius: 12px; background: #FAF3E3"><span style="display: flex; flex-direction: column"><span style="font-size: 15px; font-weight: 800">{{activoTxt}}</span><span style="font-size: 13px; color: #5F554A">Pausado, nadie puede usarlo aunque esté vigente.</span></span><button type="button" role="switch" aria-checked="{{activoAria}}" aria-label="Cupón activo" onClick="{{toggleActivo}}" style="flex: none; position: relative; width: 56px; height: 32px; border: 0; border-radius: 999px; background: {{switchBg}}; cursor: pointer"><span style="position: absolute; top: 4px; left: {{switchX}}; width: 24px; height: 24px; border-radius: 50%; background: #FFFFFF"></span></button></div>
+            <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Código</span><input type="text" value="BIENVENIDA10" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 16px; font-weight: 700; text-transform: uppercase"><span style="font-size: 13px; color: #5F554A">De 4 a 32 caracteres: letras, números y guiones. Se guarda en mayúsculas.</span></label>
+            <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Tipo de descuento</span><div role="radiogroup" style="display: flex; padding: 4px; gap: 4px; background: #F3E6C4; border-radius: 8px"><span role="radio" aria-checked="true" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; height: 36px; border-radius: 6px; background: #FFFFFF; border: 1px solid #1B1510; font-size: 14px; font-weight: 700">Porcentaje</span><span role="radio" aria-checked="false" style="flex: 1; display: inline-flex; align-items: center; justify-content: center; height: 36px; font-size: 14px; font-weight: 600; color: #5F554A">Envío gratis</span></div></div>
+            <div style="display: flex; gap: 12px"><label style="flex: 1; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Porcentaje</span><input type="text" inputmode="decimal" value="10 %" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 15px"><span style="font-size: 13px; color: #5F554A">Solo sobre los productos, no el envío.</span></label><label style="flex: 1; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Tope <span style="font-weight: 500; color: #5F554A">(opcional)</span></span><input type="text" inputmode="numeric" value="$20.000" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 15px"></label></div>
+            <div style="display: flex; gap: 12px"><label style="flex: 1; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Desde</span><span style="display: flex; align-items: center; justify-content: space-between; height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-size: 15px">1 oct 2026<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></span></label><label style="flex: 1; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Hasta <span style="font-weight: 500; color: #5F554A">(opcional)</span></span><span style="display: flex; align-items: center; justify-content: space-between; height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-size: 15px; color: #5F554A">Sin fecha de fin<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></span></label></div>
+            <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Compra mínima <span style="font-weight: 500; color: #5F554A">(opcional)</span></span><input type="text" inputmode="numeric" value="$40.000" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 15px"><span style="font-size: 13px; color: #5F554A">Se compara con el subtotal de productos.</span></label>
+            <div style="display: flex; gap: 12px"><label style="flex: 1; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Usos totales <span style="font-weight: 500; color: #5F554A">(opcional)</span></span><input type="text" inputmode="numeric" value="200" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 15px"><span style="font-size: 13px; color: #5F554A">Vacío = sin límite.</span></label><label style="flex: 1; display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Usos por correo</span><input type="text" inputmode="numeric" value="1" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 15px"></label></div>
+          </sc-if>
+          <sc-if value="{{tab.usos}}" hint-placeholder-val="{{false}}">
+            <div style="display: flex; gap: 12px"><div style="flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 12px; background: #FAF3E3"><span style="font-size: 13px; color: #5F554A">Usos confirmados</span><span style="font-size: 26px; font-weight: 800">38 de 200</span></div><div style="flex: 1; display: flex; flex-direction: column; gap: 4px; padding: 14px; border-radius: 12px; background: #FAF3E3"><span style="font-size: 13px; color: #5F554A">Descuento dado</span><span style="font-size: 26px; font-weight: 800">$212.400</span></div></div>
+            <span style="font-size: 13px; color: #5F554A">Un uso queda «reservado» mientras el pedido espera pago y se libera si vence.</span>
+            <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; border: 1px solid #E6D9BC; border-radius: 12px"><sc-for list="{{usos}}" as="u" hint-placeholder-count="4"><li style="display: flex; align-items: center; justify-content: space-between; gap: 10px; min-height: 56px; padding: 0 14px; border-top: 1px solid #E6D9BC"><span style="display: flex; flex-direction: column"><a href="A-Pedido.dc.html" style="font-size: 14px; font-weight: 800">{{u.n}}</a><span style="font-size: 12px; color: #5F554A">{{u.c}} · {{u.f}}</span></span><span style="display: flex; align-items: center; gap: 8px"><span style="font-size: 14px; font-weight: 700; color: #C1272D">{{u.d}}</span><span style="display: inline-flex; align-items: center; height: 22px; padding: 0 8px; border-radius: 6px; background: {{u.bg}}; color: {{u.fg}}; font-size: 11px; font-weight: 700">{{u.e}}</span></span></li></sc-for></ul>
+          </sc-if>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; padding: 14px 24px; border-top: 1px solid #E6D9BC"><button type="button" onClick="{{cerrar}}" style="height: 44px; padding: 0 16px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Cancelar</button><button type="button" onClick="{{cerrar}}" style="height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Guardar cupón</button></div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"panel":{"editor":"enum","options":["Cerrado","Abierto"],"default":"Abierto"},"ancho":{"editor":"enum","options":["1440","1024","768"],"default":"1440"},"$preview":{"width":1440,"height":1200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const ancho = String(this.props.ancho ?? '1440');
+    const abierta = st.sb ?? (ancho === '1440');
+    const P = { inicio: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z', productos: 'M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10', inventario: 'M3 4h18v4H3zM5 8v12h14V8M10 12h4', categorias: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z', origenes: 'M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z', marcas: 'M20.5 13.5l-7 7-10-10V3.5h7zM7.5 7.5h.01', pedidos: 'M6 7h12l-1 14H7zM9 7a3 3 0 0 1 6 0', pagos: 'M3 6h18v12H3zM3 10h18M7 15h3', envios: 'M2.5 6.5h11v9h-11zM13.5 9.5h4l3 3v3h-7M7 15.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM17 15.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4z', cupones: 'M3 6h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zM14 6v12', informes: 'M4 20V11M10 20V5M16 20v-6M21 20H3', admins: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M17 3.5a4 4 0 0 1 0 7.5M22 21a6 6 0 0 0-4-5.7', fiscal: 'M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6', factura: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6', correos: 'M3 6h18v12H3zM3 7l9 6 9-6', seguridad: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z' };
+    const it = (t, k, href, n) => ({ t, k, href, n: n || '' });
+    const grupos = [
+      { label: '', items: [it('Inicio', 'inicio', 'A-Inicio.dc.html')] },
+      { label: 'Catálogo', items: [it('Productos', 'productos', 'A-Productos.dc.html'), it('Inventario', 'inventario', 'A-Inventario.dc.html', '4'), it('Categorías', 'categorias', 'A-Categorias.dc.html'), it('Orígenes', 'origenes', 'A-Origenes.dc.html'), it('Marcas y tipos', 'marcas', 'A-Marcas-Tipos.dc.html')] },
+      { label: 'Ventas', items: [it('Pedidos', 'pedidos', 'A-Pedidos.dc.html', '6'), it('Pagos', 'pagos', 'A-Pagos.dc.html', '1'), it('Envíos', 'envios', 'A-Envios.dc.html'), it('Cupones', 'cupones', 'A-Cupones.dc.html'), it('Informes', 'informes', 'A-Informes.dc.html')] },
+      { label: 'Configuración', items: [it('Administradores', 'admins', 'A-Admins.dc.html'), it('Perfil fiscal', 'fiscal', 'A-Fiscal.dc.html'), it('Facturación', 'factura', 'A-Facturacion.dc.html', '1'), it('Correos', 'correos', 'A-Correos.dc.html'), it('Seguridad', 'seguridad', 'A-Seguridad.dc.html')] }
+    ];
+    const activo = 'cupones';
+    const sb = {
+      abierta, cerrada: !abierta, ancho: abierta ? '248px' : '72px', padX: abierta ? '12px' : '14px', just: abierta ? 'flex-start' : 'center',
+      toggle: () => this.setState({ sb: !abierta }), toggleTxt: abierta ? 'Colapsar menú' : 'Expandir menú', flecha: abierta ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6',
+      grupos: grupos.map((g) => ({ label: g.label, conLabel: !!g.label && abierta, divisor: !!g.label && !abierta,
+        items: g.items.map((x) => { const on = x.k === activo; return { t: x.t, href: x.href, d: P[x.k], cur: on ? 'page' : 'false', aria: x.n ? x.t + ', ' + x.n + ' pendientes' : x.t, bg: on ? '#F2B632' : 'transparent', fg: on ? '#1B1510' : '#FAF3E3', fw: on ? 800 : 600, nA: abierta && x.n ? x.n : '', nC: !abierta && !!x.n }; }) }))
+    };
+    const tone = { hecho: ['#1E6B45', '#FFFFFF'], neutro: ['#F3E6C4', '#1B1510'], curso: ['#0F3B2C', '#FAF3E3'] };
+    const cup = (cod, desc, tope, vig, min, usos, pct, porCorreo, estado, k) => ({ cod, desc, tope, vig, min, usos, pct, conBarra: !!pct, porCorreo, estado, bg: tone[k][0], fg: tone[k][1] });
+    const activoOn = st.act ?? true;
+    const tabSel = st.tab ?? 'Configuración';
+    const tb = (t) => { const on = t === tabSel; return { t, sel: on ? 'true' : 'false', pick: () => this.setState({ tab: t }), bd: on ? '#1B1510' : 'transparent', fg: on ? '#1B1510' : '#5F554A', fw: on ? 800 : 600 }; };
+    const angosto = ancho === '768';
+    return {
+      sb, alto: angosto ? '1300px' : '1200px', pad: ancho === '1440' ? '32px' : (ancho === '1024' ? '24px' : '20px'),
+      buscador: angosto ? 'Buscar' : 'Buscar pedido (ORD-…), producto o SKU', conNombre: !angosto,
+      col: { vig: !angosto, min: ancho === '1440', correo: ancho === '1440' },
+      cupones: [
+        cup('BIENVENIDA10', '10 %', 'tope $20.000', '1 oct 2026 · sin fin', '$40.000', '38 / 200', '19%', '1', 'Activo', 'hecho'),
+        cup('ENVIOGRATIS', 'Envío gratis', 'todas las zonas', '15 oct – 31 oct 2026', '$60.000', '12', '', '1', 'Activo', 'hecho'),
+        cup('NAVIDAD-26', '15 %', 'sin tope', '1 dic – 26 dic 2026', '—', '0 / 500', '0%', '2', 'Pausado', 'neutro'),
+        cup('CAFETEROS', '20 %', 'tope $30.000', '1 sep – 30 sep 2026', '$80.000', '50 / 50', '100%', '1', 'Pausado', 'neutro')
+      ],
+      hoja: st.hoja ?? ((this.props.panel ?? 'Abierto') === 'Abierto'),
+      sheetAncho: angosto ? '100%' : '520px', sheetRadio: angosto ? '0' : '20px 0 0 20px',
+      tabs: [tb('Configuración'), tb('Pedidos que lo usaron')], tab: { config: tabSel === 'Configuración', usos: tabSel !== 'Configuración' },
+      activoTxt: activoOn ? 'Activo' : 'Pausado', activoAria: activoOn ? 'true' : 'false', switchBg: activoOn ? '#0F3B2C' : '#A8997C', switchX: activoOn ? '28px' : '4px', toggleActivo: () => this.setState({ act: !activoOn }),
+      usos: [
+        { n: 'ORD-7K2M9Q4X', c: 'María Fernanda Ruiz', f: '20 oct', d: '−$11.400', e: 'Confirmado', bg: '#1E6B45', fg: '#FFFFFF' },
+        { n: 'ORD-3F8W2N6B', c: 'Carlos Andrés Mejía', f: '20 oct', d: '−$5.200', e: 'Reservado', bg: '#0F3B2C', fg: '#FAF3E3' },
+        { n: 'ORD-6R2B8K1M', c: 'Natalia Cárdenas', f: '19 oct', d: '−$9.000', e: 'Confirmado', bg: '#1E6B45', fg: '#FFFFFF' },
+        { n: 'ORD-8M4Q1Z7D', c: 'Diego Castaño', f: '18 oct', d: '—', e: 'Liberado', bg: '#F3E6C4', fg: '#1B1510' }
+      ],
+      abrir: () => this.setState({ hoja: true }), cerrar: () => this.setState({ hoja: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

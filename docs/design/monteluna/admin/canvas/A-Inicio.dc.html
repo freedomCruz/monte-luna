@@ -1,0 +1,310 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Admin Monteluna · inicio</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1510}a:hover{color:#C1272D}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #1B1510;outline-offset:2px}
+nav a:focus-visible,nav button:focus-visible{outline-color:#F2B632}
+</style>
+</helmet>
+<div style="position: relative; width: 100%; min-height: {{alto}}; box-sizing: border-box; display: flex; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif; font-variant-numeric: tabular-nums">
+
+<sc-if value="{{escritorio}}" hint-placeholder-val="{{true}}">
+  <nav aria-label="Secciones del panel" style="flex: none; width: {{sb.ancho}}; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px; padding: 16px {{sb.padX}}; background: #1B1510; color: #FAF3E3">
+    <a href="A-Inicio.dc.html" aria-label="Monteluna Admin, inicio" style="display: flex; align-items: center; justify-content: {{sb.just}}; gap: 8px; min-height: 44px; padding: 0 6px 10px; color: #FAF3E3; text-decoration: none">
+      <sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 26px; line-height: 1; font-weight: 800; text-transform: uppercase; color: #F2B632">Monteluna</span><span style="padding: 2px 6px; border-radius: 6px; background: #F2B632; color: #1B1510; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase">Admin</span></sc-if>
+      <sc-if value="{{sb.cerrada}}" hint-placeholder-val="{{false}}"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; line-height: 1; font-weight: 800; color: #F2B632">M</span></sc-if>
+    </a>
+    <sc-for list="{{sb.grupos}}" as="g" hint-placeholder-count="4">
+      <sc-if value="{{g.conLabel}}" hint-placeholder-val="{{true}}"><span style="padding: 12px 10px 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #A8997C">{{g.label}}</span></sc-if>
+      <sc-if value="{{g.divisor}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="align-self: center; width: 28px; height: 1px; margin: 8px 0; background: rgba(250,243,227,0.2)"></span></sc-if>
+      <sc-for list="{{g.items}}" as="it" hint-placeholder-count="4">
+        <a href="{{it.href}}" aria-current="{{it.cur}}" aria-label="{{it.aria}}" title="{{it.t}}" style="position: relative; display: flex; align-items: center; justify-content: {{sb.just}}; gap: 12px; min-height: 40px; padding: 0 10px; border-radius: 8px; background: {{it.bg}}; color: {{it.fg}}; font-size: 15px; font-weight: {{it.fw}}; text-decoration: none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="{{it.d}}"></path></svg>
+          <sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span style="flex: 1">{{it.t}}</span></sc-if>
+          <sc-if value="{{it.nA}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="min-width: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: #C1272D; color: #FFFFFF; font-size: 12px; line-height: 20px; font-weight: 800; text-align: center">{{it.nA}}</span></sc-if>
+          <sc-if value="{{it.nC}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="position: absolute; top: 6px; right: 10px; width: 8px; height: 8px; border-radius: 50%; background: #C1272D; outline: 2px solid #1B1510"></span></sc-if>
+        </a>
+      </sc-for>
+    </sc-for>
+    <span style="flex: 1"></span>
+    <button type="button" onClick="{{sb.toggle}}" aria-label="{{sb.toggleTxt}}" style="display: flex; align-items: center; justify-content: {{sb.just}}; gap: 12px; min-height: 44px; margin-top: 12px; padding: 0 10px; border: 0; border-top: 1px solid rgba(250,243,227,0.16); background: transparent; color: #E9DDC3; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{sb.flecha}}"></path></svg><sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span>{{sb.toggleTxt}}</span></sc-if></button>
+  </nav>
+
+  <div style="flex: 999 1 0; min-width: 0; display: flex; flex-direction: column">
+    <header style="display: flex; align-items: center; gap: 12px; min-height: 64px; box-sizing: border-box; padding: 10px {{pad}}; background: #FFFFFF; border-bottom: 1px solid #E6D9BC">
+      <label role="search" style="flex: 1 1 auto; max-width: 560px; display: flex; align-items: center; gap: 10px; height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">Buscar en el panel</span><input type="search" placeholder="{{buscador}}" style="flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: #1B1510; font-family: inherit; font-size: 15px"><span aria-hidden="true" style="padding: 1px 7px; border: 1px solid #A8997C; border-radius: 6px; font-size: 13px; font-weight: 700">/</span></label>
+      <span style="flex: 1"></span>
+      <button type="button" aria-label="Avisos pendientes: {{avisosN}}" style="position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7M10 20a2 2 0 0 0 4 0"></path></svg><span aria-hidden="true" style="position: absolute; top: -6px; right: -6px; min-width: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #C1272D; color: #FFFFFF; font-size: 12px; line-height: 20px; font-weight: 800; text-align: center">{{avisosN}}</span></button>
+      <button type="button" aria-label="Menú de {{usuario.nombre}}" style="flex: none; display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 6px 0 4px; border: 0; border-radius: 8px; background: transparent; color: #1B1510; font-family: inherit; cursor: pointer"><span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: {{usuario.color}}; color: #FAF3E3; font-size: 14px; font-weight: 800">{{usuario.ini}}</span><sc-if value="{{conNombre}}" hint-placeholder-val="{{true}}"><span style="display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15"><span style="font-size: 14px; font-weight: 700">{{usuario.nombre}}</span><span style="font-size: 12px; color: #5F554A">{{usuario.rol}}</span></span></sc-if><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+    </header>
+
+    <main style="flex: 1; display: flex; flex-direction: column; gap: 20px; padding: 28px {{pad}} 48px">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px">
+        <div style="display: flex; flex-direction: column; gap: 4px">
+          <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px"><h1 style="margin: 0; font-size: 32px; line-height: 1.1; font-weight: 800; letter-spacing: -0.01em">Hola, {{usuario.corto}}</h1><span style="padding: 3px 8px; border-radius: 8px; border: 1px dashed #A8997C; font-size: 12px; font-weight: 700; color: #5F554A">Datos de ejemplo</span></span>
+          <p style="margin: 0; font-size: 15px; color: #5F554A">Martes 20 de octubre de 2026 · hora de Colombia</p>
+        </div>
+        <div role="group" aria-label="Periodo" style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px">
+          <sc-for list="{{periodos}}" as="p" hint-placeholder-count="4">
+            <button type="button" aria-pressed="{{p.pressed}}" onClick="{{p.pick}}" style="display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 14px; border: 1px solid {{p.bd}}; border-radius: 8px; background: {{p.bg}}; color: {{p.fg}}; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer"><sc-if value="{{p.cal}}" hint-placeholder-val="{{false}}"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"></rect><path d="M3 10h18M8 3v4M16 3v4"></path></svg></sc-if>{{p.t}}</button>
+          </sc-for>
+        </div>
+      </div>
+
+      <section aria-label="Indicadores del periodo" style="display: grid; grid-template-columns: repeat({{kpiCols}}, minmax(0, 1fr)); gap: 14px">
+        <sc-for list="{{per.kpis}}" as="k" hint-placeholder-count="4">
+          <div style="display: flex; flex-direction: column; gap: 8px; padding: 18px; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px">
+            <span style="font-family: 'Barlow Condensed', sans-serif; font-size: 14px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5F554A">{{k.t}}</span>
+            <span style="font-size: 32px; line-height: 1; font-weight: 800; letter-spacing: -0.01em">{{k.v}}</span>
+            <span style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 14px"><span style="font-weight: 800; color: {{k.c}}">{{k.d}}</span><span style="color: #5F554A">{{per.comp}}</span></span>
+          </div>
+        </sc-for>
+      </section>
+
+      <div style="display: flex; flex-wrap: wrap; gap: 20px; align-items: stretch">
+        <section aria-labelledby="h-graf" style="flex: 2 1 560px; min-width: 0; display: flex; flex-direction: column; gap: 14px; padding: 20px; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px">
+          <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 10px">
+            <h2 id="h-graf" style="margin: 0; font-size: 22px; font-weight: 800">{{per.titulo}}</h2>
+            <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 16px; font-size: 13px; font-weight: 600">
+              <span style="display: inline-flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 12px; height: 12px; border-radius: 3px; background: #0F3B2C"></span>Este periodo</span>
+              <span style="display: inline-flex; align-items: center; gap: 6px"><span aria-hidden="true" style="width: 18px; border-top: 2px dashed #5F554A"></span>Periodo anterior</span>
+              <button type="button" onClick="{{toggleTabla}}" aria-pressed="{{tablaPressed}}" style="height: 36px; padding: 0 10px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer">{{tablaTxt}}</button>
+            </div>
+          </div>
+          <sc-if value="{{conGrafico}}" hint-placeholder-val="{{true}}">
+            <div style="display: flex; gap: 10px">
+              <div aria-hidden="true" style="flex: none; width: 64px; height: 260px; display: flex; flex-direction: column; justify-content: space-between; font-size: 12px; color: #5F554A; text-align: right"><span>{{per.ejeMax}}</span><span>{{per.ejeMedio}}</span><span>$0</span></div>
+              <div style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 6px">
+                <div role="img" aria-label="{{per.resumen}}" style="position: relative; height: 260px; border-bottom: 1px solid #1B1510; background: linear-gradient(#E6D9BC, #E6D9BC) 0 0 / 100% 1px no-repeat, linear-gradient(#E6D9BC, #E6D9BC) 0 50% / 100% 1px no-repeat">
+                  <div style="position: absolute; inset: 0; display: flex; align-items: flex-end; gap: {{per.gap}}">
+                    <sc-for list="{{per.barras}}" as="br" hint-placeholder-count="30">
+                      <div onMouseEnter="{{br.hover}}" style="flex: 1; height: 100%; display: flex; align-items: flex-end"><span style="display: block; width: 100%; height: {{br.h}}; box-sizing: border-box; border-radius: 4px 4px 0 0; background: {{br.bg}}; border: {{br.bd}}"></span></div>
+                    </sc-for>
+                  </div>
+                  <svg viewBox="{{per.vb}}" preserveAspectRatio="none" aria-hidden="true" style="position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; pointer-events: none"><polyline points="{{per.linea}}" fill="none" stroke="#5F554A" stroke-width="2" stroke-dasharray="5 4" vector-effect="non-scaling-stroke"></polyline></svg>
+                  <div style="position: absolute; left: {{tip.left}}; top: 8px; transform: translateX({{tip.tx}}); display: flex; flex-direction: column; gap: 2px; padding: 8px 10px; border-radius: 8px; background: #1B1510; color: #FAF3E3; font-size: 13px; white-space: nowrap; pointer-events: none"><span style="font-weight: 800">{{tip.fecha}}</span><span>Ventas {{tip.v}}</span><span style="color: #E9DDC3">Anterior {{tip.prev}}</span></div>
+                </div>
+                <div aria-hidden="true" style="display: flex; gap: {{per.gap}}; font-size: 12px; color: #5F554A"><sc-for list="{{per.barras}}" as="lx" hint-placeholder-count="30"><span style="flex: 1; min-width: 0; text-align: center; white-space: nowrap; overflow: visible">{{lx.lab}}</span></sc-for></div>
+              </div>
+            </div>
+          </sc-if>
+          <sc-if value="{{conTabla}}" hint-placeholder-val="{{false}}">
+            <div style="max-height: 300px; overflow-y: auto; border: 1px solid #E6D9BC; border-radius: 12px">
+              <table style="width: 100%; border-collapse: collapse; font-size: 14px"><thead><tr style="background: #F3E6C4; text-align: left"><th style="height: 40px; padding: 0 12px">Fecha</th><th style="padding: 0 12px; text-align: right">Ventas</th><th style="padding: 0 12px; text-align: right">Periodo anterior</th></tr></thead><tbody><sc-for list="{{per.barras}}" as="tr" hint-placeholder-count="10"><tr style="height: 40px; border-top: 1px solid #E6D9BC"><td style="padding: 0 12px">{{tr.fecha}}</td><td style="padding: 0 12px; text-align: right; font-weight: 700">{{tr.v}}</td><td style="padding: 0 12px; text-align: right; color: #5F554A">{{tr.prev}}</td></tr></sc-for></tbody></table>
+            </div>
+          </sc-if>
+        </section>
+
+        <section aria-labelledby="h-atencion" style="flex: 1 1 340px; min-width: 0; display: flex; flex-direction: column; gap: 12px; padding: 20px; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px">
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px"><h2 id="h-atencion" style="margin: 0; font-size: 22px; font-weight: 800">Requiere atención</h2><span style="padding: 3px 10px; border-radius: 8px; background: #F2B632; font-size: 13px; font-weight: 800">{{atencionN}}</span></div>
+          <ul style="list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px">
+            <sc-for list="{{atencion}}" as="a" hint-placeholder-count="7">
+              <li><a href="{{a.href}}" style="display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 10px; border-radius: 12px; background: #FAF3E3; color: #1B1510; text-decoration: none">
+                <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 40px; height: 40px; padding: 0 8px; box-sizing: border-box; border-radius: 8px; background: {{a.bg}}; color: {{a.fg}}; font-size: 17px; font-weight: 800">{{a.n}}</span>
+                <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 15px; line-height: 1.25; font-weight: 800">{{a.t}}<sc-if value="{{a.propuesta}}" hint-placeholder-val="{{false}}"><span style="padding: 1px 6px; border-radius: 6px; border: 1px dashed #A8997C; font-size: 11px; font-weight: 700; color: #5F554A">Propuesta</span></sc-if></span><span style="font-size: 13px; line-height: 1.35; color: #5F554A">{{a.d}}</span>
+                  <sc-if value="{{a.barra}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="display: block; height: 6px; margin-top: 4px; border-radius: 999px; background: #E6D9BC; overflow: hidden"><span style="display: block; width: {{a.pct}}; height: 100%; background: #1B1510"></span></span></sc-if>
+                </span>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="M9 6l6 6-6 6"></path></svg>
+              </a></li>
+            </sc-for>
+          </ul>
+        </section>
+      </div>
+
+      <section aria-labelledby="h-ultimos" style="display: flex; flex-direction: column; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px">
+        <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding: 16px 20px"><h2 id="h-ultimos" style="margin: 0; font-size: 22px; font-weight: 800">Últimos pedidos</h2><a href="A-Pedidos.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 700; text-underline-offset: 4px">Ver todos los pedidos</a></div>
+        <div style="overflow-x: auto">
+          <table style="width: 100%; border-collapse: collapse; font-size: 15px">
+            <thead><tr style="background: #F3E6C4; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase">
+              <th style="height: 44px; padding: 0 20px">Pedido</th>
+              <sc-if value="{{col.fecha}}" hint-placeholder-val="{{true}}"><th style="padding: 0 12px">Fecha</th></sc-if>
+              <th style="padding: 0 12px">Cliente</th>
+              <sc-if value="{{col.destino}}" hint-placeholder-val="{{true}}"><th style="padding: 0 12px">Destino</th></sc-if>
+              <th style="padding: 0 12px; text-align: right">Total</th>
+              <th style="padding: 0 12px">Estado</th>
+              <sc-if value="{{col.pago}}" hint-placeholder-val="{{true}}"><th style="padding: 0 20px 0 12px">Pago</th></sc-if>
+            </tr></thead>
+            <tbody>
+              <sc-for list="{{pedidos}}" as="o" hint-placeholder-count="6">
+                <tr style="height: 56px; border-top: 1px solid #E6D9BC">
+                  <td style="padding: 0 20px"><a href="A-Pedido.dc.html" style="font-weight: 800; text-underline-offset: 4px">{{o.n}}</a></td>
+                  <sc-if value="{{col.fecha}}" hint-placeholder-val="{{true}}"><td style="padding: 0 12px; color: #5F554A; white-space: nowrap">{{o.f}}</td></sc-if>
+                  <td style="padding: 0 12px; font-weight: 600">{{o.c}}</td>
+                  <sc-if value="{{col.destino}}" hint-placeholder-val="{{true}}"><td style="padding: 0 12px; color: #5F554A">{{o.dst}}</td></sc-if>
+                  <td style="padding: 0 12px; text-align: right; font-weight: 700">{{o.t}}</td>
+                  <td style="padding: 0 12px"><span style="display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 8px; background: {{o.bg}}; color: {{o.fg}}; font-size: 13px; font-weight: 700; white-space: nowrap"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: {{o.fg}}"></span>{{o.e}}</span></td>
+                  <sc-if value="{{col.pago}}" hint-placeholder-val="{{true}}"><td style="padding: 0 20px 0 12px; color: #5F554A">{{o.m}}</td></sc-if>
+                </tr>
+              </sc-for>
+            </tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+  </div>
+</sc-if>
+
+<sc-if value="{{movil}}" hint-placeholder-val="{{false}}">
+  <div style="flex: 1; min-width: 0; display: flex; flex-direction: column">
+    <header style="position: sticky; top: 0; z-index: 5; display: flex; align-items: center; justify-content: space-between; gap: 8px; min-height: 60px; padding: 0 12px 0 16px; background: #1B1510; color: #FAF3E3">
+      <a href="A-Inicio-390.dc.html" style="display: flex; align-items: center; gap: 8px; color: #FAF3E3; text-decoration: none"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 24px; line-height: 1; font-weight: 800; text-transform: uppercase; color: #F2B632">Monteluna</span><span style="padding: 2px 6px; border-radius: 6px; background: #F2B632; color: #1B1510; font-family: 'Barlow Condensed', sans-serif; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase">Admin</span></a>
+      <span style="display: flex; align-items: center; gap: 6px"><button type="button" aria-label="Avisos pendientes: {{avisosN}}" style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; border-radius: 8px; background: transparent; color: #FAF3E3; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7M10 20a2 2 0 0 0 4 0"></path></svg><span aria-hidden="true" style="position: absolute; top: 4px; right: 2px; min-width: 18px; padding: 0 4px; box-sizing: border-box; border-radius: 999px; background: #C1272D; color: #FFFFFF; font-size: 11px; line-height: 18px; font-weight: 800; text-align: center">{{avisosN}}</span></button><span style="display: inline-flex; align-items: center; justify-content: center; width: 34px; height: 34px; border-radius: 50%; background: {{usuario.color}}; color: #FAF3E3; font-size: 13px; font-weight: 800">{{usuario.ini}}</span></span>
+    </header>
+    <main style="flex: 1; display: flex; flex-direction: column; gap: 16px; padding: 18px 16px 104px">
+      <div style="display: flex; flex-direction: column; gap: 2px"><h1 style="margin: 0; font-size: 26px; line-height: 1.1; font-weight: 800">Hola, {{usuario.corto}}</h1><p style="margin: 0; font-size: 14px; color: #5F554A">Martes 20 de octubre · <span style="font-weight: 700">datos de ejemplo</span></p></div>
+      <div role="group" aria-label="Periodo" style="display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px">
+        <sc-for list="{{periodos}}" as="pm" hint-placeholder-count="4"><button type="button" aria-pressed="{{pm.pressed}}" onClick="{{pm.pick}}" style="flex: none; height: 44px; padding: 0 12px; border: 1px solid {{pm.bd}}; border-radius: 8px; background: {{pm.bg}}; color: {{pm.fg}}; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">{{pm.tc}}</button></sc-for>
+      </div>
+      <section aria-label="Indicadores del periodo" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <sc-for list="{{per.kpis}}" as="km" hint-placeholder-count="4">
+          <div style="display: flex; flex-direction: column; gap: 6px; padding: 14px; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5F554A">{{km.t}}</span><span style="font-size: 22px; line-height: 1; font-weight: 800">{{km.v}}</span><span style="font-size: 13px; font-weight: 800; color: {{km.c}}">{{km.d}}</span></div>
+        </sc-for>
+      </section>
+      <section aria-labelledby="h-graf-m" style="display: flex; flex-direction: column; gap: 10px; padding: 16px; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px">
+        <h2 id="h-graf-m" style="margin: 0; font-size: 18px; font-weight: 800">{{per.titulo}}</h2>
+        <div role="img" aria-label="{{per.resumen}}" style="display: flex; align-items: flex-end; gap: 2px; height: 120px; border-bottom: 1px solid #1B1510"><sc-for list="{{per.barras}}" as="bm" hint-placeholder-count="30"><span style="flex: 1; height: {{bm.h}}; border-radius: 3px 3px 0 0; background: #0F3B2C"></span></sc-for></div>
+        <span style="display: flex; justify-content: space-between; font-size: 12px; color: #5F554A"><span>{{per.desde}}</span><span>Máximo {{per.max}}</span><span>{{per.hasta}}</span></span>
+      </section>
+      <section aria-labelledby="h-atencion-m" style="display: flex; flex-direction: column; gap: 8px">
+        <h2 id="h-atencion-m" style="margin: 0; font-size: 18px; font-weight: 800">Requiere atención · {{atencionN}}</h2>
+        <sc-for list="{{atencion}}" as="am" hint-placeholder-count="7">
+          <div style="display: flex; align-items: center; gap: 10px; min-height: 56px; padding: 8px 12px; border-radius: 12px; background: #FFFFFF; border: 1px solid #E6D9BC">
+            <span style="flex: none; display: inline-flex; align-items: center; justify-content: center; min-width: 36px; height: 36px; padding: 0 6px; box-sizing: border-box; border-radius: 8px; background: {{am.bg}}; color: {{am.fg}}; font-size: 15px; font-weight: 800">{{am.n}}</span>
+            <span style="flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 2px"><span style="font-size: 14px; line-height: 1.25; font-weight: 800">{{am.t}}</span><sc-if value="{{am.enMovil}}" hint-placeholder-val="{{true}}"><span style="font-size: 12px; line-height: 1.3; color: #5F554A">{{am.d}}</span></sc-if><sc-if value="{{am.soloPc}}" hint-placeholder-val="{{false}}"><span style="font-size: 12px; line-height: 1.3; font-weight: 700; color: #5F554A">Revísalo desde un computador o una tablet</span></sc-if></span>
+            <sc-if value="{{am.enMovil}}" hint-placeholder-val="{{true}}"><a href="{{am.hrefM}}" aria-label="Ver: {{am.t}}" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 8px; background: #F3E6C4"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M9 6l6 6-6 6"></path></svg></a></sc-if>
+          </div>
+        </sc-for>
+      </section>
+      <section aria-labelledby="h-ult-m" style="display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: center; justify-content: space-between"><h2 id="h-ult-m" style="margin: 0; font-size: 18px; font-weight: 800">Últimos pedidos</h2><a href="A-Pedidos-390.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; font-size: 14px; font-weight: 700">Ver todos</a></div>
+        <sc-for list="{{pedidos}}" as="om" hint-placeholder-count="6">
+          <a href="A-Pedido-390.dc.html" style="display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border-radius: 12px; background: #FFFFFF; border: 1px solid #E6D9BC; color: #1B1510; text-decoration: none">
+            <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><span style="font-size: 15px; font-weight: 800">{{om.n}}</span><span style="font-size: 15px; font-weight: 800">{{om.t}}</span></span>
+            <span style="display: flex; align-items: center; justify-content: space-between; gap: 8px"><span style="font-size: 13px; color: #5F554A">{{om.c}} · {{om.fc}}</span><span style="display: inline-flex; align-items: center; gap: 5px; height: 24px; padding: 0 8px; border-radius: 8px; background: {{om.bg}}; color: {{om.fg}}; font-size: 12px; font-weight: 700; white-space: nowrap"><span aria-hidden="true" style="width: 6px; height: 6px; border-radius: 50%; background: {{om.fg}}"></span>{{om.e}}</span></span>
+          </a>
+        </sc-for>
+      </section>
+      <div style="display: flex; align-items: flex-start; gap: 10px; padding: 14px; border-radius: 12px; background: #F3E6C4"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><rect x="2" y="4" width="20" height="13" rx="2"></rect><path d="M8 21h8M12 17v4"></path></svg><span style="font-size: 14px; line-height: 1.45">En el celular el panel es de consulta. Para editar el catálogo, los cupones o la configuración, usa un computador o una tablet.</span></div>
+    </main>
+    <nav aria-label="Secciones" style="position: sticky; bottom: 0; z-index: 5; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); background: #1B1510; padding: 6px 8px 10px">
+      <a href="A-Inicio-390.dc.html" aria-current="page" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 52px; border-radius: 8px; background: #F2B632; color: #1B1510; font-size: 12px; font-weight: 800; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"></path></svg>Inicio</a>
+      <a href="A-Pedidos-390.dc.html" style="position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 52px; border-radius: 8px; color: #FAF3E3; font-size: 12px; font-weight: 700; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 7h12l-1 14H7zM9 7a3 3 0 0 1 6 0"></path></svg>Pedidos · 6</a>
+      <a href="A-Cuenta.dc.html" style="display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; min-height: 52px; border-radius: 8px; color: #FAF3E3; font-size: 12px; font-weight: 700; text-decoration: none"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></svg>Cuenta</a>
+    </nav>
+  </div>
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"rol":{"editor":"enum","options":["Propietario","Equipo"],"default":"Propietario"},"ancho":{"editor":"enum","options":["1440","1024","768","390"],"default":"1440"},"$preview":{"width":1440,"height":1900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const ancho = String(this.props.ancho ?? '1440');
+    const rol = this.props.rol ?? 'Propietario';
+    const dueno = rol === 'Propietario';
+    const movil = ancho === '390';
+    const abierta = st.sb ?? (ancho === '1440');
+    const P = { inicio: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z', productos: 'M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10', inventario: 'M3 4h18v4H3zM5 8v12h14V8M10 12h4', categorias: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z', origenes: 'M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z', marcas: 'M20.5 13.5l-7 7-10-10V3.5h7zM7.5 7.5h.01', pedidos: 'M6 7h12l-1 14H7zM9 7a3 3 0 0 1 6 0', pagos: 'M3 6h18v12H3zM3 10h18M7 15h3', envios: 'M2.5 6.5h11v9h-11zM13.5 9.5h4l3 3v3h-7M7 15.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM17 15.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4z', cupones: 'M3 6h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zM14 6v12', informes: 'M4 20V11M10 20V5M16 20v-6M21 20H3', admins: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M17 3.5a4 4 0 0 1 0 7.5M22 21a6 6 0 0 0-4-5.7', fiscal: 'M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6', factura: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6', correos: 'M3 6h18v12H3zM3 7l9 6 9-6', seguridad: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z' };
+    const it = (t, k, href, n, d) => ({ t, k, href, n: n || '', dueno: !!d });
+    const grupos = [
+      { label: '', items: [it('Inicio', 'inicio', 'A-Inicio.dc.html')] },
+      { label: 'Catálogo', items: [it('Productos', 'productos', 'A-Productos.dc.html'), it('Inventario', 'inventario', 'A-Inventario.dc.html', '4'), it('Categorías', 'categorias', 'A-Categorias.dc.html'), it('Orígenes', 'origenes', 'A-Origenes.dc.html'), it('Marcas y tipos', 'marcas', 'A-Marcas-Tipos.dc.html')] },
+      { label: 'Ventas', items: [it('Pedidos', 'pedidos', 'A-Pedidos.dc.html', '6'), it('Pagos', 'pagos', 'A-Pagos.dc.html', '1', 1), it('Envíos', 'envios', 'A-Envios.dc.html', '', 1), it('Cupones', 'cupones', 'A-Cupones.dc.html', '', 1), it('Informes', 'informes', 'A-Informes.dc.html', '', 1)] },
+      { label: 'Configuración', items: [it('Administradores', 'admins', 'A-Admins.dc.html', '', 1), it('Perfil fiscal', 'fiscal', 'A-Fiscal.dc.html', '', 1), it('Facturación', 'factura', 'A-Facturacion.dc.html', '1', 1), it('Correos', 'correos', 'A-Correos.dc.html', '', 1), it('Seguridad', 'seguridad', 'A-Seguridad.dc.html', '', 1)] }
+    ];
+    const activo = 'inicio';
+    const sb = {
+      abierta, cerrada: !abierta, ancho: abierta ? '248px' : '72px', padX: abierta ? '12px' : '14px', just: abierta ? 'flex-start' : 'center',
+      toggle: () => this.setState({ sb: !abierta }), toggleTxt: abierta ? 'Colapsar menú' : 'Expandir menú', flecha: abierta ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6',
+      grupos: grupos.map((g) => ({ label: g.label, items: g.items.filter((x) => dueno || !x.dueno) })).filter((g) => g.items.length).map((g) => ({
+        label: g.label, conLabel: !!g.label && abierta, divisor: !!g.label && !abierta,
+        items: g.items.map((x) => { const on = x.k === activo; return { t: x.t, href: x.href, d: P[x.k], cur: on ? 'page' : 'false', aria: x.n ? x.t + ', ' + x.n + ' pendientes' : x.t, bg: on ? '#F2B632' : 'transparent', fg: on ? '#1B1510' : '#FAF3E3', fw: on ? 800 : 600, nA: abierta && x.n ? x.n : '', nC: !abierta && !!x.n }; })
+      }))
+    };
+
+    const fmt = (v) => '$' + String(Math.round(v)).replace(/\B(?=(\d{3})+(?!\d))/g, '.');
+    const meses = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+    const dia = (m, d) => d + ' ' + meses[m];
+    const raw30 = [118, 142, 131, 176, 208, 262, 188, 126, 151, 139, 168, 231, 284, 197, 122, 163, 148, 171, 219, 253, 183, 137, 166, 154, 192, 244, 268, 191, 158, 205];
+    const rawH = [8, 14, 22, 30, 41, 52, 38, 46, 61, 44, 32, 24];
+    const serie = (raw, total, etiqueta, cada) => {
+      const s = raw.reduce((a, b) => a + b, 0);
+      const vals = raw.map((v) => Math.round(v * total / s / 1000) * 1000);
+      const prev = raw.map((v, i) => Math.round(v * total / s * 0.89 * (1 + (((i * 7) % 5) - 2) / 25) / 1000) * 1000);
+      const max = Math.max(...vals, ...prev);
+      const tope = Math.ceil(max / 100000) * 100000;
+      const sel = st.sel ?? vals.indexOf(Math.max(...vals));
+      const barras = vals.map((v, i) => ({ h: (v / tope * 100).toFixed(1) + '%', bg: i === sel ? '#F2B632' : '#0F3B2C', bd: i === sel ? '1px solid #1B1510' : '0', hover: () => this.setState({ sel: i }), lab: i % cada === 0 ? etiqueta(i) : '', fecha: etiqueta(i), v: fmt(v), prev: fmt(prev[i]) }));
+      const n = vals.length;
+      return { barras, tope, n, sel: Math.min(sel, n - 1), vals, prev,
+        linea: prev.map((p, i) => ((i + 0.5) * 10).toFixed(1) + ',' + (100 - p / tope * 100).toFixed(1)).join(' '),
+        vb: '0 0 ' + (n * 10) + ' 100', ejeMax: fmt(tope), ejeMedio: fmt(tope / 2), max: fmt(Math.max(...vals)), desde: etiqueta(0), hasta: etiqueta(n - 1) };
+    };
+    const kpi = (t, v, d, up) => ({ t, v, d: (up ? '▲ +' : '▼ −') + d + ' %', c: up ? '#1E6B45' : '#9B1C1C' });
+    const datos = {
+      hoy: { t: 'Hoy', tc: 'Hoy', comp: 'vs. ayer', titulo: 'Ventas por hora · hoy', s: serie(rawH, 412000, (i) => (8 + i) + ' h', 2), kpis: [kpi('Ventas pagadas', '$412.000', 18, true), kpi('Pedidos', '8', 33, true), kpi('Ticket promedio', '$51.500', 5, true), kpi('Unidades vendidas', '14', 7, false)] },
+      d7: { t: '7 días', tc: '7 días', comp: 'vs. 7 días anteriores', titulo: 'Ventas por día · últimos 7 días', s: serie(raw30.slice(-7), 1240000, (i) => dia(9, 14 + i), 1), kpis: [kpi('Ventas pagadas', '$1.240.000', 9, true), kpi('Pedidos', '24', 4, true), kpi('Ticket promedio', '$51.700', 5, true), kpi('Unidades vendidas', '41', 3, false)] },
+      d30: { t: '30 días', tc: '30 días', comp: 'vs. 30 días anteriores', titulo: 'Ventas por día · últimos 30 días', s: serie(raw30, 4860000, (i) => (21 + i > 30 ? dia(9, 21 + i - 30) : dia(8, 21 + i)), 5), kpis: [kpi('Ventas pagadas', '$4.860.000', 12, true), kpi('Pedidos', '92', 8, true), kpi('Ticket promedio', '$52.800', 3, true), kpi('Unidades vendidas', '168', 2, false)] },
+      rango: { t: '1 oct – 19 oct 2026', tc: 'Rango', comp: 'vs. 19 días anteriores', titulo: 'Ventas por día · 1 al 19 de octubre', s: serie(raw30.slice(0, 19), 3050000, (i) => dia(9, 1 + i), 3), kpis: [kpi('Ventas pagadas', '$3.050.000', 10, true), kpi('Pedidos', '58', 7, true), kpi('Ticket promedio', '$52.600', 3, true), kpi('Unidades vendidas', '104', 1, true)] }
+    };
+    const clave = st.per ?? 'd30';
+    const d = datos[clave];
+    const s = d.s;
+    const per = { kpis: d.kpis, comp: d.comp, titulo: d.titulo, barras: s.barras, linea: s.linea, vb: s.vb, ejeMax: s.ejeMax, ejeMedio: s.ejeMedio, gap: s.n > 20 ? '3px' : '8px', max: s.max, desde: s.desde, hasta: s.hasta,
+      resumen: d.titulo + '. Ventas entre ' + fmt(Math.min(...s.vals)) + ' y ' + fmt(Math.max(...s.vals)) + ' por ' + (clave === 'hoy' ? 'hora' : 'día') + '. Usa «Ver tabla» para leer cada valor.' };
+    const sel = s.sel;
+    const tipLeft = ((sel + 0.5) / s.n * 100);
+    const tip = { left: tipLeft.toFixed(1) + '%', tx: tipLeft > 80 ? '-100%' : (tipLeft < 20 ? '0%' : '-50%'), fecha: s.barras[sel].fecha, v: s.barras[sel].v, prev: s.barras[sel].prev };
+    const periodos = ['hoy', 'd7', 'd30', 'rango'].map((k) => { const on = k === clave; return { t: datos[k].t, tc: datos[k].tc, cal: k === 'rango', pressed: on ? 'true' : 'false', pick: () => this.setState({ per: k, sel: undefined }), bg: on ? '#0F3B2C' : '#FFFFFF', fg: on ? '#FAF3E3' : '#1B1510', bd: on ? '#0F3B2C' : '#5F554A' }; });
+
+    const tone = { accion: ['#F2B632', '#1B1510'], curso: ['#0F3B2C', '#FAF3E3'], hecho: ['#1E6B45', '#FFFFFF'], neutro: ['#F3E6C4', '#1B1510'], problema: ['#9B1C1C', '#FFFFFF'] };
+    const at = (n, t, dsc, href, k, extra) => ({ n, t, d: dsc, href, bg: tone[k][0], fg: tone[k][1], barra: false, pct: '0%', propuesta: false, enMovil: false, soloPc: true, hrefM: href, ...(extra || {}) });
+    const todos = [
+      at('6', 'Pedidos pagados por despachar', 'El más antiguo espera desde el 17 oct.', 'A-Pedidos.dc.html', 'accion', { enMovil: true, soloPc: false, hrefM: 'A-Pedidos-390.dc.html' }),
+      at('1', 'Reembolso manual pendiente', 'ORD-4H8T2W9C · $64.000 · pago tardío sin stock', 'A-Pagos.dc.html', 'accion', { dueno: true }),
+      at('4', 'Variantes con poco stock o agotadas', 'Chocolate oscuro 65 % agotado; 3 con poco stock.', 'A-Inventario.dc.html', 'problema'),
+      at('2', 'Lotes tostados hace más de 30 días', 'Finca El Mirador MIR-0915 y Finca La María LM-0829', 'A-Inventario.dc.html', 'neutro', { propuesta: true }),
+      at('1', 'Factura con error', 'ORD-9P3K7M2Q · revisa el documento del comprador', 'A-Facturacion.dc.html', 'problema', { dueno: true }),
+      at('38', 'Documentos de facturación por agotarse', 'Quedan 38 en el paquete actual.', 'A-Facturacion.dc.html', 'accion', { dueno: true }),
+      at('82 %', 'Ingresos cerca del tope del IVA', '$150.300.000 de $183.309.000 (3.500 UVT) en 2026', 'A-Fiscal.dc.html', 'neutro', { dueno: true, barra: true, pct: '82%' })
+    ];
+    const atencion = todos.filter((x) => dueno || !x.dueno);
+    const o = (n, f, fc, c, dst, t, e, k, m) => ({ n, f, fc, c, dst, t, e, bg: tone[k][0], fg: tone[k][1], m });
+    const pedidos = [
+      o('ORD-7K2M9Q4X', '20 oct, 9:12 a. m.', 'hoy 9:12', 'María Fernanda Ruiz', 'Medellín, Antioquia', '$112.100', 'Pagado', 'accion', 'Nequi'),
+      o('ORD-3F8W2N6B', '20 oct, 8:47 a. m.', 'hoy 8:47', 'Carlos Andrés Mejía', 'Bogotá, D. C.', '$52.000', 'Pendiente de pago', 'neutro', 'PSE'),
+      o('ORD-9P3K7M2Q', '19 oct, 6:30 p. m.', 'ayer 6:30', 'Juliana Ortiz', 'Cali, Valle del Cauca', '$118.000', 'En preparación', 'curso', 'Tarjeta'),
+      o('ORD-5T1H8R4Y', '19 oct, 2:05 p. m.', 'ayer 2:05', 'Sebastián Gómez', 'Pitalito, Huila', '$47.500', 'Enviado', 'curso', 'Bancolombia'),
+      o('ORD-2C6V9X3L', '18 oct, 11:20 a. m.', '18 oct', 'Paola Restrepo', 'Pereira, Risaralda', '$66.000', 'Entregado', 'hecho', 'Tarjeta'),
+      o('ORD-8M4Q1Z7D', '18 oct, 9:02 a. m.', '18 oct', 'Diego Castaño', 'Manizales, Caldas', '$38.000', 'Vencido', 'neutro', '—')
+    ];
+    const conTabla = !!st.tabla;
+    return {
+      escritorio: !movil, movil, sb,
+      alto: movil ? '2600px' : (ancho === '768' ? '2600px' : (ancho === '1024' ? '2100px' : '1900px')),
+      pad: ancho === '1440' ? '32px' : (ancho === '1024' ? '24px' : '20px'),
+      buscador: ancho === '768' ? 'Buscar' : 'Buscar pedido (ORD-…), producto o SKU', conNombre: ancho !== '768',
+      usuario: dueno ? { nombre: 'Laura Ríos', corto: 'Laura', ini: 'LR', rol: 'Propietaria', color: '#4B1C52' } : { nombre: 'Andrés Peña', corto: 'Andrés', ini: 'AP', rol: 'Equipo', color: '#0F3B2C' },
+      avisosN: String(atencion.length), atencionN: String(atencion.length),
+      kpiCols: ancho === '768' ? 2 : 4,
+      periodos, per, tip,
+      conTabla, conGrafico: !conTabla, tablaTxt: conTabla ? 'Ver gráfico' : 'Ver tabla', tablaPressed: conTabla ? 'true' : 'false',
+      toggleTabla: () => this.setState({ tabla: !conTabla }),
+      atencion, pedidos,
+      col: { fecha: ancho !== '768', destino: ancho === '1440', pago: ancho === '1440' }
+    };
+  }
+}
+</script>
+</body>
+</html>

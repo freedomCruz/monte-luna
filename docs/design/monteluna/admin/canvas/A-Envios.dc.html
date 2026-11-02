@@ -1,0 +1,158 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Admin Monteluna · envíos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1510}a:hover{color:#C1272D}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #1B1510;outline-offset:2px}
+nav a:focus-visible,nav button:focus-visible{outline-color:#F2B632}
+</style>
+</helmet>
+<div style="position: relative; width: 100%; min-height: 1200px; box-sizing: border-box; display: flex; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif; font-variant-numeric: tabular-nums">
+
+  <nav aria-label="Secciones del panel" style="flex: none; width: {{sb.ancho}}; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px; padding: 16px {{sb.padX}}; background: #1B1510; color: #FAF3E3">
+    <a href="A-Inicio.dc.html" aria-label="Monteluna Admin, inicio" style="display: flex; align-items: center; justify-content: {{sb.just}}; gap: 8px; min-height: 44px; padding: 0 6px 10px; color: #FAF3E3; text-decoration: none">
+      <sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 26px; line-height: 1; font-weight: 800; text-transform: uppercase; color: #F2B632">Monteluna</span><span style="padding: 2px 6px; border-radius: 6px; background: #F2B632; color: #1B1510; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase">Admin</span></sc-if>
+      <sc-if value="{{sb.cerrada}}" hint-placeholder-val="{{false}}"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; line-height: 1; font-weight: 800; color: #F2B632">M</span></sc-if>
+    </a>
+    <sc-for list="{{sb.grupos}}" as="g" hint-placeholder-count="4">
+      <sc-if value="{{g.conLabel}}" hint-placeholder-val="{{true}}"><span style="padding: 12px 10px 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #A8997C">{{g.label}}</span></sc-if>
+      <sc-if value="{{g.divisor}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="align-self: center; width: 28px; height: 1px; margin: 8px 0; background: rgba(250,243,227,0.2)"></span></sc-if>
+      <sc-for list="{{g.items}}" as="it" hint-placeholder-count="4">
+        <a href="{{it.href}}" aria-current="{{it.cur}}" aria-label="{{it.aria}}" title="{{it.t}}" style="position: relative; display: flex; align-items: center; justify-content: {{sb.just}}; gap: 12px; min-height: 40px; padding: 0 10px; border-radius: 8px; background: {{it.bg}}; color: {{it.fg}}; font-size: 15px; font-weight: {{it.fw}}; text-decoration: none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="{{it.d}}"></path></svg>
+          <sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span style="flex: 1">{{it.t}}</span></sc-if>
+          <sc-if value="{{it.nA}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="min-width: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: #C1272D; color: #FFFFFF; font-size: 12px; line-height: 20px; font-weight: 800; text-align: center">{{it.nA}}</span></sc-if>
+          <sc-if value="{{it.nC}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="position: absolute; top: 6px; right: 10px; width: 8px; height: 8px; border-radius: 50%; background: #C1272D; outline: 2px solid #1B1510"></span></sc-if>
+        </a>
+      </sc-for>
+    </sc-for>
+    <span style="flex: 1"></span>
+    <button type="button" onClick="{{sb.toggle}}" aria-label="{{sb.toggleTxt}}" style="display: flex; align-items: center; justify-content: {{sb.just}}; gap: 12px; min-height: 44px; margin-top: 12px; padding: 0 10px; border: 0; border-top: 1px solid rgba(250,243,227,0.16); background: transparent; color: #E9DDC3; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{sb.flecha}}"></path></svg><sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span>{{sb.toggleTxt}}</span></sc-if></button>
+  </nav>
+
+  <div style="flex: 999 1 0; min-width: 0; display: flex; flex-direction: column">
+    <header style="display: flex; align-items: center; gap: 12px; min-height: 64px; box-sizing: border-box; padding: 10px 32px; background: #FFFFFF; border-bottom: 1px solid #E6D9BC">
+      <label role="search" style="flex: 1 1 auto; max-width: 560px; display: flex; align-items: center; gap: 10px; height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">Buscar en el panel</span><input type="search" placeholder="Buscar pedido (ORD-…), producto o SKU" style="flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: #1B1510; font-family: inherit; font-size: 15px"><span aria-hidden="true" style="padding: 1px 7px; border: 1px solid #A8997C; border-radius: 6px; font-size: 13px; font-weight: 700">/</span></label>
+      <span style="flex: 1"></span>
+      <button type="button" aria-label="Avisos pendientes: 7" style="position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7M10 20a2 2 0 0 0 4 0"></path></svg><span aria-hidden="true" style="position: absolute; top: -6px; right: -6px; min-width: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #C1272D; color: #FFFFFF; font-size: 12px; line-height: 20px; font-weight: 800; text-align: center">7</span></button>
+      <button type="button" aria-label="Menú de Laura Ríos" style="flex: none; display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 6px 0 4px; border: 0; border-radius: 8px; background: transparent; color: #1B1510; font-family: inherit; cursor: pointer"><span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: #4B1C52; color: #FAF3E3; font-size: 14px; font-weight: 800">LR</span><span style="display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15"><span style="font-size: 14px; font-weight: 700">Laura Ríos</span><span style="font-size: 12px; color: #5F554A">Propietaria</span></span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+    </header>
+
+    <main style="flex: 1; display: flex; flex-direction: column; gap: 16px; padding: 28px 32px 48px">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px"><h1 style="margin: 0; font-size: 32px; line-height: 1.1; font-weight: 800; letter-spacing: -0.01em">Envíos</h1><span style="padding: 3px 8px; border-radius: 8px; border: 1px dashed #A8997C; font-size: 12px; font-weight: 700; color: #5F554A">Datos de ejemplo</span></span><p style="margin: 0; font-size: 15px; color: #5F554A">{{vista.desc}}</p></div>
+        <sc-if value="{{vista.conAccion}}" hint-placeholder-val="{{true}}"><button type="button" onClick="{{abrir}}" style="display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Nueva zona</button></sc-if>
+      </div>
+      <div role="tablist" aria-label="Secciones de envíos" style="display: flex; gap: 4px; border-bottom: 1px solid #E6D9BC"><sc-for list="{{tabs}}" as="t" hint-placeholder-count="2"><button type="button" role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}" style="display: inline-flex; align-items: center; gap: 6px; height: 48px; padding: 0 16px; border: 0; border-bottom: 3px solid {{t.bd}}; background: transparent; color: {{t.fg}}; font-family: inherit; font-size: 15px; font-weight: {{t.fw}}; white-space: nowrap; cursor: pointer">{{t.t}}<sc-if value="{{t.n}}" hint-placeholder-val="{{false}}"><span style="padding: 1px 7px; border-radius: 8px; background: #F2B632; color: #1B1510; font-size: 12px; font-weight: 800">{{t.n}}</span></sc-if></button></sc-for></div>
+
+      <section aria-label="{{vista.nombre}}" style="background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px">
+        <div style="overflow-x: auto"><table style="width: 100%; border-collapse: collapse; font-size: 15px">
+          <thead><tr style="background: #F3E6C4; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase"><sc-for list="{{vista.cols}}" as="h" hint-placeholder-count="6"><th style="height: 44px; padding: 0 12px; text-align: {{h.al}}; white-space: nowrap">{{h.t}}</th></sc-for></tr></thead>
+          <tbody><sc-for list="{{vista.filas}}" as="r" hint-placeholder-count="5"><tr style="height: 58px; border-top: 1px solid #E6D9BC"><sc-for list="{{r.celdas}}" as="c" hint-placeholder-count="6"><td style="padding: 8px 12px; text-align: {{c.al}}; font-weight: {{c.fw}}; color: {{c.color}}; white-space: nowrap">
+            <sc-if value="{{c.texto}}" hint-placeholder-val="{{true}}">{{c.t}}<sc-if value="{{c.sub}}" hint-placeholder-val="{{false}}"><span style="display: block; font-size: 12px; font-weight: 500; color: #5F554A">{{c.sub}}</span></sc-if></sc-if>
+            <sc-if value="{{c.badge}}" hint-placeholder-val="{{false}}"><span style="display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 8px; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 700"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: {{c.fg}}"></span>{{c.t}}</span></sc-if>
+            <sc-if value="{{c.boton}}" hint-placeholder-val="{{false}}"><button type="button" onClick="{{abrir}}" style="padding: 0; border: 0; background: transparent; color: #1B1510; font-family: inherit; font-size: 15px; font-weight: 800; text-decoration: underline; text-decoration-color: #A8997C; text-underline-offset: 4px; cursor: pointer">{{c.t}}</button></sc-if>
+            <sc-if value="{{c.enlace}}" hint-placeholder-val="{{false}}"><a href="{{c.href}}" style="display: inline-flex; align-items: center; height: 40px; padding: 0 12px; border-radius: 8px; background: #1B1510; color: #FAF3E3; font-size: 14px; font-weight: 700; text-decoration: none">{{c.t}}</a></sc-if>
+          </td></sc-for></tr></sc-for></tbody>
+        </table></div>
+        <div style="padding: 12px 16px; border-top: 1px solid #E6D9BC; font-size: 14px; color: #5F554A">{{vista.pie}}</div>
+      </section>
+      <sc-if value="{{vista.conAviso}}" hint-placeholder-val="{{true}}"><div style="display: flex; align-items: flex-start; gap: 10px; padding: 14px 16px; border-radius: 12px; background: #F3E6C4; font-size: 14px; line-height: 1.45"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex: none"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 7.5v.2"></path></svg><span>Si un municipio no está en ninguna zona, la tienda le dice al cliente que todavía no llegamos y no deja seguir. Un municipio con zona propia gana sobre la zona de su departamento.</span></div></sc-if>
+    </main>
+  </div>
+
+  <sc-if value="{{hoja}}" hint-placeholder-val="{{true}}">
+    <div style="position: absolute; inset: 0; z-index: 20; display: flex; justify-content: flex-end; background: rgba(27,21,16,0.5)">
+      <div role="dialog" aria-modal="true" aria-labelledby="h-zona" style="width: 640px; max-width: 100%; box-sizing: border-box; display: flex; flex-direction: column; background: #FFFFFF; border-radius: 20px 0 0 20px">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 24px"><div style="display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5F554A">Zona de envío</span><h2 id="h-zona" style="margin: 0; font-size: 24px; font-weight: 800">Antioquia</h2></div><button type="button" aria-label="Cerrar" onClick="{{cerrar}}" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; border-radius: 8px; background: #F3E6C4; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+        <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 0 24px 20px">
+          <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Nombre de la zona</span><input type="text" value="Antioquia" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 15px"></label>
+          <div style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Cobertura</span><span style="display: flex; flex-wrap: wrap; gap: 6px; padding: 6px; border: 1px solid #5F554A; border-radius: 8px"><span style="display: inline-flex; align-items: center; height: 32px; padding: 0 10px; border-radius: 6px; background: #F3E6C4; font-size: 14px; font-weight: 700">Departamento de Antioquia · todos sus municipios</span><span style="display: inline-flex; align-items: center; height: 32px; padding: 0 6px; font-size: 14px; color: #5F554A">Agregar departamento o municipio…</span></span><span style="font-size: 13px; color: #5F554A">Un departamento o municipio solo puede estar en una zona.</span></div>
+          <div style="display: flex; align-items: center; justify-content: space-between; gap: 8px; padding-top: 4px"><span style="font-size: 16px; font-weight: 800">Tarifas por peso</span><button type="button" style="height: 40px; padding: 0 12px; border: 1px dashed #5F554A; border-radius: 8px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">+ Agregar tarifa</button></div>
+          <div style="overflow-x: auto; border: 1px solid #E6D9BC; border-radius: 12px"><table style="width: 100%; min-width: 560px; border-collapse: collapse; font-size: 14px">
+            <thead><tr style="background: #F3E6C4; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase"><th style="height: 40px; padding: 0 8px 0 12px">Peso (g)</th><th style="padding: 0 8px">Precio</th><th style="padding: 0 8px">Gratis desde</th><th style="padding: 0 12px 0 8px">Días hábiles</th></tr></thead>
+            <tbody><sc-for list="{{tarifas}}" as="tf" hint-placeholder-count="4"><tr style="border-top: 1px solid #E6D9BC; vertical-align: top">
+              <td style="padding: 8px 8px 8px 12px"><span style="display: flex; flex-direction: column; gap: 4px"><span style="display: flex; align-items: center; gap: 6px"><input type="text" value="{{tf.desde}}" aria-label="Peso desde" style="width: 64px; height: 44px; box-sizing: border-box; padding: 0 8px; border: {{tf.bd}}; border-radius: 8px; font-family: inherit; font-size: 14px; text-align: right"><span aria-hidden="true">–</span><input type="text" value="{{tf.hasta}}" placeholder="sin límite" aria-label="Peso hasta" style="width: 84px; height: 44px; box-sizing: border-box; padding: 0 8px; border: {{tf.bd}}; border-radius: 8px; font-family: inherit; font-size: 14px; text-align: right"></span><sc-if value="{{tf.err}}" hint-placeholder-val="{{false}}"><span style="max-width: 190px; font-size: 12px; line-height: 1.3; font-weight: 700; color: #9B1C1C; white-space: normal">Se cruza con la tarifa de 1.001 a 3.000 g. Ajusta los rangos.</span></sc-if></span></td>
+              <td style="padding: 8px"><input type="text" value="{{tf.precio}}" aria-label="Precio" style="width: 96px; height: 44px; box-sizing: border-box; padding: 0 8px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 14px; font-weight: 700; text-align: right"></td>
+              <td style="padding: 8px"><input type="text" value="{{tf.gratis}}" placeholder="—" aria-label="Envío gratis desde" style="width: 96px; height: 44px; box-sizing: border-box; padding: 0 8px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 14px; text-align: right"></td>
+              <td style="padding: 8px 12px 8px 8px"><span style="display: flex; align-items: center; gap: 6px"><input type="text" value="{{tf.dmin}}" aria-label="Días mínimos" style="width: 48px; height: 44px; box-sizing: border-box; padding: 0 8px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 14px; text-align: center"><span aria-hidden="true">–</span><input type="text" value="{{tf.dmax}}" aria-label="Días máximos" style="width: 48px; height: 44px; box-sizing: border-box; padding: 0 8px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 14px; text-align: center"></span></td>
+            </tr></sc-for></tbody>
+          </table></div>
+          <span style="font-size: 13px; line-height: 1.45; color: #5F554A">«Gratis desde» compara con el subtotal del pedido antes del envío. Si lo dejas vacío, esa tarifa nunca es gratis.</span>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; padding: 14px 24px; border-top: 1px solid #E6D9BC"><button type="button" onClick="{{cerrar}}" style="height: 44px; padding: 0 16px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Cancelar</button><button type="button" style="height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Guardar zona</button></div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"pestana":{"editor":"enum","options":["Zonas y tarifas","Despachos pendientes"],"default":"Zonas y tarifas"},"panel":{"editor":"enum","options":["Cerrado","Abierto"],"default":"Abierto"},"$preview":{"width":1440,"height":1200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const abierta = st.sb ?? true;
+    const P = { inicio: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z', productos: 'M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10', inventario: 'M3 4h18v4H3zM5 8v12h14V8M10 12h4', categorias: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z', origenes: 'M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z', marcas: 'M20.5 13.5l-7 7-10-10V3.5h7zM7.5 7.5h.01', pedidos: 'M6 7h12l-1 14H7zM9 7a3 3 0 0 1 6 0', pagos: 'M3 6h18v12H3zM3 10h18M7 15h3', envios: 'M2.5 6.5h11v9h-11zM13.5 9.5h4l3 3v3h-7M7 15.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM17 15.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4z', cupones: 'M3 6h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zM14 6v12', informes: 'M4 20V11M10 20V5M16 20v-6M21 20H3', admins: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M17 3.5a4 4 0 0 1 0 7.5M22 21a6 6 0 0 0-4-5.7', fiscal: 'M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6', factura: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6', correos: 'M3 6h18v12H3zM3 7l9 6 9-6', seguridad: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z' };
+    const it = (t, k, href, n) => ({ t, k, href, n: n || '' });
+    const grupos = [
+      { label: '', items: [it('Inicio', 'inicio', 'A-Inicio.dc.html')] },
+      { label: 'Catálogo', items: [it('Productos', 'productos', 'A-Productos.dc.html'), it('Inventario', 'inventario', 'A-Inventario.dc.html', '4'), it('Categorías', 'categorias', 'A-Categorias.dc.html'), it('Orígenes', 'origenes', 'A-Origenes.dc.html'), it('Marcas y tipos', 'marcas', 'A-Marcas-Tipos.dc.html')] },
+      { label: 'Ventas', items: [it('Pedidos', 'pedidos', 'A-Pedidos.dc.html', '6'), it('Pagos', 'pagos', 'A-Pagos.dc.html', '1'), it('Envíos', 'envios', 'A-Envios.dc.html'), it('Cupones', 'cupones', 'A-Cupones.dc.html'), it('Informes', 'informes', 'A-Informes.dc.html')] },
+      { label: 'Configuración', items: [it('Administradores', 'admins', 'A-Admins.dc.html'), it('Perfil fiscal', 'fiscal', 'A-Fiscal.dc.html'), it('Facturación', 'factura', 'A-Facturacion.dc.html', '1'), it('Correos', 'correos', 'A-Correos.dc.html'), it('Seguridad', 'seguridad', 'A-Seguridad.dc.html')] }
+    ];
+    const activo = 'envios';
+    const sb = {
+      abierta, cerrada: !abierta, ancho: abierta ? '248px' : '72px', padX: abierta ? '12px' : '14px', just: abierta ? 'flex-start' : 'center',
+      toggle: () => this.setState({ sb: !abierta }), toggleTxt: abierta ? 'Colapsar menú' : 'Expandir menú', flecha: abierta ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6',
+      grupos: grupos.map((g) => ({ label: g.label, conLabel: !!g.label && abierta, divisor: !!g.label && !abierta,
+        items: g.items.map((x) => { const on = x.k === activo; return { t: x.t, href: x.href, d: P[x.k], cur: on ? 'page' : 'false', aria: x.n ? x.t + ', ' + x.n + ' pendientes' : x.t, bg: on ? '#F2B632' : 'transparent', fg: on ? '#1B1510' : '#FAF3E3', fw: on ? 800 : 600, nA: abierta && x.n ? x.n : '', nC: !abierta && !!x.n }; }) }))
+    };
+    const tone = { accion: ['#F2B632', '#1B1510'], hecho: ['#1E6B45', '#FFFFFF'], neutro: ['#F3E6C4', '#1B1510'] };
+    const T = (t, o) => ({ t, texto: true, badge: false, boton: false, enlace: false, al: 'left', fw: 500, color: '#1B1510', sub: '', ...(o || {}) });
+    const B = (t, k) => ({ t, texto: false, badge: true, boton: false, enlace: false, al: 'left', fw: 500, color: '#1B1510', bg: tone[k][0], fg: tone[k][1], sub: '' });
+    const BTN = (t) => ({ t, texto: false, badge: false, boton: true, enlace: false, al: 'left', fw: 500, color: '#1B1510', sub: '' });
+    const L = (t, href) => ({ t, href, texto: false, badge: false, boton: false, enlace: true, al: 'right', fw: 500, color: '#1B1510', sub: '' });
+    const H = (t, al) => ({ t, al: al || 'left' });
+    const R = 'right';
+    const zonas = {
+      cols: [H('Zona'), H('Cobertura'), H('Tarifas', R), H('Desde', R), H('Gratis desde', R), H('Entrega'), H('Estado')],
+      filas: [
+        { celdas: [BTN('Antioquia'), T('Departamento 05 · todos los municipios'), T('3', { al: R }), T('$9.500', { al: R, fw: 700 }), T('$80.000', { al: R }), T('2 a 5 días'), B('Activa', 'hecho')] },
+        { celdas: [BTN('Bogotá, D. C.'), T('Municipio 11001'), T('3', { al: R }), T('$8.500', { al: R, fw: 700 }), T('$70.000', { al: R }), T('1 a 2 días'), B('Activa', 'hecho')] },
+        { celdas: [BTN('Huila'), T('Departamento 41', { sub: 'Pitalito tiene tarifa propia' }), T('3', { al: R }), T('$7.500', { al: R, fw: 700 }), T('$60.000', { al: R }), T('2 a 3 días'), B('Activa', 'hecho')] },
+        { celdas: [BTN('Eje Cafetero'), T('Caldas, Quindío y Risaralda'), T('2', { al: R }), T('$10.500', { al: R, fw: 700 }), T('—', { al: R, color: '#5F554A' }), T('2 a 4 días'), B('Activa', 'hecho')] },
+        { celdas: [BTN('Costa Caribe (temporada)'), T('Atlántico, Bolívar y Magdalena'), T('2', { al: R }), T('$14.000', { al: R, fw: 700 }), T('—', { al: R, color: '#5F554A' }), T('3 a 6 días'), B('Archivada', 'neutro')] }
+      ], nombre: 'Zonas de envío', desc: 'Cuánto cuesta y cuánto tarda el envío según el destino y el peso del pedido.', pie: '5 zonas · los valores son de ejemplo', conAccion: true, conAviso: true
+    };
+    const despachos = {
+      cols: [H('Pedido'), H('Pagado'), H('Cliente'), H('Destino'), H('Peso', R), H('Total', R), H('', R)],
+      filas: [
+        { celdas: [T('ORD-1Q7T3B5X', { fw: 800 }), T('hace 3 días', { sub: '17 oct, 4:10 p. m.' }), T('Valentina Mora'), T('Neiva, Huila'), T('750 g', { al: R }), T('$72.500', { al: R, fw: 700 }), L('Registrar despacho', 'A-Pedido.dc.html')] },
+        { celdas: [T('ORD-6R2B8K1M', { fw: 800 }), T('hace 1 día', { sub: '19 oct, 9:40 p. m.' }), T('Natalia Cárdenas'), T('Bucaramanga, Santander'), T('580 g', { al: R }), T('$90.000', { al: R, fw: 700 }), L('Registrar despacho', 'A-Pedido.dc.html')] },
+        { celdas: [T('ORD-7K2M9Q4X', { fw: 800 }), T('hace 3 días', { sub: '20 oct, 9:12 a. m.' }), T('María Fernanda Ruiz'), T('Medellín, Antioquia'), T('810 g', { al: R }), T('$112.100', { al: R, fw: 700 }), L('Registrar despacho', 'A-Pedido.dc.html')] },
+        { celdas: [T('ORD-9P3K7M2Q', { fw: 800, sub: 'En preparación' }), T('hace 4 días', { sub: '19 oct, 6:30 p. m.' }), T('Juliana Ortiz'), T('Cali, Valle del Cauca'), T('1.120 g', { al: R }), T('$118.000', { al: R, fw: 700 }), L('Registrar despacho', 'A-Pedido.dc.html')] }
+      ], nombre: 'Despachos pendientes', desc: 'Pedidos pagados que aún no salen. El más antiguo va primero.', pie: '1–4 de 6 pedidos por despachar', conAccion: false, conAviso: false
+    };
+    const tabSel = st.tab ?? (this.props.pestana ?? 'Zonas y tarifas');
+    const tb = (t, n) => { const on = t === tabSel; return { t, n: n || '', sel: on ? 'true' : 'false', pick: () => this.setState({ tab: t, hoja: false }), bd: on ? '#1B1510' : 'transparent', fg: on ? '#1B1510' : '#5F554A', fw: on ? 800 : 600 }; };
+    const zonasTab = tabSel === 'Zonas y tarifas';
+    const tar = (desde, hasta, precio, gratis, dmin, dmax, err) => ({ desde, hasta, precio, gratis, dmin, dmax, err: !!err, bd: err ? '2px solid #9B1C1C' : '1px solid #5F554A' });
+    return {
+      sb, tabs: [tb('Zonas y tarifas'), tb('Despachos pendientes', '6')], vista: zonasTab ? zonas : despachos,
+      hoja: zonasTab && (st.hoja ?? ((this.props.panel ?? 'Abierto') === 'Abierto')),
+      tarifas: [tar('0', '1.000', '$9.500', '$80.000', '2', '4'), tar('1.001', '3.000', '$12.500', '$80.000', '2', '4'), tar('2.500', '', '$16.000', '', '3', '5', true)],
+      abrir: () => this.setState({ hoja: true }), cerrar: () => this.setState({ hoja: false })
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,74 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Admin Monteluna · verificación en dos pasos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1510}a:hover{color:#C1272D}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #1B1510;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 900px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 40px; padding: 32px 16px 64px; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif">
+  <div style="align-self: stretch; display: flex; align-items: center; gap: 10px; max-width: 1320px; width: 100%; margin: 0 auto"><span style="padding: 6px 12px; border-radius: 8px; background: #F2B632; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; line-height: 1; font-weight: 800; text-transform: uppercase">Monteluna</span><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #5F554A">Admin</span></div>
+
+  <main style="width: 100%; max-width: 460px; box-sizing: border-box; display: flex; flex-direction: column; gap: 22px; padding: 36px; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 20px">
+    <span style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; background: #F2B632"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="6" y="2.5" width="12" height="19" rx="2.5"></rect><path d="M10.5 18h3M9 9l2 2 4-4"></path></svg></span>
+
+    <sc-if value="{{conApp}}" hint-placeholder-val="{{true}}">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h1 style="margin: 0; font-size: 30px; line-height: 1.05; font-weight: 800">Verificación en dos pasos</h1>
+        <p style="margin: 0; font-size: 16px; line-height: 1.5; color: #5F554A">Escribe el código de 6 dígitos que muestra tu app autenticadora para Monteluna.</p>
+      </div>
+      <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Código de verificación</span>
+        <input type="text" inputmode="numeric" autocomplete="one-time-code" maxlength="6" value="{{codigo}}" aria-invalid="{{inv}}" style="height: 60px; box-sizing: border-box; padding: 0 16px; border: {{borde}}; border-radius: 8px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 30px; font-weight: 800; letter-spacing: 0.5em; text-align: center">
+        <sc-if value="{{conError}}" hint-placeholder-val="{{false}}"><span style="display: flex; align-items: flex-start; gap: 6px; font-size: 14px; line-height: 1.4; font-weight: 700; color: #9B1C1C"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" aria-hidden="true" style="flex: none; margin-top: 2px"><circle cx="12" cy="12" r="9"></circle><path d="M12 7.5v5.5M12 16.5v.2"></path></svg>El código no es válido o ya cambió. Escribe el que se ve ahora en tu app y revisa que la hora de tu teléfono sea automática.</span></sc-if>
+        <sc-if value="{{sinError}}" hint-placeholder-val="{{true}}"><span style="font-size: 13px; color: #5F554A">El código cambia cada 30 segundos.</span></sc-if>
+      </label>
+      <a href="A-Inicio.dc.html" style="display: flex; align-items: center; justify-content: center; height: 48px; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-size: 16px; font-weight: 700; text-decoration: none">Verificar</a>
+      <button type="button" onClick="{{usarRecuperacion}}" style="align-self: flex-start; min-height: 44px; padding: 0; border: 0; background: transparent; color: #1B1510; font-family: inherit; font-size: 15px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; cursor: pointer">Usar un código de recuperación</button>
+    </sc-if>
+
+    <sc-if value="{{conRecuperacion}}" hint-placeholder-val="{{false}}">
+      <div style="display: flex; flex-direction: column; gap: 8px">
+        <h1 style="margin: 0; font-size: 30px; line-height: 1.05; font-weight: 800">Usa un código de recuperación</h1>
+        <p style="margin: 0; font-size: 16px; line-height: 1.5; color: #5F554A">Es uno de los códigos que guardaste al activar la verificación. Cada uno sirve una sola vez.</p>
+      </div>
+      <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Código de recuperación</span>
+        <input type="text" autocomplete="off" autocapitalize="characters" placeholder="Ej.: 7KQ2-9MXD" style="height: 48px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 18px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase">
+      </label>
+      <div style="display: flex; align-items: flex-start; gap: 10px; padding: 12px 14px; border-radius: 12px; background: #F3E6C4; font-size: 14px; line-height: 1.45"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" aria-hidden="true" style="flex: none"><circle cx="12" cy="12" r="9"></circle><path d="M12 11v5M12 7.5v.2"></path></svg><span>Si perdiste tu teléfono, después de entrar genera códigos nuevos en «Mi cuenta». Si no tienes códigos, pídele a la persona propietaria que restablezca tu verificación.</span></div>
+      <a href="A-Inicio.dc.html" style="display: flex; align-items: center; justify-content: center; height: 48px; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-size: 16px; font-weight: 700; text-decoration: none">Verificar</a>
+      <button type="button" onClick="{{usarApp}}" style="align-self: flex-start; min-height: 44px; padding: 0; border: 0; background: transparent; color: #1B1510; font-family: inherit; font-size: 15px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; cursor: pointer">Usar la app autenticadora</button>
+    </sc-if>
+
+    <a href="A-Login.dc.html" style="align-self: flex-start; display: inline-flex; align-items: center; min-height: 44px; padding-top: 6px; border-top: 1px solid #E6D9BC; width: 100%; font-size: 15px; font-weight: 600; color: #5F554A; text-underline-offset: 4px">← Volver a iniciar sesión</a>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"estado":{"editor":"enum","options":["Código","Código con error","Recuperación"],"default":"Código"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const inicial = this.props.estado ?? 'Código';
+    const modo = st.modo ?? (inicial === 'Recuperación' ? 'rec' : 'app');
+    const err = inicial === 'Código con error' && modo === 'app';
+    return {
+      conApp: modo === 'app', conRecuperacion: modo === 'rec',
+      conError: err, sinError: !err,
+      codigo: err ? '418207' : '',
+      inv: err ? 'true' : 'false', borde: err ? '2px solid #9B1C1C' : '1px solid #5F554A',
+      usarRecuperacion: () => this.setState({ modo: 'rec' }),
+      usarApp: () => this.setState({ modo: 'app' })
+    };
+  }
+}
+</script>
+</body>
+</html>
