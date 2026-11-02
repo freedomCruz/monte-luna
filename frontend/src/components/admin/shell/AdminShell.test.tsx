@@ -76,6 +76,18 @@ describe('AdminShell session guard (T2/T8: S3, S4)', () => {
     await waitFor(() => expect(logout).toHaveBeenCalledOnce());
   });
 
+  it('does not render settings controls in the 390 px read-only mode', async () => {
+    const originalWidth = window.innerWidth;
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+    getCurrentAdmin.mockResolvedValue({ ok: true, data: owner, etag: '"1"' });
+
+    render(<AdminShell desktopOnly><SessionProbe /></AdminShell>);
+    expect(await screen.findByText('Revísalo desde un computador o una tablet')).toBeTruthy();
+    expect(screen.queryByText(/Contenido privado/)).toBeNull();
+
+    Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
+  });
+
   it('offers retry without leaking content when the session check cannot reach the API', async () => {
     getCurrentAdmin
       .mockResolvedValueOnce({ ok: false, status: 0, code: 'network_error' })
