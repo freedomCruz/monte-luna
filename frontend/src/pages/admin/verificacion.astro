@@ -1,0 +1,11 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { AdminSecondFactor } from '../../components/admin/access/AdminSecondFactor';
+---
+
+<AdminLayout
+  title="Verificación en dos pasos | Monteluna Admin"
+  description="Verificación de segundo factor para el panel de administración de Monteluna."
+>
+  <AdminSecondFactor client:load />
+</AdminLayout>

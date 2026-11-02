@@ -1,0 +1,11 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { AdminEnrollTotp } from '../../components/admin/access/AdminEnrollTotp';
+---
+
+<AdminLayout
+  title="Activar verificación en dos pasos | Monteluna Admin"
+  description="Configuración obligatoria de verificación en dos factores para el panel de administración de Monteluna."
+>
+  <AdminEnrollTotp client:load />
+</AdminLayout>

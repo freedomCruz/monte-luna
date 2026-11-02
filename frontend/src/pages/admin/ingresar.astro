@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { AdminLogin } from '../../components/admin/access/AdminLogin';
+---
+
+<AdminLayout title="Iniciar sesión | Monteluna Admin" description="Acceso al panel de administración de Monteluna.">
+  <AdminLogin client:load />
+</AdminLayout>
