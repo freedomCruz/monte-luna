@@ -157,7 +157,7 @@ export function updateAdminUser(id: string, etag: string, body: UpdateAdminUserR
   return request<AdminUser>('PATCH', userPath(id), { body, ifMatch: etag });
 }
 
-/** Resets another administrator's 2FA; `etag` must be the exact ETag from the last read. */
-export function resetAdminUserTotp(id: string, etag: string) {
-  return request<AdminUser>('POST', `${userPath(id)}/totp/reset`, { ifMatch: etag });
+/** Resets another administrator's 2FA after owner reauthentication; `etag` must be exact. */
+export function resetAdminUserTotp(id: string, etag: string, body: ReauthenticationRequest) {
+  return request<AdminUser>('POST', `${userPath(id)}/totp/reset`, { body, ifMatch: etag });
 }
