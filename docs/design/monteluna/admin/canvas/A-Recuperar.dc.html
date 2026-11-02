@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Admin Monteluna · recuperar contraseña</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1510}a:hover{color:#C1272D}
+a:focus-visible,button:focus-visible,input:focus-visible{outline:3px solid #1B1510;outline-offset:2px}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 900px; box-sizing: border-box; display: flex; flex-direction: column; align-items: center; gap: 40px; padding: 32px 16px 64px; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif">
+  <div style="display: flex; align-items: center; gap: 10px; max-width: 1320px; width: 100%"><span style="padding: 6px 12px; border-radius: 8px; background: #F2B632; font-family: 'Barlow Condensed', sans-serif; font-size: 26px; line-height: 1; font-weight: 800; text-transform: uppercase">Monteluna</span><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 15px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #5F554A">Admin</span></div>
+
+  <main style="width: 100%; max-width: 480px; box-sizing: border-box; display: flex; flex-direction: column; gap: 20px; padding: 36px; background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 20px">
+
+    <sc-if value="{{pedir}}" hint-placeholder-val="{{true}}">
+      <h1 style="margin: 0; font-size: 30px; line-height: 1.05; font-weight: 800">Recupera tu contraseña</h1>
+      <p style="margin: 0; font-size: 16px; line-height: 1.5; color: #5F554A">Escribe el correo con el que entras al panel y te enviaremos un enlace para crear una contraseña nueva.</p>
+      <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Correo</span><input type="email" autocomplete="username" value="laura@monteluna.co" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 16px"></label>
+      <button type="button" onClick="{{enviar}}" style="height: 48px; border: 0; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Enviar enlace</button>
+    </sc-if>
+
+    <sc-if value="{{enviado}}" hint-placeholder-val="{{false}}">
+      <span style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; background: #F3E6C4"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 6h18v12H3zM3 7l9 6 9-6"></path></svg></span>
+      <h1 style="margin: 0; font-size: 30px; line-height: 1.05; font-weight: 800">Revisa tu correo</h1>
+      <p role="status" style="margin: 0; font-size: 16px; line-height: 1.5">Si ese correo pertenece a una cuenta del panel, te llegará un enlace en unos minutos. El enlace dura <span style="font-weight: 800">30 minutos</span> y sirve una sola vez.</p>
+      <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #5F554A">¿No llega? Revisa la carpeta de spam. Si pides otro enlace, el anterior deja de funcionar.</p>
+      <button type="button" onClick="{{volverPedir}}" style="align-self: flex-start; min-height: 44px; padding: 0; border: 0; background: transparent; color: #1B1510; font-family: inherit; font-size: 15px; font-weight: 700; text-decoration: underline; text-underline-offset: 4px; cursor: pointer">Pedir otro enlace</button>
+    </sc-if>
+
+    <sc-if value="{{nueva}}" hint-placeholder-val="{{false}}">
+      <h1 style="margin: 0; font-size: 30px; line-height: 1.05; font-weight: 800">Crea tu nueva contraseña</h1>
+      <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Nueva contraseña</span><input type="password" autocomplete="new-password" value="montañahuila" aria-describedby="reglas" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 16px"></label>
+      <ul id="reglas" aria-label="Requisitos de la contraseña" style="list-style: none; margin: 0; padding: 14px 16px; display: flex; flex-direction: column; gap: 8px; border-radius: 12px; background: #FAF3E3">
+        <sc-for list="{{reglas}}" as="r" hint-placeholder-count="3"><li style="display: flex; align-items: center; gap: 10px; font-size: 14px; font-weight: 600"><span aria-hidden="true" style="display: inline-flex; align-items: center; justify-content: center; width: 20px; height: 20px; box-sizing: border-box; border-radius: 50%; border: 2px solid {{r.bd}}; background: {{r.bg}}; color: #FFFFFF; font-size: 12px; font-weight: 800">{{r.marca}}</span><span>{{r.t}}</span><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">{{r.sr}}</span></li></sc-for>
+      </ul>
+      <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Repite la contraseña</span><input type="password" autocomplete="new-password" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 16px"></label>
+      <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #5F554A">Al guardarla se cierran todas tus sesiones abiertas, también en otros dispositivos.</p>
+      <a href="A-Login.dc.html" style="display: flex; align-items: center; justify-content: center; height: 48px; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-size: 16px; font-weight: 700; text-decoration: none">Guardar contraseña</a>
+    </sc-if>
+
+    <sc-if value="{{vencido}}" hint-placeholder-val="{{false}}">
+      <span style="display: inline-flex; align-items: center; justify-content: center; width: 56px; height: 56px; border-radius: 50%; background: #F3E6C4"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 2"></path></svg></span>
+      <h1 style="margin: 0; font-size: 30px; line-height: 1.05; font-weight: 800">Este enlace ya no sirve</h1>
+      <p style="margin: 0; font-size: 16px; line-height: 1.5">Los enlaces duran 30 minutos y se usan una sola vez. Pide uno nuevo y ábrelo desde el último correo.</p>
+      <button type="button" onClick="{{volverPedir}}" style="height: 48px; border: 0; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-family: inherit; font-size: 16px; font-weight: 700; cursor: pointer">Pedir un enlace nuevo</button>
+    </sc-if>
+
+    <a href="A-Login.dc.html" style="display: inline-flex; align-items: center; min-height: 44px; padding-top: 6px; border-top: 1px solid #E6D9BC; font-size: 15px; font-weight: 600; color: #5F554A; text-underline-offset: 4px">← Volver a iniciar sesión</a>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"paso":{"editor":"enum","options":["Pedir enlace","Enlace enviado","Nueva contraseña","Enlace vencido"],"default":"Pedir enlace"},"$preview":{"width":1440,"height":900}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const paso = st.paso ?? (this.props.paso ?? 'Pedir enlace');
+    const regla = (t, ok) => ({ t, marca: ok ? '✓' : '', bg: ok ? '#1E6B45' : '#FFFFFF', bd: ok ? '#1E6B45' : '#5F554A', sr: ok ? ': cumplido' : ': pendiente' });
+    return {
+      pedir: paso === 'Pedir enlace', enviado: paso === 'Enlace enviado', nueva: paso === 'Nueva contraseña', vencido: paso === 'Enlace vencido',
+      reglas: [regla('Al menos 12 caracteres', true), regla('No contiene tu correo ni tu nombre', true), regla('No aparece en listas de contraseñas filtradas', false)],
+      enviar: () => this.setState({ paso: 'Enlace enviado' }),
+      volverPedir: () => this.setState({ paso: 'Pedir enlace' })
+    };
+  }
+}
+</script>
+</body>
+</html>

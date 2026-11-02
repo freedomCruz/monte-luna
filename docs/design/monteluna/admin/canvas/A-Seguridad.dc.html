@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Admin Monteluna · actividad de seguridad</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1510}a:hover{color:#C1272D}
+a:focus-visible,button:focus-visible{outline:3px solid #1B1510;outline-offset:2px}
+nav a:focus-visible{outline-color:#F2B632}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 1100px; box-sizing: border-box; display: flex; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif; font-variant-numeric: tabular-nums">
+  <nav aria-label="Secciones del panel" style="flex: none; width: 248px; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px; padding: 16px 12px; background: #1B1510; color: #FAF3E3">
+    <a href="A-Inicio.dc.html" style="display: flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 6px 10px; color: #FAF3E3; text-decoration: none"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 26px; line-height: 1; font-weight: 800; text-transform: uppercase; color: #F2B632">Monteluna</span><span style="padding: 2px 6px; border-radius: 6px; background: #F2B632; color: #1B1510; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase">Admin</span></a>
+    <sc-for list="{{nav}}" as="it" hint-placeholder-count="16">
+      <sc-if value="{{it.label}}" hint-placeholder-val="{{false}}"><span style="padding: 12px 10px 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #A8997C">{{it.label}}</span></sc-if>
+      <a href="{{it.href}}" aria-current="{{it.cur}}" style="display: flex; align-items: center; min-height: 40px; padding: 0 10px; border-radius: 8px; background: {{it.bg}}; color: {{it.fg}}; font-size: 15px; font-weight: {{it.fw}}; text-decoration: none">{{it.t}}</a>
+    </sc-for>
+  </nav>
+  <main style="flex: 999 1 0; min-width: 0; display: flex; flex-direction: column; gap: 16px; padding: 28px 32px 48px">
+    <div style="display: flex; flex-direction: column; gap: 4px"><span style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px"><h1 style="margin: 0; font-size: 32px; line-height: 1.1; font-weight: 800">Actividad de seguridad</h1><span style="padding: 3px 8px; border-radius: 8px; border: 1px dashed #A8997C; font-size: 12px; font-weight: 700; color: #5F554A">Datos de ejemplo</span></span><p style="margin: 0; font-size: 15px; color: #5F554A">Ingresos, fallos y cambios de acceso de cada persona del panel. Se guardan un año y no se pueden borrar.</p></div>
+    <div style="display: flex; flex-wrap: wrap; gap: 8px"><span style="display: inline-flex; align-items: center; height: 44px; padding: 0 14px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; font-size: 14px; font-weight: 700">Persona ▾</span><span style="display: inline-flex; align-items: center; height: 44px; padding: 0 14px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; font-size: 14px; font-weight: 700">Evento ▾</span><span style="display: inline-flex; align-items: center; height: 44px; padding: 0 14px; border-radius: 8px; background: #0F3B2C; color: #FAF3E3; font-size: 14px; font-weight: 700">Últimos 7 días</span></div>
+    <section aria-label="Eventos de seguridad" style="background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px; overflow-x: auto">
+      <table style="width: 100%; border-collapse: collapse; font-size: 15px">
+        <thead><tr style="background: #F3E6C4; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase"><th style="height: 44px; padding: 0 12px 0 20px">Fecha</th><th style="padding: 0 12px">Evento</th><th style="padding: 0 12px">Persona</th><th style="padding: 0 20px 0 12px">Origen</th></tr></thead>
+        <tbody><sc-for list="{{eventos}}" as="e" hint-placeholder-count="8"><tr style="height: 58px; border-top: 1px solid #E6D9BC"><td style="padding: 0 12px 0 20px; color: #5F554A; white-space: nowrap">{{e.f}}</td><td style="padding: 0 12px"><span style="display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 8px; background: {{e.bg}}; color: {{e.fg}}; font-size: 13px; font-weight: 700"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: {{e.fg}}"></span>{{e.t}}</span></td><td style="padding: 0 12px; font-weight: 600">{{e.p}}</td><td style="padding: 0 20px 0 12px; color: #5F554A">{{e.o}}</td></tr></sc-for></tbody>
+      </table>
+      <div style="padding: 12px 20px; border-top: 1px solid #E6D9BC; font-size: 14px; color: #5F554A">1–8 de 64 eventos</div>
+    </section>
+  </main>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":1440,"height":1100}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const n = (t, href, label, on) => ({ t, href, label: label || '', cur: on ? 'page' : 'false', bg: on ? '#F2B632' : 'transparent', fg: on ? '#1B1510' : '#FAF3E3', fw: on ? 800 : 600 });
+    const tone = { hecho: ['#1E6B45', '#FFFFFF'], neutro: ['#F3E6C4', '#1B1510'], accion: ['#F2B632', '#1B1510'], problema: ['#9B1C1C', '#FFFFFF'] };
+    const ev = (f, t, k, p, o) => ({ f, t, bg: tone[k][0], fg: tone[k][1], p, o });
+    return {
+      nav: [n('Inicio', 'A-Inicio.dc.html'), n('Productos', 'A-Productos.dc.html', 'Catálogo'), n('Inventario', 'A-Inventario.dc.html'), n('Pedidos', 'A-Pedidos.dc.html', 'Ventas'), n('Pagos', 'A-Pagos.dc.html'), n('Administradores', 'A-Admins.dc.html', 'Configuración'), n('Perfil fiscal', 'A-Fiscal.dc.html'), n('Facturación', 'A-Facturacion.dc.html'), n('Correos', 'A-Correos.dc.html'), n('Seguridad', 'A-Seguridad.dc.html', '', true)],
+      eventos: [
+        ev('23 oct, 8:14 a. m.', 'Ingreso correcto', 'hecho', 'Laura Ríos', 'Pitalito · Chrome en Windows · 181.52.x.x'),
+        ev('22 oct, 11:02 p. m.', 'Ingreso fallido', 'problema', 'andres@monteluna.co', 'Bogotá · Safari en iPhone · 190.24.x.x'),
+        ev('22 oct, 11:01 p. m.', 'Ingreso fallido', 'problema', 'andres@monteluna.co', 'Bogotá · Safari en iPhone · 190.24.x.x'),
+        ev('22 oct, 5:40 p. m.', 'Código de recuperación usado', 'accion', 'Andrés Peña', 'Neiva · Chrome en Android · 186.29.x.x'),
+        ev('21 oct, 3:15 p. m.', 'Administrador creado', 'neutro', 'Laura Ríos → Camila Torres', 'Pitalito · Chrome en Windows'),
+        ev('20 oct, 9:30 a. m.', 'Contraseña cambiada', 'neutro', 'Laura Ríos', 'Pitalito · Chrome en Windows'),
+        ev('19 oct, 6:05 p. m.', 'Rol cambiado', 'accion', 'Laura Ríos → Jorge Ríos (desactivado)', 'Pitalito · Chrome en Windows'),
+        ev('19 oct, 8:00 a. m.', 'Cierre de sesión', 'neutro', 'Andrés Peña', 'Neiva · Chrome en Android')
+      ]
+    };
+  }
+}
+</script>
+</body>
+</html>

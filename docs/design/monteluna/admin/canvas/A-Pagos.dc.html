@@ -1,0 +1,170 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Admin Monteluna · pagos</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+a{color:#1B1510}a:hover{color:#C1272D}
+a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:3px solid #1B1510;outline-offset:2px}
+nav a:focus-visible,nav button:focus-visible{outline-color:#F2B632}
+</style>
+</helmet>
+<div style="position: relative; width: 100%; min-height: {{alto}}; box-sizing: border-box; display: flex; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif; font-variant-numeric: tabular-nums">
+
+  <nav aria-label="Secciones del panel" style="flex: none; width: {{sb.ancho}}; box-sizing: border-box; display: flex; flex-direction: column; gap: 2px; padding: 16px {{sb.padX}}; background: #1B1510; color: #FAF3E3">
+    <a href="A-Inicio.dc.html" aria-label="Monteluna Admin, inicio" style="display: flex; align-items: center; justify-content: {{sb.just}}; gap: 8px; min-height: 44px; padding: 0 6px 10px; color: #FAF3E3; text-decoration: none">
+      <sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 26px; line-height: 1; font-weight: 800; text-transform: uppercase; color: #F2B632">Monteluna</span><span style="padding: 2px 6px; border-radius: 6px; background: #F2B632; color: #1B1510; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase">Admin</span></sc-if>
+      <sc-if value="{{sb.cerrada}}" hint-placeholder-val="{{false}}"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; line-height: 1; font-weight: 800; color: #F2B632">M</span></sc-if>
+    </a>
+    <sc-for list="{{sb.grupos}}" as="g" hint-placeholder-count="4">
+      <sc-if value="{{g.conLabel}}" hint-placeholder-val="{{true}}"><span style="padding: 12px 10px 4px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #A8997C">{{g.label}}</span></sc-if>
+      <sc-if value="{{g.divisor}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="align-self: center; width: 28px; height: 1px; margin: 8px 0; background: rgba(250,243,227,0.2)"></span></sc-if>
+      <sc-for list="{{g.items}}" as="it" hint-placeholder-count="4">
+        <a href="{{it.href}}" aria-current="{{it.cur}}" aria-label="{{it.aria}}" title="{{it.t}}" style="position: relative; display: flex; align-items: center; justify-content: {{sb.just}}; gap: 12px; min-height: 40px; padding: 0 10px; border-radius: 8px; background: {{it.bg}}; color: {{it.fg}}; font-size: 15px; font-weight: {{it.fw}}; text-decoration: none">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex: none"><path d="{{it.d}}"></path></svg>
+          <sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span style="flex: 1">{{it.t}}</span></sc-if>
+          <sc-if value="{{it.nA}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="min-width: 20px; padding: 0 6px; box-sizing: border-box; border-radius: 999px; background: #C1272D; color: #FFFFFF; font-size: 12px; line-height: 20px; font-weight: 800; text-align: center">{{it.nA}}</span></sc-if>
+          <sc-if value="{{it.nC}}" hint-placeholder-val="{{false}}"><span aria-hidden="true" style="position: absolute; top: 6px; right: 10px; width: 8px; height: 8px; border-radius: 50%; background: #C1272D; outline: 2px solid #1B1510"></span></sc-if>
+        </a>
+      </sc-for>
+    </sc-for>
+    <span style="flex: 1"></span>
+    <button type="button" onClick="{{sb.toggle}}" aria-label="{{sb.toggleTxt}}" style="display: flex; align-items: center; justify-content: {{sb.just}}; gap: 12px; min-height: 44px; margin-top: 12px; padding: 0 10px; border: 0; border-top: 1px solid rgba(250,243,227,0.16); background: transparent; color: #E9DDC3; font-family: inherit; font-size: 14px; font-weight: 600; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="{{sb.flecha}}"></path></svg><sc-if value="{{sb.abierta}}" hint-placeholder-val="{{true}}"><span>{{sb.toggleTxt}}</span></sc-if></button>
+  </nav>
+
+  <div style="flex: 999 1 0; min-width: 0; display: flex; flex-direction: column">
+    <header style="display: flex; align-items: center; gap: 12px; min-height: 64px; box-sizing: border-box; padding: 10px {{pad}}; background: #FFFFFF; border-bottom: 1px solid #E6D9BC">
+      <label role="search" style="flex: 1 1 auto; max-width: 560px; display: flex; align-items: center; gap: 10px; height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.2" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6.5"></circle><path d="M16 16l4.5 4.5"></path></svg><span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">Buscar en el panel</span><input type="search" placeholder="{{buscador}}" style="flex: 1; min-width: 0; height: 100%; border: 0; background: transparent; color: #1B1510; font-family: inherit; font-size: 15px"><span aria-hidden="true" style="padding: 1px 7px; border: 1px solid #A8997C; border-radius: 6px; font-size: 13px; font-weight: 700">/</span></label>
+      <span style="flex: 1"></span>
+      <button type="button" aria-label="Avisos pendientes: 7" style="position: relative; flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; cursor: pointer"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9a6 6 0 0 1 12 0c0 6 2 7 2 7H4s2-1 2-7M10 20a2 2 0 0 0 4 0"></path></svg><span aria-hidden="true" style="position: absolute; top: -6px; right: -6px; min-width: 20px; padding: 0 5px; box-sizing: border-box; border-radius: 999px; background: #C1272D; color: #FFFFFF; font-size: 12px; line-height: 20px; font-weight: 800; text-align: center">7</span></button>
+      <button type="button" aria-label="Menú de Laura Ríos" style="flex: none; display: inline-flex; align-items: center; gap: 10px; height: 44px; padding: 0 6px 0 4px; border: 0; border-radius: 8px; background: transparent; color: #1B1510; font-family: inherit; cursor: pointer"><span style="display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; border-radius: 50%; background: #4B1C52; color: #FAF3E3; font-size: 14px; font-weight: 800">LR</span><sc-if value="{{conNombre}}" hint-placeholder-val="{{true}}"><span style="display: flex; flex-direction: column; align-items: flex-start; line-height: 1.15"><span style="font-size: 14px; font-weight: 700">Laura Ríos</span><span style="font-size: 12px; color: #5F554A">Propietaria</span></span></sc-if><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M6 9l6 6 6-6"></path></svg></button>
+    </header>
+
+    <main style="flex: 1; display: flex; flex-direction: column; gap: 16px; padding: 28px {{pad}} 48px">
+      <div style="display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px">
+        <div style="display: flex; flex-direction: column; gap: 4px"><span style="display: flex; flex-wrap: wrap; align-items: center; gap: 10px"><h1 style="margin: 0; font-size: 32px; line-height: 1.1; font-weight: 800; letter-spacing: -0.01em">Pagos</h1><span style="padding: 3px 8px; border-radius: 8px; border: 1px dashed #A8997C; font-size: 12px; font-weight: 700; color: #5F554A">Datos de ejemplo</span></span><p style="margin: 0; font-size: 15px; color: #5F554A">{{vista.desc}}</p></div>
+        <sc-if value="{{vista.conAccion}}" hint-placeholder-val="{{false}}"><button type="button" onClick="{{abrirLiq}}" style="display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" aria-hidden="true"><path d="M12 5v14M5 12h14"></path></svg>Registrar liquidación</button></sc-if>
+      </div>
+      <div role="tablist" aria-label="Secciones de pagos" style="display: flex; gap: 4px; border-bottom: 1px solid #E6D9BC; overflow-x: auto"><sc-for list="{{tabs}}" as="t" hint-placeholder-count="3"><button type="button" role="tab" aria-selected="{{t.sel}}" onClick="{{t.pick}}" style="display: inline-flex; align-items: center; gap: 6px; height: 48px; padding: 0 16px; border: 0; border-bottom: 3px solid {{t.bd}}; background: transparent; color: {{t.fg}}; font-family: inherit; font-size: 15px; font-weight: {{t.fw}}; white-space: nowrap; cursor: pointer">{{t.t}}<sc-if value="{{t.n}}" hint-placeholder-val="{{false}}"><span style="padding: 1px 7px; border-radius: 8px; background: #F2B632; color: #1B1510; font-size: 12px; font-weight: 800">{{t.n}}</span></sc-if></button></sc-for></div>
+      <div style="display: flex; flex-wrap: wrap; align-items: center; gap: 8px"><sc-for list="{{vista.chips}}" as="c" hint-placeholder-count="3"><span style="display: inline-flex; align-items: center; gap: 6px; height: 44px; box-sizing: border-box; padding: 0 14px; border: 1px solid {{c.bd}}; border-radius: 8px; background: {{c.bg}}; color: {{c.fg}}; font-size: 14px; font-weight: 700">{{c.t}}</span></sc-for></div>
+
+      <section aria-label="{{vista.nombre}}" style="background: #FFFFFF; border: 1px solid #E6D9BC; border-radius: 12px">
+        <div style="overflow-x: auto"><table style="width: 100%; border-collapse: collapse; font-size: 15px">
+          <thead><tr style="background: #F3E6C4; text-align: left; font-family: 'Barlow Condensed', sans-serif; font-size: 14px; letter-spacing: 0.08em; text-transform: uppercase"><sc-for list="{{vista.cols}}" as="h" hint-placeholder-count="6"><th style="height: 44px; padding: 0 12px; text-align: {{h.al}}; white-space: nowrap">{{h.t}}</th></sc-for></tr></thead>
+          <tbody><sc-for list="{{vista.filas}}" as="r" hint-placeholder-count="6"><tr style="height: 58px; border-top: 1px solid #E6D9BC; background: {{r.fondo}}"><sc-for list="{{r.celdas}}" as="c" hint-placeholder-count="6"><td style="padding: 8px 12px; text-align: {{c.al}}; font-weight: {{c.fw}}; color: {{c.color}}; white-space: nowrap">
+            <sc-if value="{{c.texto}}" hint-placeholder-val="{{true}}">{{c.t}}<sc-if value="{{c.sub}}" hint-placeholder-val="{{false}}"><span style="display: block; font-size: 12px; font-weight: 500; color: #5F554A">{{c.sub}}</span></sc-if></sc-if>
+            <sc-if value="{{c.badge}}" hint-placeholder-val="{{false}}"><span style="display: inline-flex; align-items: center; gap: 6px; height: 26px; padding: 0 10px; border-radius: 8px; background: {{c.bg}}; color: {{c.fg}}; font-size: 13px; font-weight: 700"><span aria-hidden="true" style="width: 7px; height: 7px; border-radius: 50%; background: {{c.fg}}"></span>{{c.t}}</span></sc-if>
+            <sc-if value="{{c.boton}}" hint-placeholder-val="{{false}}"><button type="button" onClick="{{abrirReembolso}}" style="height: 40px; padding: 0 12px; border: 0; border-radius: 8px; background: #1B1510; color: #FAF3E3; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">{{c.t}}</button></sc-if>
+          </td></sc-for></tr></sc-for></tbody>
+        </table></div>
+        <div style="display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 16px; border-top: 1px solid #E6D9BC; font-size: 14px"><span style="color: #5F554A">{{vista.pie}}</span><span style="display: flex; gap: 8px"><button type="button" disabled="" style="height: 44px; padding: 0 14px; border: 1px dashed #A8997C; border-radius: 8px; background: #F3E6C4; color: #5F554A; font-family: inherit; font-size: 14px; font-weight: 700">‹ Anterior</button><button type="button" style="height: 44px; padding: 0 14px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 14px; font-weight: 700; cursor: pointer">Siguiente ›</button></span></div>
+      </section>
+    </main>
+  </div>
+
+  <sc-if value="{{hoja.abierta}}" hint-placeholder-val="{{false}}">
+    <div style="position: absolute; inset: 0; z-index: 20; display: flex; justify-content: flex-end; background: rgba(27,21,16,0.5)">
+      <div role="dialog" aria-modal="true" aria-labelledby="h-hoja" style="width: {{sheetAncho}}; max-width: 100%; box-sizing: border-box; display: flex; flex-direction: column; background: #FFFFFF; border-radius: {{sheetRadio}}">
+        <div style="display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; padding: 20px 24px"><div style="display: flex; flex-direction: column; gap: 4px"><span style="font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #5F554A">{{hoja.etiqueta}}</span><h2 id="h-hoja" style="margin: 0; font-size: 24px; font-weight: 800">{{hoja.titulo}}</h2></div><button type="button" aria-label="Cerrar" onClick="{{cerrar}}" style="flex: none; display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border: 0; border-radius: 8px; background: #F3E6C4; cursor: pointer"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1B1510" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"></path></svg></button></div>
+        <div style="flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px; padding: 0 24px 20px">
+          <sc-if value="{{hoja.reembolso}}" hint-placeholder-val="{{true}}">
+            <dl style="margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; padding: 14px 16px; border-radius: 12px; background: #FAF3E3; font-size: 14px"><dt style="color: #5F554A">Pedido</dt><dd style="margin: 0; font-weight: 800">ORD-4H8T2W9C · Andrea Salazar</dd><dt style="color: #5F554A">Motivo</dt><dd style="margin: 0; font-weight: 700">Pago tardío sin stock</dd><dt style="color: #5F554A">Pagó con</dt><dd style="margin: 0; font-weight: 700">Transferencia Bancolombia</dd><dt style="color: #5F554A">Monto a devolver</dt><dd style="margin: 0; font-size: 20px; font-weight: 800">$64.000</dd></dl>
+            <p style="margin: 0; font-size: 14px; line-height: 1.5">Haz la transferencia desde el banco de la tienda a la cuenta de la cliente y registra aquí el comprobante. La cliente recibe un correo con el recibo.</p>
+            <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Referencia de la transferencia</span><input type="text" placeholder="Número del comprobante del banco" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 15px"></label>
+            <label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">Notas <span style="font-weight: 500; color: #5F554A">(opcional)</span></span><textarea rows="3" placeholder="Ej.: cuenta de ahorros que nos dio la cliente por WhatsApp" style="box-sizing: border-box; padding: 10px 12px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 15px; resize: vertical"></textarea></label>
+          </sc-if>
+          <sc-if value="{{hoja.liquidacion}}" hint-placeholder-val="{{false}}">
+            <p style="margin: 0; font-size: 14px; line-height: 1.5; color: #5F554A">Copia los valores del reporte de pagos de Wompi. El neto debe ser igual al bruto menos todos los descuentos.</p>
+            <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px">
+              <sc-for list="{{camposLiq}}" as="f" hint-placeholder-count="7"><label style="display: flex; flex-direction: column; gap: 6px"><span style="font-size: 14px; font-weight: 700">{{f.t}}</span><input type="text" inputmode="numeric" value="{{f.v}}" style="height: 44px; box-sizing: border-box; padding: 0 12px; border: 1px solid #5F554A; border-radius: 8px; font-family: inherit; font-size: 15px; text-align: {{f.al}}"></label></sc-for>
+            </div>
+            <div style="display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-radius: 12px; background: #FAF3E3"><span style="font-size: 15px; font-weight: 700">Neto recibido</span><span style="font-size: 22px; font-weight: 800">$2.746.310</span></div>
+            <span style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: #1E6B45"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7.5"></path></svg>Cuadra con el bruto y los descuentos.</span>
+          </sc-if>
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; padding: 14px 24px; border-top: 1px solid #E6D9BC"><button type="button" onClick="{{cerrar}}" style="height: 44px; padding: 0 16px; border: 1px solid #5F554A; border-radius: 8px; background: #FFFFFF; color: #1B1510; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">Cancelar</button><button type="button" onClick="{{cerrar}}" style="height: 44px; padding: 0 16px; border: 0; border-radius: 8px; background: #C1272D; color: #FFFFFF; font-family: inherit; font-size: 15px; font-weight: 700; cursor: pointer">{{hoja.boton}}</button></div>
+      </div>
+    </div>
+  </sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"pestana":{"editor":"enum","options":["Transacciones","Reembolsos","Liquidaciones"],"default":"Transacciones"},"panel":{"editor":"enum","options":["Ninguno","Marcar reembolsado","Registrar liquidación"],"default":"Ninguno"},"ancho":{"editor":"enum","options":["1440","1024","768"],"default":"1440"},"$preview":{"width":1440,"height":1200}}'>
+class Component extends DCLogic {
+  renderVals() {
+    const st = this.state || {};
+    const ancho = String(this.props.ancho ?? '1440');
+    const abierta = st.sb ?? (ancho === '1440');
+    const P = { inicio: 'M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z', productos: 'M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10', inventario: 'M3 4h18v4H3zM5 8v12h14V8M10 12h4', categorias: 'M4 4h7v7H4zM13 4h7v7h-7zM4 13h7v7H4zM13 13h7v7h-7z', origenes: 'M12 21s-7-6-7-11a7 7 0 0 1 14 0c0 5-7 11-7 11zM12 12.5a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5z', marcas: 'M20.5 13.5l-7 7-10-10V3.5h7zM7.5 7.5h.01', pedidos: 'M6 7h12l-1 14H7zM9 7a3 3 0 0 1 6 0', pagos: 'M3 6h18v12H3zM3 10h18M7 15h3', envios: 'M2.5 6.5h11v9h-11zM13.5 9.5h4l3 3v3h-7M7 15.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4zM17 15.5a2 2 0 1 0 0 4 2 2 0 0 0 0-4z', cupones: 'M3 6h18v4a2 2 0 0 0 0 4v4H3v-4a2 2 0 0 0 0-4zM14 6v12', informes: 'M4 20V11M10 20V5M16 20v-6M21 20H3', admins: 'M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M17 3.5a4 4 0 0 1 0 7.5M22 21a6 6 0 0 0-4-5.7', fiscal: 'M7 3h8l4 4v14H7zM15 3v4h4M10 12h6M10 16h6', factura: 'M6 3h12v18l-3-2-3 2-3-2-3 2zM9 8h6M9 12h6', correos: 'M3 6h18v12H3zM3 7l9 6 9-6', seguridad: 'M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z' };
+    const it = (t, k, href, n) => ({ t, k, href, n: n || '' });
+    const grupos = [
+      { label: '', items: [it('Inicio', 'inicio', 'A-Inicio.dc.html')] },
+      { label: 'Catálogo', items: [it('Productos', 'productos', 'A-Productos.dc.html'), it('Inventario', 'inventario', 'A-Inventario.dc.html', '4'), it('Categorías', 'categorias', 'A-Categorias.dc.html'), it('Orígenes', 'origenes', 'A-Origenes.dc.html'), it('Marcas y tipos', 'marcas', 'A-Marcas-Tipos.dc.html')] },
+      { label: 'Ventas', items: [it('Pedidos', 'pedidos', 'A-Pedidos.dc.html', '6'), it('Pagos', 'pagos', 'A-Pagos.dc.html', '1'), it('Envíos', 'envios', 'A-Envios.dc.html'), it('Cupones', 'cupones', 'A-Cupones.dc.html'), it('Informes', 'informes', 'A-Informes.dc.html')] },
+      { label: 'Configuración', items: [it('Administradores', 'admins', 'A-Admins.dc.html'), it('Perfil fiscal', 'fiscal', 'A-Fiscal.dc.html'), it('Facturación', 'factura', 'A-Facturacion.dc.html', '1'), it('Correos', 'correos', 'A-Correos.dc.html'), it('Seguridad', 'seguridad', 'A-Seguridad.dc.html')] }
+    ];
+    const activo = 'pagos';
+    const sb = {
+      abierta, cerrada: !abierta, ancho: abierta ? '248px' : '72px', padX: abierta ? '12px' : '14px', just: abierta ? 'flex-start' : 'center',
+      toggle: () => this.setState({ sb: !abierta }), toggleTxt: abierta ? 'Colapsar menú' : 'Expandir menú', flecha: abierta ? 'M15 6l-6 6 6 6' : 'M9 6l6 6-6 6',
+      grupos: grupos.map((g) => ({ label: g.label, conLabel: !!g.label && abierta, divisor: !!g.label && !abierta,
+        items: g.items.map((x) => { const on = x.k === activo; return { t: x.t, href: x.href, d: P[x.k], cur: on ? 'page' : 'false', aria: x.n ? x.t + ', ' + x.n + ' pendientes' : x.t, bg: on ? '#F2B632' : 'transparent', fg: on ? '#1B1510' : '#FAF3E3', fw: on ? 800 : 600, nA: abierta && x.n ? x.n : '', nC: !abierta && !!x.n }; }) }))
+    };
+    const tone = { accion: ['#F2B632', '#1B1510'], curso: ['#0F3B2C', '#FAF3E3'], hecho: ['#1E6B45', '#FFFFFF'], neutro: ['#F3E6C4', '#1B1510'], problema: ['#9B1C1C', '#FFFFFF'] };
+    const tablet = ancho !== '1440';
+    const angosto = ancho === '768';
+    const T = (t, o) => ({ t, texto: true, badge: false, boton: false, al: 'left', fw: 500, color: '#1B1510', sub: '', ...(o || {}) });
+    const B = (t, k) => ({ t, texto: false, badge: true, boton: false, al: 'left', fw: 500, color: '#1B1510', bg: tone[k][0], fg: tone[k][1], sub: '' });
+    const BTN = (t) => ({ t, texto: false, badge: false, boton: true, al: 'right', fw: 500, color: '#1B1510', sub: '' });
+    const H = (t, al, sec) => ({ t, al: al || 'left', sec: !!sec });
+    const armar = (cols, filas) => { const vis = cols.map((c) => !(c.sec && tablet) && !(c.sec === 2 && angosto)); return { cols: cols.filter((c, i) => vis[i]), filas: filas.map((f) => ({ fondo: f.fondo || '#FFFFFF', celdas: f.c.filter((c, i) => vis[i]) })) }; };
+    const R = 'right';
+    const tx = armar([H('Referencia'), H('Pedido'), H('Método', 0, true), H('Monto', R), H('Estado'), H('ID de Wompi', 0, true), H('Fecha', 0, true)], [
+      { c: [T('REF-ORD-7K2M9Q4X-2', { fw: 700 }), T('ORD-7K2M9Q4X'), T('Nequi'), T('$112.100', { al: R, fw: 700 }), B('Aprobado', 'hecho'), T('128734-1729…-41907', { color: '#5F554A' }), T('20 oct, 9:12 a. m.', { color: '#5F554A' })] },
+      { c: [T('REF-ORD-7K2M9Q4X-1', { fw: 700 }), T('ORD-7K2M9Q4X'), T('Tarjeta'), T('$112.100', { al: R, fw: 700 }), B('Rechazado', 'problema'), T('128734-1729…-38231', { color: '#5F554A' }), T('20 oct, 9:05 a. m.', { color: '#5F554A' })] },
+      { c: [T('REF-ORD-3F8W2N6B-1', { fw: 700 }), T('ORD-3F8W2N6B'), T('PSE'), T('$52.000', { al: R, fw: 700 }), B('Pendiente', 'curso'), T('128734-1729…-40112', { color: '#5F554A' }), T('20 oct, 8:47 a. m.', { color: '#5F554A' })] },
+      { c: [T('REF-ORD-6R2B8K1M-1', { fw: 700 }), T('ORD-6R2B8K1M'), T('Tarjeta'), T('$90.000', { al: R, fw: 700 }), B('Aprobado', 'hecho'), T('128734-1729…-39876', { color: '#5F554A' }), T('19 oct, 9:40 p. m.', { color: '#5F554A' })] },
+      { c: [T('REF-ORD-4H8T2W9C-1', { fw: 700 }), T('ORD-4H8T2W9C'), T('Bancolombia'), T('$64.000', { al: R, fw: 700 }), B('Aprobado', 'hecho'), T('128734-1729…-37003', { color: '#5F554A' }), T('18 oct, 7:52 p. m.', { color: '#5F554A' })] },
+      { c: [T('REF-ORD-8M4Q1Z7D-1', { fw: 700 }), T('ORD-8M4Q1Z7D'), T('Tarjeta'), T('$38.000', { al: R, fw: 700 }), B('Rechazado', 'problema'), T('128734-1729…-36540', { color: '#5F554A' }), T('18 oct, 9:02 a. m.', { color: '#5F554A' })] },
+      { c: [T('REF-ORD-1N5J8V2P-1', { fw: 700 }), T('ORD-1N5J8V2P'), T('Tarjeta'), T('$42.000', { al: R, fw: 700 }), B('Anulado', 'neutro'), T('128734-1729…-35911', { color: '#5F554A' }), T('17 oct, 3:30 p. m.', { color: '#5F554A' })] }
+    ]);
+    const re = armar([H('Pedido'), H('Motivo'), H('Monto', R), H('Estado'), H('Creado', 0, true), H('', R)], [
+      { fondo: '#FAF3E3', c: [T('ORD-4H8T2W9C', { fw: 700, sub: 'Andrea Salazar · Bancolombia' }), T('Pago tardío sin stock', { sub: 'Pagó 37 min después de vencer la reserva' }), T('$64.000', { al: R, fw: 800 }), B('Pendiente', 'accion'), T('18 oct, 7:52 p. m.', { color: '#5F554A' }), BTN('Marcar como reembolsado')] },
+      { c: [T('ORD-0W3K6T9B', { fw: 700, sub: 'Camilo Duarte · PSE' }), T('Pago duplicado'), T('$46.000', { al: R, fw: 800 }), B('Completado', 'hecho'), T('9 oct, 11:10 a. m.', { color: '#5F554A' }), T('Ref. 004512889', { al: R, color: '#5F554A' })] },
+      { c: [T('ORD-7Y1M4R8S', { fw: 700, sub: 'Lucía Peña · Tarjeta' }), T('Solicitud de la cliente'), T('$38.000', { al: R, fw: 800 }), B('Completado', 'hecho'), T('2 oct, 4:45 p. m.', { color: '#5F554A' }), T('Anulación de tarjeta', { al: R, color: '#5F554A' })] }
+    ]);
+    const li = armar([H('Fecha de pago'), H('Bruto', R), H('Comisión', R, true), H('IVA comisión', R, 2), H('Retenciones', R, true), H('Neto recibido', R), H('Registró', 0, true)], [
+      { c: [T('17 oct 2026', { fw: 700 }), T('$2.890.000', { al: R }), T('$95.370', { al: R }), T('$18.120', { al: R }), T('$30.200', { al: R, sub: 'Renta, IVA e ICA' }), T('$2.746.310', { al: R, fw: 800 }), T('Laura Ríos')] },
+      { c: [T('10 oct 2026', { fw: 700 }), T('$2.140.000', { al: R }), T('$70.620', { al: R }), T('$13.420', { al: R }), T('$22.360', { al: R, sub: 'Renta, IVA e ICA' }), T('$2.033.600', { al: R, fw: 800 }), T('Laura Ríos')] },
+      { c: [T('3 oct 2026', { fw: 700 }), T('$1.760.000', { al: R }), T('$58.080', { al: R }), T('$11.040', { al: R }), T('$18.390', { al: R, sub: 'Renta, IVA e ICA' }), T('$1.672.490', { al: R, fw: 800 }), T('Laura Ríos')] }
+    ]);
+    const tabSel = st.tab ?? (this.props.pestana ?? 'Transacciones');
+    const chip = (t, on) => ({ t, bg: on ? '#0F3B2C' : '#FFFFFF', fg: on ? '#FAF3E3' : '#1B1510', bd: on ? '#0F3B2C' : '#5F554A' });
+    const vistas = {
+      'Transacciones': { ...tx, nombre: 'Transacciones', desc: 'Cada intento de pago que llega de Wompi. Un pedido puede tener varios; solo uno queda aprobado.', chips: [chip('Estado ▾'), chip('Método ▾'), chip('Fecha: últimos 30 días', true)], pie: '1–7 de 236 transacciones', conAccion: false },
+      'Reembolsos': { ...re, nombre: 'Reembolsos', desc: 'Los pendientes van primero. Las tarjetas se anulan solas; las transferencias las haces tú y registras el comprobante.', chips: [chip('Pendientes primero', true), chip('Motivo ▾')], pie: '1–3 de 3 reembolsos', conAccion: false },
+      'Liquidaciones': { ...li, nombre: 'Liquidaciones', desc: 'Lo que Wompi te consigna, registrado a mano desde su reporte.', chips: [chip('Fecha: 2026', true)], pie: '1–3 de 12 liquidaciones', conAccion: true }
+    };
+    const vista = vistas[tabSel];
+    const tb = (t, n) => { const on = t === tabSel; return { t, n: n || '', sel: on ? 'true' : 'false', pick: () => this.setState({ tab: t }), bd: on ? '#1B1510' : 'transparent', fg: on ? '#1B1510' : '#5F554A', fw: on ? 800 : 600 }; };
+    const modo = st.modo ?? (this.props.panel ?? 'Ninguno');
+    return {
+      sb, alto: angosto ? '1300px' : '1200px', pad: ancho === '1440' ? '32px' : (ancho === '1024' ? '24px' : '20px'),
+      buscador: angosto ? 'Buscar' : 'Buscar pedido (ORD-…), producto o SKU', conNombre: !angosto,
+      tabs: [tb('Transacciones'), tb('Reembolsos', '1 pendiente'), tb('Liquidaciones')], vista,
+      hoja: { abierta: modo !== 'Ninguno', reembolso: modo === 'Marcar reembolsado', liquidacion: modo === 'Registrar liquidación', etiqueta: modo === 'Marcar reembolsado' ? 'Reembolso manual' : 'Reporte de Wompi', titulo: modo === 'Marcar reembolsado' ? 'Marcar como reembolsado' : 'Registrar liquidación', boton: modo === 'Marcar reembolsado' ? 'Marcar como reembolsado' : 'Guardar liquidación' },
+      camposLiq: [{ t: 'Fecha de pago', v: '17 oct 2026', al: 'left' }, { t: 'Referencia del reporte', v: 'LIQ-2026-1017', al: 'left' }, { t: 'Monto bruto', v: '$2.890.000', al: 'right' }, { t: 'Comisión', v: '$95.370', al: 'right' }, { t: 'IVA de la comisión', v: '$18.120', al: 'right' }, { t: 'Retención en la fuente', v: '$14.450', al: 'right' }, { t: 'Retención de IVA', v: '$7.230', al: 'right' }, { t: 'Retención de ICA', v: '$8.520', al: 'right' }],
+      abrirReembolso: () => this.setState({ modo: 'Marcar reembolsado' }), abrirLiq: () => this.setState({ modo: 'Registrar liquidación' }), cerrar: () => this.setState({ modo: 'Ninguno' }),
+      sheetAncho: angosto ? '100%' : '520px', sheetRadio: angosto ? '0' : '20px 0 0 20px'
+    };
+  }
+}
+</script>
+</body>
+</html>

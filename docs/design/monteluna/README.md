@@ -12,6 +12,7 @@ Export of the approved storefront visual direction, taken from the Claude Design
 | [design-system.md](design-system.md) | Tokens, typography, components, screens, and rules. Start here |
 | `canvas/` | Canvas sources: `canvas.json` (index) and one `.dc.html` file per artboard |
 | `assets/` | Images referenced by the artboards |
+| [admin/admin.md](admin/admin.md) | Admin panel (`/admin`) design: 45 artboards, layout and badge rules, proposals |
 
 ## About the canvas sources
 

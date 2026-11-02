@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Admin Monteluna · producto · tablet horizontal</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 2000px; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif">
+  <dc-import name="A-Producto" ancho="1024" pestana="{{pestana}}" producto="{{producto}}" hint-size="100%,2000px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"pestana":{"editor":"enum","options":["General","Atributos","Imágenes","Variantes"],"default":"Variantes"},"producto":{"editor":"enum","options":["Café · Finca El Mirador","Cacao · Chocolate 65 %"],"default":"Café · Finca El Mirador"},"$preview":{"width":1024,"height":2000}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { pestana: this.props.pestana ?? 'Variantes', producto: this.props.producto ?? 'Café · Finca El Mirador' };
+  }
+}
+</script>
+</body>
+</html>

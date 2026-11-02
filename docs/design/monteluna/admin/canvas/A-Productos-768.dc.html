@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Admin Monteluna · productos · tablet vertical</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 1400px; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif">
+  <dc-import name="A-Productos" ancho="768" estado="{{estado}}" panel="{{panel}}" hint-size="100%,1400px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"estado":{"editor":"enum","options":["Con datos","Cargando","Vacío","Sin resultados","Error"],"default":"Con datos"},"panel":{"editor":"enum","options":["Cerrado","Abierto"],"default":"Abierto"},"$preview":{"width":768,"height":1400}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { estado: this.props.estado ?? 'Con datos', panel: this.props.panel ?? 'Abierto' };
+  }
+}
+</script>
+</body>
+</html>

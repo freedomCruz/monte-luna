@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Admin Monteluna · inventario · tablet horizontal</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;500;600;700;800&amp;family=Barlow+Condensed:wght@600;700;800&amp;display=swap">
+<style>
+body{margin:0}
+</style>
+</helmet>
+<div style="width: 100%; min-height: 1600px; background: #FAF3E3; color: #1B1510; font-family: 'Barlow', sans-serif">
+  <dc-import name="A-Inventario" ancho="1024" hoja="{{hoja}}" hint-size="100%,1600px"></dc-import>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"hoja":{"editor":"enum","options":["Ninguna","Entrada de lote","Ajuste"],"default":"Ninguna"},"$preview":{"width":1024,"height":1600}}'>
+class Component extends DCLogic {
+  renderVals() {
+    return { hoja: this.props.hoja ?? 'Ninguna' };
+  }
+}
+</script>
+</body>
+</html>
