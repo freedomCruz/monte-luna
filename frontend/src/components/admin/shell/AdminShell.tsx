@@ -39,6 +39,8 @@ interface AdminShellProps {
   children: React.ReactNode;
   active?: AdminNavKey;
   requiredRole?: AdminRole;
+  /** Settings are read-only at 390 px per the approved admin responsive rules. */
+  desktopOnly?: boolean;
 }
 
 function AdminIcon({ kind }: { kind: AdminNavKey | 'account' }) {
@@ -92,8 +94,14 @@ function UserMenu({ user, onSignOut }: { user: AdminUser; onSignOut: () => void 
   );
 }
 
-function ShellFrame({ session, active, children, forbidden }: { session: AdminSession; active?: AdminNavKey; children: React.ReactNode; forbidden: boolean }) {
+function ShellFrame({ session, active, children, forbidden, desktopOnly }: { session: AdminSession; active?: AdminNavKey; children: React.ReactNode; forbidden: boolean; desktopOnly: boolean }) {
   const [expanded, setExpanded] = React.useState(() => typeof window !== 'undefined' && window.innerWidth >= 1440);
+  const [mobile, setMobile] = React.useState(() => typeof window !== 'undefined' && window.innerWidth <= 390);
+  React.useEffect(() => {
+    const update = () => setMobile(window.innerWidth <= 390);
+    window.addEventListener('resize', update);
+    return () => window.removeEventListener('resize', update);
+  }, []);
   const groups = navigationFor(session.user.role);
   const signOut = React.useCallback(async () => {
     await logout();
@@ -125,7 +133,15 @@ function ShellFrame({ session, active, children, forbidden }: { session: AdminSe
           <a href={ADMIN_ROUTES.account} className="flex items-center gap-2 text-primary-foreground no-underline min-[391px]:hidden"><span className="font-condensed text-2xl font-extrabold uppercase leading-none text-brand-yellow">Monteluna</span><span className="rounded-[6px] bg-brand-yellow px-1.5 py-0.5 font-condensed text-[11px] font-bold uppercase tracking-[0.08em] text-foreground">Admin</span></a>
           <UserMenu user={session.user} onSignOut={signOut} />
         </header>
-        {forbidden ? <NoAccessScreen section="Administradores" /> : <AdminSessionContext.Provider value={session}>{children}</AdminSessionContext.Provider>}
+        {forbidden ? <NoAccessScreen section="Administradores" /> : desktopOnly && mobile ? (
+          <main className="flex flex-1 items-start justify-center px-4 py-12">
+            <div className="flex max-w-md flex-col items-center gap-3 rounded-xl bg-secondary p-6 text-center">
+              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2" /><path d="M8 21h8M12 17v4" /></svg>
+              <h1 className="m-0 text-xl font-extrabold">Revísalo desde un computador o una tablet</h1>
+              <p className="m-0 text-sm leading-5 text-muted-foreground">En el celular el panel es de consulta. La cuenta y la configuración se administran en una pantalla más grande.</p>
+            </div>
+          </main>
+        ) : <AdminSessionContext.Provider value={session}>{children}</AdminSessionContext.Provider>}
         <nav aria-label="Secciones" className="surface-dark sticky bottom-0 z-40 grid bg-primary px-2 pb-2.5 pt-1.5 min-[391px]:hidden" style={{ gridTemplateColumns: `repeat(${session.user.role === 'owner' ? 2 : 1}, minmax(0, 1fr))` }}>
           <a href={ADMIN_ROUTES.account} className="flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-sm text-xs font-bold text-primary-foreground no-underline"><IconFrame kind="account" />Cuenta</a>
           {session.user.role === 'owner' && <a href={ADMIN_ROUTES.admins} aria-current={active === 'admins' ? 'page' : undefined} className={`flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-sm text-xs font-bold no-underline ${active === 'admins' ? 'bg-brand-yellow text-foreground' : 'text-primary-foreground'}`}><IconFrame kind="admins" />Administradores</a>}
@@ -135,7 +151,7 @@ function ShellFrame({ session, active, children, forbidden }: { session: AdminSe
   );
 }
 
-export function AdminShell({ children, active, requiredRole }: AdminShellProps) {
+export function AdminShell({ children, active, requiredRole, desktopOnly = false }: AdminShellProps) {
   const [session, setSession] = React.useState<AdminSession | null>(null);
   const [failed, setFailed] = React.useState(false);
   const [attempt, setAttempt] = React.useState(0);
@@ -159,5 +175,5 @@ export function AdminShell({ children, active, requiredRole }: AdminShellProps) 
   if (failed) return <div className="flex min-h-screen items-center justify-center bg-background p-4"><div role="alert" className="flex max-w-md flex-col items-center gap-4 rounded-xl border border-border bg-card p-8 text-center"><p className="m-0 text-lg font-bold">No pudimos comprobar tu sesión.</p><button type="button" onClick={() => setAttempt((value) => value + 1)} className="min-h-11 rounded-sm border-0 bg-primary px-4 font-sans font-bold text-primary-foreground">Reintentar</button></div></div>;
   if (!session) return <div className="flex min-h-screen items-center justify-center bg-background"><p role="status" className="font-bold text-muted-foreground">Comprobando tu sesión…</p></div>;
 
-  return <ShellFrame session={session} active={active} forbidden={requiredRole !== undefined && session.user.role !== requiredRole}>{children}</ShellFrame>;
+  return <ShellFrame session={session} active={active} forbidden={requiredRole !== undefined && session.user.role !== requiredRole} desktopOnly={desktopOnly}>{children}</ShellFrame>;
 }
