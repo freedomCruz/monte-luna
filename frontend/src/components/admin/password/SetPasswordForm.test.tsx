@@ -1,3 +1,4 @@
+import { StrictMode } from 'react';
 import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { ADMIN_ROUTES } from '../../../lib/admin/navigation';
@@ -42,7 +43,7 @@ describe('SetPasswordForm (T5: S1, S2, S3, S4)', () => {
     const replaceStateSpy = vi.spyOn(window.history, 'replaceState');
     window.location.hash = '#token=valid-test-token-1234';
 
-    render(<SetPasswordForm mode="reset" />);
+    render(<StrictMode><SetPasswordForm mode="reset" /></StrictMode>);
 
     expect(replaceStateSpy).toHaveBeenCalledTimes(1);
     expect(replaceStateSpy).toHaveBeenCalledWith(null, '', window.location.pathname + window.location.search);

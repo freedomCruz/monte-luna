@@ -10,12 +10,16 @@ export interface SetPasswordFormProps {
 }
 
 export function SetPasswordForm({ mode = 'reset', initialToken }: SetPasswordFormProps) {
-  // Read token from fragment and remove it from the address bar immediately (S4).
-  // Retained only in React component state in memory; never persisted in storage or logs.
-  const [token] = React.useState<string | null>(() => {
-    if (initialToken !== undefined) return initialToken;
-    return extractAndClearToken();
-  });
+  // Read once after mount so React Strict Mode cannot consume and discard the
+  // fragment during its development double-render. The token remains in memory only.
+  const extraction = React.useRef(false);
+  const [token, setToken] = React.useState<string | null | undefined>(initialToken);
+  const [tokenRejected, setTokenRejected] = React.useState(false);
+  React.useEffect(() => {
+    if (initialToken !== undefined || extraction.current) return;
+    extraction.current = true;
+    setToken(extractAndClearToken());
+  }, [initialToken]);
 
   const [password, setPassword] = React.useState('');
   const [repeatPassword, setRepeatPassword] = React.useState('');
@@ -24,7 +28,6 @@ export function SetPasswordForm({ mode = 'reset', initialToken }: SetPasswordFor
   const [loading, setLoading] = React.useState(false);
   const [errorMessage, setErrorMessage] = React.useState<string | null>(null);
   const [isSuccess, setIsSuccess] = React.useState(false);
-  const [isTokenInvalid, setIsTokenInvalid] = React.useState(() => !token);
 
   // S2: enforce strictly 12 to 128 Unicode code points
   const isLengthValid = validatePasswordLength(password);
@@ -32,7 +35,7 @@ export function SetPasswordForm({ mode = 'reset', initialToken }: SetPasswordFor
   const handleSubmit = async (e: React.SyntheticEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (!token) {
-      setIsTokenInvalid(true);
+      setTokenRejected(true);
       return;
     }
 
@@ -56,7 +59,7 @@ export function SetPasswordForm({ mode = 'reset', initialToken }: SetPasswordFor
       setIsSuccess(true);
     } else {
       if (res.code === 'invalid_reset_token' || res.status === 422) {
-        setIsTokenInvalid(true);
+        setTokenRejected(true);
       } else if (res.code === 'rate_limited') {
         setErrorMessage('Demasiados intentos. Por favor espera unos minutos antes de intentar de nuevo.');
       } else if (res.code === 'network_error') {
@@ -67,8 +70,12 @@ export function SetPasswordForm({ mode = 'reset', initialToken }: SetPasswordFor
     }
   };
 
+  if (token === undefined) {
+    return <PasswordCardFrame><p role="status" className="m-0 font-bold text-muted-foreground">Comprobando el enlace…</p></PasswordCardFrame>;
+  }
+
   // State: Token invalid or expired (vencido)
-  if (isTokenInvalid) {
+  if (token === null || tokenRejected) {
     return (
       <PasswordCardFrame>
         <span className="inline-flex size-14 items-center justify-center rounded-full bg-secondary">
