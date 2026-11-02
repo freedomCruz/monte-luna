@@ -212,14 +212,19 @@ describe('Admin identity client (T1: S1, S4)', () => {
       expect(init.body).toBe(JSON.stringify({ status: 'disabled' }));
     });
 
-    it("resetAdminUserTotp sends If-Match and no body", async () => {
-      await resetAdminUserTotp('id-1', '"4"');
+    it("resetAdminUserTotp sends If-Match and the owner's reauthentication proof", async () => {
+      const body = { current_password: 'correct horse battery', second_factor: { totp_code: '123456' } };
+      await resetAdminUserTotp('id-1', '"4"', body);
 
       const { url, init } = lastCall();
       expect(url).toBe('/api/v1/admin/users/id-1/totp/reset');
       expect(init.method).toBe('POST');
-      expect(init.headers).toEqual({ Accept: 'application/json, application/problem+json', 'If-Match': '"4"' });
-      expect(init.body).toBeUndefined();
+      expect(init.headers).toEqual({
+        Accept: 'application/json, application/problem+json',
+        'Content-Type': 'application/json',
+        'If-Match': '"4"',
+      });
+      expect(init.body).toBe(JSON.stringify(body));
     });
   });
 });
