@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { AdminNoAccess } from '../../components/admin/shell/AdminNoAccess';
+---
+
+<AdminLayout title="Sin acceso · Admin Monteluna">
+  <AdminNoAccess client:load />
+</AdminLayout>
