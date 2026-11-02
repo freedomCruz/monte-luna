@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { RequestPasswordResetForm } from '../../components/admin/password/RequestPasswordResetForm';
+---
+
+<AdminLayout title="Recuperar contraseña · Admin Monteluna">
+  <RequestPasswordResetForm client:load />
+</AdminLayout>

@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { SetPasswordForm } from '../../components/admin/password/SetPasswordForm';
+---
+
+<AdminLayout title="Invitación · Admin Monteluna">
+  <SetPasswordForm client:load mode="invitation" />
+</AdminLayout>
