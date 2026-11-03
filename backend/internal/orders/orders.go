@@ -24,6 +24,7 @@ type Module struct {
 	repository  *postgres.Repository
 	inventory   domain.ReallocationPort
 	clock       domain.Clock
+	adminReads  *app.AdminReads
 }
 type CatalogReader = adapters.CatalogReader
 
