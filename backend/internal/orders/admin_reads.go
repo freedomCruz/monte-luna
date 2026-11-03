@@ -14,6 +14,7 @@ type AdminPaymentAttempt = domain.AdminPaymentAttempt
 type AdminShipment = domain.AdminShipment
 type AdminOrder = domain.AdminOrder
 type AdminOrderPage = domain.AdminOrderPage
+type AdminMetrics = domain.AdminMetrics
 type AdminPaymentsPort = domain.AdminPaymentsPort
 type AdminImagesPort = domain.AdminImagesPort
 type AdminShipmentsPort = domain.AdminShipmentsPort
@@ -31,6 +32,12 @@ func (m *Module) ListAdminOrders(ctx context.Context, values map[string][]string
 		return AdminOrderPage{}, errors.New("orders admin reads not configured")
 	}
 	return m.adminReads.List(ctx, values)
+}
+func (m *Module) AdminMetrics(ctx context.Context, values map[string][]string, role string) (AdminMetrics, error) {
+	if m.adminReads == nil {
+		return AdminMetrics{}, errors.New("orders admin reads not configured")
+	}
+	return m.adminReads.Metrics(ctx, values, role)
 }
 func (m *Module) AdminOrder(ctx context.Context, id string) (AdminOrder, error) {
 	if m.adminReads == nil {

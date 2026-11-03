@@ -119,11 +119,13 @@ type AdminFilter struct {
 	Limit             int
 	Cursor            string
 	Fingerprint       string
+	MaxRows           int `json:"-"` // Internal latest-orders cap, never a public query field.
 }
 type AdminReadRepository interface {
 	ScanAdminRows(context.Context, AdminFilter, func([]AdminOrderRow) error) error
 	ReadAdminOrder(context.Context, string) (AdminOrder, error)
 	AdminAttention(context.Context) (int64, *time.Time, error)
+	ScanAdminPaid(context.Context, time.Time, time.Time, func(PaidOrder) error) error
 }
 type AdminPaymentsPort interface {
 	AdminPayments(context.Context, []string) (map[string]AdminPaymentSummary, error)

@@ -23,7 +23,7 @@ func (r *Repository) ScanAdminRows(ctx context.Context, f domain.AdminFilter, vi
  AND (COALESCE(cardinality($2::text[]),0)=0 OR o.status=ANY($2::text[]))
  AND ($3::timestamptz IS NULL OR o.placed_at >= $3) AND ($4::timestamptz IS NULL OR o.placed_at < $4)
  AND (NOT $5::boolean OR o.status IN ('paid','preparing'))
- ORDER BY o.placed_at `+direction+`,o.id `+direction, f.Search, f.Statuses, f.From, f.To, f.Pending)
+ ORDER BY o.placed_at `+direction+`,o.id `+direction+` LIMIT NULLIF($6::integer,0)`, f.Search, f.Statuses, f.From, f.To, f.Pending, f.MaxRows)
 	if err != nil {
 		return err
 	}
