@@ -86,7 +86,8 @@ Canonical requirements and data model for the `orders` module. Conventions in [d
   - `delivered` and `cancelled` are strictly terminal; no transitions are permitted from them.
   - `expired` is terminal under ordinary operations, but transitions to `paid` or `cancelled` exclusively through the late-payment post-expiry resolution flow.
 - Every status transition is validated in the Go domain and recorded in `order_status_history`.
-- Status `shipped` is set when `shipping` publishes `shipping.shipment_shipped`.
+- Status `shipped` is set when `shipping` publishes `shipping.shipment_shipped`. If the order is still `paid`, the consumer records `paid` → `preparing` → `shipped` in one transaction, with both history entries attributed to the dispatching admin (approved 2026-11-03).
+- Status `delivered` is set by an admin from `shipped` and publishes `orders.order_delivered` (approved 2026-11-03).
 
 **Discount calculation and line allocation**
 - If a promotional coupon is applied at checkout:
@@ -138,6 +139,9 @@ orders ✎ ──< order_lines ──< order_line_lot_allocations
 | `shipping_rate_name` | `text` | Not null; snapshot of applied shipping rate name |
 | `shipping_estimated_days_min` | `integer` | Not null; snapshot of the rate's minimum delivery days; `CHECK (shipping_estimated_days_min >= 1)` |
 | `shipping_estimated_days_max` | `integer` | Not null; snapshot of the rate's maximum delivery days; `CHECK (shipping_estimated_days_max >= shipping_estimated_days_min)` |
+| `shipping_zone_name` | `text` | Nullable; snapshot of the resolved shipping zone name; null for orders placed before 2026-11-03 (approved 2026-11-03) |
+| `shipping_min_weight_grams` | `integer` | Nullable; snapshot of the applied rate's lower weight bound; null for orders placed before 2026-11-03 |
+| `shipping_max_weight_grams` | `integer` | Nullable; snapshot of the applied rate's upper weight bound; null means open upper bound when `shipping_min_weight_grams` is set |
 | `shipping_is_free_shipping` | `boolean` | Not null, default `false`; snapshot of whether the rate's free-shipping threshold was reached (distinguishes threshold-free shipping from a zero-price rate) |
 | `customer_email` | `text` | Not null; `CHECK (customer_email = lower(customer_email))` |
 | `customer_name` | `text` | Not null |
@@ -244,6 +248,9 @@ Outbox table and consumer tracking follow [data-modeling.md](../architecture/dat
   - Consumers: `catalog` (release stock if unpaid), `payments` (trigger refund if paid), `notifications` (cancellation notice).
 - **`orders.order_shipped`**: Published when order transitions to `shipped` following shipment dispatch.
   - Attributes: `order_id`, `order_number`, `customer_email`, `shipped_at`.
+- **`orders.order_delivered`**: Published when an admin marks a `shipped` order as `delivered`.
+  - Attributes: `order_id`, `order_number`, `delivered_at`, `actor_id`.
+  - Consumers: `shipping` (mark the shipment delivered).
 
 ### 3.7 `idempotency_keys`
 
