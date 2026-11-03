@@ -1,0 +1,11 @@
+Hola {{.DisplayName}},
+
+Tu pedido {{.OrderNumber}} ya va en camino.
+
+Transportadora: {{.CarrierName}}
+{{with .TrackingNumber}}Número de guía: {{.}}
+{{end}}{{with .TrackingURL}}
+Seguir mi envío
+{{.}}
+{{end}}
+Gracias por comprar en Monteluna.

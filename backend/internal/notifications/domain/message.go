@@ -15,6 +15,7 @@ import (
 type TemplateData struct {
 	AdminUserID string `json:"admin_user_id,omitempty"`
 	DisplayName string `json:"display_name,omitempty"`
+	OrderID     string `json:"order_id,omitempty"`
 }
 
 type Intake struct {
@@ -40,10 +41,15 @@ func (in Intake) Validate() error {
 	if !validUUID(in.SourceEventID) || !ValidEmail(in.RecipientEmail) || !regexp.MustCompile(`^[a-z][a-z0-9_]*$`).MatchString(in.TemplateKey) {
 		return ErrInvalidIntake
 	}
-	if in.EventType != "identity.password_reset_requested" && in.EventType != "identity.admin_invited" {
+	switch in.EventType {
+	case "identity.password_reset_requested", "identity.admin_invited", "shipping.shipment_shipped", "orders.order_cancelled":
+	default:
 		return ErrInvalidIntake
 	}
 	if in.TemplateData.AdminUserID != "" && !validUUID(in.TemplateData.AdminUserID) {
+		return ErrInvalidIntake
+	}
+	if in.TemplateData.OrderID != "" && !ValidOrderID(in.TemplateData.OrderID) {
 		return ErrInvalidIntake
 	}
 	return nil

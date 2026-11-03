@@ -12,7 +12,11 @@ type Event struct {
 }
 
 // TemplateView is ephemeral and must never be passed to a persistence adapter.
-type TemplateView struct{ DisplayName, Role, ActionURL string }
+// Order fields are empty for Identity templates; optional ones stay empty when absent.
+type TemplateView struct {
+	DisplayName, Role, ActionURL                                  string
+	OrderNumber, CarrierName, TrackingNumber, TrackingURL, Reason string
+}
 
 // Email holds rendered secret-bearing content only for the duration of delivery
 // or in a process-local capture. It must never be persisted or logged.
