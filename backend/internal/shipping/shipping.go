@@ -1,5 +1,5 @@
 // Package shipping is the module's only public, in-process surface.
-// No shipping HTTP routes are exposed in this wave.
+// Quote resolution and administrative fulfillment share this public facade.
 package shipping
 
 import (
@@ -29,6 +29,7 @@ type Module struct {
 	pool      *pgxpool.Pool
 	service   *app.Service
 	reference *domain.Reference
+	dispatch  *app.Dispatch
 }
 
 var _ QuotePort = (*Module)(nil)
