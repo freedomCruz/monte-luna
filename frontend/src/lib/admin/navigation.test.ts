@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ADMIN_LANDING, ADMIN_ROUTES, navigationFor, roleLabel, initialsOf } from './navigation';
+import { ADMIN_LANDING, ADMIN_ROUTES, navigationFor, orderDetailHref, roleLabel, initialsOf } from './navigation';
 
 const INICIO = { key: 'home', title: 'Inicio', href: '/admin/' };
 const PEDIDOS = { key: 'orders', title: 'Pedidos', href: '/admin/pedidos/' };
@@ -38,6 +38,10 @@ describe('Admin navigation (T2, T8: S3, S4; F1: S1)', () => {
     expect(pedidos({ pendingDispatchCount: 0 })).toEqual(PEDIDOS);
     expect(pedidos({ pendingDispatchCount: null })).toEqual(PEDIDOS);
     expect(pedidos()).toEqual(PEDIDOS);
+  });
+
+  it('links an order to its detail screen through the query string', () => {
+    expect(orderDetailHref('01900000-0000-7000-8000-0000000001a1')).toBe('/admin/pedido/?id=01900000-0000-7000-8000-0000000001a1');
   });
 
   it('labels roles with the A-Admins legend', () => {
