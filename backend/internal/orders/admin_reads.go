@@ -25,6 +25,7 @@ func (m *Module) EnableAdminReads(p AdminPaymentsPort, i AdminImagesPort, s Admi
 		return errors.New("orders admin read dependencies are required")
 	}
 	m.adminReads = app.NewAdminReads(m.repository, p, i, s, m.clock.Now)
+	m.shipments = s
 	return nil
 }
 func (m *Module) ListAdminOrders(ctx context.Context, values map[string][]string) (AdminOrderPage, error) {
