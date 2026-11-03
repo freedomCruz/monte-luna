@@ -1,7 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AdminUser } from '../../../lib/admin/client';
-import { AdminShell, sessionDestination, useAdminSession, useReportPendingDispatchCount } from './AdminShell';
+import { AdminShell, sessionDestination, useAdminSession, useMobileDetailHeader, useReportPendingDispatchCount } from './AdminShell';
 
 const { getCurrentAdmin, logout, listAdminOrders } = vi.hoisted(() => ({
   getCurrentAdmin: vi.fn(),
@@ -162,5 +162,27 @@ describe('AdminShell session guard (T2/T8: S3, S4)', () => {
     await screen.findByRole('link', { name: 'Pedidos, 6 pendientes' });
     fireEvent.click(screen.getByRole('button', { name: 'Reportar' }));
     expect(await screen.findByRole('link', { name: 'Pedidos, 2 pendientes' })).toBeTruthy();
+  });
+
+  it('swaps the 390 px header for a back link and title and hides the section bar on detail screens (A-Pedido-390)', async () => {
+    getCurrentAdmin.mockResolvedValue({ ok: true, data: owner, etag: '"1"' });
+    function Detail() {
+      useMobileDetailHeader({ title: 'ORD-7K2M9Q4X', backHref: '/admin/pedidos/', backLabel: 'Volver a pedidos' });
+      return <p>Detalle</p>;
+    }
+    const { unmount } = render(<AdminShell active="orders"><Detail /></AdminShell>);
+    await screen.findByText('Detalle');
+    expect(screen.getByRole('link', { name: 'Volver a pedidos' }).getAttribute('href')).toBe('/admin/pedidos/');
+    expect(screen.getByText('ORD-7K2M9Q4X')).toBeTruthy();
+    expect(screen.queryByRole('navigation', { name: 'Secciones' })).toBeNull();
+    unmount();
+  });
+
+  it('keeps the standard mobile header and section bar when no screen asks for the detail header', async () => {
+    getCurrentAdmin.mockResolvedValue({ ok: true, data: owner, etag: '"1"' });
+    render(<AdminShell><SessionProbe /></AdminShell>);
+    await screen.findByText('Contenido privado de Laura Ríos');
+    expect(screen.getByRole('navigation', { name: 'Secciones' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'Volver a pedidos' })).toBeNull();
   });
 });
