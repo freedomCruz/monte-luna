@@ -74,6 +74,9 @@ func run(logger *slog.Logger) error {
 	if err := ship.EnableFulfillment(shipmentOrders{checkout}, time.Now); err != nil {
 		return err
 	}
+	if err := checkout.EnableAdminReads(adminOrderPayments{payment}, module, adminOrderShipments{ship}); err != nil {
+		return err
+	}
 	notify, err := notifications.New(ctx, cfg.databaseURL, cfg.notifications, logger, notifications.Options{})
 	if err != nil {
 		return err
@@ -134,6 +137,9 @@ func run(logger *slog.Logger) error {
 	checkout.RegisterRoutes(mux)
 	payment.RegisterRoutes(mux)
 	admins.RegisterRoutes(mux)
+	if err := checkout.RegisterAdminReadRoutes(mux, admins.Access(), admins.LoadAdminSession); err != nil {
+		return err
+	}
 	if err := ship.RegisterAdminRoutes(mux, admins.Access(), admins.LoadAdminSession); err != nil {
 		return err
 	}
