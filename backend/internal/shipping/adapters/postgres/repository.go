@@ -39,7 +39,7 @@ func listRates(ctx context.Context, q *shippingsql.Queries, zone string) ([]doma
 	}
 	rates := make([]domain.Rate, 0, len(rows))
 	for _, row := range rows {
-		rates = append(rates, domain.Rate{ID: row.ID, ZoneID: row.ZoneID, Name: row.Name, Currency: row.Currency, PriceAmount: row.PriceAmount, MinWeightGrams: row.MinWeightGrams, MaxWeightGrams: row.MaxWeightGrams, FreeShippingThresholdAmount: row.FreeShippingThresholdAmount, EstimatedDaysMin: row.EstimatedDaysMin, EstimatedDaysMax: row.EstimatedDaysMax, Status: row.Status})
+		rates = append(rates, domain.Rate{ZoneName: row.ZoneName, ID: row.ID, ZoneID: row.ZoneID, Name: row.Name, Currency: row.Currency, PriceAmount: row.PriceAmount, MinWeightGrams: row.MinWeightGrams, MaxWeightGrams: row.MaxWeightGrams, FreeShippingThresholdAmount: row.FreeShippingThresholdAmount, EstimatedDaysMin: row.EstimatedDaysMin, EstimatedDaysMax: row.EstimatedDaysMax, Status: row.Status})
 	}
 	return rates, nil
 }

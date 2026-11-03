@@ -7,6 +7,8 @@ package shippingsql
 
 import (
 	"context"
+
+	"github.com/jackc/pgx/v5/pgtype"
 )
 
 const findZone = `-- name: FindZone :one
@@ -82,18 +84,38 @@ func (q *Queries) InsertRate(ctx context.Context, arg InsertRateParams) (string,
 }
 
 const listRates = `-- name: ListRates :many
-SELECT id, zone_id, name, price_amount, currency, min_weight_grams, max_weight_grams, free_shipping_threshold_amount, estimated_days_min, estimated_days_max, status, version, created_at, updated_at FROM shipping.shipping_rates WHERE zone_id = $1 ORDER BY min_weight_grams, id
+SELECT r.id, r.zone_id, r.name, r.price_amount, r.currency, r.min_weight_grams, r.max_weight_grams, r.free_shipping_threshold_amount, r.estimated_days_min, r.estimated_days_max, r.status, r.version, r.created_at, r.updated_at, z.name AS zone_name FROM shipping.shipping_rates r
+JOIN shipping.shipping_zones z ON z.id=r.zone_id
+WHERE r.zone_id = $1 ORDER BY r.min_weight_grams, r.id
 `
 
-func (q *Queries) ListRates(ctx context.Context, zoneID string) ([]ShippingShippingRate, error) {
+type ListRatesRow struct {
+	ID                          string
+	ZoneID                      string
+	Name                        string
+	PriceAmount                 int64
+	Currency                    string
+	MinWeightGrams              int32
+	MaxWeightGrams              *int32
+	FreeShippingThresholdAmount *int64
+	EstimatedDaysMin            int32
+	EstimatedDaysMax            int32
+	Status                      string
+	Version                     int32
+	CreatedAt                   pgtype.Timestamptz
+	UpdatedAt                   pgtype.Timestamptz
+	ZoneName                    string
+}
+
+func (q *Queries) ListRates(ctx context.Context, zoneID string) ([]ListRatesRow, error) {
 	rows, err := q.db.Query(ctx, listRates, zoneID)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	items := []ShippingShippingRate{}
+	items := []ListRatesRow{}
 	for rows.Next() {
-		var i ShippingShippingRate
+		var i ListRatesRow
 		if err := rows.Scan(
 			&i.ID,
 			&i.ZoneID,
@@ -109,6 +131,7 @@ func (q *Queries) ListRates(ctx context.Context, zoneID string) ([]ShippingShipp
 			&i.Version,
 			&i.CreatedAt,
 			&i.UpdatedAt,
+			&i.ZoneName,
 		); err != nil {
 			return nil, err
 		}

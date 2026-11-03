@@ -49,6 +49,9 @@ type OrdersOrder struct {
 	CreatedAt                pgtype.Timestamptz
 	UpdatedAt                pgtype.Timestamptz
 	ShippingIsFreeShipping   bool
+	ShippingZoneName         *string
+	ShippingMinWeightGrams   *int32
+	ShippingMaxWeightGrams   *int32
 }
 
 type OrdersOrderLine struct {

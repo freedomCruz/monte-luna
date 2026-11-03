@@ -98,6 +98,9 @@ func (g Gateways) ShippingQuote(ctx context.Context, code string, weight int32, 
 	}
 	return domain.QuoteShipping{
 		Shipping: domain.Shipping{
+			ZoneName:         &quote.ZoneName,
+			MinWeightGrams:   &quote.MinWeightGrams,
+			MaxWeightGrams:   quote.MaxWeightGrams,
 			RateName:         quote.RateName,
 			Amount:           quote.Amount,
 			IsFreeShipping:   quote.FreeShipping,

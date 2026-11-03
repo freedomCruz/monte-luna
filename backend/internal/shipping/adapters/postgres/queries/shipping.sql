@@ -8,7 +8,9 @@ ORDER BY (a.municipality_code IS NOT NULL) DESC
 LIMIT 1;
 
 -- name: ListRates :many
-SELECT * FROM shipping.shipping_rates WHERE zone_id = $1 ORDER BY min_weight_grams, id;
+SELECT r.*, z.name AS zone_name FROM shipping.shipping_rates r
+JOIN shipping.shipping_zones z ON z.id=r.zone_id
+WHERE r.zone_id = $1 ORDER BY r.min_weight_grams, r.id;
 
 -- name: InsertArea :exec
 INSERT INTO shipping.shipping_zone_areas (zone_id, department_code, municipality_code)

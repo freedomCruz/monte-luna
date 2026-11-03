@@ -84,11 +84,14 @@ type Variant struct {
 	AvailableStock                                              int64
 }
 type Shipping struct {
-	RateName         string `json:"rate_name"`
-	Amount           int64  `json:"shipping_amount"`
-	IsFreeShipping   bool   `json:"is_free_shipping"`
-	EstimatedDaysMin int32  `json:"estimated_days_min"`
-	EstimatedDaysMax int32  `json:"estimated_days_max"`
+	ZoneName         *string `json:"-"`
+	MinWeightGrams   *int32  `json:"-"`
+	MaxWeightGrams   *int32  `json:"-"`
+	RateName         string  `json:"rate_name"`
+	Amount           int64   `json:"shipping_amount"`
+	IsFreeShipping   bool    `json:"is_free_shipping"`
+	EstimatedDaysMin int32   `json:"estimated_days_min"`
+	EstimatedDaysMax int32   `json:"estimated_days_max"`
 }
 type QuoteShipping struct {
 	Shipping

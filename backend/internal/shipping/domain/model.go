@@ -26,6 +26,9 @@ type QuoteInput struct {
 	OrderSubtotal    int64
 }
 type Quote struct {
+	ZoneName         string
+	MinWeightGrams   int32
+	MaxWeightGrams   *int32
 	RateName         string
 	Amount           int64
 	RegularAmount    int64
@@ -35,6 +38,7 @@ type Quote struct {
 	EstimatedDaysMax int32
 }
 type Rate struct {
+	ZoneName                           string
 	ID, ZoneID, Name, Currency, Status string
 	PriceAmount                        int64
 	MinWeightGrams                     int32
@@ -80,7 +84,7 @@ func ResolveRate(rates []Rate, weight int32, subtotal int64) (Quote, error) {
 		if free {
 			amount = 0
 		}
-		return Quote{RateName: rate.Name, Amount: amount, RegularAmount: rate.PriceAmount, Currency: rate.Currency, FreeShipping: free, EstimatedDaysMin: rate.EstimatedDaysMin, EstimatedDaysMax: rate.EstimatedDaysMax}, nil
+		return Quote{ZoneName: rate.ZoneName, MinWeightGrams: rate.MinWeightGrams, MaxWeightGrams: rate.MaxWeightGrams, RateName: rate.Name, Amount: amount, RegularAmount: rate.PriceAmount, Currency: rate.Currency, FreeShipping: free, EstimatedDaysMin: rate.EstimatedDaysMin, EstimatedDaysMax: rate.EstimatedDaysMax}, nil
 	}
 	return Quote{}, &UnsupportedDestinationError{}
 }
