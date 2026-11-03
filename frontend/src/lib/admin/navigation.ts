@@ -90,3 +90,8 @@ export function initialsOf(displayName: string): string {
   const last = words.length > 1 ? words[words.length - 1][0] : '';
   return (first + last).toUpperCase();
 }
+
+/** Order detail. The site is static, so the order id travels in the query string. */
+export function orderDetailHref(id: string): string {
+  return `/admin/pedido/?id=${encodeURIComponent(id)}`;
+}
