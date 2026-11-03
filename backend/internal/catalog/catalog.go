@@ -19,8 +19,9 @@ import (
 )
 
 type Module struct {
-	pool *pgxpool.Pool
-	http *adapters.HTTP
+	pool  *pgxpool.Pool
+	http  *adapters.HTTP
+	media *adapters.Media
 }
 
 func ValidateDatabaseURL(value string) error {
@@ -55,7 +56,7 @@ func New(ctx context.Context, databaseURL, mediaBaseURL string, logger *slog.Log
 		logger = slog.Default()
 	}
 	service := app.NewService(postgres.NewRepository(pool), media)
-	return &Module{pool: pool, http: adapters.NewHTTP(service, logger)}, nil
+	return &Module{pool: pool, http: adapters.NewHTTP(service, logger), media: media}, nil
 }
 
 type CheckoutVariant = domain.CheckoutVariant
