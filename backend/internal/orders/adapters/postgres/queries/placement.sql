@@ -13,8 +13,8 @@ SELECT uuidv7()::uuid;
 -- name: InsertOrder :exec
 INSERT INTO orders.orders(id,order_number,status,subtotal_amount,shipping_amount,tax_amount,total_amount,
 shipping_rate_name,shipping_estimated_days_min,shipping_estimated_days_max,customer_email,customer_name,customer_phone,
-buyer_person_type,buyer_document_type,buyer_document_number,fiscal_profile_snapshot,tracking_token_hash,reservation_expires_at,placed_at,shipping_is_free_shipping)
-VALUES($1,$2,'pending_payment',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20);
+buyer_person_type,buyer_document_type,buyer_document_number,fiscal_profile_snapshot,tracking_token_hash,reservation_expires_at,placed_at,shipping_is_free_shipping,shipping_zone_name,shipping_min_weight_grams,shipping_max_weight_grams)
+VALUES($1,$2,'pending_payment',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23);
 
 -- name: InsertOrderLine :one
 INSERT INTO orders.order_lines(order_id,product_id,variant_id,sku,product_slug,product_title,variant_label,unit_price_amount,quantity,
