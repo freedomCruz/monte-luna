@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/freedomCruz/monte-luna/backend/internal/notifications"
 	"github.com/freedomCruz/monte-luna/backend/internal/orders"
 	"github.com/freedomCruz/monte-luna/backend/internal/payments"
 	"github.com/freedomCruz/monte-luna/backend/internal/shipping"
@@ -44,4 +45,16 @@ func (p adminOrderShipments) Shipment(ctx context.Context, id string) (*orders.A
 	}
 	out := orders.AdminShipment(*row)
 	return &out, nil
+}
+
+// orderContacts gives notifications the customer contact through the orders
+// public facade, without notifications importing orders.
+type orderContacts struct{ module *orders.Module }
+
+func (p orderContacts) OrderContact(ctx context.Context, id string) (notifications.OrderContact, error) {
+	notice, err := p.module.OrderNotice(ctx, id)
+	if err != nil {
+		return notifications.OrderContact{}, err
+	}
+	return notifications.OrderContact(notice), nil
 }

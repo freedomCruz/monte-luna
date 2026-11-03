@@ -111,6 +111,15 @@ func run(logger *slog.Logger) error {
 	relay.Subscribe("shipping.shipment_shipped", checkout.HandleShipmentShipped)
 	relay.Subscribe("identity.password_reset_requested", notifyConsumer)
 	relay.Subscribe("identity.admin_invited", notifyConsumer)
+	// The relay stops at the first failing consumer of an event, so customer
+	// emails subscribe after the business consumers: an email outage only
+	// retries the (idempotent) chain and never delays a refund or order update.
+	orderEmails, err := notify.OrderConsumer(orderContacts{checkout})
+	if err != nil {
+		return err
+	}
+	relay.Subscribe("shipping.shipment_shipped", orderEmails)
+	relay.Subscribe("orders.order_cancelled", orderEmails)
 	relayCtx, cancelRelay := context.WithCancel(ctx)
 	relayDone := make(chan struct{})
 	go func() { defer close(relayDone); relay.Run(relayCtx) }()
@@ -182,10 +191,10 @@ func run(logger *slog.Logger) error {
 	return nil
 }
 
-// outboxSchemas lists every module outbox the relay drains. The orders
-// shipment_shipped subscriber exists (B3); add shipping only together with the
-// notifications subscriber (B4) so no dispatch email is silently skipped.
-var outboxSchemas = []string{"catalog", "orders", "payments", "identity"}
+// outboxSchemas lists every module outbox the relay drains. Every event type
+// a module publishes must have its subscribers registered before its schema is
+// listed: the relay marks events without subscribers delivered.
+var outboxSchemas = []string{"catalog", "orders", "payments", "identity", "shipping"}
 
 type config struct {
 	addr, databaseURL, mediaBaseURL string
