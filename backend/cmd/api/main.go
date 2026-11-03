@@ -108,6 +108,7 @@ func run(logger *slog.Logger) error {
 	relay.Subscribe("orders.order_cancelled", payment.HandleOrderCancelled)
 	relay.Subscribe("orders.order_paid", ship.HandleOrderPaid)
 	relay.Subscribe("orders.order_delivered", ship.HandleOrderDelivered)
+	relay.Subscribe("shipping.shipment_shipped", checkout.HandleShipmentShipped)
 	relay.Subscribe("identity.password_reset_requested", notifyConsumer)
 	relay.Subscribe("identity.admin_invited", notifyConsumer)
 	relayCtx, cancelRelay := context.WithCancel(ctx)
@@ -138,6 +139,9 @@ func run(logger *slog.Logger) error {
 	payment.RegisterRoutes(mux)
 	admins.RegisterRoutes(mux)
 	if err := checkout.RegisterAdminReadRoutes(mux, admins.Access(), admins.LoadAdminSession); err != nil {
+		return err
+	}
+	if err := checkout.RegisterAdminWriteRoutes(mux, admins.Access(), admins.LoadAdminSession); err != nil {
 		return err
 	}
 	if err := ship.RegisterAdminRoutes(mux, admins.Access(), admins.LoadAdminSession); err != nil {
@@ -178,9 +182,9 @@ func run(logger *slog.Logger) error {
 	return nil
 }
 
-// outboxSchemas lists every module outbox the relay drains. Add shipping only
-// together with its shipment_shipped subscribers (B3/B4), never drain and mark
-// dispatch events delivered before those consumers exist.
+// outboxSchemas lists every module outbox the relay drains. The orders
+// shipment_shipped subscriber exists (B3); add shipping only together with the
+// notifications subscriber (B4) so no dispatch email is silently skipped.
 var outboxSchemas = []string{"catalog", "orders", "payments", "identity"}
 
 type config struct {
