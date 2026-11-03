@@ -35,3 +35,23 @@ function calendarDay(date: string): string {
 export function formatRangeLabel(from: string, to: string): string {
   return `${calendarDay(from)} – ${calendarDay(to)}`;
 }
+
+const DATE_TIME_YEAR = new Intl.DateTimeFormat('es-CO', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: 'numeric',
+  minute: '2-digit',
+  hour12: true,
+  timeZone: STORE_TIME_ZONE,
+});
+
+/** Placement time with the year, as in the A-Pedido header ("20 oct 2026, 9:03 a. m."). */
+export function formatOrderDateTimeWithYear(iso: string): string {
+  return plain(DATE_TIME_YEAR.format(new Date(iso)));
+}
+
+/** "15 sep" for a calendar date such as a roast date. */
+export function formatCalendarDay(date: string): string {
+  return calendarDay(date);
+}

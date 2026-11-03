@@ -24,6 +24,29 @@ interface AdminSession {
 const AdminSessionContext = React.createContext<AdminSession | null>(null);
 const PendingDispatchContext = React.createContext<(count: number) => void>(() => {});
 
+/** Mobile header of a detail screen (A-Pedido-390): a back link and the record title. */
+export interface MobileDetailHeader {
+  title: string;
+  backHref: string;
+  backLabel: string;
+}
+const MobileDetailContext = React.createContext<(detail: MobileDetailHeader | null) => void>(() => {});
+
+/**
+ * At 390 px a detail screen replaces the shell header with a back link and its title
+ * and hides the section bar, which its own sticky action bar takes over.
+ */
+export function useMobileDetailHeader(detail: MobileDetailHeader | null): void {
+  const set = React.useContext(MobileDetailContext);
+  const title = detail?.title;
+  const backHref = detail?.backHref;
+  const backLabel = detail?.backLabel;
+  React.useEffect(() => {
+    set(title && backHref && backLabel ? { title, backHref, backLabel } : null);
+    return () => set(null);
+  }, [set, title, backHref, backLabel]);
+}
+
 export function useAdminSession(): AdminSession {
   const session = React.useContext(AdminSessionContext);
   if (!session) throw new Error('useAdminSession must be used inside an authenticated AdminShell');
@@ -110,7 +133,7 @@ function MobileLink({ href, current, icon, children }: { href: string; current: 
   return <a href={href} aria-current={current ? 'page' : undefined} className={`flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-sm text-xs no-underline ${current ? 'bg-brand-yellow font-extrabold text-foreground' : 'font-bold text-primary-foreground'}`}><IconFrame kind={icon} />{children}</a>;
 }
 
-function ShellFrame({ session, active, children, forbidden, desktopOnly, pendingDispatchCount }: { session: AdminSession; active?: AdminNavKey; children: React.ReactNode; forbidden: boolean; desktopOnly: boolean; pendingDispatchCount: number | null }) {
+function ShellFrame({ session, active, children, forbidden, desktopOnly, pendingDispatchCount, mobileDetail }: { session: AdminSession; active?: AdminNavKey; children: React.ReactNode; forbidden: boolean; desktopOnly: boolean; pendingDispatchCount: number | null; mobileDetail: MobileDetailHeader | null }) {
   const [expanded, setExpanded] = React.useState(() => typeof window !== 'undefined' && window.innerWidth >= 1440);
   const [mobile, setMobile] = React.useState(() => typeof window !== 'undefined' && window.innerWidth <= 390);
   React.useEffect(() => {
@@ -149,8 +172,12 @@ function ShellFrame({ session, active, children, forbidden, desktopOnly, pending
 
       <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         <header className="surface-dark sticky top-0 z-40 flex min-h-[60px] items-center justify-between gap-2 bg-primary px-4 text-primary-foreground min-[391px]:static min-[391px]:min-h-16 min-[391px]:justify-end min-[391px]:border-b min-[391px]:border-border min-[391px]:bg-card min-[391px]:px-5 min-[391px]:text-foreground min-[1024px]:px-6 min-[1440px]:px-8">
-          <a href={ADMIN_ROUTES.home} className="flex items-center gap-2 text-primary-foreground no-underline min-[391px]:hidden"><span className="font-condensed text-2xl font-extrabold uppercase leading-none text-brand-yellow">Monteluna</span><span className="rounded-[6px] bg-brand-yellow px-1.5 py-0.5 font-condensed text-[11px] font-bold uppercase tracking-[0.08em] text-foreground">Admin</span></a>
-          <UserMenu user={session.user} onSignOut={signOut} />
+          {mobileDetail && <span className="flex items-center gap-2 min-[391px]:hidden">
+            <a href={mobileDetail.backHref} aria-label={mobileDetail.backLabel} className="inline-flex size-11 items-center justify-center rounded-sm text-primary-foreground"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6" /></svg></a>
+            <span className="font-condensed text-[22px] font-extrabold tracking-[0.02em]">{mobileDetail.title}</span>
+          </span>}
+          <a href={ADMIN_ROUTES.home} className={`flex items-center gap-2 text-primary-foreground no-underline min-[391px]:hidden ${mobileDetail ? 'hidden' : ''}`}><span className="font-condensed text-2xl font-extrabold uppercase leading-none text-brand-yellow">Monteluna</span><span className="rounded-[6px] bg-brand-yellow px-1.5 py-0.5 font-condensed text-[11px] font-bold uppercase tracking-[0.08em] text-foreground">Admin</span></a>
+          <span className={mobileDetail ? 'hidden min-[391px]:inline' : ''}><UserMenu user={session.user} onSignOut={signOut} /></span>
         </header>
         {forbidden ? <NoAccessScreen section="Administradores" /> : desktopOnly && mobile ? (
           <main className="flex flex-1 items-start justify-center px-4 py-12">
@@ -161,11 +188,11 @@ function ShellFrame({ session, active, children, forbidden, desktopOnly, pending
             </div>
           </main>
         ) : <AdminSessionContext.Provider value={session}>{children}</AdminSessionContext.Provider>}
-        <nav aria-label="Secciones" className="surface-dark sticky bottom-0 z-40 grid bg-primary px-2 pb-2.5 pt-1.5 min-[391px]:hidden" style={{ gridTemplateColumns: `repeat(${sectionItems.length + 1 + (adminsItem ? 1 : 0)}, minmax(0, 1fr))` }}>
+        {!mobileDetail && <nav aria-label="Secciones" className="surface-dark sticky bottom-0 z-40 grid bg-primary px-2 pb-2.5 pt-1.5 min-[391px]:hidden" style={{ gridTemplateColumns: `repeat(${sectionItems.length + 1 + (adminsItem ? 1 : 0)}, minmax(0, 1fr))` }}>
           {sectionItems.map((item) => <MobileLink key={item.key} href={item.href} current={active === item.key} icon={item.key}>{item.count ? `${item.title} · ${item.count}` : item.title}</MobileLink>)}
           <MobileLink href={ADMIN_ROUTES.account} current={false} icon="account">Cuenta</MobileLink>
           {adminsItem && <MobileLink href={adminsItem.href} current={active === 'admins'} icon="admins">{adminsItem.title}</MobileLink>}
-        </nav>
+        </nav>}
       </div>
     </div>
   );
@@ -177,6 +204,7 @@ export function AdminShell({ children, active, requiredRole, desktopOnly = false
   const [attempt, setAttempt] = React.useState(0);
   const [pendingDispatchCount, setPendingDispatchCount] = React.useState<number | null>(null);
   const loaded = Boolean(session);
+  const [mobileDetail, setMobileDetail] = React.useState<MobileDetailHeader | null>(null);
 
   React.useEffect(() => {
     let live = true;
@@ -208,5 +236,5 @@ export function AdminShell({ children, active, requiredRole, desktopOnly = false
   if (failed) return <div className="flex min-h-screen items-center justify-center bg-background p-4"><div role="alert" className="flex max-w-md flex-col items-center gap-4 rounded-xl border border-border bg-card p-8 text-center"><p className="m-0 text-lg font-bold">No pudimos comprobar tu sesión.</p><button type="button" onClick={() => setAttempt((value) => value + 1)} className="min-h-11 rounded-sm border-0 bg-primary px-4 font-sans font-bold text-primary-foreground">Reintentar</button></div></div>;
   if (!session) return <div className="flex min-h-screen items-center justify-center bg-background"><p role="status" className="font-bold text-muted-foreground">Comprobando tu sesión…</p></div>;
 
-  return <PendingDispatchContext.Provider value={setPendingDispatchCount}><ShellFrame session={session} active={active} forbidden={requiredRole !== undefined && session.user.role !== requiredRole} desktopOnly={desktopOnly} pendingDispatchCount={pendingDispatchCount}>{children}</ShellFrame></PendingDispatchContext.Provider>;
+  return <PendingDispatchContext.Provider value={setPendingDispatchCount}><MobileDetailContext.Provider value={setMobileDetail}><ShellFrame session={session} active={active} forbidden={requiredRole !== undefined && session.user.role !== requiredRole} desktopOnly={desktopOnly} pendingDispatchCount={pendingDispatchCount} mobileDetail={mobileDetail}>{children}</ShellFrame></MobileDetailContext.Provider></PendingDispatchContext.Provider>;
 }

@@ -8,36 +8,23 @@ import {
   toListQuery,
   type OrderFilters,
 } from '../../../lib/admin/orders-query';
+import { isMobileWidth, useIsMobile } from '../../../lib/admin/use-is-mobile';
 import { useReportPendingDispatchCount } from '../shell/AdminShell';
 import { OrdersFilters } from './OrdersFilters';
 import { OrdersCards, OrdersTable } from './OrdersList';
 import { OrdersPagination } from './OrdersPagination';
 import { OrdersEmpty, OrdersError, OrdersNoMatches, OrdersSkeleton } from './OrdersStates';
 
-const MOBILE_MAX_WIDTH = 390;
-
 type Load =
   | { status: 'loading' }
   | { status: 'error' }
   | { status: 'ready'; rows: AdminOrderRow[]; nextCursor: string | null; total: number };
-
-const isMobileWidth = () => typeof window !== 'undefined' && window.innerWidth <= MOBILE_MAX_WIDTH;
 
 // The 390 px canvas opens on "Por despachar"; a link or reload that carries filters wins.
 function initialFilters(): OrderFilters {
   if (typeof window === 'undefined') return DEFAULT_ORDER_FILTERS;
   const fromAddress = filtersFromSearch(window.location.search);
   return window.location.search === '' && isMobileWidth() ? pendingDispatchFilters() : fromAddress;
-}
-
-function useIsMobile(): boolean {
-  const [mobile, setMobile] = React.useState(isMobileWidth);
-  React.useEffect(() => {
-    const update = () => setMobile(isMobileWidth());
-    window.addEventListener('resize', update);
-    return () => window.removeEventListener('resize', update);
-  }, []);
-  return mobile;
 }
 
 const CHIP = 'flex-none h-11 cursor-pointer rounded-sm border px-3 font-sans text-sm font-bold';
