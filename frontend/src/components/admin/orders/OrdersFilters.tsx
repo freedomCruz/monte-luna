@@ -1,12 +1,12 @@
 import * as React from 'react';
 import { Popover } from 'radix-ui';
+import { DateRangeFields } from '../shared/DateRangeFields';
 import { formatRangeLabel } from '../../../lib/admin/order-format';
 import { orderStatusPresentation, paymentMethodLabel } from '../../../lib/admin/order-status';
 import {
   ORDER_STATUSES,
   PAYMENT_METHODS,
   hasActiveFilters,
-  isValidRange,
   type DateFilter,
   type OrderFilters,
 } from '../../../lib/admin/orders-query';
@@ -91,8 +91,6 @@ function dateLabel(filters: OrderFilters): string {
 
 function DateMenu({ filters, onChange, close }: { filters: OrderFilters; onChange: (patch: Partial<OrderFilters>) => void; close: () => void }) {
   const [mode, setMode] = React.useState<DateFilter>(filters.dateFilter);
-  const [from, setFrom] = React.useState(filters.fromDate);
-  const [to, setTo] = React.useState(filters.toDate);
   const choose = (next: DateFilter) => {
     setMode(next);
     if (next !== 'range') {
@@ -109,20 +107,7 @@ function DateMenu({ filters, onChange, close }: { filters: OrderFilters; onChang
         </label>
       ))}
       {mode === 'range' && (
-        <div className="flex flex-col gap-2 px-2.5 pb-2 pt-1">
-          <label className="flex flex-col gap-1 text-sm font-bold">Desde
-            <input type="date" value={from} max={to || undefined} onChange={(event) => setFrom(event.target.value)} className="h-11 rounded-sm border border-muted-foreground bg-card px-2.5 font-sans text-[15px] font-normal" />
-          </label>
-          <label className="flex flex-col gap-1 text-sm font-bold">Hasta
-            <input type="date" value={to} min={from || undefined} onChange={(event) => setTo(event.target.value)} className="h-11 rounded-sm border border-muted-foreground bg-card px-2.5 font-sans text-[15px] font-normal" />
-          </label>
-          <button
-            type="button"
-            disabled={!isValidRange(from, to)}
-            onClick={() => { onChange({ dateFilter: 'range', fromDate: from, toDate: to }); close(); }}
-            className="h-11 cursor-pointer rounded-sm border-0 bg-primary font-sans text-sm font-bold text-primary-foreground disabled:cursor-not-allowed disabled:opacity-50"
-          >Aplicar rango</button>
-        </div>
+        <DateRangeFields initialFrom={filters.fromDate} initialTo={filters.toDate} onApply={(from, to) => { onChange({ dateFilter: 'range', fromDate: from, toDate: to }); close(); }} />
       )}
     </>
   );

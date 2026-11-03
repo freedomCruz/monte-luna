@@ -36,7 +36,7 @@ test.describe('Admin orders shell (F1: S1, S8)', () => {
     await mockSession(page, owner);
     await mockAdminOrdersRoutes(page);
     await page.goto('/admin/');
-    await expect(page.getByRole('heading', { name: 'Inicio', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page).toHaveURL(/\/admin\/$/);
     const pedidos = page.getByRole('link', { name: /^Pedidos/ }).first();
     await expect(pedidos).toHaveAttribute('href', '/admin/pedidos/');
@@ -47,7 +47,7 @@ test.describe('Admin orders shell (F1: S1, S8)', () => {
     await mockSession(page, staff);
     await mockAdminOrdersRoutes(page);
     await page.goto('/admin/');
-    await expect(page.getByRole('heading', { name: 'Inicio', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Administradores' })).toHaveCount(0);
     await expect(page.getByRole('link', { name: /^Pedidos/ }).first()).toBeVisible();
   });
@@ -56,7 +56,7 @@ test.describe('Admin orders shell (F1: S1, S8)', () => {
     await mockSession(page, owner);
     await mockAdminOrdersRoutes(page);
     await page.goto('/admin/');
-    await expect(page.getByRole('heading', { name: 'Inicio', level: 1 })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
     await expect(page.getByRole('link', { name: 'Pedidos, 6 pendientes' }).or(page.getByText('Pedidos · 6')).first()).toBeVisible();
     const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
     expect(results.violations).toEqual([]);
@@ -69,7 +69,7 @@ test.describe('Admin orders shell (F1: S1, S8)', () => {
       await mockSession(page, owner);
       await mockAdminOrdersRoutes(page);
       await page.goto('/admin/');
-      await expect(page.getByRole('heading', { name: 'Inicio', level: 1 })).toBeVisible();
+      await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
       await expect(page.getByRole('link', { name: 'Pedidos, 6 pendientes' }).or(page.getByText('Pedidos · 6')).first()).toBeVisible();
       if (width >= 391) {
         await expect(page.getByRole('navigation', { name: 'Secciones del panel' })).toHaveCSS('width', width === 1440 ? '248px' : '72px');

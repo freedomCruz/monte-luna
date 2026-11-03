@@ -170,27 +170,75 @@ const kpi = (value: number, previous: number) => ({
   delta_percentage: previous === 0 ? null : (100 * (value - previous)) / previous,
 });
 
-/** Metrics for the last 7 days, 3 daily buckets kept short for tests. */
+const RAW_DAILY = [118, 142, 131, 176, 208, 262, 188, 126, 151, 139, 168, 231, 284, 197, 122, 163, 148, 171, 219, 253, 183, 137, 166, 154, 192, 244, 268, 191, 158, 205];
+const DAY_MS = 86_400_000;
+// Bogotá is UTC-5 all year, so a local midnight is 05:00 UTC.
+const FIRST_DAY_START = Date.UTC(2026, 8, 21, 5);
+
+/** Thirty daily buckets (21 Sep - 20 Oct, today partial) with the sample curve of A-Inicio. */
+function dailySeries(): AdminOrderMetrics['series'] {
+  return RAW_DAILY.map((raw, index) => {
+    const start = FIRST_DAY_START + index * DAY_MS;
+    const end = index === RAW_DAILY.length - 1 ? Date.UTC(2026, 9, 20, 15) : start + DAY_MS;
+    return {
+      from_at: new Date(start).toISOString(),
+      to_at: new Date(end).toISOString(),
+      previous_from_at: new Date(start - 30 * DAY_MS).toISOString(),
+      previous_to_at: new Date(end - 30 * DAY_MS).toISOString(),
+      sales_amount: raw * 100_000,
+      previous_sales_amount: Math.round(raw * 89_000 * (1 + ((index * 7) % 5 - 2) / 25) / 1000) * 1000,
+    };
+  });
+}
+
+/** Last 30 days, owner view (A-Inicio default). */
 export const mockOrderMetrics: AdminOrderMetrics = {
-  period: 'last_7_days',
+  period: 'last_30_days',
   generated_at: '2026-10-20T15:00:00Z',
   time_zone: 'America/Bogota',
-  from_at: '2026-10-14T05:00:00Z',
+  from_at: '2026-09-21T05:00:00Z',
   to_at: '2026-10-20T15:00:00Z',
-  previous_from_at: '2026-10-07T19:00:00Z',
-  previous_to_at: '2026-10-14T05:00:00Z',
+  previous_from_at: '2026-08-22T05:00:00Z',
+  previous_to_at: '2026-09-21T05:00:00Z',
   granularity: 'day',
   kpis: {
-    paid_sales_amount: kpi(48620000, 41100000),
-    orders: kpi(52, 47),
-    average_order_amount: kpi(935000, 874000),
-    units_sold: kpi(131, 118),
+    paid_sales_amount: kpi(486000000, 433900000),
+    orders: kpi(92, 85),
+    average_order_amount: kpi(5280000, 5130000),
+    units_sold: kpi(168, 171),
   },
-  series: [
-    { from_at: '2026-10-18T05:00:00Z', to_at: '2026-10-19T05:00:00Z', previous_from_at: '2026-10-11T05:00:00Z', previous_to_at: '2026-10-12T05:00:00Z', sales_amount: 6400000, previous_sales_amount: 5100000 },
-    { from_at: '2026-10-19T05:00:00Z', to_at: '2026-10-20T05:00:00Z', previous_from_at: '2026-10-12T05:00:00Z', previous_to_at: '2026-10-13T05:00:00Z', sales_amount: 9300000, previous_sales_amount: 7800000 },
-    { from_at: '2026-10-20T05:00:00Z', to_at: '2026-10-20T15:00:00Z', previous_from_at: '2026-10-13T05:00:00Z', previous_to_at: '2026-10-13T15:00:00Z', sales_amount: 20410000, previous_sales_amount: 14000000 },
-  ],
+  series: dailySeries(),
   attention: { role: 'owner', pending_dispatch_count: 6, oldest_pending_dispatch_paid_at: '2026-10-17T15:00:00Z', manual_refund_count: 1 },
   latest_orders: mockOrderRows.slice(0, 6),
+};
+
+/** Staff receive a null refund count and no refund information (S2). */
+export const mockStaffOrderMetrics: AdminOrderMetrics = {
+  ...mockOrderMetrics,
+  attention: { role: 'staff', pending_dispatch_count: 6, oldest_pending_dispatch_paid_at: '2026-10-17T15:00:00Z', manual_refund_count: null },
+};
+
+/** Today, hourly buckets from 08 h to 10 h Bogotá. */
+export const mockTodayMetrics: AdminOrderMetrics = {
+  ...mockOrderMetrics,
+  period: 'today',
+  from_at: '2026-10-20T05:00:00Z',
+  to_at: '2026-10-20T15:00:00Z',
+  previous_from_at: '2026-10-19T05:00:00Z',
+  previous_to_at: '2026-10-19T15:00:00Z',
+  granularity: 'hour',
+  kpis: {
+    paid_sales_amount: kpi(41200000, 34900000),
+    orders: kpi(8, 6),
+    average_order_amount: kpi(5150000, 5800000),
+    units_sold: kpi(14, 0),
+  },
+  series: [13, 14, 15].map((hourUtc, index) => ({
+    from_at: new Date(Date.UTC(2026, 9, 20, hourUtc)).toISOString(),
+    to_at: new Date(Date.UTC(2026, 9, 20, hourUtc + 1)).toISOString(),
+    previous_from_at: new Date(Date.UTC(2026, 9, 19, hourUtc)).toISOString(),
+    previous_to_at: new Date(Date.UTC(2026, 9, 19, hourUtc + 1)).toISOString(),
+    sales_amount: [800000, 2200000, 1100000][index],
+    previous_sales_amount: [600000, 1900000, 900000][index],
+  })),
 };
