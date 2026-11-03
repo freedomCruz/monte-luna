@@ -71,6 +71,9 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	defer admins.Close()
+	if err := ship.EnableFulfillment(shipmentOrders{checkout}, time.Now); err != nil {
+		return err
+	}
 	notify, err := notifications.New(ctx, cfg.databaseURL, cfg.notifications, logger, notifications.Options{})
 	if err != nil {
 		return err
@@ -100,6 +103,8 @@ func run(logger *slog.Logger) error {
 	}
 	relay.Subscribe("payments.payment_approved", checkout.HandlePaymentApproved)
 	relay.Subscribe("orders.order_cancelled", payment.HandleOrderCancelled)
+	relay.Subscribe("orders.order_paid", ship.HandleOrderPaid)
+	relay.Subscribe("orders.order_delivered", ship.HandleOrderDelivered)
 	relay.Subscribe("identity.password_reset_requested", notifyConsumer)
 	relay.Subscribe("identity.admin_invited", notifyConsumer)
 	relayCtx, cancelRelay := context.WithCancel(ctx)
@@ -129,6 +134,9 @@ func run(logger *slog.Logger) error {
 	checkout.RegisterRoutes(mux)
 	payment.RegisterRoutes(mux)
 	admins.RegisterRoutes(mux)
+	if err := ship.RegisterAdminRoutes(mux, admins.Access(), admins.LoadAdminSession); err != nil {
+		return err
+	}
 	notify.RegisterRoutes(mux)
 
 	srv := &http.Server{
@@ -164,7 +172,9 @@ func run(logger *slog.Logger) error {
 	return nil
 }
 
-// outboxSchemas lists every module outbox the relay drains.
+// outboxSchemas lists every module outbox the relay drains. Add shipping only
+// together with its shipment_shipped subscribers (B3/B4), never drain and mark
+// dispatch events delivered before those consumers exist.
 var outboxSchemas = []string{"catalog", "orders", "payments", "identity"}
 
 type config struct {
