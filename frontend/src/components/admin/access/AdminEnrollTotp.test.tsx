@@ -108,7 +108,7 @@ describe('AdminEnrollTotp (T4: S1, S3, S4)', () => {
     // Check the box
     fireEvent.click(screen.getByRole('checkbox', { name: /Los guardé en un lugar seguro/i }));
     const continueLink = screen.getByRole('link', { name: 'Continuar al panel' });
-    expect(continueLink.getAttribute('href')).toBe('/admin/cuenta/');
+    expect(continueLink.getAttribute('href')).toBe('/admin/');
   });
 
   it('redirects to sign-in if session is missing or expired (401)', async () => {

@@ -28,12 +28,12 @@ export type AdminResult<T> =
 
 const ACCEPT = 'application/json, application/problem+json';
 
-interface RequestOptions {
+export interface RequestOptions {
   body?: unknown;
   ifMatch?: string;
 }
 
-async function request<T>(
+export async function request<T>(
   method: 'GET' | 'POST' | 'PATCH' | 'DELETE',
   url: string,
   options: RequestOptions = {}

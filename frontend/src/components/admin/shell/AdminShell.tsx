@@ -7,6 +7,7 @@ import {
   type AdminRole,
   type AdminUser,
 } from '../../../lib/admin/client';
+import { listAdminOrders } from '../../../lib/admin/orders';
 import {
   ADMIN_ROUTES,
   initialsOf,
@@ -21,11 +22,20 @@ interface AdminSession {
 }
 
 const AdminSessionContext = React.createContext<AdminSession | null>(null);
+const PendingDispatchContext = React.createContext<(count: number) => void>(() => {});
 
 export function useAdminSession(): AdminSession {
   const session = React.useContext(AdminSessionContext);
   if (!session) throw new Error('useAdminSession must be used inside an authenticated AdminShell');
   return session;
+}
+
+/**
+ * Lets a screen that already loaded `pending_dispatch_count` (Pedidos, Pedido, Inicio)
+ * refresh the sidebar and mobile badges without another request.
+ */
+export function useReportPendingDispatchCount(): (count: number) => void {
+  return React.useContext(PendingDispatchContext);
 }
 
 export function sessionDestination(result: AdminResult<AdminUser>): string | null {
@@ -44,6 +54,8 @@ interface AdminShellProps {
 }
 
 function AdminIcon({ kind }: { kind: AdminNavKey | 'account' }) {
+  if (kind === 'home') return <path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />;
+  if (kind === 'orders') return <path d="M6 7h12l-1 14H7zM9 7a3 3 0 0 1 6 0" />;
   if (kind === 'admins') {
     return <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M17 3.5a4 4 0 0 1 0 7.5M22 21a6 6 0 0 0-4-5.7" />;
   }
@@ -94,7 +106,11 @@ function UserMenu({ user, onSignOut }: { user: AdminUser; onSignOut: () => void 
   );
 }
 
-function ShellFrame({ session, active, children, forbidden, desktopOnly }: { session: AdminSession; active?: AdminNavKey; children: React.ReactNode; forbidden: boolean; desktopOnly: boolean }) {
+function MobileLink({ href, current, icon, children }: { href: string; current: boolean; icon: AdminNavKey | 'account'; children: React.ReactNode }) {
+  return <a href={href} aria-current={current ? 'page' : undefined} className={`flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-sm text-xs no-underline ${current ? 'bg-brand-yellow font-extrabold text-foreground' : 'font-bold text-primary-foreground'}`}><IconFrame kind={icon} />{children}</a>;
+}
+
+function ShellFrame({ session, active, children, forbidden, desktopOnly, pendingDispatchCount }: { session: AdminSession; active?: AdminNavKey; children: React.ReactNode; forbidden: boolean; desktopOnly: boolean; pendingDispatchCount: number | null }) {
   const [expanded, setExpanded] = React.useState(() => typeof window !== 'undefined' && window.innerWidth >= 1440);
   const [mobile, setMobile] = React.useState(() => typeof window !== 'undefined' && window.innerWidth <= 390);
   React.useEffect(() => {
@@ -102,7 +118,10 @@ function ShellFrame({ session, active, children, forbidden, desktopOnly }: { ses
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
   }, []);
-  const groups = navigationFor(session.user.role);
+  const groups = navigationFor(session.user.role, { pendingDispatchCount });
+  const items = groups.flatMap((group) => group.items);
+  const sectionItems = items.filter((item) => item.key !== 'admins');
+  const adminsItem = items.find((item) => item.key === 'admins');
   const signOut = React.useCallback(async () => {
     await logout();
     window.location.assign(ADMIN_ROUTES.signIn);
@@ -111,15 +130,15 @@ function ShellFrame({ session, active, children, forbidden, desktopOnly }: { ses
   return (
     <div className="min-h-screen bg-background text-foreground min-[391px]:flex">
       <nav aria-label="Secciones del panel" className={`surface-dark hidden shrink-0 flex-col gap-0.5 bg-primary px-3 py-4 text-primary-foreground min-[391px]:flex ${expanded ? 'w-[248px]' : 'w-[72px] px-3.5'}`}>
-        <a href={ADMIN_ROUTES.account} aria-label="Monteluna Admin, mi cuenta" className={`flex min-h-11 items-center gap-2 px-1.5 pb-2.5 text-primary-foreground no-underline ${expanded ? 'justify-start' : 'justify-center'}`}>
+        <a href={ADMIN_ROUTES.home} aria-label="Monteluna Admin, inicio" className={`flex min-h-11 items-center gap-2 px-1.5 pb-2.5 text-primary-foreground no-underline ${expanded ? 'justify-start' : 'justify-center'}`}>
           <span className="font-condensed text-[26px] font-extrabold uppercase leading-none text-brand-yellow">{expanded ? 'Monteluna' : 'M'}</span>
           {expanded && <span className="rounded-[6px] bg-brand-yellow px-1.5 py-0.5 font-condensed text-xs font-bold uppercase tracking-[0.08em] text-foreground">Admin</span>}
         </a>
         {groups.map((group) => <React.Fragment key={group.label}>
-          {expanded ? <span className="px-2.5 pb-1 pt-3 font-condensed text-xs font-bold uppercase tracking-[0.1em] text-[#A8997C]">{group.label}</span> : <span aria-hidden="true" className="mx-auto my-2 h-px w-7 bg-[rgba(250,243,227,0.2)]" />}
+          {group.label === '' ? null : expanded ? <span className="px-2.5 pb-1 pt-3 font-condensed text-xs font-bold uppercase tracking-[0.1em] text-[#A8997C]">{group.label}</span> : <span aria-hidden="true" className="mx-auto my-2 h-px w-7 bg-[rgba(250,243,227,0.2)]" />}
           {group.items.map((item) => {
             const current = item.key === active;
-            return <a key={item.key} href={item.href} aria-current={current ? 'page' : undefined} aria-label={item.title} title={item.title} className={`flex min-h-10 items-center gap-3 rounded-sm px-2.5 text-[15px] font-semibold no-underline ${expanded ? 'justify-start' : 'justify-center'} ${current ? 'bg-brand-yellow font-extrabold text-foreground' : 'text-primary-foreground'}`}><IconFrame kind={item.key} />{expanded && <span className="flex-1">{item.title}</span>}</a>;
+            return <a key={item.key} href={item.href} aria-current={current ? 'page' : undefined} aria-label={item.count ? `${item.title}, ${item.count} pendientes` : item.title} title={item.title} className={`relative flex min-h-10 items-center gap-3 rounded-sm px-2.5 text-[15px] font-semibold no-underline ${expanded ? 'justify-start' : 'justify-center'} ${current ? 'bg-brand-yellow font-extrabold text-foreground' : 'text-primary-foreground'}`}><IconFrame kind={item.key} />{expanded && <span className="flex-1">{item.title}</span>}{item.count ? expanded ? <span aria-hidden="true" className="box-border min-w-5 rounded-full bg-accent px-1.5 text-center text-xs font-extrabold leading-5 text-white">{item.count}</span> : <span aria-hidden="true" className="absolute right-2.5 top-1.5 size-2 rounded-full bg-accent outline outline-2 outline-primary" /> : null}</a>;
           })}
         </React.Fragment>)}
         <span className="flex-1" />
@@ -128,9 +147,9 @@ function ShellFrame({ session, active, children, forbidden, desktopOnly }: { ses
         </button>
       </nav>
 
-      <div className="flex min-w-0 flex-1 flex-col">
+      <div className="flex min-h-screen min-w-0 flex-1 flex-col">
         <header className="surface-dark sticky top-0 z-40 flex min-h-[60px] items-center justify-between gap-2 bg-primary px-4 text-primary-foreground min-[391px]:static min-[391px]:min-h-16 min-[391px]:justify-end min-[391px]:border-b min-[391px]:border-border min-[391px]:bg-card min-[391px]:px-5 min-[391px]:text-foreground min-[1024px]:px-6 min-[1440px]:px-8">
-          <a href={ADMIN_ROUTES.account} className="flex items-center gap-2 text-primary-foreground no-underline min-[391px]:hidden"><span className="font-condensed text-2xl font-extrabold uppercase leading-none text-brand-yellow">Monteluna</span><span className="rounded-[6px] bg-brand-yellow px-1.5 py-0.5 font-condensed text-[11px] font-bold uppercase tracking-[0.08em] text-foreground">Admin</span></a>
+          <a href={ADMIN_ROUTES.home} className="flex items-center gap-2 text-primary-foreground no-underline min-[391px]:hidden"><span className="font-condensed text-2xl font-extrabold uppercase leading-none text-brand-yellow">Monteluna</span><span className="rounded-[6px] bg-brand-yellow px-1.5 py-0.5 font-condensed text-[11px] font-bold uppercase tracking-[0.08em] text-foreground">Admin</span></a>
           <UserMenu user={session.user} onSignOut={signOut} />
         </header>
         {forbidden ? <NoAccessScreen section="Administradores" /> : desktopOnly && mobile ? (
@@ -142,9 +161,10 @@ function ShellFrame({ session, active, children, forbidden, desktopOnly }: { ses
             </div>
           </main>
         ) : <AdminSessionContext.Provider value={session}>{children}</AdminSessionContext.Provider>}
-        <nav aria-label="Secciones" className="surface-dark sticky bottom-0 z-40 grid bg-primary px-2 pb-2.5 pt-1.5 min-[391px]:hidden" style={{ gridTemplateColumns: `repeat(${session.user.role === 'owner' ? 2 : 1}, minmax(0, 1fr))` }}>
-          <a href={ADMIN_ROUTES.account} className="flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-sm text-xs font-bold text-primary-foreground no-underline"><IconFrame kind="account" />Cuenta</a>
-          {session.user.role === 'owner' && <a href={ADMIN_ROUTES.admins} aria-current={active === 'admins' ? 'page' : undefined} className={`flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-sm text-xs font-bold no-underline ${active === 'admins' ? 'bg-brand-yellow text-foreground' : 'text-primary-foreground'}`}><IconFrame kind="admins" />Administradores</a>}
+        <nav aria-label="Secciones" className="surface-dark sticky bottom-0 z-40 grid bg-primary px-2 pb-2.5 pt-1.5 min-[391px]:hidden" style={{ gridTemplateColumns: `repeat(${sectionItems.length + 1 + (adminsItem ? 1 : 0)}, minmax(0, 1fr))` }}>
+          {sectionItems.map((item) => <MobileLink key={item.key} href={item.href} current={active === item.key} icon={item.key}>{item.count ? `${item.title} · ${item.count}` : item.title}</MobileLink>)}
+          <MobileLink href={ADMIN_ROUTES.account} current={false} icon="account">Cuenta</MobileLink>
+          {adminsItem && <MobileLink href={adminsItem.href} current={active === 'admins'} icon="admins">{adminsItem.title}</MobileLink>}
         </nav>
       </div>
     </div>
@@ -155,6 +175,8 @@ export function AdminShell({ children, active, requiredRole, desktopOnly = false
   const [session, setSession] = React.useState<AdminSession | null>(null);
   const [failed, setFailed] = React.useState(false);
   const [attempt, setAttempt] = React.useState(0);
+  const [pendingDispatchCount, setPendingDispatchCount] = React.useState<number | null>(null);
+  const loaded = Boolean(session);
 
   React.useEffect(() => {
     let live = true;
@@ -172,8 +194,19 @@ export function AdminShell({ children, active, requiredRole, desktopOnly = false
     return () => { live = false; };
   }, [attempt]);
 
+  // The sidebar badge comes from the list endpoint's global count; a screen that has
+  // already read it reports it through useReportPendingDispatchCount instead.
+  React.useEffect(() => {
+    if (!loaded) return;
+    let live = true;
+    void listAdminOrders({ pending_dispatch: true, date_filter: 'all', limit: 25 }).then((result) => {
+      if (live && result.ok) setPendingDispatchCount((current) => current ?? result.data.pending_dispatch_count);
+    });
+    return () => { live = false; };
+  }, [loaded]);
+
   if (failed) return <div className="flex min-h-screen items-center justify-center bg-background p-4"><div role="alert" className="flex max-w-md flex-col items-center gap-4 rounded-xl border border-border bg-card p-8 text-center"><p className="m-0 text-lg font-bold">No pudimos comprobar tu sesión.</p><button type="button" onClick={() => setAttempt((value) => value + 1)} className="min-h-11 rounded-sm border-0 bg-primary px-4 font-sans font-bold text-primary-foreground">Reintentar</button></div></div>;
   if (!session) return <div className="flex min-h-screen items-center justify-center bg-background"><p role="status" className="font-bold text-muted-foreground">Comprobando tu sesión…</p></div>;
 
-  return <ShellFrame session={session} active={active} forbidden={requiredRole !== undefined && session.user.role !== requiredRole} desktopOnly={desktopOnly}>{children}</ShellFrame>;
+  return <PendingDispatchContext.Provider value={setPendingDispatchCount}><ShellFrame session={session} active={active} forbidden={requiredRole !== undefined && session.user.role !== requiredRole} desktopOnly={desktopOnly} pendingDispatchCount={pendingDispatchCount}>{children}</ShellFrame></PendingDispatchContext.Provider>;
 }

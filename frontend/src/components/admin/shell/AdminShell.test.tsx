@@ -1,16 +1,22 @@
-import { cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AdminUser } from '../../../lib/admin/client';
-import { AdminShell, sessionDestination, useAdminSession } from './AdminShell';
+import { AdminShell, sessionDestination, useAdminSession, useReportPendingDispatchCount } from './AdminShell';
 
-const { getCurrentAdmin, logout } = vi.hoisted(() => ({
+const { getCurrentAdmin, logout, listAdminOrders } = vi.hoisted(() => ({
   getCurrentAdmin: vi.fn(),
   logout: vi.fn(),
+  listAdminOrders: vi.fn(),
 }));
 
 vi.mock('../../../lib/admin/client', async (importOriginal) => {
   const original = await importOriginal<typeof import('../../../lib/admin/client')>();
   return { ...original, getCurrentAdmin, logout };
+});
+
+vi.mock('../../../lib/admin/orders', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../../lib/admin/orders')>();
+  return { ...original, listAdminOrders };
 });
 
 const owner: AdminUser = {
@@ -30,6 +36,19 @@ function SessionProbe() {
   const { user } = useAdminSession();
   return <p>Contenido privado de {user.display_name}</p>;
 }
+
+function pendingCount(count: number) {
+  return { ok: true, etag: null, data: { items: [], next_cursor: null, total: 0, pending_dispatch_count: count } };
+}
+
+function PendingReporter({ count }: { count: number }) {
+  const report = useReportPendingDispatchCount();
+  return <button type="button" onClick={() => report(count)}>Reportar</button>;
+}
+
+beforeEach(() => {
+  listAdminOrders.mockResolvedValue({ ok: false, status: 0, code: 'network_error' });
+});
 
 afterEach(() => {
   cleanup();
@@ -98,5 +117,50 @@ describe('AdminShell session guard (T2/T8: S3, S4)', () => {
     expect(screen.queryByText(/Contenido privado/)).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
     expect(await screen.findByText('Contenido privado de Laura Ríos')).toBeTruthy();
+  });
+
+  it('lists Inicio and Pedidos for staff and links the logo to Inicio (F1: S1)', async () => {
+    getCurrentAdmin.mockResolvedValue({ ok: true, data: { ...owner, role: 'staff' }, etag: '"2"' });
+    render(<AdminShell active="orders"><SessionProbe /></AdminShell>);
+    await screen.findByText('Contenido privado de Laura Ríos');
+
+    const sidebar = screen.getByRole('navigation', { name: 'Secciones del panel' });
+    expect(within(sidebar).getByRole('link', { name: 'Inicio' }).getAttribute('href')).toBe('/admin/');
+    const orders = within(sidebar).getByRole('link', { name: 'Pedidos' });
+    expect(orders.getAttribute('href')).toBe('/admin/pedidos/');
+    expect(orders.getAttribute('aria-current')).toBe('page');
+    expect(screen.getByRole('link', { name: 'Monteluna Admin, inicio' }).getAttribute('href')).toBe('/admin/');
+    expect(within(screen.getByRole('navigation', { name: 'Secciones' })).getAllByRole('link').map((link) => link.textContent)).toEqual(['Inicio', 'Pedidos', 'Cuenta']);
+  });
+
+  it('shows the global pending dispatch count on Pedidos in the sidebar and the mobile bar (F1: L6 f)', async () => {
+    getCurrentAdmin.mockResolvedValue({ ok: true, data: owner, etag: '"1"' });
+    listAdminOrders.mockResolvedValue(pendingCount(6));
+    render(<AdminShell><SessionProbe /></AdminShell>);
+
+    expect(await screen.findByRole('link', { name: 'Pedidos, 6 pendientes' })).toBeTruthy();
+    expect(screen.getByText('Pedidos · 6')).toBeTruthy();
+    expect(listAdminOrders).toHaveBeenCalledWith(expect.objectContaining({ pending_dispatch: true, date_filter: 'all', limit: 25 }));
+  });
+
+  it('renders no count when nothing awaits dispatch or the count cannot be read', async () => {
+    getCurrentAdmin.mockResolvedValue({ ok: true, data: owner, etag: '"1"' });
+    listAdminOrders.mockResolvedValue(pendingCount(0));
+    render(<AdminShell><SessionProbe /></AdminShell>);
+    await screen.findByText('Contenido privado de Laura Ríos');
+    await waitFor(() => expect(listAdminOrders).toHaveBeenCalled());
+    expect(screen.queryByText(/pendientes/)).toBeNull();
+    expect(screen.queryByText(/Pedidos · /)).toBeNull();
+    expect(screen.getAllByRole('link', { name: 'Pedidos' }).length).toBeGreaterThan(0);
+  });
+
+  it('lets a screen report a fresher count after loading its own data', async () => {
+    getCurrentAdmin.mockResolvedValue({ ok: true, data: owner, etag: '"1"' });
+    listAdminOrders.mockResolvedValue(pendingCount(6));
+    render(<AdminShell><PendingReporter count={2} /></AdminShell>);
+
+    await screen.findByRole('link', { name: 'Pedidos, 6 pendientes' });
+    fireEvent.click(screen.getByRole('button', { name: 'Reportar' }));
+    expect(await screen.findByRole('link', { name: 'Pedidos, 2 pendientes' })).toBeTruthy();
   });
 });
