@@ -34,7 +34,7 @@ func (h *FulfillmentHTTP) RegisterRoutes(mux *http.ServeMux, sessions func(http.
 	mux.Handle("POST "+path, dispatchNoStore(origin.Handler(sessions(http.HandlerFunc(h.dispatch)))))
 	mux.Handle(path, dispatchNoStore(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.Header().Set("Allow", "POST")
-		http.Error(w, "Method Not Allowed", 405)
+		http.Error(w, "Method Not Allowed", http.StatusMethodNotAllowed)
 	})))
 }
 func (h *FulfillmentHTTP) dispatch(w http.ResponseWriter, r *http.Request) {
