@@ -76,10 +76,460 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/orders": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search and paginate orders (owner or staff)
+         * @description Case-insensitive literal substring search across order_number, customer
+         *     name and email (OR); combine other filters using AND. Repeated statuses
+         *     and payment methods use OR within that filter. Payment method matches
+         *     the selected payment summary (approved attempt, otherwise latest excluding
+         *     duplicate_approved, deterministic created_at/id order), never any historical
+         *     failed attempt. pending_dispatch=true means status paid or preparing,
+         *     irrespective of whether the pending shipment consumer has run.
+         *     Date filtering uses placed_at in America/Bogota: inclusive from_date and
+         *     to_date calendar dates become a half-open UTC interval. Default last_30_days
+         *     includes today and the preceding 29 days; date_filter=all removes dates;
+         *     date_filter=range requires both bounds with from_date <= to_date. Bounds
+         *     with other date_filter values return 422 validation_failed.
+         *     Sort by placed_at and id in the same direction, newest first by default.
+         *     Opaque cursors bind filters and sort; changing them requires a fresh cursor
+         *     (mismatch returns 400 bad_request). Keep prior cursors client-side for Back.
+         *     total counts all matching rows before pagination. pending_dispatch_count
+         *     is a global paid/preparing count for chips, header and sidebar, unaffected
+         *     by search, status, dates, method or pagination. No batch actions in v1.
+         */
+        get: operations["listAdminOrders"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/metrics": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read order dashboard metrics (owner or staff)
+         * @description Count only orders currently paid, preparing, shipped or delivered, using
+         *     paid_at for KPI and sales bucket membership (not placement or attempt time).
+         *     Paid sales sum total_amount, including shipping and tax after discounts;
+         *     units sum line quantities; average ticket is sales/count rounded half up
+         *     to integer centavos (zero if no orders). No settlement fees or refunds are
+         *     subtracted, and cancelled orders are excluded even if previously paid.
+         *     Resolve calendar days in America/Bogota. today begins local midnight and
+         *     ends at generated_at; previous period is the same elapsed duration yesterday.
+         *     last_7_days/last_30_days include today and 6/29 preceding calendar days;
+         *     end at generated_at, previous period immediately precedes from_at and has
+         *     exactly the same duration. range requires inclusive from_date/to_date,
+         *     ending at midnight after to_date; reversed or future dates are 422.
+         *     Bounds with non-range periods are 422. Return the resolved UTC intervals.
+         *     today has hourly buckets (partial final hour); other periods daily buckets
+         *     (partial final day for rolling periods). Align previous buckets by elapsed
+         *     offset, clip at interval ends, emit zero-valued empty buckets chronologically.
+         *     Each KPI returns value, previous_value and delta_percentage; delta is
+         *     100*(value-previous)/previous, null when previous=0, including both zero.
+         *     attention counts are global current counts, not period-filtered.
+         *     manual_refund_count is a nonnegative integer only for owner; staff receives
+         *     null and no refund information is queried, counted or leaked via totals.
+         *     Count only manual/pending refunds through the payments public port.
+         *     latest_orders are the six newest orders of ALL statuses by placed_at/id
+         *     descending, independent of the selected period, using list row fields.
+         *     A client chart/table toggle uses the same series without a new endpoint.
+         */
+        get: operations["getAdminOrderMetrics"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        /**
+         * Read the complete order detail and version (owner or staff)
+         * @description Immutable line/lot/address snapshots, live catalog image if available,
+         *     payments via public port, chronological status history (created_at/id),
+         *     shipment via public port. Payment attempts include duplicate_approved for
+         *     accurate admin history, without provider payloads or credentials.
+         *     No invoice/fiscal-document card. Unknown historical shipping zone/band
+         *     fields are null, never reconstructed from changed live rates.
+         *     Return a strong ETag quoting order.version; send it verbatim in If-Match.
+         *     A null shipment is valid before initialization or for historical orders.
+         */
+        get: operations["getAdminOrder"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/to-preparing": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Move a paid order to preparing (owner or staff)
+         * @description Only paid -> preparing. Require current order If-Match; missing/stale
+         *     returns 412 version_conflict without changing order, history or outbox.
+         *     Validate the status, increment version and append history with actor_type
+         *     admin and acting actor_id atomically. Other statuses return 409
+         *     invalid_order_transition. Serialize against cancellation and dispatch.
+         */
+        post: operations["prepareAdminOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/deliver": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Confirm delivery of a shipped order (owner or staff)
+         * @description Only shipped -> delivered. The UI confirms before sending. Require current
+         *     order If-Match. Atomically increment order version, append admin history
+         *     and publish orders.order_delivered with order_id, delivered_at and actor_id.
+         *     Proposed L5(b) event: shipping consumes idempotently, records delivered_at
+         *     and increments shipment version; no synchronous cross-module table writes.
+         *     Response has order status delivered; shipment may still show shipped until
+         *     event processing completes. Delayed shipment_shipped events cannot regress
+         *     a delivered order. Invalid state or version changes nothing.
+         */
+        post: operations["deliverAdminOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/orders/{id}/cancel": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Cancel a paid or preparing order (owner or staff)
+         * @description Only paid/preparing -> cancelled. Require current order If-Match. Record
+         *     cancelled_at, increment version and append admin history with actor_id and
+         *     optional reason as note, atomically with orders.order_cancelled in outbox.
+         *     Reason is null when absent; the event keeps its machine reason order_cancelled
+         *     and does not replace it with free-form text. Release allocated stock back
+         *     to its original lots idempotently through the catalog boundary. Payments
+         *     consumes the event for the existing card-void/manual-refund flow; notifications
+         *     consumes it for a Spanish cancellation email. Success confirms cancellation
+         *     and durable side effects, not completed refunds, stock relay or email delivery.
+         *     Staff can cancel but cannot inspect/manage owner-only refund details.
+         *     A dispatch already committed or in progress cannot be cancelled. Serialize
+         *     conflicting dispatch/cancel actions so only one succeeds; rejection writes
+         *     no history, releases no stock and publishes no event. Terminal states cannot
+         *     be changed. Repeating with stale If-Match is 412, not a second cancellation.
+         */
+        post: operations["cancelAdminOrder"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** @description Empty action body; expected record version is transported in If-Match. */
+        AdminOrderAction: Record<string, never>;
+        CancelAdminOrder: {
+            /** @description Optional human note; trim surrounding whitespace, blank becomes null. */
+            reason?: string | null;
+        };
+        AdminVersion: number;
+        /**
+         * Format: date-time
+         * @description RFC 3339 UTC timestamp, null when unknown/not yet reached.
+         */
+        AdminNullableTimestamp: string | null;
+        /**
+         * @description Actual provider method mapped to lowercase, null until known.
+         * @enum {string|null}
+         */
+        AdminPaymentMethod: "card" | "pse" | "nequi" | "bancolombia_transfer" | null;
+        /**
+         * @description Server-verified attempt status; clients tolerate future values.
+         * @enum {string}
+         */
+        AdminPaymentStatus: "created" | "pending" | "approved" | "declined" | "voided" | "error" | "expired" | "duplicate_approved";
+        /** @description Approved attempt, otherwise latest non-duplicate attempt by created_at/id descending. Null summary means no eligible attempt. */
+        AdminPaymentSummary: {
+            status: components["schemas"]["AdminPaymentStatus"];
+            payment_method_type: components["schemas"]["AdminPaymentMethod"];
+        };
+        AdminOrderRow: {
+            id: components["schemas"]["Id"];
+            order_number: string;
+            placed_at: components["schemas"]["Timestamp"];
+            customer_name: string;
+            /** Format: email */
+            customer_email: string;
+            municipality_name: string;
+            department_name: string;
+            total_amount: components["schemas"]["MoneyAmount"];
+            status: components["schemas"]["OrderStatus"];
+            payment: components["schemas"]["AdminPaymentSummary"] | null;
+        };
+        AdminOrderPage: {
+            items: components["schemas"]["AdminOrderRow"][];
+            next_cursor: components["schemas"]["NextCursor"];
+            /** Format: int64 */
+            total: number;
+            /**
+             * Format: int64
+             * @description Global paid/preparing count, unaffected by filters; shared sidebar/chip/header source.
+             */
+            pending_dispatch_count: number;
+        };
+        AdminLotAllocation: {
+            lot_id: components["schemas"]["Id"];
+            lot_code: string;
+            production_date: components["schemas"]["CalendarDate"];
+            quantity: number;
+        };
+        AdminOrderLine: {
+            id: components["schemas"]["Id"];
+            variant_id: components["schemas"]["Id"];
+            product_slug: components["schemas"]["Slug"];
+            product_title: string;
+            variant_label: string;
+            sku: string;
+            /**
+             * Format: uri
+             * @description Current catalog image via public port, null if unavailable; never replace immutable text snapshots.
+             */
+            image_url: string | null;
+            quantity: number;
+            unit_price_amount: components["schemas"]["MoneyAmount"];
+            discount_amount: components["schemas"]["MoneyAmount"];
+            tax_amount: components["schemas"]["MoneyAmount"];
+            line_total_amount: components["schemas"]["MoneyAmount"];
+            lot_allocations: components["schemas"]["AdminLotAllocation"][];
+        };
+        /**
+         * @description Historical shipping snapshot. Existing orders store only rate name and
+         *     delivery-day estimates, not zone or band. Zone/band values are null for
+         *     these records; never infer them from a renamed rate or its label. Proposal
+         *     for G1: add typed zone/band snapshots on future placements, via shipping's
+         *     public port, to reproduce the canvas label without rewriting history.
+         *     max_weight_grams null means open upper bound only when min_weight_grams is
+         *     known; both null means the historical band was not recorded.
+         */
+        AdminShippingRate: {
+            rate_name: string;
+            zone_name: string | null;
+            min_weight_grams: number | null;
+            max_weight_grams: number | null;
+            estimated_days_min: number;
+            estimated_days_max: number;
+        };
+        /** @description Total = subtotal - discount + shipping - shipping_discount + tax, all integer centavos. */
+        AdminOrderSummary: {
+            subtotal_amount: components["schemas"]["MoneyAmount"];
+            discount_amount: components["schemas"]["MoneyAmount"];
+            coupon_code: string | null;
+            shipping_amount: components["schemas"]["MoneyAmount"];
+            shipping_discount_amount: components["schemas"]["MoneyAmount"];
+            tax_amount: components["schemas"]["MoneyAmount"];
+            total_amount: components["schemas"]["MoneyAmount"];
+            shipping: components["schemas"]["AdminShippingRate"];
+        };
+        AdminPaymentAttempt: {
+            id: components["schemas"]["Id"];
+            reference: string;
+            payment_method_type: components["schemas"]["AdminPaymentMethod"];
+            status: components["schemas"]["AdminPaymentStatus"];
+            provider_transaction_id: string | null;
+            created_at: components["schemas"]["Timestamp"];
+            finalized_at: components["schemas"]["AdminNullableTimestamp"];
+        };
+        AdminOrderHistory: {
+            id: components["schemas"]["Id"];
+            from_status: components["schemas"]["OrderStatus"] | null;
+            to_status: components["schemas"]["OrderStatus"];
+            /** @enum {string} */
+            actor_type: "system" | "admin" | "customer";
+            /** Format: uuid */
+            actor_id: string | null;
+            note: string | null;
+            created_at: components["schemas"]["Timestamp"];
+        };
+        AdminShippingAddress: {
+            recipient_name: string;
+            recipient_phone: string;
+            municipality_code: components["schemas"]["MunicipalityCode"];
+            municipality_name: string;
+            department_name: string;
+            address_line1: string;
+            address_line2: string | null;
+            postal_code: string | null;
+            delivery_notes: string | null;
+        };
+        /**
+         * @description Proposed L5(a) representation: carrier nullable while pending, mandatory
+         *     nonblank once shipped/delivered. Tracking remains optional. Proposed L5(b)
+         *     delivery timestamp is applied by shipping's orders.order_delivered consumer.
+         *     Shipped/delivered/returned states require a carrier and shipped_at;
+         *     delivered also requires delivered_at. Pending has no fulfillment timestamps.
+         */
+        AdminShipment: {
+            id: components["schemas"]["Id"];
+            order_id: components["schemas"]["Id"];
+            /** @enum {string} */
+            status: "pending" | "shipped" | "delivered" | "returned";
+            carrier_name: string | null;
+            tracking_number: string | null;
+            /** Format: uri */
+            tracking_url: string | null;
+            shipped_at: components["schemas"]["AdminNullableTimestamp"];
+            delivered_at: components["schemas"]["AdminNullableTimestamp"];
+            /** Format: uuid */
+            actor_id: string | null;
+            version: components["schemas"]["AdminVersion"];
+        } & ({
+            /** @enum {unknown} */
+            status?: "pending";
+            shipped_at?: null;
+            delivered_at?: null;
+        } | {
+            /** @enum {unknown} */
+            status?: "shipped" | "returned";
+            carrier_name?: string;
+            shipped_at?: components["schemas"]["Timestamp"];
+        } | {
+            /** @enum {unknown} */
+            status?: "delivered";
+            carrier_name?: string;
+            shipped_at?: components["schemas"]["Timestamp"];
+            delivered_at?: components["schemas"]["Timestamp"];
+        });
+        AdminOrder: {
+            id: components["schemas"]["Id"];
+            order_number: string;
+            status: components["schemas"]["OrderStatus"];
+            payment: components["schemas"]["AdminPaymentSummary"] | null;
+            placed_at: components["schemas"]["Timestamp"];
+            paid_at: components["schemas"]["AdminNullableTimestamp"];
+            cancelled_at: components["schemas"]["AdminNullableTimestamp"];
+            customer: components["schemas"]["Customer"];
+            shipping_address: components["schemas"]["AdminShippingAddress"];
+            lines: components["schemas"]["AdminOrderLine"][];
+            summary: components["schemas"]["AdminOrderSummary"];
+            /** @description Chronological created_at/id ascending, including duplicate_approved attempts. */
+            payment_attempts: components["schemas"]["AdminPaymentAttempt"][];
+            status_history: components["schemas"]["AdminOrderHistory"][];
+            shipment: components["schemas"]["AdminShipment"] | null;
+            version: components["schemas"]["AdminVersion"];
+        };
+        AdminMetricComparison: {
+            /** Format: int64 */
+            value: number;
+            /** Format: int64 */
+            previous_value: number;
+            /** @description Signed percentage, null when previous_value is zero; presentation only, never money. */
+            delta_percentage: number | null;
+        };
+        AdminOrderKPIs: {
+            paid_sales_amount: components["schemas"]["AdminMetricComparison"];
+            orders: components["schemas"]["AdminMetricComparison"];
+            average_order_amount: components["schemas"]["AdminMetricComparison"];
+            units_sold: components["schemas"]["AdminMetricComparison"];
+        };
+        AdminSalesBucket: {
+            from_at: components["schemas"]["Timestamp"];
+            to_at: components["schemas"]["Timestamp"];
+            previous_from_at: components["schemas"]["Timestamp"];
+            previous_to_at: components["schemas"]["Timestamp"];
+            sales_amount: components["schemas"]["MoneyAmount"];
+            previous_sales_amount: components["schemas"]["MoneyAmount"];
+        };
+        AdminOwnerAttention: {
+            /** @enum {string} */
+            role: "owner";
+            /** Format: int64 */
+            pending_dispatch_count: number;
+            oldest_pending_dispatch_paid_at: components["schemas"]["AdminNullableTimestamp"];
+            /** Format: int64 */
+            manual_refund_count: number;
+        };
+        AdminStaffAttention: {
+            /** @enum {string} */
+            role: "staff";
+            /** Format: int64 */
+            pending_dispatch_count: number;
+            oldest_pending_dispatch_paid_at: components["schemas"]["AdminNullableTimestamp"];
+            /** @description Restricted information is always null, never zero or an indirectly encoded count. */
+            manual_refund_count: null;
+        };
+        /** @description Counts only; no refund records or financial summaries disclosed to staff. */
+        AdminOrderAttention: components["schemas"]["AdminOwnerAttention"] | components["schemas"]["AdminStaffAttention"];
+        AdminOrderMetrics: {
+            /** @enum {string} */
+            period: "today" | "last_7_days" | "last_30_days" | "range";
+            generated_at: components["schemas"]["Timestamp"];
+            /** @enum {string} */
+            time_zone: "America/Bogota";
+            from_at: components["schemas"]["Timestamp"];
+            to_at: components["schemas"]["Timestamp"];
+            previous_from_at: components["schemas"]["Timestamp"];
+            previous_to_at: components["schemas"]["Timestamp"];
+            /** @enum {string} */
+            granularity: "hour" | "day";
+            kpis: components["schemas"]["AdminOrderKPIs"];
+            series: components["schemas"]["AdminSalesBucket"][];
+            attention: components["schemas"]["AdminOrderAttention"];
+            latest_orders: components["schemas"]["AdminOrderRow"][];
+        };
         /**
          * @description 5-digit DIVIPOLA (DANE) municipality code; the first two digits are the department code.
          * @example 11001
@@ -372,8 +822,101 @@ export interface components {
         Timestamp: string;
         /** Format: date */
         CalendarDate: string;
+        /** @description Cursor for the next page, or null on the last page. */
+        NextCursor: string | null;
     };
     responses: {
+        /** @description Complete order with the current order version; related modules may lag outbox delivery. */
+        AdminOrder: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                ETag: components["headers"]["AdminOrderETag"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["AdminOrder"];
+            };
+        };
+        /** @description Malformed request (bad_request). */
+        AdminBadRequest: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Missing, revoked, expired or pending session (authentication_required). */
+        AdminUnauthorized: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Insufficient authorization (forbidden) or CrossOriginProtection rejection (cross_origin_rejected). */
+        AdminForbidden: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Authorized lookup cannot find order (order_not_found). */
+        AdminNotFound: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Action not allowed in current state (invalid_order_transition), including conflicting dispatch; no changes. */
+        AdminStateConflict: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Missing/stale order If-Match or shipment_version (version_conflict); no changes to records, history, stock or outbox. */
+        AdminVersionConflict: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Invalid/unknown request fields or invalid query combination (validation_failed). */
+        AdminValidationFailed: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Unexpected failure (internal_error); no internal details or secrets. */
+        AdminInternalError: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
         /** @description Malformed request. */
         BadRequest: {
             headers: {
@@ -394,11 +937,20 @@ export interface components {
         };
     };
     parameters: {
+        AdminOrderId: components["schemas"]["Id"];
+        /** @description Exact order ETag; missing/stale is 412 version_conflict. Wildcards forbidden. */
+        AdminOrderIfMatch: string;
         /** @description Client-generated UUID; repeating it within 24 hours returns the original result. */
         IdempotencyKey: string;
+        /** @description Opaque cursor taken from a previous `next_cursor`. */
+        Cursor: string;
     };
     requestBodies: never;
-    headers: never;
+    headers: {
+        AdminNoStore: string;
+        /** @description Strong quoted order record version, matching JSON version. */
+        AdminOrderETag: string;
+    };
     pathItems: never;
 }
 export type $defs = Record<string, never>;
@@ -531,6 +1083,182 @@ export interface operations {
                 };
             };
             500: components["responses"]["InternalError"];
+        };
+    };
+    listAdminOrders: {
+        parameters: {
+            query?: {
+                /** @description Trim surrounding whitespace; empty after trimming means no search. */
+                search?: string;
+                status?: components["schemas"]["OrderStatus"][];
+                date_filter?: "last_30_days" | "all" | "range";
+                from_date?: components["schemas"]["CalendarDate"];
+                to_date?: components["schemas"]["CalendarDate"];
+                payment_method_type?: ("card" | "pse" | "nequi" | "bancolombia_transfer")[];
+                pending_dispatch?: boolean;
+                sort?: "placed_at" | "-placed_at";
+                limit?: 25 | 50 | 100;
+                /** @description Opaque cursor taken from a previous `next_cursor`. */
+                cursor?: components["parameters"]["Cursor"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Matching order page and global pending-dispatch count. */
+            200: {
+                headers: {
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderPage"];
+                };
+            };
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    getAdminOrderMetrics: {
+        parameters: {
+            query?: {
+                period?: "today" | "last_7_days" | "last_30_days" | "range";
+                from_date?: components["schemas"]["CalendarDate"];
+                to_date?: components["schemas"]["CalendarDate"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Resolved periods, KPI comparisons, sales series and role-safe alerts. */
+            200: {
+                headers: {
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOrderMetrics"];
+                };
+            };
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    getAdminOrder: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["AdminOrder"];
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            404: components["responses"]["AdminNotFound"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    prepareAdminOrder: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Exact order ETag; missing/stale is 412 version_conflict. Wildcards forbidden. */
+                "If-Match": components["parameters"]["AdminOrderIfMatch"];
+            };
+            path: {
+                id: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminOrderAction"];
+            };
+        };
+        responses: {
+            200: components["responses"]["AdminOrder"];
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            404: components["responses"]["AdminNotFound"];
+            409: components["responses"]["AdminStateConflict"];
+            412: components["responses"]["AdminVersionConflict"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    deliverAdminOrder: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Exact order ETag; missing/stale is 412 version_conflict. Wildcards forbidden. */
+                "If-Match": components["parameters"]["AdminOrderIfMatch"];
+            };
+            path: {
+                id: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminOrderAction"];
+            };
+        };
+        responses: {
+            200: components["responses"]["AdminOrder"];
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            404: components["responses"]["AdminNotFound"];
+            409: components["responses"]["AdminStateConflict"];
+            412: components["responses"]["AdminVersionConflict"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    cancelAdminOrder: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Exact order ETag; missing/stale is 412 version_conflict. Wildcards forbidden. */
+                "If-Match": components["parameters"]["AdminOrderIfMatch"];
+            };
+            path: {
+                id: components["parameters"]["AdminOrderId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["CancelAdminOrder"];
+            };
+        };
+        responses: {
+            200: components["responses"]["AdminOrder"];
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            404: components["responses"]["AdminNotFound"];
+            409: components["responses"]["AdminStateConflict"];
+            412: components["responses"]["AdminVersionConflict"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
         };
     };
 }

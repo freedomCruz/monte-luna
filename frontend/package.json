@@ -9,7 +9,7 @@
     "check": "astro check && tsc --project e2e/tsconfig.json",
     "test": "vitest run",
     "test:e2e": "playwright test",
-    "types:generate": "openapi-typescript ../contracts/openapi/platform.yaml -o src/generated/platform.ts && openapi-typescript ../contracts/openapi/catalog.yaml -o src/generated/catalog.ts && openapi-typescript ../contracts/openapi/orders.yaml -o src/generated/orders.ts && openapi-typescript ../contracts/openapi/payments.yaml -o src/generated/payments.ts && openapi-typescript ../contracts/openapi/identity.yaml -o src/generated/identity.ts && node scripts/generate-divipola.mjs"
+    "types:generate": "openapi-typescript ../contracts/openapi/platform.yaml -o src/generated/platform.ts && openapi-typescript ../contracts/openapi/catalog.yaml -o src/generated/catalog.ts && openapi-typescript ../contracts/openapi/orders.yaml -o src/generated/orders.ts && openapi-typescript ../contracts/openapi/shipping.yaml -o src/generated/shipping.ts && openapi-typescript ../contracts/openapi/payments.yaml -o src/generated/payments.ts && openapi-typescript ../contracts/openapi/identity.yaml -o src/generated/identity.ts && node scripts/generate-divipola.mjs"
   },
   "devEngines": {
     "packageManager": {
