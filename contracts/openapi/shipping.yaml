@@ -1,0 +1,135 @@
+openapi: 3.1.0
+info:
+  title: Monteluna shipping admin API
+  version: 1.0.0
+  description: |
+    Admin Orders v1 contract proposal for G1, S1-S7. Manual dispatch only;
+    no carrier integration, split shipments, or shipping administration screens.
+    Rules: docs/domain/shipping.md and docs/architecture/api-conventions.md.
+    Owner and staff require an active, fully authenticated mandatory-2FA session;
+    pending sessions return 401. Check authorization before order existence.
+    Every response, including errors, sends Cache-Control: no-store. Unsafe
+    requests use http.CrossOriginProtection; cross-origin rejection is 403.
+    No CORS. Never return guest tracking tokens, provider credentials or payloads.
+
+    L5 proposals for user approval, not changes to the approved domain documents:
+    (a) carrier_name nullable while pending, nonblank for shipped/delivered;
+    no fake carrier on orders.order_paid initialization.
+    (b) orders owns delivery and publishes the proposed orders.order_delivered
+    event; shipping consumes idempotently to set delivered_at and its own version.
+    (c) A missing shipment for an existing paid/preparing order is initialized
+    on demand during dispatch; no cross-schema backfill migration. Unique order_id
+    plus an idempotent orders.order_paid consumer prevents duplicates and regression.
+
+    Problem.code values: bad_request (400), authentication_required (401),
+    forbidden or cross_origin_rejected (403), order_not_found (404),
+    invalid_order_transition (409), version_conflict (412),
+    validation_failed (422), internal_error (500). RFC 9457 shared Problem.
+security:
+  - adminSession: []
+tags:
+  - name: shipping-admin
+    description: Manual dispatch for owner and staff as part of order management.
+paths:
+  /api/v1/admin/orders/{id}/dispatch:
+    parameters:
+      - $ref: ./orders.yaml#/components/parameters/AdminOrderId
+    post:
+      operationId: dispatchAdminOrder
+      tags: [shipping-admin]
+      summary: Dispatch a paid or preparing order (owner or staff)
+      security:
+        - adminSession: []
+      x-roles: [owner, staff]
+      description: |
+        id addresses the ORDER, not a shipment; If-Match is the strong ORDER ETag
+        from getAdminOrder. shipment_version is the current shipment.version from
+        that detail, or null only when shipment is null. Both versions are checked
+        before any mutation. Missing/stale If-Match or mismatched shipment_version
+        is 412 version_conflict. A concurrently initialized pending shipment after
+        a null version was read also requires reload (412), not a silent overwrite.
+        Only order status paid/preparing and a missing or pending shipment are
+        eligible. No dispatch from pending_payment, shipped, delivered, cancelled
+        or expired. Already dispatched is 409 invalid_order_transition unless a
+        stale version fails first. Serialize with preparation and cancellation:
+        an accepted dispatch prevents cancellation even while the order consumer
+        lags; both conflicting commands can never succeed. Modules cooperate through
+        public ports, never another module's private packages or cross-schema reads.
+
+        Initialize a missing shipment on demand (L5c), one per order. Atomically in
+        shipping, set nonblank carrier_name, optional tracking_number/tracking_url,
+        status shipped, shipped_at, actor_id and increment shipment version; insert
+        shipping.shipment_shipped in shipping.outbox. Payload includes shipment_id,
+        order_id, carrier_name, tracking_number, tracking_url and shipped_at; actor
+        provenance must also reach the orders history through the public boundary.
+        Rejected state/version/input leaves shipments, versions, history and outbox
+        unchanged, including no on-demand row after rejection.
+
+        orders consumes shipment_shipped idempotently: for paid, record
+        paid -> preparing -> shipped in ONE orders transaction with both admin
+        history entries and acting actor_id; for preparing record preparing ->
+        shipped. Increment order version for each actual transition. A duplicate
+        or delayed event must not regress terminal state or duplicate history.
+        200 confirms shipment persistence and durable event enqueueing, not that
+        the asynchronous order projection has already reached shipped; reload
+        getAdminOrder until it reflects shipped, with errors surfaced to the user.
+        The returned ETag quotes the SHIPMENT version, not the order version;
+        never reuse it as an order If-Match. Reload detail for future order actions.
+
+        notifications consumes shipping.shipment_shipped idempotently for a Spanish
+        dispatch email, using the orders public port to obtain the customer. Missing
+        guide/link is valid and the template omits those values. External email
+        outage/suppression never rolls back dispatch; success does not claim delivery.
+      parameters:
+        - $ref: ./orders.yaml#/components/parameters/AdminOrderIfMatch
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/DispatchAdminOrder'}
+      responses:
+        '200':
+          description: Dispatched shipment; order history and email converge asynchronously.
+          headers:
+            Cache-Control: {$ref: ./orders.yaml#/components/headers/AdminNoStore}
+            ETag:
+              description: Strong quoted SHIPMENT version; not an order precondition.
+              schema: {type: string, pattern: '^"[1-9][0-9]*"$'}
+          content:
+            application/json:
+              schema: {$ref: ./orders.yaml#/components/schemas/AdminShipment}
+        '400': {$ref: ./orders.yaml#/components/responses/AdminBadRequest}
+        '401': {$ref: ./orders.yaml#/components/responses/AdminUnauthorized}
+        '403': {$ref: ./orders.yaml#/components/responses/AdminForbidden}
+        '404': {$ref: ./orders.yaml#/components/responses/AdminNotFound}
+        '409': {$ref: ./orders.yaml#/components/responses/AdminStateConflict}
+        '412': {$ref: ./orders.yaml#/components/responses/AdminVersionConflict}
+        '422': {$ref: ./orders.yaml#/components/responses/AdminValidationFailed}
+        '500': {$ref: ./orders.yaml#/components/responses/AdminInternalError}
+components:
+  securitySchemes:
+    adminSession:
+      $ref: ./common.yaml#/components/securitySchemes/adminSession
+  schemas:
+    DispatchAdminOrder:
+      type: object
+      additionalProperties: false
+      required: [carrier_name, shipment_version]
+      properties:
+        carrier_name:
+          type: string
+          minLength: 1
+          pattern: '\S'
+          description: Required nonblank carrier; trim surrounding whitespace.
+        shipment_version:
+          type: [integer, 'null']
+          minimum: 1
+          description: Expected shipment version, null only if the order detail had shipment=null.
+        tracking_number:
+          type: [string, 'null']
+          description: Optional; absent/null/blank after trimming is stored as null.
+        tracking_url:
+          type: [string, 'null']
+          format: uri
+          pattern: '^https://[^/\s?#]+(?:[/?#][^\s]*)?$'
+          description: Optional absolute HTTPS URL; absent/null means no link. Empty or non-HTTPS URLs fail validation.
