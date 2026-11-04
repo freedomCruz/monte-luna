@@ -71,6 +71,12 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	defer admins.Close()
+	if err := ship.EnableFulfillment(shipmentOrders{checkout}, time.Now); err != nil {
+		return err
+	}
+	if err := checkout.EnableAdminReads(adminOrderPayments{payment}, module, adminOrderShipments{ship}); err != nil {
+		return err
+	}
 	notify, err := notifications.New(ctx, cfg.databaseURL, cfg.notifications, logger, notifications.Options{})
 	if err != nil {
 		return err
@@ -100,8 +106,20 @@ func run(logger *slog.Logger) error {
 	}
 	relay.Subscribe("payments.payment_approved", checkout.HandlePaymentApproved)
 	relay.Subscribe("orders.order_cancelled", payment.HandleOrderCancelled)
+	relay.Subscribe("orders.order_paid", ship.HandleOrderPaid)
+	relay.Subscribe("orders.order_delivered", ship.HandleOrderDelivered)
+	relay.Subscribe("shipping.shipment_shipped", checkout.HandleShipmentShipped)
 	relay.Subscribe("identity.password_reset_requested", notifyConsumer)
 	relay.Subscribe("identity.admin_invited", notifyConsumer)
+	// The relay stops at the first failing consumer of an event, so customer
+	// emails subscribe after the business consumers: an email outage only
+	// retries the (idempotent) chain and never delays a refund or order update.
+	orderEmails, err := notify.OrderConsumer(orderContacts{checkout})
+	if err != nil {
+		return err
+	}
+	relay.Subscribe("shipping.shipment_shipped", orderEmails)
+	relay.Subscribe("orders.order_cancelled", orderEmails)
 	relayCtx, cancelRelay := context.WithCancel(ctx)
 	relayDone := make(chan struct{})
 	go func() { defer close(relayDone); relay.Run(relayCtx) }()
@@ -129,6 +147,15 @@ func run(logger *slog.Logger) error {
 	checkout.RegisterRoutes(mux)
 	payment.RegisterRoutes(mux)
 	admins.RegisterRoutes(mux)
+	if err := checkout.RegisterAdminReadRoutes(mux, admins.Access(), admins.LoadAdminSession); err != nil {
+		return err
+	}
+	if err := checkout.RegisterAdminWriteRoutes(mux, admins.Access(), admins.LoadAdminSession); err != nil {
+		return err
+	}
+	if err := ship.RegisterAdminRoutes(mux, admins.Access(), admins.LoadAdminSession); err != nil {
+		return err
+	}
 	notify.RegisterRoutes(mux)
 
 	srv := &http.Server{
@@ -164,8 +191,10 @@ func run(logger *slog.Logger) error {
 	return nil
 }
 
-// outboxSchemas lists every module outbox the relay drains.
-var outboxSchemas = []string{"catalog", "orders", "payments", "identity"}
+// outboxSchemas lists every module outbox the relay drains. Every event type
+// a module publishes must have its subscribers registered before its schema is
+// listed: the relay marks events without subscribers delivered.
+var outboxSchemas = []string{"catalog", "orders", "payments", "identity", "shipping"}
 
 type config struct {
 	addr, databaseURL, mediaBaseURL string

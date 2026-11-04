@@ -36,7 +36,7 @@ func TestIdentityStartupConfiguration(t *testing.T) {
 }
 
 func TestRelayIncludesIdentityOutbox(t *testing.T) {
-	if !slices.Equal(outboxSchemas, []string{"catalog", "orders", "payments", "identity"}) {
+	if !slices.Equal(outboxSchemas, []string{"catalog", "orders", "payments", "identity", "shipping"}) {
 		t.Fatalf("relay schemas %v", outboxSchemas)
 	}
 }

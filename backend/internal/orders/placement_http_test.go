@@ -155,6 +155,15 @@ func TestPlacementReplaySnapshotsAndGuestPrivacy(t *testing.T) {
 	placed := decode(t, response)
 	token := placed["tracking_token"].(string)
 	orderID := placed["order_id"].(string)
+	if got := scalar[string](t, db, `SELECT shipping_zone_name FROM orders.orders WHERE id=$1`, orderID); got != "Demo Bogotá" {
+		t.Fatalf("shipping zone snapshot = %q", got)
+	}
+	if got := scalar[int](t, db, `SELECT shipping_min_weight_grams FROM orders.orders WHERE id=$1`, orderID); got != 0 {
+		t.Fatalf("shipping minimum snapshot = %d", got)
+	}
+	if got := scalar[int](t, db, `SELECT shipping_max_weight_grams FROM orders.orders WHERE id=$1`, orderID); got != 1000 {
+		t.Fatalf("shipping maximum snapshot = %d", got)
+	}
 	if response.Header().Get("Location") != "/api/v1/orders/track?token="+token {
 		t.Fatal("invalid Location")
 	}
@@ -210,6 +219,9 @@ func TestPlacementReplaySnapshotsAndGuestPrivacy(t *testing.T) {
 	}
 	execSQL(t, db, `UPDATE catalog.products SET title='Edited',slug='edited',status='archived' WHERE slug='finca-el-mirador';UPDATE shipping.shipping_rates SET name='Edited',estimated_days_min=8,estimated_days_max=9`)
 	again := callTrack(t, mux, c, token, 200)
+	if got := scalar[string](t, db, `SELECT shipping_zone_name FROM orders.orders WHERE id=$1`, orderID); got != "Demo Bogotá" {
+		t.Fatalf("live edits changed shipping zone snapshot: %q", got)
+	}
 	original, _ := json.Marshal(guest)
 	updated, _ := json.Marshal(again)
 	if !bytes.Equal(original, updated) {

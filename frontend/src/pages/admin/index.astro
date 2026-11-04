@@ -1,13 +1,8 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { ADMIN_LANDING } from '../../lib/admin/navigation';
+import { AdminHomePage } from '../../components/admin/home/AdminHomePage';
 ---
 
-<AdminLayout title="Admin Monteluna">
-  <main class="flex min-h-screen items-center justify-center bg-background">
-    <p role="status" class="font-bold text-muted-foreground">Abriendo tu cuenta…</p>
-  </main>
-  <script define:vars={{ destination: ADMIN_LANDING }}>
-    window.location.replace(destination);
-  </script>
+<AdminLayout title="Inicio · Admin Monteluna">
+  <AdminHomePage client:load />
 </AdminLayout>

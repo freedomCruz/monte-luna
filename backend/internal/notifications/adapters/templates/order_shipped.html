@@ -1,0 +1,6 @@
+<p>Hola {{.DisplayName}},</p>
+<p>Tu pedido {{.OrderNumber}} ya va en camino.</p>
+<p>Transportadora: {{.CarrierName}}</p>
+{{with .TrackingNumber}}<p>Número de guía: {{.}}</p>
+{{end}}{{with .TrackingURL}}<p><a href="{{.}}">Seguir mi envío</a></p>
+{{end}}<p>Gracias por comprar en Monteluna.</p>

@@ -1,0 +1,5 @@
+<p>Hola {{.DisplayName}},</p>
+<p>Tu pedido {{.OrderNumber}} fue cancelado.</p>
+{{with .Reason}}<p>Motivo: {{.}}</p>
+{{end}}<p>Si ya realizaste el pago, gestionaremos la devolución de tu dinero.</p>
+<p>Gracias por tu comprensión.</p>

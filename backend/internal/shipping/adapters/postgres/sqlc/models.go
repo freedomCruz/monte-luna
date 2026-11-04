@@ -8,6 +8,40 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+type ShippingOutbox struct {
+	ID          string
+	Type        string
+	OccurredAt  pgtype.Timestamptz
+	Payload     []byte
+	Status      string
+	Attempts    int32
+	AvailableAt pgtype.Timestamptz
+	DeliveredAt pgtype.Timestamptz
+	LastError   *string
+	CreatedAt   pgtype.Timestamptz
+	UpdatedAt   pgtype.Timestamptz
+}
+
+type ShippingProcessedEvent struct {
+	ID          string
+	ProcessedAt pgtype.Timestamptz
+}
+
+type ShippingShipment struct {
+	ID             string
+	OrderID        string
+	CarrierName    *string
+	TrackingNumber *string
+	TrackingUrl    *string
+	Status         string
+	ShippedAt      pgtype.Timestamptz
+	DeliveredAt    pgtype.Timestamptz
+	ActorID        *string
+	Version        int32
+	CreatedAt      pgtype.Timestamptz
+	UpdatedAt      pgtype.Timestamptz
+}
+
 type ShippingShippingRate struct {
 	ID                          string
 	ZoneID                      string

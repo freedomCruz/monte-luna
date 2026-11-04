@@ -8,6 +8,7 @@ import (
 	"errors"
 	htmltemplate "html/template"
 	"net/url"
+	"strings"
 	texttemplate "text/template"
 
 	"github.com/freedomCruz/monte-luna/backend/internal/notifications/domain"
@@ -52,11 +53,25 @@ func (r *TemplateRenderer) Render(ctx context.Context, key string, view domain.T
 		default:
 			return domain.Email{}, errors.New("invalid admin invitation role")
 		}
+	case "order_shipped":
+		subject = "Tu pedido " + view.OrderNumber + " de Monteluna va en camino"
+		if strings.TrimSpace(view.CarrierName) == "" {
+			return domain.Email{}, errors.New("shipment email requires a carrier")
+		}
+		// Shipping accepts only https tracking links; recheck before rendering a href.
+		if view.TrackingURL != "" && !safeLink(view.TrackingURL, false) {
+			return domain.Email{}, errors.New("invalid tracking link")
+		}
+	case "order_cancelled":
+		subject = "Tu pedido " + view.OrderNumber + " de Monteluna fue cancelado"
 	default:
 		return domain.Email{}, errors.New("unknown notification template")
 	}
-	target, err := url.Parse(view.ActionURL)
-	if err != nil || target.Hostname() == "" || target.User != nil || (target.Scheme != "https" && target.Scheme != "http") {
+	if strings.HasPrefix(key, "order_") {
+		if strings.TrimSpace(view.OrderNumber) == "" {
+			return domain.Email{}, errors.New("order email requires an order number")
+		}
+	} else if !safeLink(view.ActionURL, true) {
 		return domain.Email{}, errors.New("invalid notification action link")
 	}
 	var html, text bytes.Buffer
@@ -67,4 +82,13 @@ func (r *TemplateRenderer) Render(ctx context.Context, key string, view domain.T
 		return domain.Email{}, errors.New("notification text rendering failed")
 	}
 	return domain.Email{Subject: subject, HTML: html.String(), Text: text.String()}, nil
+}
+
+// safeLink rejects relative, credential-bearing and non-web links.
+func safeLink(raw string, allowHTTP bool) bool {
+	target, err := url.Parse(raw)
+	if err != nil || target.Hostname() == "" || target.User != nil {
+		return false
+	}
+	return target.Scheme == "https" || (allowHTTP && target.Scheme == "http")
 }

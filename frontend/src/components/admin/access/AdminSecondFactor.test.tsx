@@ -82,7 +82,7 @@ describe('AdminSecondFactor (T3: S1, S3, S4)', () => {
 
     await waitFor(() => {
       expect(verifySecondFactor).toHaveBeenCalledWith({ totp_code: '123456' });
-      expect(window.location.assign).toHaveBeenCalledWith('/admin/cuenta/');
+      expect(window.location.assign).toHaveBeenCalledWith('/admin/');
     });
   });
 
@@ -116,7 +116,7 @@ describe('AdminSecondFactor (T3: S1, S3, S4)', () => {
 
     await waitFor(() => {
       expect(verifySecondFactor).toHaveBeenCalledWith({ recovery_code: '7KQ2-9MXD' });
-      expect(window.location.assign).toHaveBeenCalledWith('/admin/cuenta/');
+      expect(window.location.assign).toHaveBeenCalledWith('/admin/');
     });
   });
 

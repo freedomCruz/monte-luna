@@ -22,8 +22,10 @@ type Module struct {
 	maintenance *app.Maintenance
 	logger      *slog.Logger
 	repository  *postgres.Repository
-	inventory   domain.ReallocationPort
+	inventory   domain.OrderInventory
 	clock       domain.Clock
+	adminReads  *app.AdminReads
+	shipments   domain.AdminShipmentsPort
 }
 type CatalogReader = adapters.CatalogReader
 

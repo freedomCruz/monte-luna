@@ -117,8 +117,8 @@ describe('Design tokens invariant in islands (S8 / Finding 4)', () => {
       'width', 'linecap', 'linejoin', 'dasharray', 'dashoffset', 'miterlimit',
       // to / from / via (gradient directions)
       't', 'tr', 'r', 'br', 'b', 'bl', 'l', 'tl',
-      // not colors (e.g. data attributes, aria, or IDs like to-cart)
-      'cart',
+      // not colors (e.g. data attributes, aria, or IDs like to-cart, to-preparing)
+      'cart', 'preparing',
     ]);
 
     for (const file of sourceFiles) {

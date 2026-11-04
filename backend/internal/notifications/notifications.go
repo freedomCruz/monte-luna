@@ -144,6 +144,23 @@ func (m *Module) Consumer(decryptor TokenDecryptor, links LinkBuilder) (platform
 	}, nil
 }
 
+// OrderContact and OrderContacts are implemented by the composition root on
+// top of the orders public facade; notifications never reads orders tables.
+type OrderContact = domain.OrderContact
+type OrderContacts = domain.OrderContacts
+
+// OrderConsumer returns the outbox handler for shipping.shipment_shipped and
+// orders.order_cancelled customer emails.
+func (m *Module) OrderConsumer(orders OrderContacts) (platform.Consumer, error) {
+	if orders == nil {
+		return nil, errors.New("notifications order consumer requires an order contact port")
+	}
+	consumer := app.NewOrderConsumer(m.repository, m.renderer, m.sender, orders, m.now)
+	return func(ctx context.Context, event platform.Event) error {
+		return consumer.Handle(ctx, domain.Event{ID: event.ID, Type: event.Type, Payload: event.Payload})
+	}, nil
+}
+
 // Cleanup runs one bounded retention pass over every notifications policy.
 func (m *Module) Cleanup(ctx context.Context, now time.Time) error {
 	return m.cleanup(ctx, now, cleanupBatchSize)

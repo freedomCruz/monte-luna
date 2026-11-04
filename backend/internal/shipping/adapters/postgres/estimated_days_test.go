@@ -71,7 +71,8 @@ func TestEstimatedDaysMigrationRoundTrip(t *testing.T) {
 	zone := scalar[string](t, db, `INSERT INTO shipping.shipping_zones(name) VALUES('Legacy') RETURNING id`)
 	execSQL(t, db, `INSERT INTO shipping.shipping_rates(zone_id,name,price_amount,estimated_days_min,estimated_days_max) VALUES($1,'Legacy rate',100,1,2)`, zone)
 	before := snapshot(t, db)
-	if err := postgres.Migrate(t.Context(), db); err != nil {
+	// Exercise migration 2 in isolation, regardless of newer shipping migrations.
+	if _, err := provider.UpTo(t.Context(), 2); err != nil {
 		t.Fatal(err)
 	}
 	if snapshot(t, db) != before {
@@ -97,7 +98,7 @@ func TestEstimatedDaysMigrationRoundTrip(t *testing.T) {
 		}
 	}
 	execSQL(t, db, `UPDATE shipping.shipping_rates SET estimated_days_min=1,estimated_days_max=2`)
-	if err := postgres.Migrate(t.Context(), db); err != nil {
+	if _, err := provider.UpTo(t.Context(), 2); err != nil {
 		t.Fatal(err)
 	}
 	if snapshot(t, db) != before {

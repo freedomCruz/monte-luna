@@ -48,11 +48,12 @@ Canonical requirements and data model for the `shipping` module. Conventions in 
 **Fulfillment workflow in v1 (Manual dispatch)**
 - When an order is paid, `shipping` consumes `orders.order_paid` and creates a shipment record in `shipments` with `status = 'pending'`.
 - In v1, dispatch is performed manually by store administrators via the `/admin` dashboard:
-  - Admin enters `carrier_name` (e.g. Servientrega, Coordinadora, Inter Rapidísimo, Envía), `tracking_number`, and optional `tracking_url`.
+  - Admin enters `carrier_name` (e.g. Servientrega, Coordinadora, Inter Rapidísimo, Envía), optional `tracking_number`, and optional `tracking_url`.
+  - Dispatch is allowed while the order is `paid` or `preparing`. If the shipment row does not exist yet (the `orders.order_paid` consumer has not run, or the order was paid before shipments existed), dispatch creates it on demand; exactly one shipment per order, and no backfill of earlier orders (approved 2026-11-03).
   - Marking the package as dispatched transitions status to `'shipped'`, records `shipped_at = now()`, and publishes `shipping.shipment_shipped` to `shipping.outbox`.
   - `orders` consumes `shipping.shipment_shipped` and updates the order status to `'shipped'`.
   - `notifications` consumes `shipping.shipment_shipped` (or `orders.order_shipped`) and sends the dispatch email with tracking details to the buyer.
-  - Delivery is confirmed manually by admin updating status to `'delivered'` with `delivered_at = now()`.
+  - Delivery is confirmed manually by an admin in `orders` (order `shipped` → `delivered`), which publishes `orders.order_delivered`; `shipping` consumes it idempotently and sets the shipment to `'delivered'` with `delivered_at` (approved 2026-11-03).
 
 **Future carrier API integration**
 - Direct integration with logistics carriers (automated rate queries, shipping guide generation, label printing, webhook tracking updates) will be implemented as modular adapters inside `internal/shipping` implementing a dedicated `CarrierPort` interface, without breaking existing contracts.
@@ -128,7 +129,7 @@ Fulfillment records for customer orders. Exactly one shipment per order in v1.
 | Column | Type | Rules |
 |---|---|---|
 | `order_id` | `uuid` | Not null; `UNIQUE`; plain identifier from `orders` (no cross-schema FK) |
-| `carrier_name` | `text` | Not null; name of the shipping company |
+| `carrier_name` | `text` | Nullable while `status = 'pending'`; required and nonblank once `shipped` or `delivered` (`CHECK`); name of the shipping company |
 | `tracking_number` | `text` | Nullable |
 | `tracking_url` | `text` | Nullable |
 | `status` | `text` | Not null, default `'pending'`; `CHECK (status IN ('pending','shipped','delivered','returned'))` |
@@ -150,7 +151,8 @@ Outbox table and consumer tracking follow [data-modeling.md](../architecture/dat
     - `notifications`: sends email notification with tracking number and link to customer.
 
 **Consumed events (`shipping.processed_events`):**
-- **`orders.order_paid`**: Consumed by `shipping` to insert a new shipment with `status = 'pending'`.
+- **`orders.order_paid`**: Consumed by `shipping` to insert a new shipment with `status = 'pending'` (no-op when dispatch already created it).
+- **`orders.order_delivered`**: Consumed by `shipping` to set the shipment to `'delivered'` with `delivered_at`.
 
 ## 4. Open Items
 

@@ -1,6 +1,6 @@
 openapi: 3.1.0
 info:
-  title: Monteluna orders storefront API
+  title: Monteluna orders API
   version: 1.0.0
   description: |
     Orders module contract for Monteluna (Cart & Checkout v1).
@@ -13,7 +13,46 @@ info:
     internal/shipping and has no public HTTP endpoint. Coupons are out of
     scope for this version and will be added as an optional field.
 
-    Error codes (Problem.code) used by this contract:
+    Admin Orders v1 proposal for gate G1 (S1-S7); not an implementation.
+    Owner and staff with active, fully authenticated 2FA sessions may use every
+    admin operation. Pending sessions return 401. Authorization is server-side.
+    All admin responses, including errors, send Cache-Control: no-store.
+    Unsafe requests use http.CrossOriginProtection (403 cross_origin_rejected).
+    No CORS. No guest tracking tokens, provider secrets, or fiscal documents
+    are exposed by admin views. Payment information comes through the payments
+    public port, images through catalog, and shipment information through shipping;
+    never cross-schema reads. Null means unknown, never an invented default.
+    Notifications consume shipping.shipment_shipped and orders.order_cancelled
+    asynchronously using Spanish templates; success does not promise email delivery.
+
+    L5 proposals requiring G1 approval and coordinator-owned domain updates:
+    (a) Pending shipments have nullable carrier_name, required and nonblank once
+    shipped or delivered; a carrier is not known when orders.order_paid arrives.
+    (b) Delivery is an orders-owned shipped-to-delivered transition publishing a
+    new orders.order_delivered outbox event (order_id, delivered_at, actor_id);
+    shipping consumes it idempotently to mark the shipment delivered. Both modules
+    retain their own writes, with eventual consistency and no cross-schema joins.
+    (c) No bulk backfill: dispatch creates a missing pending shipment on demand
+    for an eligible paid/preparing order, using shipping's public port and unique
+    order_id. A delayed orders.order_paid consumer must not duplicate/reset it.
+    (d) The pending-dispatch header link applies pending_dispatch=true to this
+    list, not the deferred A-Envios screen; clear date/search/status/method filters
+    when following the all-pending link so old paid orders remain reachable.
+    (e) No invoice/fiscal-document fields or Factura card in this stage.
+    (f) Show the Pedidos sidebar/mobile badge using the global pending dispatch
+    count, also returned by this list and metrics, independent of date filters.
+
+    Admin stable Problem.code values:
+    - bad_request (400): malformed JSON, UUID, cursor, query or If-Match syntax.
+    - authentication_required (401): absent, expired, revoked or pending session.
+    - forbidden (403): insufficient authorization; cross_origin_rejected (403).
+    - order_not_found (404): authorized lookup cannot find the order.
+    - invalid_order_transition (409): source status does not permit the action.
+    - version_conflict (412): missing/stale If-Match or shipment_version; no changes.
+    - validation_failed (422): invalid/unknown body fields or query combinations.
+    - internal_error (500): unexpected failure with safe details only.
+
+    Error codes (Problem.code) used by the storefront contract:
     - validation_failed: field errors listed in `errors` (422).
     - unknown_municipality: municipality code is not a DIVIPOLA code (422, field error).
     - unsupported_destination: no active shipping zone or rate covers the destination and weight (422, field error).
@@ -166,8 +205,698 @@ paths:
         '500':
           $ref: ./common.yaml#/components/responses/InternalError
 
+  /api/v1/admin/orders:
+    get:
+      operationId: listAdminOrders
+      tags: [orders]
+      summary: Search and paginate orders (owner or staff)
+      security:
+        - adminSession: []
+      x-roles: [owner, staff]
+      description: |
+        Case-insensitive literal substring search across order_number, customer
+        name and email (OR); combine other filters using AND. Repeated statuses
+        and payment methods use OR within that filter. Payment method matches
+        the selected payment summary (approved attempt, otherwise latest excluding
+        duplicate_approved, deterministic created_at/id order), never any historical
+        failed attempt. pending_dispatch=true means status paid or preparing,
+        irrespective of whether the pending shipment consumer has run.
+        Date filtering uses placed_at in America/Bogota: inclusive from_date and
+        to_date calendar dates become a half-open UTC interval. Default last_30_days
+        includes today and the preceding 29 days; date_filter=all removes dates;
+        date_filter=range requires both bounds with from_date <= to_date. Bounds
+        with other date_filter values return 422 validation_failed.
+        Sort by placed_at and id in the same direction, newest first by default.
+        Opaque cursors bind filters and sort; changing them requires a fresh cursor
+        (mismatch returns 400 bad_request). Keep prior cursors client-side for Back.
+        total counts all matching rows before pagination. pending_dispatch_count
+        is a global paid/preparing count for chips, header and sidebar, unaffected
+        by search, status, dates, method or pagination. No batch actions in v1.
+      parameters:
+        - name: search
+          in: query
+          schema: {type: string, minLength: 1}
+          description: Trim surrounding whitespace; empty after trimming means no search.
+        - name: status
+          in: query
+          style: form
+          explode: true
+          schema:
+            type: array
+            minItems: 1
+            uniqueItems: true
+            items: {$ref: '#/components/schemas/OrderStatus'}
+        - name: date_filter
+          in: query
+          schema: {type: string, enum: [last_30_days, all, range], default: last_30_days}
+        - name: from_date
+          in: query
+          schema: {$ref: ./common.yaml#/components/schemas/CalendarDate}
+        - name: to_date
+          in: query
+          schema: {$ref: ./common.yaml#/components/schemas/CalendarDate}
+        - name: payment_method_type
+          in: query
+          style: form
+          explode: true
+          schema:
+            type: array
+            minItems: 1
+            uniqueItems: true
+            items: {type: string, enum: [card, pse, nequi, bancolombia_transfer]}
+        - name: pending_dispatch
+          in: query
+          schema: {type: boolean, default: false}
+        - name: sort
+          in: query
+          schema: {type: string, enum: [placed_at, '-placed_at'], default: '-placed_at'}
+        - name: limit
+          in: query
+          schema: {type: integer, enum: [25, 50, 100], default: 25}
+        - $ref: ./common.yaml#/components/parameters/Cursor
+      responses:
+        '200':
+          description: Matching order page and global pending-dispatch count.
+          headers:
+            Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminOrderPage'}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+
+  /api/v1/admin/orders/metrics:
+    get:
+      operationId: getAdminOrderMetrics
+      tags: [orders]
+      summary: Read order dashboard metrics (owner or staff)
+      security:
+        - adminSession: []
+      x-roles: [owner, staff]
+      description: |
+        Count only orders currently paid, preparing, shipped or delivered, using
+        paid_at for KPI and sales bucket membership (not placement or attempt time).
+        Paid sales sum total_amount, including shipping and tax after discounts;
+        units sum line quantities; average ticket is sales/count rounded half up
+        to integer centavos (zero if no orders). No settlement fees or refunds are
+        subtracted, and cancelled orders are excluded even if previously paid.
+        Resolve calendar days in America/Bogota. today begins local midnight and
+        ends at generated_at; previous period is the same elapsed duration yesterday.
+        last_7_days/last_30_days include today and 6/29 preceding calendar days;
+        end at generated_at, previous period immediately precedes from_at and has
+        exactly the same duration. range requires inclusive from_date/to_date,
+        ending at midnight after to_date; reversed or future dates are 422.
+        Bounds with non-range periods are 422. Return the resolved UTC intervals.
+        today has hourly buckets (partial final hour); other periods daily buckets
+        (partial final day for rolling periods). Align previous buckets by elapsed
+        offset, clip at interval ends, emit zero-valued empty buckets chronologically.
+        Each KPI returns value, previous_value and delta_percentage; delta is
+        100*(value-previous)/previous, null when previous=0, including both zero.
+        attention counts are global current counts, not period-filtered.
+        manual_refund_count is a nonnegative integer only for owner; staff receives
+        null and no refund information is queried, counted or leaked via totals.
+        Count only manual/pending refunds through the payments public port.
+        latest_orders are the six newest orders of ALL statuses by placed_at/id
+        descending, independent of the selected period, using list row fields.
+        A client chart/table toggle uses the same series without a new endpoint.
+      parameters:
+        - name: period
+          in: query
+          schema: {type: string, enum: [today, last_7_days, last_30_days, range], default: last_30_days}
+        - name: from_date
+          in: query
+          schema: {$ref: ./common.yaml#/components/schemas/CalendarDate}
+        - name: to_date
+          in: query
+          schema: {$ref: ./common.yaml#/components/schemas/CalendarDate}
+      responses:
+        '200':
+          description: Resolved periods, KPI comparisons, sales series and role-safe alerts.
+          headers:
+            Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/AdminOrderMetrics'}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+
+  /api/v1/admin/orders/{id}:
+    parameters:
+      - $ref: '#/components/parameters/AdminOrderId'
+    get:
+      operationId: getAdminOrder
+      tags: [orders]
+      summary: Read the complete order detail and version (owner or staff)
+      security:
+        - adminSession: []
+      x-roles: [owner, staff]
+      description: |
+        Immutable line/lot/address snapshots, live catalog image if available,
+        payments via public port, chronological status history (created_at/id),
+        shipment via public port. Payment attempts include duplicate_approved for
+        accurate admin history, without provider payloads or credentials.
+        No invoice/fiscal-document card. Unknown historical shipping zone/band
+        fields are null, never reconstructed from changed live rates.
+        Return a strong ETag quoting order.version; send it verbatim in If-Match.
+        A null shipment is valid before initialization or for historical orders.
+      responses:
+        '200': {$ref: '#/components/responses/AdminOrder'}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '404': {$ref: '#/components/responses/AdminNotFound'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+
+  /api/v1/admin/orders/{id}/to-preparing:
+    parameters:
+      - $ref: '#/components/parameters/AdminOrderId'
+    post:
+      operationId: prepareAdminOrder
+      tags: [orders]
+      summary: Move a paid order to preparing (owner or staff)
+      security:
+        - adminSession: []
+      x-roles: [owner, staff]
+      description: |
+        Only paid -> preparing. Require current order If-Match; missing/stale
+        returns 412 version_conflict without changing order, history or outbox.
+        Validate the status, increment version and append history with actor_type
+        admin and acting actor_id atomically. Other statuses return 409
+        invalid_order_transition. Serialize against cancellation and dispatch.
+      parameters:
+        - $ref: '#/components/parameters/AdminOrderIfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AdminOrderAction'}
+      responses:
+        '200': {$ref: '#/components/responses/AdminOrder'}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '404': {$ref: '#/components/responses/AdminNotFound'}
+        '409': {$ref: '#/components/responses/AdminStateConflict'}
+        '412': {$ref: '#/components/responses/AdminVersionConflict'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+
+  /api/v1/admin/orders/{id}/deliver:
+    parameters:
+      - $ref: '#/components/parameters/AdminOrderId'
+    post:
+      operationId: deliverAdminOrder
+      tags: [orders]
+      summary: Confirm delivery of a shipped order (owner or staff)
+      security:
+        - adminSession: []
+      x-roles: [owner, staff]
+      description: |
+        Only shipped -> delivered. The UI confirms before sending. Require current
+        order If-Match. Atomically increment order version, append admin history
+        and publish orders.order_delivered with order_id, delivered_at and actor_id.
+        Proposed L5(b) event: shipping consumes idempotently, records delivered_at
+        and increments shipment version; no synchronous cross-module table writes.
+        Response has order status delivered; shipment may still show shipped until
+        event processing completes. Delayed shipment_shipped events cannot regress
+        a delivered order. Invalid state or version changes nothing.
+      parameters:
+        - $ref: '#/components/parameters/AdminOrderIfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AdminOrderAction'}
+      responses:
+        '200': {$ref: '#/components/responses/AdminOrder'}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '404': {$ref: '#/components/responses/AdminNotFound'}
+        '409': {$ref: '#/components/responses/AdminStateConflict'}
+        '412': {$ref: '#/components/responses/AdminVersionConflict'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+
+  /api/v1/admin/orders/{id}/cancel:
+    parameters:
+      - $ref: '#/components/parameters/AdminOrderId'
+    post:
+      operationId: cancelAdminOrder
+      tags: [orders]
+      summary: Cancel a paid or preparing order (owner or staff)
+      security:
+        - adminSession: []
+      x-roles: [owner, staff]
+      description: |
+        Only paid/preparing -> cancelled. Require current order If-Match. Record
+        cancelled_at, increment version and append admin history with actor_id and
+        optional reason as note, atomically with orders.order_cancelled in outbox.
+        Reason is null when absent; the event keeps its machine reason order_cancelled
+        and does not replace it with free-form text. Release allocated stock back
+        to its original lots idempotently through the catalog boundary. Payments
+        consumes the event for the existing card-void/manual-refund flow; notifications
+        consumes it for a Spanish cancellation email. Success confirms cancellation
+        and durable side effects, not completed refunds, stock relay or email delivery.
+        Staff can cancel but cannot inspect/manage owner-only refund details.
+        A dispatch already committed or in progress cannot be cancelled. Serialize
+        conflicting dispatch/cancel actions so only one succeeds; rejection writes
+        no history, releases no stock and publishes no event. Terminal states cannot
+        be changed. Repeating with stale If-Match is 412, not a second cancellation.
+      parameters:
+        - $ref: '#/components/parameters/AdminOrderIfMatch'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/CancelAdminOrder'}
+      responses:
+        '200': {$ref: '#/components/responses/AdminOrder'}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '404': {$ref: '#/components/responses/AdminNotFound'}
+        '409': {$ref: '#/components/responses/AdminStateConflict'}
+        '412': {$ref: '#/components/responses/AdminVersionConflict'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+
 components:
+  securitySchemes:
+    adminSession:
+      $ref: ./common.yaml#/components/securitySchemes/adminSession
+  headers:
+    AdminNoStore:
+      schema: {type: string, pattern: '^no-store$'}
+    AdminOrderETag:
+      description: Strong quoted order record version, matching JSON version.
+      schema: {type: string, pattern: '^"[1-9][0-9]*"$'}
+  parameters:
+    AdminOrderId:
+      name: id
+      in: path
+      required: true
+      schema: {$ref: ./common.yaml#/components/schemas/Id}
+    AdminOrderIfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: Exact order ETag; missing/stale is 412 version_conflict. Wildcards forbidden.
+      schema: {type: string, pattern: '^"[1-9][0-9]*"$'}
+  responses:
+    AdminOrder:
+      description: Complete order with the current order version; related modules may lag outbox delivery.
+      headers:
+        Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+        ETag: {$ref: '#/components/headers/AdminOrderETag'}
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/AdminOrder'}
+    AdminBadRequest:
+      description: Malformed request (bad_request).
+      headers:
+        Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+      content:
+        application/problem+json:
+          schema: {$ref: ./common.yaml#/components/schemas/Problem}
+    AdminUnauthorized:
+      description: Missing, revoked, expired or pending session (authentication_required).
+      headers:
+        Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+      content:
+        application/problem+json:
+          schema: {$ref: ./common.yaml#/components/schemas/Problem}
+    AdminForbidden:
+      description: Insufficient authorization (forbidden) or CrossOriginProtection rejection (cross_origin_rejected).
+      headers:
+        Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+      content:
+        application/problem+json:
+          schema: {$ref: ./common.yaml#/components/schemas/Problem}
+    AdminNotFound:
+      description: Authorized lookup cannot find order (order_not_found).
+      headers:
+        Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+      content:
+        application/problem+json:
+          schema: {$ref: ./common.yaml#/components/schemas/Problem}
+    AdminStateConflict:
+      description: Action not allowed in current state (invalid_order_transition), including conflicting dispatch; no changes.
+      headers:
+        Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+      content:
+        application/problem+json:
+          schema: {$ref: ./common.yaml#/components/schemas/Problem}
+    AdminVersionConflict:
+      description: Missing/stale order If-Match or shipment_version (version_conflict); no changes to records, history, stock or outbox.
+      headers:
+        Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+      content:
+        application/problem+json:
+          schema: {$ref: ./common.yaml#/components/schemas/Problem}
+    AdminValidationFailed:
+      description: Invalid/unknown request fields or invalid query combination (validation_failed).
+      headers:
+        Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+      content:
+        application/problem+json:
+          schema: {$ref: ./common.yaml#/components/schemas/Problem}
+    AdminInternalError:
+      description: Unexpected failure (internal_error); no internal details or secrets.
+      headers:
+        Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+      content:
+        application/problem+json:
+          schema: {$ref: ./common.yaml#/components/schemas/Problem}
   schemas:
+    AdminOrderAction:
+      type: object
+      additionalProperties: false
+      description: Empty action body; expected record version is transported in If-Match.
+      properties: {}
+    CancelAdminOrder:
+      type: object
+      additionalProperties: false
+      properties:
+        reason:
+          type: [string, 'null']
+          description: Optional human note; trim surrounding whitespace, blank becomes null.
+    AdminVersion:
+      type: integer
+      minimum: 1
+    AdminNullableTimestamp:
+      type: [string, 'null']
+      format: date-time
+      description: RFC 3339 UTC timestamp, null when unknown/not yet reached.
+    AdminPaymentMethod:
+      type: [string, 'null']
+      enum: [card, pse, nequi, bancolombia_transfer, null]
+      description: Actual provider method mapped to lowercase, null until known.
+    AdminPaymentStatus:
+      type: string
+      enum: [created, pending, approved, declined, voided, error, expired, duplicate_approved]
+      description: Server-verified attempt status; clients tolerate future values.
+    AdminPaymentSummary:
+      type: object
+      additionalProperties: false
+      required: [status, payment_method_type]
+      description: Approved attempt, otherwise latest non-duplicate attempt by created_at/id descending. Null summary means no eligible attempt.
+      properties:
+        status: {$ref: '#/components/schemas/AdminPaymentStatus'}
+        payment_method_type: {$ref: '#/components/schemas/AdminPaymentMethod'}
+    AdminOrderRow:
+      type: object
+      additionalProperties: false
+      required: [id, order_number, placed_at, customer_name, customer_email, municipality_name, department_name, total_amount, status, payment]
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        order_number: {type: string}
+        placed_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+        customer_name: {type: string}
+        customer_email: {type: string, format: email}
+        municipality_name: {type: string}
+        department_name: {type: string}
+        total_amount: {$ref: ./common.yaml#/components/schemas/MoneyAmount}
+        status: {$ref: '#/components/schemas/OrderStatus'}
+        payment:
+          oneOf:
+            - $ref: '#/components/schemas/AdminPaymentSummary'
+            - type: 'null'
+    AdminOrderPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor, total, pending_dispatch_count]
+      properties:
+        items:
+          type: array
+          maxItems: 100
+          items: {$ref: '#/components/schemas/AdminOrderRow'}
+        next_cursor: {$ref: ./common.yaml#/components/schemas/NextCursor}
+        total: {type: integer, format: int64, minimum: 0}
+        pending_dispatch_count:
+          type: integer
+          format: int64
+          minimum: 0
+          description: Global paid/preparing count, unaffected by filters; shared sidebar/chip/header source.
+    AdminLotAllocation:
+      type: object
+      additionalProperties: false
+      required: [lot_id, lot_code, production_date, quantity]
+      properties:
+        lot_id: {$ref: ./common.yaml#/components/schemas/Id}
+        lot_code: {type: string}
+        production_date: {$ref: ./common.yaml#/components/schemas/CalendarDate}
+        quantity: {type: integer, minimum: 1}
+    AdminOrderLine:
+      type: object
+      additionalProperties: false
+      required: [id, variant_id, product_slug, product_title, variant_label, sku, image_url, quantity, unit_price_amount, discount_amount, tax_amount, line_total_amount, lot_allocations]
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        variant_id: {$ref: ./common.yaml#/components/schemas/Id}
+        product_slug: {$ref: ./common.yaml#/components/schemas/Slug}
+        product_title: {type: string}
+        variant_label: {type: string}
+        sku: {type: string}
+        image_url:
+          type: [string, 'null']
+          format: uri
+          description: Current catalog image via public port, null if unavailable; never replace immutable text snapshots.
+        quantity: {type: integer, minimum: 1}
+        unit_price_amount: {$ref: ./common.yaml#/components/schemas/MoneyAmount}
+        discount_amount: {$ref: ./common.yaml#/components/schemas/MoneyAmount}
+        tax_amount: {$ref: ./common.yaml#/components/schemas/MoneyAmount}
+        line_total_amount: {$ref: ./common.yaml#/components/schemas/MoneyAmount}
+        lot_allocations:
+          type: array
+          items: {$ref: '#/components/schemas/AdminLotAllocation'}
+    AdminShippingRate:
+      type: object
+      additionalProperties: false
+      required: [rate_name, zone_name, min_weight_grams, max_weight_grams, estimated_days_min, estimated_days_max]
+      description: |
+        Historical shipping snapshot. Existing orders store only rate name and
+        delivery-day estimates, not zone or band. Zone/band values are null for
+        these records; never infer them from a renamed rate or its label. Proposal
+        for G1: add typed zone/band snapshots on future placements, via shipping's
+        public port, to reproduce the canvas label without rewriting history.
+        max_weight_grams null means open upper bound only when min_weight_grams is
+        known; both null means the historical band was not recorded.
+      properties:
+        rate_name: {type: string}
+        zone_name: {type: [string, 'null']}
+        min_weight_grams: {type: [integer, 'null'], minimum: 0}
+        max_weight_grams: {type: [integer, 'null'], minimum: 1}
+        estimated_days_min: {type: integer, minimum: 1}
+        estimated_days_max: {type: integer, minimum: 1}
+    AdminOrderSummary:
+      type: object
+      additionalProperties: false
+      required: [subtotal_amount, discount_amount, coupon_code, shipping_amount, shipping_discount_amount, tax_amount, total_amount, shipping]
+      description: Total = subtotal - discount + shipping - shipping_discount + tax, all integer centavos.
+      properties:
+        subtotal_amount: {$ref: ./common.yaml#/components/schemas/MoneyAmount}
+        discount_amount: {$ref: ./common.yaml#/components/schemas/MoneyAmount}
+        coupon_code: {type: [string, 'null']}
+        shipping_amount: {$ref: ./common.yaml#/components/schemas/MoneyAmount}
+        shipping_discount_amount: {$ref: ./common.yaml#/components/schemas/MoneyAmount}
+        tax_amount: {$ref: ./common.yaml#/components/schemas/MoneyAmount}
+        total_amount: {$ref: ./common.yaml#/components/schemas/MoneyAmount}
+        shipping: {$ref: '#/components/schemas/AdminShippingRate'}
+    AdminPaymentAttempt:
+      type: object
+      additionalProperties: false
+      required: [id, reference, payment_method_type, status, provider_transaction_id, created_at, finalized_at]
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        reference: {type: string}
+        payment_method_type: {$ref: '#/components/schemas/AdminPaymentMethod'}
+        status: {$ref: '#/components/schemas/AdminPaymentStatus'}
+        provider_transaction_id: {type: [string, 'null']}
+        created_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+        finalized_at: {$ref: '#/components/schemas/AdminNullableTimestamp'}
+    AdminOrderHistory:
+      type: object
+      additionalProperties: false
+      required: [id, from_status, to_status, actor_type, actor_id, note, created_at]
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        from_status:
+          oneOf:
+            - $ref: '#/components/schemas/OrderStatus'
+            - type: 'null'
+        to_status: {$ref: '#/components/schemas/OrderStatus'}
+        actor_type: {type: string, enum: [system, admin, customer]}
+        actor_id: {type: [string, 'null'], format: uuid}
+        note: {type: [string, 'null']}
+        created_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+    AdminShippingAddress:
+      type: object
+      additionalProperties: false
+      required: [recipient_name, recipient_phone, municipality_code, municipality_name, department_name, address_line1, address_line2, postal_code, delivery_notes]
+      properties:
+        recipient_name: {type: string}
+        recipient_phone: {type: string}
+        municipality_code: {$ref: '#/components/schemas/MunicipalityCode'}
+        municipality_name: {type: string}
+        department_name: {type: string}
+        address_line1: {type: string}
+        address_line2: {type: [string, 'null']}
+        postal_code: {type: [string, 'null']}
+        delivery_notes: {type: [string, 'null']}
+    AdminShipment:
+      type: object
+      additionalProperties: false
+      required: [id, order_id, status, carrier_name, tracking_number, tracking_url, shipped_at, delivered_at, actor_id, version]
+      description: |
+        Proposed L5(a) representation: carrier nullable while pending, mandatory
+        nonblank once shipped/delivered. Tracking remains optional. Proposed L5(b)
+        delivery timestamp is applied by shipping's orders.order_delivered consumer.
+        Shipped/delivered/returned states require a carrier and shipped_at;
+        delivered also requires delivered_at. Pending has no fulfillment timestamps.
+      oneOf:
+        - properties:
+            status: {enum: [pending]}
+            shipped_at: {type: 'null'}
+            delivered_at: {type: 'null'}
+        - properties:
+            status: {enum: [shipped, returned]}
+            carrier_name: {type: string, minLength: 1, pattern: '\S'}
+            shipped_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+        - properties:
+            status: {enum: [delivered]}
+            carrier_name: {type: string, minLength: 1, pattern: '\S'}
+            shipped_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+            delivered_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        order_id: {$ref: ./common.yaml#/components/schemas/Id}
+        status: {type: string, enum: [pending, shipped, delivered, returned]}
+        carrier_name: {type: [string, 'null']}
+        tracking_number: {type: [string, 'null']}
+        tracking_url: {type: [string, 'null'], format: uri, pattern: '^https://[^/\s?#]+(?:[/?#][^\s]*)?$'}
+        shipped_at: {$ref: '#/components/schemas/AdminNullableTimestamp'}
+        delivered_at: {$ref: '#/components/schemas/AdminNullableTimestamp'}
+        actor_id: {type: [string, 'null'], format: uuid}
+        version: {$ref: '#/components/schemas/AdminVersion'}
+    AdminOrder:
+      type: object
+      additionalProperties: false
+      required: [id, order_number, status, payment, placed_at, paid_at, cancelled_at, customer, shipping_address, lines, summary, payment_attempts, status_history, shipment, version]
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        order_number: {type: string}
+        status: {$ref: '#/components/schemas/OrderStatus'}
+        payment:
+          oneOf:
+            - $ref: '#/components/schemas/AdminPaymentSummary'
+            - type: 'null'
+        placed_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+        paid_at: {$ref: '#/components/schemas/AdminNullableTimestamp'}
+        cancelled_at: {$ref: '#/components/schemas/AdminNullableTimestamp'}
+        customer: {$ref: '#/components/schemas/Customer'}
+        shipping_address: {$ref: '#/components/schemas/AdminShippingAddress'}
+        lines:
+          type: array
+          items: {$ref: '#/components/schemas/AdminOrderLine'}
+        summary: {$ref: '#/components/schemas/AdminOrderSummary'}
+        payment_attempts:
+          type: array
+          description: Chronological created_at/id ascending, including duplicate_approved attempts.
+          items: {$ref: '#/components/schemas/AdminPaymentAttempt'}
+        status_history:
+          type: array
+          items: {$ref: '#/components/schemas/AdminOrderHistory'}
+        shipment:
+          oneOf:
+            - $ref: '#/components/schemas/AdminShipment'
+            - type: 'null'
+        version: {$ref: '#/components/schemas/AdminVersion'}
+    AdminMetricComparison:
+      type: object
+      additionalProperties: false
+      required: [value, previous_value, delta_percentage]
+      properties:
+        value: {type: integer, format: int64, minimum: 0}
+        previous_value: {type: integer, format: int64, minimum: 0}
+        delta_percentage:
+          type: [number, 'null']
+          description: Signed percentage, null when previous_value is zero; presentation only, never money.
+    AdminOrderKPIs:
+      type: object
+      additionalProperties: false
+      required: [paid_sales_amount, orders, average_order_amount, units_sold]
+      properties:
+        paid_sales_amount: {$ref: '#/components/schemas/AdminMetricComparison'}
+        orders: {$ref: '#/components/schemas/AdminMetricComparison'}
+        average_order_amount: {$ref: '#/components/schemas/AdminMetricComparison'}
+        units_sold: {$ref: '#/components/schemas/AdminMetricComparison'}
+    AdminSalesBucket:
+      type: object
+      additionalProperties: false
+      required: [from_at, to_at, previous_from_at, previous_to_at, sales_amount, previous_sales_amount]
+      properties:
+        from_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+        to_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+        previous_from_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+        previous_to_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+        sales_amount: {$ref: ./common.yaml#/components/schemas/MoneyAmount}
+        previous_sales_amount: {$ref: ./common.yaml#/components/schemas/MoneyAmount}
+    AdminOwnerAttention:
+      type: object
+      additionalProperties: false
+      required: [role, pending_dispatch_count, oldest_pending_dispatch_paid_at, manual_refund_count]
+      properties:
+        role: {type: string, enum: [owner]}
+        pending_dispatch_count: {type: integer, format: int64, minimum: 0}
+        oldest_pending_dispatch_paid_at: {$ref: '#/components/schemas/AdminNullableTimestamp'}
+        manual_refund_count: {type: integer, format: int64, minimum: 0}
+    AdminStaffAttention:
+      type: object
+      additionalProperties: false
+      required: [role, pending_dispatch_count, oldest_pending_dispatch_paid_at, manual_refund_count]
+      properties:
+        role: {type: string, enum: [staff]}
+        pending_dispatch_count: {type: integer, format: int64, minimum: 0}
+        oldest_pending_dispatch_paid_at: {$ref: '#/components/schemas/AdminNullableTimestamp'}
+        manual_refund_count:
+          type: 'null'
+          description: Restricted information is always null, never zero or an indirectly encoded count.
+    AdminOrderAttention:
+      description: Counts only; no refund records or financial summaries disclosed to staff.
+      oneOf:
+        - $ref: '#/components/schemas/AdminOwnerAttention'
+        - $ref: '#/components/schemas/AdminStaffAttention'
+    AdminOrderMetrics:
+      type: object
+      additionalProperties: false
+      required: [period, generated_at, time_zone, from_at, to_at, previous_from_at, previous_to_at, granularity, kpis, series, attention, latest_orders]
+      properties:
+        period: {type: string, enum: [today, last_7_days, last_30_days, range]}
+        generated_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+        time_zone: {type: string, enum: [America/Bogota]}
+        from_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+        to_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+        previous_from_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+        previous_to_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+        granularity: {type: string, enum: [hour, day]}
+        kpis: {$ref: '#/components/schemas/AdminOrderKPIs'}
+        series:
+          type: array
+          items: {$ref: '#/components/schemas/AdminSalesBucket'}
+        attention: {$ref: '#/components/schemas/AdminOrderAttention'}
+        latest_orders:
+          type: array
+          maxItems: 6
+          items: {$ref: '#/components/schemas/AdminOrderRow'}
+
     MunicipalityCode:
       type: string
       pattern: '^[0-9]{5}$'

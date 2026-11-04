@@ -93,8 +93,8 @@ func (q *Queries) InsertIdempotency(ctx context.Context, arg InsertIdempotencyPa
 const insertOrder = `-- name: InsertOrder :exec
 INSERT INTO orders.orders(id,order_number,status,subtotal_amount,shipping_amount,tax_amount,total_amount,
 shipping_rate_name,shipping_estimated_days_min,shipping_estimated_days_max,customer_email,customer_name,customer_phone,
-buyer_person_type,buyer_document_type,buyer_document_number,fiscal_profile_snapshot,tracking_token_hash,reservation_expires_at,placed_at,shipping_is_free_shipping)
-VALUES($1,$2,'pending_payment',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20)
+buyer_person_type,buyer_document_type,buyer_document_number,fiscal_profile_snapshot,tracking_token_hash,reservation_expires_at,placed_at,shipping_is_free_shipping,shipping_zone_name,shipping_min_weight_grams,shipping_max_weight_grams)
+VALUES($1,$2,'pending_payment',$3,$4,$5,$6,$7,$8,$9,$10,$11,$12,$13,$14,$15,$16,$17,$18,$19,$20,$21,$22,$23)
 `
 
 type InsertOrderParams struct {
@@ -118,6 +118,9 @@ type InsertOrderParams struct {
 	ReservationExpiresAt     pgtype.Timestamptz
 	PlacedAt                 pgtype.Timestamptz
 	ShippingIsFreeShipping   bool
+	ShippingZoneName         *string
+	ShippingMinWeightGrams   *int32
+	ShippingMaxWeightGrams   *int32
 }
 
 func (q *Queries) InsertOrder(ctx context.Context, arg InsertOrderParams) error {
@@ -142,6 +145,9 @@ func (q *Queries) InsertOrder(ctx context.Context, arg InsertOrderParams) error 
 		arg.ReservationExpiresAt,
 		arg.PlacedAt,
 		arg.ShippingIsFreeShipping,
+		arg.ShippingZoneName,
+		arg.ShippingMinWeightGrams,
+		arg.ShippingMaxWeightGrams,
 	)
 	return err
 }
@@ -262,7 +268,7 @@ func (q *Queries) InsertShippingAddress(ctx context.Context, arg InsertShippingA
 }
 
 const lockExpiredOrder = `-- name: LockExpiredOrder :one
-SELECT id, order_number, status, currency, subtotal_amount, discount_amount, shipping_amount, shipping_discount_amount, tax_amount, total_amount, coupon_code, shipping_rate_name, shipping_estimated_days_min, shipping_estimated_days_max, customer_email, customer_name, customer_phone, buyer_person_type, buyer_document_type, buyer_document_number, fiscal_profile_snapshot, tracking_token_hash, reservation_expires_at, placed_at, paid_at, cancelled_at, version, created_at, updated_at, shipping_is_free_shipping FROM orders.orders WHERE status='pending_payment' AND reservation_expires_at <= $1
+SELECT id, order_number, status, currency, subtotal_amount, discount_amount, shipping_amount, shipping_discount_amount, tax_amount, total_amount, coupon_code, shipping_rate_name, shipping_estimated_days_min, shipping_estimated_days_max, customer_email, customer_name, customer_phone, buyer_person_type, buyer_document_type, buyer_document_number, fiscal_profile_snapshot, tracking_token_hash, reservation_expires_at, placed_at, paid_at, cancelled_at, version, created_at, updated_at, shipping_is_free_shipping, shipping_zone_name, shipping_min_weight_grams, shipping_max_weight_grams FROM orders.orders WHERE status='pending_payment' AND reservation_expires_at <= $1
 ORDER BY reservation_expires_at,id LIMIT 1 FOR UPDATE SKIP LOCKED
 `
 
@@ -300,6 +306,9 @@ func (q *Queries) LockExpiredOrder(ctx context.Context, reservationExpiresAt pgt
 		&i.CreatedAt,
 		&i.UpdatedAt,
 		&i.ShippingIsFreeShipping,
+		&i.ShippingZoneName,
+		&i.ShippingMinWeightGrams,
+		&i.ShippingMaxWeightGrams,
 	)
 	return i, err
 }
