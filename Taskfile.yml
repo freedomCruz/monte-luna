@@ -118,6 +118,11 @@ tasks:
     cmds:
       - node --test scripts/divipola/divipola.test.mjs
 
+  deploy:test:caddy:
+    desc: Verify the reverse proxy rules the deployed site depends on (no Docker, no network)
+    cmds:
+      - bash deploy/test-caddy.sh
+
   divipola:update:
     desc: Download the DANE DIVIPOLA dataset and rewrite contracts/reference/divipola.json (network)
     cmds:
@@ -127,6 +132,7 @@ tasks:
     desc: Run all local verification gates serially (scripts, backend, then frontend)
     cmds:
       - task: scripts:test
+      - task: deploy:test:caddy
       - task: backend:verify
       - task: frontend:verify
 
