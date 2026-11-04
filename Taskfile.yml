@@ -51,6 +51,7 @@ tasks:
     desc: Run Astro on this worktree's FRONTEND_PORT (localhost only)
     dir: frontend
     env:
+      API_ADDR: "{{.API_ADDR}}"
       CATALOG_API_URL: "http://{{.API_ADDR}}"
     preconditions:
       - sh: test -n "$FRONTEND_PORT"
