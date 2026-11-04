@@ -5,7 +5,14 @@
 {$SITE_ADDRESS} {
 	# Site-wide root so handle_errors can serve /404.html as well.
 	root * /srv
-	encode zstd gzip
+
+	# Caddy renames the ETag of every response it compresses ("3" becomes
+	# "3-gzip"), and the admin API uses strong ETags for optimistic locking: the
+	# browser would return an If-Match the API rejects with 400. Admin traffic is
+	# small and authenticated, so it is served uncompressed. Static assets and the
+	# public storefront API keep compression.
+	@compressible not path /api/v1/admin/*
+	encode @compressible zstd gzip
 
 	header {
 		Strict-Transport-Security "max-age=31536000; includeSubDomains"

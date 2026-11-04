@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Administrator actions that change a record (move an order to preparation, register dispatch, mark delivered, cancel, edit an administrator, reset their two-factor authentication) failed with an error on the deployed site. The reverse proxy was renaming the version marker these actions rely on; administration responses are no longer compressed, so the marker arrives intact.
+
 ## [0.1.0-rc.10] - 2026-11-04
 
 ### Added
