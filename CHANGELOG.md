@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-rc.11] - 2026-11-04
+
 ### Fixed
 
 - Administrator actions that change a record (move an order to preparation, register dispatch, mark delivered, cancel, edit an administrator, reset their two-factor authentication) failed with an error on the deployed site. The reverse proxy was renaming the version marker these actions rely on; administration responses are no longer compressed, so the marker arrives intact.
@@ -137,7 +139,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the backend toolchain to Go 1.27.3 to resolve reachable standard-library vulnerabilities.
 - Rebuilt Caddy 2.11.7 with Go 1.27.3 and `golang.org/x/net` 0.60.0 instead of deploying the vulnerable upstream binary.
 
-[Unreleased]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.10...HEAD
+[Unreleased]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.11...HEAD
+[0.1.0-rc.11]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.10...v0.1.0-rc.11
 [0.1.0-rc.10]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.9...v0.1.0-rc.10
 [0.1.0-rc.9]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.8...v0.1.0-rc.9
 [0.1.0-rc.8]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.7...v0.1.0-rc.8
