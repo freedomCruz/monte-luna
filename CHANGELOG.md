@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Administrative orders management (`/admin`):
+  - Inicio dashboard with paid sales, orders, average ticket, and units sold for today, 7 days, 30 days, or a custom range, each compared with the previous period, plus a sales chart with a table view, "Requiere atención" alerts, and the latest orders.
+  - Pedidos list with search, status, date, and payment method filters, a "Por despachar" shortcut, sortable dates, and paginated results.
+  - Pedido detail with lines and allocated lots, payment attempts, status timeline, customer, delivery, and shipping cards.
+  - Order actions for owners and staff: move to "En preparación", register dispatch with carrier and tracking, mark as delivered, and cancel with an optional reason that returns stock and starts the manual refund.
+  - Pending dispatch count badge in the admin navigation.
+- Customer emails when an order is shipped (with carrier and tracking) and when it is cancelled.
+- Orders now store the shipping zone and weight band used at checkout.
+
 ## [0.1.0-rc.9] - 2026-11-02
 
 ### Added
