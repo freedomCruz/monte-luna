@@ -519,6 +519,146 @@ paths:
         '422': {$ref: '#/components/responses/AdminValidationFailed'}
         '500': {$ref: '#/components/responses/AdminInternalError'}
 
+  /api/v1/admin/inventory/variants:
+    get:
+      operationId: listAdminInventoryVariants
+      tags: [catalog]
+      summary: Search variant stock for inventory and receipt selection
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      description: |
+        Literal case-insensitive product title or SKU search; title, variant
+        position then variant ID ascending. All product/variant statuses included
+        by default, including zero-stock variants. stock=low_or_empty selects
+        available_quantity < 10. Available counters include active lots only.
+        Reserved counts are authoritative held allocations composed through the
+        orders public read port (including any approved payment grace), never
+        inferred by summing sale movements or reading orders tables.
+        Composition is not a cross-module snapshot; generated_at identifies the
+        read time, counts are informational and do not authorize a stock write.
+      parameters:
+        - {name: search, in: query, schema: {type: string}}
+        - {name: product_id, in: query, schema: {$ref: ./common.yaml#/components/schemas/Id}}
+        - {name: status, in: query, schema: {type: string, enum: [active, archived, all], default: all}}
+        - {name: stock, in: query, schema: {type: string, enum: [all, low_or_empty], default: all}}
+        - $ref: '#/components/parameters/AdminLimit'
+        - $ref: ./common.yaml#/components/parameters/Cursor
+      responses:
+        '200':
+          description: Variant stock selection page.
+          headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+          content: {application/json: {schema: {$ref: '#/components/schemas/AdminInventoryVariantPage'}}}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+        '503': {$ref: '#/components/responses/AdminDependencyUnavailable'}
+
+  /api/v1/admin/inventory/variants/{id}:
+    parameters: [{$ref: '#/components/parameters/AdminVariantId'}]
+    get:
+      operationId: getAdminInventoryVariant
+      tags: [catalog]
+      summary: Read variant stock summary and parent ETag
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      description: |
+        Same stock/reservation semantics as the selection list. active_lot_count
+        counts active lots with positive quantity. ETag quotes the parent product
+        version, not stock or variant version; use for lot receipt. Catalog admin
+        writes advance this version; order allocation/release does not.
+      responses:
+        '200':
+          description: Variant summary with parent product ETag.
+          headers:
+            Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+            ETag: {$ref: '#/components/headers/AdminProductETag'}
+          content: {application/json: {schema: {$ref: '#/components/schemas/AdminInventoryVariant'}}}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '404': {$ref: '#/components/responses/AdminNotFound'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+        '503': {$ref: '#/components/responses/AdminDependencyUnavailable'}
+
+  /api/v1/admin/inventory/variants/{id}/lots:
+    parameters: [{$ref: '#/components/parameters/AdminVariantId'}]
+    get:
+      operationId: listAdminVariantLots
+      tags: [catalog]
+      summary: Read lots and stock rows for one variant
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      description: |
+        Include every lot linked through this variant's stock rows, even depleted
+        or archived and zero counters. Sort production_date then lot ID ascending.
+        next_to_allocate marks only the oldest active lot with positive quantity.
+        Reserved quantities come through the orders public port by variant/lot.
+        old_roast is server-computed for merchant-defined coffee (type slug coffee):
+        more than 30 calendar days since production_date in America/Bogota at
+        generated_at; exactly 30 is false. Non-coffee is false. The flag is
+        independent of status/quantity; the UI gives depleted/archive badges
+        precedence. Threshold is fixed and global, not a client comparison (L4d).
+      parameters:
+        - $ref: '#/components/parameters/AdminLimit'
+        - $ref: ./common.yaml#/components/parameters/Cursor
+      responses:
+        '200':
+          description: Oldest-first lot stock page.
+          headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+          content: {application/json: {schema: {$ref: '#/components/schemas/AdminVariantLotPage'}}}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '404': {$ref: '#/components/responses/AdminNotFound'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+        '503': {$ref: '#/components/responses/AdminDependencyUnavailable'}
+
+  /api/v1/admin/inventory/variants/{id}/movements:
+    parameters: [{$ref: '#/components/parameters/AdminVariantId'}]
+    get:
+      operationId: listAdminInventoryMovements
+      tags: [catalog]
+      summary: Read append-only stock movement history
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      description: |
+        Newest first by created_at then ID descending. Optional lot_id restricts
+        to that variant's lot; an unrelated well-formed ID matches no rows.
+        reason is exactly the stored enum: receipt, sale, return, adjustment,
+        damage, release. No reservation reason is invented (L4b). For sale rows,
+        resolve reference_id through the orders public read port: display_kind
+        reservation while its allocation is held, sale when committed, allocation
+        if released or unresolved. Other reasons map directly to display_kind.
+        These labels reflect current order state, not a rewritten historical fact;
+        payment confirmation creates no second stock decrement or movement.
+        order is null when no matching order exists; never infer a paid sale from
+        a negative delta. Missing order context is not a fabricated order number.
+        actor_name is the current name resolved by batch identity public port
+        lookup, not a cross-schema read or new snapshot column (L4c). Null actor_id
+        means system; a missing identity record yields null actor_name, rendered
+        as an unknown admin rather than System. Dependency errors return 503,
+        not fabricated counts, order states or names. No ledger update/delete API.
+      parameters:
+        - {name: lot_id, in: query, schema: {$ref: ./common.yaml#/components/schemas/Id}}
+        - $ref: '#/components/parameters/AdminLimit'
+        - $ref: ./common.yaml#/components/parameters/Cursor
+      responses:
+        '200':
+          description: Movement page with composed presentation context.
+          headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+          content: {application/json: {schema: {$ref: '#/components/schemas/AdminInventoryMovementPage'}}}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '404': {$ref: '#/components/responses/AdminNotFound'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+        '503': {$ref: '#/components/responses/AdminDependencyUnavailable'}
+
 components:
   parameters:
     Slug:
@@ -532,6 +672,12 @@ components:
       name: id
       in: path
       required: true
+      schema: {$ref: ./common.yaml#/components/schemas/Id}
+    AdminVariantId:
+      name: id
+      in: path
+      required: true
+      description: Variant UUID; parent product is resolved server-side.
       schema: {$ref: ./common.yaml#/components/schemas/Id}
     AdminLimit:
       name: limit
@@ -1147,6 +1293,95 @@ components:
         items: {type: array, maxItems: 100, items: {$ref: '#/components/schemas/AdminProductType'}}
         next_cursor: {$ref: ./common.yaml#/components/schemas/NextCursor}
         total: {type: integer, format: int64, minimum: 0}
+    AdminInventoryVariant:
+      type: object
+      additionalProperties: false
+      required: [product_id, variant_id, product_title, product_status, variant_status, variant_label, sku, available_quantity, reserved_quantity, active_lot_count, low_stock, product_version, generated_at]
+      properties:
+        product_id: {$ref: ./common.yaml#/components/schemas/Id}
+        variant_id: {$ref: ./common.yaml#/components/schemas/Id}
+        product_title: {type: string}
+        product_status: {$ref: '#/components/schemas/AdminProductStatus'}
+        variant_status: {type: string, enum: [active, archived]}
+        variant_label: {type: string, description: Display labels resolved from ordered variant option definitions.}
+        sku: {type: string}
+        available_quantity: {type: integer, format: int64, minimum: 0}
+        reserved_quantity: {type: integer, format: int64, minimum: 0}
+        active_lot_count: {type: integer, minimum: 0}
+        low_stock: {type: boolean, description: 'Fixed server flag: available_quantity < 10.'}
+        product_version: {$ref: '#/components/schemas/AdminVersion'}
+        generated_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+    AdminVariantLot:
+      type: object
+      additionalProperties: false
+      required: [id, product_id, lot_code, production_date, expiration_date, status, quantity, reserved_quantity, old_roast, next_to_allocate, version]
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        product_id: {$ref: ./common.yaml#/components/schemas/Id}
+        lot_code: {type: string}
+        production_date: {$ref: ./common.yaml#/components/schemas/CalendarDate}
+        expiration_date: {type: [string, 'null'], format: date}
+        status: {type: string, enum: [active, depleted, archived]}
+        quantity: {type: integer, minimum: 0, description: Stored available counter for this variant/lot.}
+        reserved_quantity: {type: integer, format: int64, minimum: 0}
+        old_roast: {type: boolean, description: 'Coffee roast age > 30 calendar days; exactly 30 is false.'}
+        next_to_allocate: {type: boolean}
+        version: {$ref: '#/components/schemas/AdminVersion'}
+    AdminMovementOrder:
+      type: object
+      additionalProperties: false
+      required: [id, order_number, status, reservation_state]
+      description: Orders-owned read-port projection; no private tracking tokens or customer data.
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        order_number: {type: string}
+        status: {type: string}
+        reservation_state: {type: string, enum: [held, committed, released]}
+    AdminInventoryMovement:
+      type: object
+      additionalProperties: false
+      required: [id, variant_id, lot_id, lot_code, quantity_delta, reason, display_kind, reference_id, order, actor_id, actor_name, note, created_at]
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        variant_id: {$ref: ./common.yaml#/components/schemas/Id}
+        lot_id: {$ref: ./common.yaml#/components/schemas/Id}
+        lot_code: {type: string}
+        quantity_delta: {type: integer, not: {const: 0}}
+        reason: {type: string, enum: [receipt, sale, return, adjustment, damage, release]}
+        display_kind: {type: string, enum: [receipt, reservation, allocation, sale, return, adjustment, damage, release]}
+        reference_id: {$ref: '#/components/schemas/AdminNullableId'}
+        order: {anyOf: [{$ref: '#/components/schemas/AdminMovementOrder'}, {type: 'null'}]}
+        actor_id: {$ref: '#/components/schemas/AdminNullableId'}
+        actor_name: {type: [string, 'null'], description: Current identity public-port name; null for system or missing admin.}
+        note: {type: [string, 'null']}
+        created_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+    AdminInventoryVariantPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor, total, generated_at]
+      properties:
+        items: {type: array, maxItems: 100, items: {$ref: '#/components/schemas/AdminInventoryVariant'}}
+        next_cursor: {$ref: ./common.yaml#/components/schemas/NextCursor}
+        total: {type: integer, format: int64, minimum: 0}
+        generated_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+    AdminVariantLotPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor, total, generated_at]
+      properties:
+        items: {type: array, maxItems: 100, items: {$ref: '#/components/schemas/AdminVariantLot'}}
+        next_cursor: {$ref: ./common.yaml#/components/schemas/NextCursor}
+        total: {type: integer, format: int64, minimum: 0}
+        generated_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+    AdminInventoryMovementPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor, total, generated_at]
+      properties:
+        items: {type: array, maxItems: 100, items: {$ref: '#/components/schemas/AdminInventoryMovement'}}
+        next_cursor: {$ref: ./common.yaml#/components/schemas/NextCursor}
+        total: {type: integer, format: int64, minimum: 0}
+        generated_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
   securitySchemes:
     adminSession: {$ref: ./common.yaml#/components/securitySchemes/adminSession}
   responses:
@@ -1174,6 +1409,10 @@ components:
       content: {application/problem+json: {schema: {$ref: ./common.yaml#/components/schemas/Problem}}}
     AdminValidationFailed:
       description: Invalid/unknown fields or attributes (validation_failed); no writes.
+      headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+      content: {application/problem+json: {schema: {$ref: ./common.yaml#/components/schemas/Problem}}}
+    AdminDependencyUnavailable:
+      description: Orders or identity read-port dependency failed (dependency_unavailable); no fabricated data.
       headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
       content: {application/problem+json: {schema: {$ref: ./common.yaml#/components/schemas/Problem}}}
     AdminInternalError:
