@@ -593,6 +593,98 @@ paths:
         '428': {$ref: '#/components/responses/AdminPreconditionRequired'}
         '500': {$ref: '#/components/responses/AdminInternalError'}
 
+  /api/v1/admin/products/{id}/images:
+    parameters: [{$ref: '#/components/parameters/AdminProductId'}]
+    post:
+      operationId: uploadAdminProductImage
+      tags: [catalog]
+      summary: Upload and attach one product image to R2
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      description: |
+        Require parent product If-Match. One multipart file, nonblank alt_text,
+        optional variant_id belonging to this product and position (default 0).
+        Omitted variant_id means product-wide. Reject unknown fields, URL imports,
+        client storage keys, multiple files and invalid variant ownership (422).
+        The server bounds the entire multipart request to 6 MiB and file bytes
+        to 5 MiB (5242880 inclusive), rejecting empty files (422) or excess (413
+        image_too_large). Verify actual content bytes as JPEG, PNG or WebP;
+        extension and declared Content-Type alone are never trusted. Reject
+        unsupported/mismatched content (415 unsupported_image_type), including
+        SVG/GIF/HTML. Filename never determines the object key or a local path.
+        Generate a unique relative key under catalog/products/{id}/ on the server;
+        persist only that key, never an absolute URL or a client-supplied key.
+        Resolve URLs only through MediaStorePort. R2 is approved; SDK installation
+        remains behind dependency-audit and explicit approval at G2.
+        Validate authorization, ownership and precondition before uploading;
+        recheck parent version when atomically inserting product_images and
+        incrementing product.version. Storage and PostgreSQL are not one
+        transaction: failed DB/precondition commit leaves no image record and
+        triggers best-effort deletion of the newly uploaded orphan object.
+        Never overwrite or delete a pre-existing object. Provider failure is
+        503 media_unavailable with no committed image/version change. Success
+        returns the image and the new parent ETag; JSON version is image.version.
+      parameters: [{$ref: '#/components/parameters/AdminProductIfMatch'}]
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema: {$ref: '#/components/schemas/AdminImageUpload'}
+            encoding:
+              file: {contentType: 'image/jpeg, image/png, image/webp'}
+      responses:
+        '201':
+          description: Attached image; Location is /api/v1/admin/products/{id}/images/{image_id}.
+          headers:
+            Location: {schema: {type: string}}
+            Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+            ETag: {$ref: '#/components/headers/AdminProductETag'}
+          content: {application/json: {schema: {$ref: '#/components/schemas/AdminImage'}}}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '404': {$ref: '#/components/responses/AdminNotFound'}
+        '412': {$ref: '#/components/responses/AdminVersionConflict'}
+        '413':
+          description: File exceeds 5 MiB or multipart request exceeds 6 MiB (image_too_large); no image record.
+          headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+          content: {application/problem+json: {schema: {$ref: ./common.yaml#/components/schemas/Problem}}}
+        '415':
+          description: Actual image type is unsupported or mismatches declared type (unsupported_image_type); no image record.
+          headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+          content: {application/problem+json: {schema: {$ref: ./common.yaml#/components/schemas/Problem}}}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '428': {$ref: '#/components/responses/AdminPreconditionRequired'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+        '503':
+          description: R2 unavailable (media_unavailable); no committed image or product version change.
+          headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+          content: {application/problem+json: {schema: {$ref: ./common.yaml#/components/schemas/Problem}}}
+
+  /api/v1/admin/products/{id}/images/{image_id}:
+    parameters:
+      - $ref: '#/components/parameters/AdminProductId'
+      - {name: image_id, in: path, required: true, schema: {$ref: ./common.yaml#/components/schemas/Id}}
+    get:
+      operationId: getAdminProductImage
+      tags: [catalog]
+      summary: Read attached image metadata and parent product ETag
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      responses:
+        '200':
+          description: Product-owned image with resolved public URL.
+          headers:
+            Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+            ETag: {$ref: '#/components/headers/AdminProductETag'}
+          content: {application/json: {schema: {$ref: '#/components/schemas/AdminImage'}}}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '404': {$ref: '#/components/responses/AdminNotFound'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+
   /api/v1/admin/catalog/categories:
     get:
       operationId: listAdminCatalogCategories
@@ -824,6 +916,57 @@ paths:
         '422': {$ref: '#/components/responses/AdminValidationFailed'}
         '500': {$ref: '#/components/responses/AdminInternalError'}
         '503': {$ref: '#/components/responses/AdminDependencyUnavailable'}
+
+  /api/v1/admin/inventory/variants/{id}/receive-lot:
+    parameters: [{$ref: '#/components/parameters/AdminVariantId'}]
+    post:
+      operationId: receiveAdminVariantLot
+      tags: [catalog]
+      summary: Receive units into a product lot through a selected variant
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      description: |
+        Require the parent product ETag returned by inventory summary or product
+        detail. Resolve product_id from the variant; client product_id, lot_id,
+        actor_id, reason, stock totals and storage keys are rejected, never trusted.
+        In ONE catalog transaction: lock/check parent version; resolve the lot by
+        UNIQUE(product_id, lot_code), creating an active lot with attributes={}
+        if absent; upsert variant_lot_stock using the same product_id on both
+        composite FKs; atomically add quantity; append exactly one movement with
+        reason=receipt, positive quantity_delta, actor_id from the admin session,
+        reference_id=null and optional note; increment parent version and commit.
+        Existing lot dates must equal the supplied production_date/expiration_date
+        (omitted expiration means null); mismatch or archived lot is 409 lot_conflict,
+        with no changes. Never silently rewrite shared lot metadata. A depleted
+        lot becomes active with its own version check/increment; unchanged active
+        lots retain their version. Reject expiration before production and int32
+        counter overflow with 422 validation_failed. Concurrent order allocations
+        and releases retain atomic counter semantics; never set a client total.
+        Repeating a successful request with the old ETag returns 412, not a second
+        receipt. After an uncertain network outcome, inspect the ledger before
+        intentionally retrying with a fresh ETag. No manual adjustment in stage 3a.
+        Success reports only committed catalog facts, with no post-commit external
+        composition that could turn a successful receipt into a dependency error.
+      parameters: [{$ref: '#/components/parameters/AdminProductIfMatch'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/AdminReceiveLot'}}}
+      responses:
+        '200':
+          description: Committed receipt and resulting stock row quantity; ETag is new parent product version.
+          headers:
+            Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+            ETag: {$ref: '#/components/headers/AdminProductETag'}
+          content: {application/json: {schema: {$ref: '#/components/schemas/AdminLotReceipt'}}}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '404': {$ref: '#/components/responses/AdminNotFound'}
+        '409': {$ref: '#/components/responses/AdminConflict'}
+        '412': {$ref: '#/components/responses/AdminVersionConflict'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '428': {$ref: '#/components/responses/AdminPreconditionRequired'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
 
 components:
   parameters:
@@ -1644,6 +1787,40 @@ components:
         tax_category: {type: string, enum: [excluded, exempt, reduced, standard]}
         status: {type: string, enum: [active, archived]}
         position: {type: integer}
+    AdminImageUpload:
+      type: object
+      additionalProperties: false
+      required: [file, alt_text]
+      properties:
+        file: {type: string, format: binary, minLength: 1, maxLength: 5242880}
+        alt_text: {type: string, pattern: '\S'}
+        variant_id: {$ref: ./common.yaml#/components/schemas/Id, description: Omit for all variants; otherwise must belong to the parent product.}
+        position: {type: integer, default: 0}
+    AdminReceiveLot:
+      type: object
+      additionalProperties: false
+      required: [lot_code, production_date, quantity]
+      properties:
+        lot_code: {type: string, pattern: '\S', description: Trim whitespace; unique per resolved parent product.}
+        production_date: {$ref: ./common.yaml#/components/schemas/CalendarDate}
+        expiration_date: {type: [string, 'null'], format: date, description: Null or omitted means no expiry; otherwise at least production_date.}
+        quantity: {type: integer, minimum: 1, maximum: 2147483647}
+        note: {type: [string, 'null'], description: Trim whitespace; blank/omitted becomes null.}
+    AdminLotReceipt:
+      type: object
+      additionalProperties: false
+      required: [product_id, product_version, variant_id, lot_id, lot_code, lot_created, movement_id, reason, quantity_received, quantity_after]
+      properties:
+        product_id: {$ref: ./common.yaml#/components/schemas/Id}
+        product_version: {$ref: '#/components/schemas/AdminVersion'}
+        variant_id: {$ref: ./common.yaml#/components/schemas/Id}
+        lot_id: {$ref: ./common.yaml#/components/schemas/Id}
+        lot_code: {type: string}
+        lot_created: {type: boolean}
+        movement_id: {$ref: ./common.yaml#/components/schemas/Id}
+        reason: {type: string, const: receipt}
+        quantity_received: {type: integer, minimum: 1, maximum: 2147483647}
+        quantity_after: {type: integer, minimum: 1, maximum: 2147483647, description: Resulting available counter of this variant/lot at commit.}
   securitySchemes:
     adminSession: {$ref: ./common.yaml#/components/securitySchemes/adminSession}
   responses:
