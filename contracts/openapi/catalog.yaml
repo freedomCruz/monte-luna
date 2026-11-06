@@ -1,9 +1,9 @@
 openapi: 3.1.0
 info:
-  title: Monteluna catalog storefront API
+  title: Monteluna catalog API
   version: 1.0.0
   description: |
-    Read-only Catalog v1 contract, proposed for approval at gate G2.
+    Catalog v1 storefront and Admin Catalog v1 contract (admin proposal for G1).
     Stable content is fetched at build time; current prices, availability, and
     next-lot production dates are fetched in the browser, never pre-rendered
     as authoritative values. Only published products and active variants,
@@ -11,7 +11,7 @@ info:
     return the same 404 as missing resources; hidden related resources are
     omitted from arrays or represented as null in nullable relationships.
     Coffee and cacao are merchant-defined product types, not fixed enums.
-    There are no administration, cart, checkout, or allocation operations.
+    No public cart, checkout, or allocation operations are introduced.
 
     Every collection uses the shared limit (default 24, maximum 100) and cursor
     parameters and items/next_cursor envelope. Cursors are bound to the endpoint,
@@ -37,6 +37,37 @@ info:
     500 internal_error.
     Validation errors use invalid_parameter or unknown_parameter in errors[].code.
     Clients branch on these codes, never on human-readable messages.
+
+    Admin Catalog v1 (S1-S6): owner and staff with active, fully authenticated
+    2FA sessions; pending sessions return 401. Every admin response, including
+    errors, sends Cache-Control: no-store. Unsafe requests use
+    http.CrossOriginProtection (403 cross_origin_rejected); no CORS.
+    All admin paths MUST remain under /api/v1/admin/: the reverse proxy excludes
+    this prefix from compression to preserve strong ETags verbatim.
+    Taxonomy and attribute definitions are read-only in stage 3a. Product types
+    have NO status field: catalog.product_types defines no such column (L4a).
+    Manual stock adjustments and bulk publish/archive are outside stage 3a.
+
+    Admin cursors bind endpoint, filters and sort; mismatch is 400 bad_request.
+    Repeated values use OR within a filter and AND across filters. Unknown query
+    or body fields and invalid filters return 422 validation_failed. Admin
+    collections expose total before pagination and accept 25/50/100 rows.
+    Null response fields are always present. Text is plain text, not trusted HTML.
+    Fixed global low_stock flags mean available_quantity < 10 (including zero);
+    the UI gives out-of-stock precedence at zero. Flags are computed server-side,
+    not configurable per product or client. Amounts are COP minor integer units.
+
+    Admin stable Problem.code values:
+    400 bad_request (malformed JSON, UUID, cursor or If-Match syntax);
+    401 authentication_required (absent, expired, revoked or pending session);
+    403 forbidden, cross_origin_rejected;
+    404 product_not_found, variant_not_found, image_not_found;
+    409 slug_conflict, sku_conflict, variant_options_conflict, lot_conflict;
+    412 version_conflict (stale product If-Match; no changes);
+    413 image_too_large; 415 unsupported_image_type;
+    422 validation_failed (including invalid/unknown fields and attributes);
+    428 precondition_required (missing product If-Match; no changes);
+    500 internal_error; 503 media_unavailable, dependency_unavailable.
 security: []
 tags:
   - name: catalog
@@ -331,6 +362,163 @@ paths:
         "500":
           $ref: ./common.yaml#/components/responses/InternalError
 
+  /api/v1/admin/products:
+    get:
+      operationId: listAdminProducts
+      tags: [catalog]
+      summary: Search products including drafts and archives (owner or staff)
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      description: |
+        Case-insensitive literal substring search on title or any variant SKU.
+        Category and type filters use exact IDs; no implicit descendants. All
+        product statuses included by default. stock=low_or_empty means summed
+        available_quantity < 10. Counts, min/max prices and available_quantity
+        include active variants only; stock includes active lots only. Products
+        with no active variants return null prices and zero stock/count.
+        title sorts case-insensitively; price_amount sorts by minimum active
+        price with nulls last in both directions; stock sorts by available_quantity.
+        ID ascending breaks ties for ascending sorts, descending for descending.
+        Keep prior cursors client-side for Back. The quick view uses product detail.
+      parameters:
+        - {name: search, in: query, description: 'Trim whitespace; blank means no search.', schema: {type: string}}
+        - $ref: '#/components/parameters/AdminCategoryFilter'
+        - $ref: '#/components/parameters/AdminProductTypeFilter'
+        - name: status
+          in: query
+          style: form
+          explode: true
+          schema: {type: array, minItems: 1, uniqueItems: true, items: {$ref: '#/components/schemas/AdminProductStatus'}}
+        - {name: stock, in: query, schema: {type: string, enum: [all, low_or_empty], default: all}}
+        - {name: sort, in: query, schema: {type: string, enum: [title, '-title', price_amount, '-price_amount', stock, '-stock'], default: title}}
+        - $ref: '#/components/parameters/AdminLimit'
+        - $ref: ./common.yaml#/components/parameters/Cursor
+      responses:
+        '200':
+          description: Matching product rows with current prices and stock.
+          headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+          content: {application/json: {schema: {$ref: '#/components/schemas/AdminProductPage'}}}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+
+  /api/v1/admin/products/{id}:
+    parameters: [{$ref: '#/components/parameters/AdminProductId'}]
+    get:
+      operationId: getAdminProduct
+      tags: [catalog]
+      summary: Read complete product including archived children (owner or staff)
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      description: |
+        Includes current taxonomy even when archived, definitions, raw validated
+        attribute values, all variants and all images. Variants/images sort by
+        position then ID. Strong ETag quotes product.version; send it verbatim
+        for all updates and child creations. Stock does not change this content
+        version; no-store and fresh reads are required for inventory.
+      responses:
+        '200': {$ref: '#/components/responses/AdminProduct'}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '404': {$ref: '#/components/responses/AdminNotFound'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+
+  /api/v1/admin/catalog/categories:
+    get:
+      operationId: listAdminCatalogCategories
+      tags: [catalog]
+      summary: Read category choices without taxonomy writes
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      description: Flat category tree; position then ID ascending. Active by default.
+      parameters:
+        - $ref: '#/components/parameters/AdminTaxonomyStatus'
+        - $ref: '#/components/parameters/AdminLimit'
+        - $ref: ./common.yaml#/components/parameters/Cursor
+      responses:
+        '200':
+          description: Category choices.
+          headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+          content: {application/json: {schema: {$ref: '#/components/schemas/AdminCategoryPage'}}}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+
+  /api/v1/admin/catalog/origins:
+    get:
+      operationId: listAdminCatalogOrigins
+      tags: [catalog]
+      summary: Search read-only origin choices
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      description: Literal case-insensitive name/producer search; name then ID ascending. Active by default.
+      parameters:
+        - {name: search, in: query, schema: {type: string}}
+        - $ref: '#/components/parameters/AdminTaxonomyStatus'
+        - $ref: '#/components/parameters/AdminLimit'
+        - $ref: ./common.yaml#/components/parameters/Cursor
+      responses:
+        '200':
+          description: Origin facts; no origin mutation or embedded origin creation.
+          headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+          content: {application/json: {schema: {$ref: '#/components/schemas/AdminOriginPage'}}}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+
+  /api/v1/admin/catalog/brands:
+    get:
+      operationId: listAdminCatalogBrands
+      tags: [catalog]
+      summary: Read brand choices without taxonomy writes
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      description: Name then ID ascending; active by default.
+      parameters:
+        - $ref: '#/components/parameters/AdminTaxonomyStatus'
+        - $ref: '#/components/parameters/AdminLimit'
+        - $ref: ./common.yaml#/components/parameters/Cursor
+      responses:
+        '200':
+          description: Brand choices.
+          headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+          content: {application/json: {schema: {$ref: '#/components/schemas/AdminBrandPage'}}}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+
+  /api/v1/admin/catalog/product-types:
+    get:
+      operationId: listAdminCatalogProductTypes
+      tags: [catalog]
+      summary: Read merchant-defined types and attribute definitions
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      description: Name then ID ascending; definitions by position then key. No status filter or field exists.
+      parameters:
+        - $ref: '#/components/parameters/AdminLimit'
+        - $ref: ./common.yaml#/components/parameters/Cursor
+      responses:
+        '200':
+          description: Type choices and validation metadata.
+          headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+          content: {application/json: {schema: {$ref: '#/components/schemas/AdminProductTypePage'}}}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+
 components:
   parameters:
     Slug:
@@ -340,6 +528,31 @@ components:
       description: Public resource slug, never an internal identifier.
       schema:
         $ref: ./common.yaml#/components/schemas/Slug
+    AdminProductId:
+      name: id
+      in: path
+      required: true
+      schema: {$ref: ./common.yaml#/components/schemas/Id}
+    AdminLimit:
+      name: limit
+      in: query
+      schema: {type: integer, enum: [25, 50, 100], default: 25}
+    AdminTaxonomyStatus:
+      name: status
+      in: query
+      schema: {type: string, enum: [active, archived, all], default: active}
+    AdminCategoryFilter:
+      name: category_id
+      in: query
+      style: form
+      explode: true
+      schema: {type: array, minItems: 1, uniqueItems: true, items: {$ref: ./common.yaml#/components/schemas/Id}}
+    AdminProductTypeFilter:
+      name: product_type_id
+      in: query
+      style: form
+      explode: true
+      schema: {type: array, minItems: 1, uniqueItems: true, items: {$ref: ./common.yaml#/components/schemas/Id}}
   headers:
     StableCacheControl:
       description: Short cache lifetime for stable build-time content.
@@ -353,6 +566,11 @@ components:
       schema:
         type: string
         const: no-store
+    AdminNoStore:
+      schema: {type: string, pattern: '^no-store$'}
+    AdminProductETag:
+      description: Strong quoted parent product version; copy verbatim into If-Match.
+      schema: {type: string, pattern: '^"[1-9][0-9]*"$'}
   schemas:
     ProductPage:
       type: object
@@ -717,3 +935,248 @@ components:
           anyOf:
             - $ref: ./common.yaml#/components/schemas/CalendarDate
             - type: 'null'
+    AdminProductStatus: {type: string, enum: [draft, published, archived]}
+    AdminVersion: {type: integer, minimum: 1}
+    AdminNullableId: {type: [string, 'null'], format: uuid}
+    AdminNullableAmount: {type: [integer, 'null'], format: int64, minimum: 1}
+    AdminAttributes:
+      type: object
+      description: Descriptive values validated against the selected type's definitions; unknown keys rejected.
+      additionalProperties:
+        anyOf:
+          - {type: string}
+          - {type: number}
+          - {type: boolean}
+          - {type: array, items: {type: string}}
+    AdminNamedResource:
+      type: object
+      additionalProperties: false
+      required: [id, slug, name]
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        slug: {$ref: ./common.yaml#/components/schemas/Slug}
+        name: {type: string}
+    AdminBrand:
+      type: object
+      additionalProperties: false
+      required: [id, slug, name, status]
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        slug: {$ref: ./common.yaml#/components/schemas/Slug}
+        name: {type: string}
+        status: {type: string, enum: [active, archived]}
+    AdminCategory:
+      type: object
+      additionalProperties: false
+      required: [id, slug, name, parent_id, position, status]
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        slug: {$ref: ./common.yaml#/components/schemas/Slug}
+        name: {type: string}
+        parent_id: {$ref: '#/components/schemas/AdminNullableId'}
+        position: {type: integer}
+        status: {type: string, enum: [active, archived]}
+    AdminOrigin:
+      type: object
+      additionalProperties: false
+      required: [id, slug, name, producer_name, country_code, department, municipality_code, municipality_name, altitude_min_masl, altitude_max_masl, story, status]
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        slug: {$ref: ./common.yaml#/components/schemas/Slug}
+        name: {type: string}
+        producer_name: {type: string}
+        country_code: {type: string, pattern: '^[A-Z]{2}$'}
+        department: {type: [string, 'null']}
+        municipality_code: {type: [string, 'null'], pattern: '^[0-9]{5}$'}
+        municipality_name: {type: [string, 'null']}
+        altitude_min_masl: {type: [integer, 'null'], minimum: 1}
+        altitude_max_masl:
+          type: [integer, 'null']
+          minimum: 1
+          description: Maximum must be at least minimum when both are known; facts are read-only here.
+        story: {type: [string, 'null']}
+        status: {type: string, enum: [active, archived]}
+    AdminAttributeDefinition:
+      type: object
+      additionalProperties: false
+      required: [key, label, data_type, scope, is_variant_option, is_required, is_filterable, allowed_values, unit, position]
+      description: Variant axes require scope=variant; option/multi_option require an ordered allowed_values array.
+      properties:
+        key: {type: string, pattern: '^[a-z][a-z0-9_]*$'}
+        label: {type: string}
+        data_type: {type: string, enum: [text, integer, decimal, boolean, option, multi_option]}
+        scope: {type: string, enum: [product, variant]}
+        is_variant_option: {type: boolean}
+        is_required: {type: boolean}
+        is_filterable: {type: boolean}
+        allowed_values:
+          type: [array, 'null']
+          description: Ordered stable key and display label choices, matching storefront option values.
+          items:
+            type: object
+            additionalProperties: false
+            required: [value, label]
+            properties:
+              value: {type: string}
+              label: {type: string}
+        unit: {type: [string, 'null']}
+        position: {type: integer}
+    AdminProductType:
+      type: object
+      additionalProperties: false
+      required: [id, slug, name, attribute_definitions]
+      description: Merchant-defined; deliberately no status field (L4a).
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        slug: {$ref: ./common.yaml#/components/schemas/Slug}
+        name: {type: string}
+        attribute_definitions: {type: array, items: {$ref: '#/components/schemas/AdminAttributeDefinition'}}
+    AdminProductRow:
+      type: object
+      additionalProperties: false
+      required: [id, title, slug, product_type, categories, origin, status, variant_count, min_price_amount, max_price_amount, available_quantity, low_stock, image_url, version]
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        title: {type: string}
+        slug: {$ref: ./common.yaml#/components/schemas/Slug}
+        product_type: {$ref: '#/components/schemas/AdminNamedResource'}
+        categories: {type: array, items: {$ref: '#/components/schemas/AdminCategory'}}
+        origin: {anyOf: [{$ref: '#/components/schemas/AdminOrigin'}, {type: 'null'}]}
+        status: {$ref: '#/components/schemas/AdminProductStatus'}
+        variant_count: {type: integer, minimum: 0}
+        min_price_amount: {$ref: '#/components/schemas/AdminNullableAmount'}
+        max_price_amount: {$ref: '#/components/schemas/AdminNullableAmount'}
+        available_quantity: {type: integer, format: int64, minimum: 0}
+        low_stock: {type: boolean, description: 'Fixed server flag: available_quantity < 10; zero is out of stock.'}
+        image_url: {type: [string, 'null'], format: uri}
+        version: {$ref: '#/components/schemas/AdminVersion'}
+    AdminProduct:
+      type: object
+      additionalProperties: false
+      required: [id, product_type, brand, origin, categories, title, slug, description, status, attributes, variants, images, created_at, updated_at, version]
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        product_type: {$ref: '#/components/schemas/AdminProductType'}
+        brand: {anyOf: [{$ref: '#/components/schemas/AdminBrand'}, {type: 'null'}]}
+        origin: {anyOf: [{$ref: '#/components/schemas/AdminOrigin'}, {type: 'null'}]}
+        categories: {type: array, items: {$ref: '#/components/schemas/AdminCategory'}}
+        title: {type: string}
+        slug: {$ref: ./common.yaml#/components/schemas/Slug}
+        description: {type: [string, 'null']}
+        status: {$ref: '#/components/schemas/AdminProductStatus'}
+        attributes: {$ref: '#/components/schemas/AdminAttributes'}
+        variants: {type: array, items: {$ref: '#/components/schemas/AdminVariant'}}
+        images: {type: array, items: {$ref: '#/components/schemas/AdminImage'}}
+        created_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+        updated_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+        version: {$ref: '#/components/schemas/AdminVersion'}
+    AdminVariant:
+      type: object
+      additionalProperties: false
+      required: [id, product_id, sku, barcode, options, attributes, price_amount, compare_at_price_amount, weight_grams, length_mm, width_mm, height_mm, tax_category, status, position, available_quantity, low_stock, version]
+      description: Compare-at price must exceed selling price; raw options plus definitions supply editable labels.
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        product_id: {$ref: ./common.yaml#/components/schemas/Id}
+        sku: {type: string}
+        barcode: {type: [string, 'null']}
+        options: {$ref: '#/components/schemas/AdminAttributes'}
+        attributes: {$ref: '#/components/schemas/AdminAttributes'}
+        price_amount: {$ref: ./common.yaml#/components/schemas/MoneyAmount, minimum: 1}
+        compare_at_price_amount: {$ref: '#/components/schemas/AdminNullableAmount'}
+        weight_grams: {type: integer, minimum: 1}
+        length_mm: {type: [integer, 'null'], minimum: 1}
+        width_mm: {type: [integer, 'null'], minimum: 1}
+        height_mm: {type: [integer, 'null'], minimum: 1}
+        tax_category: {type: string, enum: [excluded, exempt, reduced, standard]}
+        status: {type: string, enum: [active, archived]}
+        position: {type: integer}
+        available_quantity: {type: integer, format: int64, minimum: 0}
+        low_stock: {type: boolean}
+        version: {$ref: '#/components/schemas/AdminVersion'}
+    AdminImage:
+      type: object
+      additionalProperties: false
+      required: [id, product_id, variant_id, url, alt_text, position, version]
+      description: Resolved URL only; relative storage key is server-owned and never accepted as input.
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        product_id: {$ref: ./common.yaml#/components/schemas/Id}
+        variant_id: {$ref: '#/components/schemas/AdminNullableId'}
+        url: {type: string, format: uri}
+        alt_text: {type: string, pattern: '\S'}
+        position: {type: integer}
+        version: {$ref: '#/components/schemas/AdminVersion'}
+    AdminProductPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor, total]
+      properties:
+        items: {type: array, maxItems: 100, items: {$ref: '#/components/schemas/AdminProductRow'}}
+        next_cursor: {$ref: ./common.yaml#/components/schemas/NextCursor}
+        total: {type: integer, format: int64, minimum: 0}
+    AdminCategoryPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor, total]
+      properties:
+        items: {type: array, maxItems: 100, items: {$ref: '#/components/schemas/AdminCategory'}}
+        next_cursor: {$ref: ./common.yaml#/components/schemas/NextCursor}
+        total: {type: integer, format: int64, minimum: 0}
+    AdminOriginPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor, total]
+      properties:
+        items: {type: array, maxItems: 100, items: {$ref: '#/components/schemas/AdminOrigin'}}
+        next_cursor: {$ref: ./common.yaml#/components/schemas/NextCursor}
+        total: {type: integer, format: int64, minimum: 0}
+    AdminBrandPage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor, total]
+      properties:
+        items: {type: array, maxItems: 100, items: {$ref: '#/components/schemas/AdminBrand'}}
+        next_cursor: {$ref: ./common.yaml#/components/schemas/NextCursor}
+        total: {type: integer, format: int64, minimum: 0}
+    AdminProductTypePage:
+      type: object
+      additionalProperties: false
+      required: [items, next_cursor, total]
+      properties:
+        items: {type: array, maxItems: 100, items: {$ref: '#/components/schemas/AdminProductType'}}
+        next_cursor: {$ref: ./common.yaml#/components/schemas/NextCursor}
+        total: {type: integer, format: int64, minimum: 0}
+  securitySchemes:
+    adminSession: {$ref: ./common.yaml#/components/securitySchemes/adminSession}
+  responses:
+    AdminProduct:
+      description: Complete product and current parent product version.
+      headers:
+        Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+        ETag: {$ref: '#/components/headers/AdminProductETag'}
+      content: {application/json: {schema: {$ref: '#/components/schemas/AdminProduct'}}}
+    AdminBadRequest:
+      description: Malformed request (bad_request).
+      headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+      content: {application/problem+json: {schema: {$ref: ./common.yaml#/components/schemas/Problem}}}
+    AdminUnauthorized:
+      description: Missing, revoked, expired or pending session (authentication_required).
+      headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+      content: {application/problem+json: {schema: {$ref: ./common.yaml#/components/schemas/Problem}}}
+    AdminForbidden:
+      description: Insufficient role (forbidden) or CrossOriginProtection rejection (cross_origin_rejected).
+      headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+      content: {application/problem+json: {schema: {$ref: ./common.yaml#/components/schemas/Problem}}}
+    AdminNotFound:
+      description: Product, variant or image not found under the requested parent (product_not_found, variant_not_found, image_not_found).
+      headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+      content: {application/problem+json: {schema: {$ref: ./common.yaml#/components/schemas/Problem}}}
+    AdminValidationFailed:
+      description: Invalid/unknown fields or attributes (validation_failed); no writes.
+      headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+      content: {application/problem+json: {schema: {$ref: ./common.yaml#/components/schemas/Problem}}}
+    AdminInternalError:
+      description: Unexpected failure (internal_error); safe details only.
+      headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+      content: {application/problem+json: {schema: {$ref: ./common.yaml#/components/schemas/Problem}}}
