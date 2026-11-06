@@ -47,6 +47,17 @@ info:
     Taxonomy and attribute definitions are read-only in stage 3a. Product types
     have NO status field: catalog.product_types defines no such column (L4a).
     Manual stock adjustments and bulk publish/archive are outside stage 3a.
+    Product creation alone has no If-Match (no existing row): 201 + Location +
+    strong ETag; duplicate slug is 409 slug_conflict, including retries.
+    All other admin catalog writes require the PARENT PRODUCT ETag, including
+    variant updates, image metadata, uploads and lot receipts. Missing is 428;
+    stale is 412; malformed, weak, wildcard or multiple ETags are 400. Lock and
+    compare the parent product version, update every changed mutable child using
+    its existing version column, increment child and parent versions and commit
+    atomically. Unchanged children retain their versions. A conflict changes no
+    record, categories, images, stock counters or movement ledger. Order allocation
+    and release keep their existing atomic inventory rules without bumping the
+    product content version. Product types are fixed after product creation.
 
     Admin cursors bind endpoint, filters and sort; mismatch is 400 bad_request.
     Repeated values use OR within a filter and AND across filters. Unknown query
@@ -363,6 +374,38 @@ paths:
           $ref: ./common.yaml#/components/responses/InternalError
 
   /api/v1/admin/products:
+    post:
+      operationId: createAdminProduct
+      tags: [catalog]
+      summary: Create a product without an existing version
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      description: |
+        Sole If-Match exception: no row exists yet. Create draft by default;
+        explicit status may publish or archive. Persist validated product-scope
+        attributes and category associations in one transaction. Existing slug
+        returns 409 slug_conflict, never a duplicate or silent overwrite on retry.
+        Select existing taxonomy IDs only; no embedded taxonomy writes. New
+        references must be active. Null optional values become null, attributes
+        default only as specified, category_ids defaults to []. Create variants
+        and upload images after creation using the returned ETag.
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/AdminCreateProduct'}}}
+      responses:
+        '201':
+          description: New product; Location is /api/v1/admin/products/{id}.
+          headers:
+            Location: {schema: {type: string}}
+            Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+            ETag: {$ref: '#/components/headers/AdminProductETag'}
+          content: {application/json: {schema: {$ref: '#/components/schemas/AdminProduct'}}}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '409': {$ref: '#/components/responses/AdminConflict'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
     get:
       operationId: listAdminProducts
       tags: [catalog]
@@ -406,6 +449,39 @@ paths:
 
   /api/v1/admin/products/{id}:
     parameters: [{$ref: '#/components/parameters/AdminProductId'}]
+    patch:
+      operationId: updateAdminProduct
+      tags: [catalog]
+      summary: Edit product, publication, categories or image metadata
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      description: |
+        JSON Merge Patch: absent unchanged; null clears only nullable fields.
+        attributes merges by key; null removes an optional key; validate the
+        resulting complete product-scope document. category_ids and images
+        replace their arrays. images accepts existing IDs of this product only,
+        never keys/URLs or new IDs; update alt text, position and variant binding,
+        and unlink omitted image records without deleting R2 objects. Reject
+        duplicate IDs, invalid parent/variant ownership and blank alt text with
+        422. New taxonomy references must be active; unchanged archived references
+        can be retained. product_type_id is immutable. Archiving is a status
+        update, never a hard product delete. Compare/increment parent and changed
+        image versions in the same transaction; no partial save on any error.
+      parameters: [{$ref: '#/components/parameters/AdminProductIfMatch'}]
+      requestBody:
+        required: true
+        content: {application/merge-patch+json: {schema: {$ref: '#/components/schemas/AdminPatchProduct'}}}
+      responses:
+        '200': {$ref: '#/components/responses/AdminProduct'}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '404': {$ref: '#/components/responses/AdminNotFound'}
+        '409': {$ref: '#/components/responses/AdminConflict'}
+        '412': {$ref: '#/components/responses/AdminVersionConflict'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '428': {$ref: '#/components/responses/AdminPreconditionRequired'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
     get:
       operationId: getAdminProduct
       tags: [catalog]
@@ -425,6 +501,96 @@ paths:
         '403': {$ref: '#/components/responses/AdminForbidden'}
         '404': {$ref: '#/components/responses/AdminNotFound'}
         '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+
+  /api/v1/admin/products/{id}/variants:
+    parameters: [{$ref: '#/components/parameters/AdminProductId'}]
+    post:
+      operationId: createAdminVariant
+      tags: [catalog]
+      summary: Create a variant guarded by the parent product version
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      description: |
+        Require parent product If-Match. options must conform exactly to the
+        product type's scope=variant AND is_variant_option=true definitions;
+        other variant attributes cannot be axes. Product-scope roast_level is
+        never a variant option. Enforce UNIQUE(product_id, options) and unique
+        SKU with 409 variant_options_conflict/sku_conflict. Required definitions,
+        data types and allowed values are validated in Go. compare_at_price_amount
+        must exceed price_amount when set. Currency comes from store configuration,
+        not client input. Create with zero inventory; receipts alone add stock.
+        Defaults: active, position=0, nullable barcode/dimensions/reference price=null.
+        Insert child and increment parent version atomically.
+      parameters: [{$ref: '#/components/parameters/AdminProductIfMatch'}]
+      requestBody:
+        required: true
+        content: {application/json: {schema: {$ref: '#/components/schemas/AdminCreateVariant'}}}
+      responses:
+        '201':
+          description: New variant; Location is /api/v1/admin/products/{id}/variants/{variant_id}; ETag is parent version.
+          headers:
+            Location: {schema: {type: string}}
+            Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+            ETag: {$ref: '#/components/headers/AdminProductETag'}
+          content: {application/json: {schema: {$ref: '#/components/schemas/AdminVariant'}}}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '404': {$ref: '#/components/responses/AdminNotFound'}
+        '409': {$ref: '#/components/responses/AdminConflict'}
+        '412': {$ref: '#/components/responses/AdminVersionConflict'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '428': {$ref: '#/components/responses/AdminPreconditionRequired'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+
+  /api/v1/admin/products/{id}/variants/{variant_id}:
+    parameters:
+      - $ref: '#/components/parameters/AdminProductId'
+      - {name: variant_id, in: path, required: true, schema: {$ref: ./common.yaml#/components/schemas/Id}}
+    get:
+      operationId: getAdminVariant
+      tags: [catalog]
+      summary: Read a variant and parent product ETag
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      responses:
+        '200': {$ref: '#/components/responses/AdminVariant'}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '404': {$ref: '#/components/responses/AdminNotFound'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '500': {$ref: '#/components/responses/AdminInternalError'}
+    patch:
+      operationId: updateAdminVariant
+      tags: [catalog]
+      summary: Edit variant options, pricing and logistics
+      security: [{adminSession: []}]
+      x-roles: [owner, staff]
+      description: |
+        JSON Merge Patch with parent PRODUCT If-Match, not variant.version.
+        Absent unchanged; null clears nullable fields and removes optional keys
+        in attributes/options. Validate the complete merged variant with the
+        same definitions, unique options and compare-at rule as creation. A price
+        change also validates the retained reference price. No client stock,
+        product_id or currency. Compare/increment variant.version and parent
+        product.version atomically. A batch of variant edits is not atomic:
+        send sequential requests using each returned ETag, stop/reload on conflict.
+      parameters: [{$ref: '#/components/parameters/AdminProductIfMatch'}]
+      requestBody:
+        required: true
+        content: {application/merge-patch+json: {schema: {$ref: '#/components/schemas/AdminPatchVariant'}}}
+      responses:
+        '200': {$ref: '#/components/responses/AdminVariant'}
+        '400': {$ref: '#/components/responses/AdminBadRequest'}
+        '401': {$ref: '#/components/responses/AdminUnauthorized'}
+        '403': {$ref: '#/components/responses/AdminForbidden'}
+        '404': {$ref: '#/components/responses/AdminNotFound'}
+        '409': {$ref: '#/components/responses/AdminConflict'}
+        '412': {$ref: '#/components/responses/AdminVersionConflict'}
+        '422': {$ref: '#/components/responses/AdminValidationFailed'}
+        '428': {$ref: '#/components/responses/AdminPreconditionRequired'}
         '500': {$ref: '#/components/responses/AdminInternalError'}
 
   /api/v1/admin/catalog/categories:
@@ -679,6 +845,12 @@ components:
       required: true
       description: Variant UUID; parent product is resolved server-side.
       schema: {$ref: ./common.yaml#/components/schemas/Id}
+    AdminProductIfMatch:
+      name: If-Match
+      in: header
+      required: true
+      description: Exact strong parent product ETag; missing is 428, stale 412; no weak/wildcard/list values.
+      schema: {type: string, pattern: '^"[1-9][0-9]*"$'}
     AdminLimit:
       name: limit
       in: query
@@ -1382,6 +1554,96 @@ components:
         next_cursor: {$ref: ./common.yaml#/components/schemas/NextCursor}
         total: {type: integer, format: int64, minimum: 0}
         generated_at: {$ref: ./common.yaml#/components/schemas/Timestamp}
+    AdminAttributePatch:
+      type: object
+      description: Merge into descriptive attributes; null removes a key, then validate the resulting document.
+      additionalProperties:
+        anyOf:
+          - $ref: '#/components/schemas/AdminAttributeValue'
+          - {type: 'null'}
+    AdminAttributeValue:
+      anyOf:
+        - {type: string}
+        - {type: number}
+        - {type: boolean}
+        - {type: array, items: {type: string}}
+    AdminCategoryIds:
+      type: array
+      uniqueItems: true
+      items: {$ref: ./common.yaml#/components/schemas/Id}
+    AdminCreateProduct:
+      type: object
+      additionalProperties: false
+      required: [product_type_id, title, slug, attributes]
+      properties:
+        product_type_id: {$ref: ./common.yaml#/components/schemas/Id}
+        title: {type: string, pattern: '\S'}
+        slug: {$ref: ./common.yaml#/components/schemas/Slug}
+        description: {type: [string, 'null']}
+        status: {$ref: '#/components/schemas/AdminProductStatus', default: draft}
+        brand_id: {$ref: '#/components/schemas/AdminNullableId'}
+        origin_id: {$ref: '#/components/schemas/AdminNullableId'}
+        category_ids: {$ref: '#/components/schemas/AdminCategoryIds', default: []}
+        attributes: {$ref: '#/components/schemas/AdminAttributes'}
+    AdminPatchProduct:
+      type: object
+      additionalProperties: false
+      properties:
+        title: {type: string, pattern: '\S'}
+        slug: {$ref: ./common.yaml#/components/schemas/Slug}
+        description: {type: [string, 'null']}
+        status: {$ref: '#/components/schemas/AdminProductStatus'}
+        brand_id: {$ref: '#/components/schemas/AdminNullableId'}
+        origin_id: {$ref: '#/components/schemas/AdminNullableId'}
+        category_ids: {$ref: '#/components/schemas/AdminCategoryIds'}
+        attributes: {$ref: '#/components/schemas/AdminAttributePatch'}
+        images:
+          type: array
+          items: {$ref: '#/components/schemas/AdminImageEdit'}
+    AdminImageEdit:
+      type: object
+      additionalProperties: false
+      required: [id, alt_text, variant_id, position]
+      properties:
+        id: {$ref: ./common.yaml#/components/schemas/Id}
+        alt_text: {type: string, pattern: '\S'}
+        variant_id: {$ref: '#/components/schemas/AdminNullableId'}
+        position: {type: integer}
+    AdminCreateVariant:
+      type: object
+      additionalProperties: false
+      required: [sku, options, attributes, price_amount, weight_grams, tax_category]
+      properties:
+        sku: {type: string, pattern: '\S'}
+        barcode: {type: [string, 'null']}
+        options: {$ref: '#/components/schemas/AdminAttributes'}
+        attributes: {$ref: '#/components/schemas/AdminAttributes'}
+        price_amount: {$ref: ./common.yaml#/components/schemas/MoneyAmount, minimum: 1}
+        compare_at_price_amount: {$ref: '#/components/schemas/AdminNullableAmount'}
+        weight_grams: {type: integer, minimum: 1}
+        length_mm: {type: [integer, 'null'], minimum: 1}
+        width_mm: {type: [integer, 'null'], minimum: 1}
+        height_mm: {type: [integer, 'null'], minimum: 1}
+        tax_category: {type: string, enum: [excluded, exempt, reduced, standard]}
+        status: {type: string, enum: [active, archived], default: active}
+        position: {type: integer, default: 0}
+    AdminPatchVariant:
+      type: object
+      additionalProperties: false
+      properties:
+        sku: {type: string, pattern: '\S'}
+        barcode: {type: [string, 'null']}
+        options: {$ref: '#/components/schemas/AdminAttributePatch'}
+        attributes: {$ref: '#/components/schemas/AdminAttributePatch'}
+        price_amount: {$ref: ./common.yaml#/components/schemas/MoneyAmount, minimum: 1}
+        compare_at_price_amount: {$ref: '#/components/schemas/AdminNullableAmount'}
+        weight_grams: {type: integer, minimum: 1}
+        length_mm: {type: [integer, 'null'], minimum: 1}
+        width_mm: {type: [integer, 'null'], minimum: 1}
+        height_mm: {type: [integer, 'null'], minimum: 1}
+        tax_category: {type: string, enum: [excluded, exempt, reduced, standard]}
+        status: {type: string, enum: [active, archived]}
+        position: {type: integer}
   securitySchemes:
     adminSession: {$ref: ./common.yaml#/components/securitySchemes/adminSession}
   responses:
@@ -1391,6 +1653,24 @@ components:
         Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
         ETag: {$ref: '#/components/headers/AdminProductETag'}
       content: {application/json: {schema: {$ref: '#/components/schemas/AdminProduct'}}}
+    AdminVariant:
+      description: Variant with its own JSON version; ETag is the parent product version.
+      headers:
+        Cache-Control: {$ref: '#/components/headers/AdminNoStore'}
+        ETag: {$ref: '#/components/headers/AdminProductETag'}
+      content: {application/json: {schema: {$ref: '#/components/schemas/AdminVariant'}}}
+    AdminConflict:
+      description: Unique slug/SKU/options conflict or incompatible existing lot (slug_conflict, sku_conflict, variant_options_conflict, lot_conflict); nothing changed.
+      headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+      content: {application/problem+json: {schema: {$ref: ./common.yaml#/components/schemas/Problem}}}
+    AdminVersionConflict:
+      description: Stale parent product If-Match (version_conflict); no record, stock or ledger changes.
+      headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+      content: {application/problem+json: {schema: {$ref: ./common.yaml#/components/schemas/Problem}}}
+    AdminPreconditionRequired:
+      description: Missing parent product If-Match (precondition_required); no changes.
+      headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
+      content: {application/problem+json: {schema: {$ref: ./common.yaml#/components/schemas/Problem}}}
     AdminBadRequest:
       description: Malformed request (bad_request).
       headers: {Cache-Control: {$ref: '#/components/headers/AdminNoStore'}}
