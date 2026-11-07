@@ -72,12 +72,17 @@ interface AdminShellProps {
   children: React.ReactNode;
   active?: AdminNavKey;
   requiredRole?: AdminRole;
-  /** Settings are read-only at 390 px per the approved admin responsive rules. */
-  desktopOnly?: boolean;
+  /**
+   * Settings and the catalog are not managed at 390 px (admin.md responsive rules); the
+   * screen shows a message instead. `true` is settings, `'catalog'` is the catalog.
+   */
+  desktopOnly?: boolean | 'catalog';
 }
 
 function AdminIcon({ kind }: { kind: AdminNavKey | 'account' }) {
   if (kind === 'home') return <path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z" />;
+  if (kind === 'products') return <path d="M4 7l8-4 8 4v10l-8 4-8-4zM4 7l8 4 8-4M12 11v10" />;
+  if (kind === 'inventory') return <path d="M3 4h18v4H3zM5 8v12h14V8M10 12h4" />;
   if (kind === 'orders') return <path d="M6 7h12l-1 14H7zM9 7a3 3 0 0 1 6 0" />;
   if (kind === 'admins') {
     return <path d="M9 11a4 4 0 1 0 0-8 4 4 0 0 0 0 8zM2 21a7 7 0 0 1 14 0M17 3.5a4 4 0 0 1 0 7.5M22 21a6 6 0 0 0-4-5.7" />;
@@ -133,7 +138,7 @@ function MobileLink({ href, current, icon, children }: { href: string; current: 
   return <a href={href} aria-current={current ? 'page' : undefined} className={`flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-sm text-xs no-underline ${current ? 'bg-brand-yellow font-extrabold text-foreground' : 'font-bold text-primary-foreground'}`}><IconFrame kind={icon} />{children}</a>;
 }
 
-function ShellFrame({ session, active, children, forbidden, desktopOnly, pendingDispatchCount, mobileDetail }: { session: AdminSession; active?: AdminNavKey; children: React.ReactNode; forbidden: boolean; desktopOnly: boolean; pendingDispatchCount: number | null; mobileDetail: MobileDetailHeader | null }) {
+function ShellFrame({ session, active, children, forbidden, desktopOnly, pendingDispatchCount, mobileDetail }: { session: AdminSession; active?: AdminNavKey; children: React.ReactNode; forbidden: boolean; desktopOnly: boolean | 'catalog'; pendingDispatchCount: number | null; mobileDetail: MobileDetailHeader | null }) {
   const [expanded, setExpanded] = React.useState(() => typeof window !== 'undefined' && window.innerWidth >= 1440);
   const [mobile, setMobile] = React.useState(() => typeof window !== 'undefined' && window.innerWidth <= 390);
   React.useEffect(() => {
@@ -143,7 +148,8 @@ function ShellFrame({ session, active, children, forbidden, desktopOnly, pending
   }, []);
   const groups = navigationFor(session.user.role, { pendingDispatchCount });
   const items = groups.flatMap((group) => group.items);
-  const sectionItems = items.filter((item) => item.key !== 'admins');
+  // The phone bar (390 px) carries only what the read-only mode allows; the catalog is not part of it.
+  const sectionItems = items.filter((item) => item.key !== 'admins' && item.key !== 'products' && item.key !== 'inventory');
   const adminsItem = items.find((item) => item.key === 'admins');
   const signOut = React.useCallback(async () => {
     await logout();
@@ -184,7 +190,7 @@ function ShellFrame({ session, active, children, forbidden, desktopOnly, pending
             <div className="flex max-w-md flex-col items-center gap-3 rounded-xl bg-secondary p-6 text-center">
               <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><rect x="2" y="4" width="20" height="13" rx="2" /><path d="M8 21h8M12 17v4" /></svg>
               <h1 className="m-0 text-xl font-extrabold">Revísalo desde un computador o una tablet</h1>
-              <p className="m-0 text-sm leading-5 text-muted-foreground">En el celular el panel es de consulta. La cuenta y la configuración se administran en una pantalla más grande.</p>
+              <p className="m-0 text-sm leading-5 text-muted-foreground">En el celular el panel es de consulta. {desktopOnly === 'catalog' ? 'El catálogo' : 'La cuenta y la configuración'} se administra{desktopOnly === 'catalog' ? '' : 'n'} en una pantalla más grande.</p>
             </div>
           </main>
         ) : <AdminSessionContext.Provider value={session}>{children}</AdminSessionContext.Provider>}

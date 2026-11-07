@@ -107,6 +107,42 @@ describe('AdminShell session guard (T2/T8: S3, S4)', () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
+  describe('catalog tablet-and-up gate (F1: S7)', () => {
+    const originalWidth = window.innerWidth;
+    afterEach(() => Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth }));
+
+    it('shows the use-a-computer-or-tablet message instead of any catalog layout at 390 px', async () => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+      getCurrentAdmin.mockResolvedValue({ ok: true, data: owner, etag: '"1"' });
+
+      render(<AdminShell active="products" desktopOnly="catalog"><SessionProbe /></AdminShell>);
+      expect(await screen.findByText('Revísalo desde un computador o una tablet')).toBeTruthy();
+      expect(screen.getByText(/El catálogo se administra en una pantalla más grande/)).toBeTruthy();
+      expect(screen.queryByText(/Contenido privado/)).toBeNull();
+    });
+
+    it.each([768, 1024, 1440])('renders the catalog page normally at %i px', async (width) => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+      getCurrentAdmin.mockResolvedValue({ ok: true, data: owner, etag: '"1"' });
+
+      render(<AdminShell active="products" desktopOnly="catalog"><SessionProbe /></AdminShell>);
+      expect(await screen.findByText('Contenido privado de Laura Ríos')).toBeTruthy();
+      expect(screen.queryByText('Revísalo desde un computador o una tablet')).toBeNull();
+    });
+
+    it('keeps the catalog out of the phone bottom bar and lists it in the sidebar', async () => {
+      getCurrentAdmin.mockResolvedValue({ ok: true, data: owner, etag: '"1"' });
+      render(<AdminShell active="products"><SessionProbe /></AdminShell>);
+      await screen.findByText('Contenido privado de Laura Ríos');
+      const sidebar = screen.getByRole('navigation', { name: 'Secciones del panel' });
+      expect(within(sidebar).getByRole('link', { name: 'Productos' }).getAttribute('aria-current')).toBe('page');
+      expect(within(sidebar).getByRole('link', { name: 'Inventario' })).toBeTruthy();
+      const phoneBar = screen.getByRole('navigation', { name: 'Secciones' });
+      expect(within(phoneBar).queryByRole('link', { name: 'Productos' })).toBeNull();
+      expect(within(phoneBar).queryByRole('link', { name: 'Inventario' })).toBeNull();
+    });
+  });
+
   it('offers retry without leaking content when the session check cannot reach the API', async () => {
     getCurrentAdmin
       .mockResolvedValueOnce({ ok: false, status: 0, code: 'network_error' })

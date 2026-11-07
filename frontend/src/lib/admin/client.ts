@@ -31,6 +31,22 @@ const ACCEPT = 'application/json, application/problem+json';
 export interface RequestOptions {
   body?: unknown;
   ifMatch?: string;
+  /** Media type of a JSON body; defaults to application/json (merge patches use their own). */
+  contentType?: string;
+  /** Multipart body; the browser sets the Content-Type with its boundary. */
+  formData?: FormData;
+}
+
+/** Builds a query string from defined values; arrays repeat the parameter. */
+export function queryString(params: Record<string, unknown>): string {
+  const query = new URLSearchParams();
+  for (const [key, value] of Object.entries(params)) {
+    if (value === undefined || value === null) continue;
+    if (Array.isArray(value)) value.forEach((item) => query.append(key, String(item)));
+    else query.set(key, String(value));
+  }
+  const suffix = query.toString();
+  return suffix ? `?${suffix}` : '';
 }
 
 export async function request<T>(
@@ -39,7 +55,7 @@ export async function request<T>(
   options: RequestOptions = {}
 ): Promise<AdminResult<T>> {
   const headers: Record<string, string> = { Accept: ACCEPT };
-  if (options.body !== undefined) headers['Content-Type'] = 'application/json';
+  if (options.body !== undefined) headers['Content-Type'] = options.contentType ?? 'application/json';
   if (options.ifMatch !== undefined) headers['If-Match'] = options.ifMatch;
 
   let response: Response;
@@ -47,7 +63,7 @@ export async function request<T>(
     response = await fetch(url, {
       method,
       headers,
-      body: options.body === undefined ? undefined : JSON.stringify(options.body),
+      body: options.formData ?? (options.body === undefined ? undefined : JSON.stringify(options.body)),
       credentials: 'same-origin',
       cache: 'no-store',
     });
