@@ -35,6 +35,15 @@ describe('Admin navigation (T2, T8: S3, S4; F1: S1)', () => {
     ]);
   });
 
+  it('adds the low-stock count to Inventario only when it is positive (F4: L11)', () => {
+    const inventario = (counts?: { pendingDispatchCount: number | null; lowStockCount?: number | null }) =>
+      navigationFor('staff', counts).flatMap((group) => group.items).find((item) => item.key === 'inventory');
+    expect(inventario({ pendingDispatchCount: null, lowStockCount: 4 })).toEqual({ ...INVENTARIO, count: 4 });
+    expect(inventario({ pendingDispatchCount: 6, lowStockCount: 0 })).toEqual(INVENTARIO);
+    expect(inventario({ pendingDispatchCount: null, lowStockCount: null })).toEqual(INVENTARIO);
+    expect(inventario({ pendingDispatchCount: null })).toEqual(INVENTARIO);
+  });
+
   it('adds the pending dispatch count to Pedidos only when it is positive', () => {
     const pedidos = (counts?: { pendingDispatchCount: number | null }) =>
       navigationFor('staff', counts).flatMap((group) => group.items).find((item) => item.key === 'orders');

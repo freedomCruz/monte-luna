@@ -7,6 +7,7 @@ import {
   type AdminRole,
   type AdminUser,
 } from '../../../lib/admin/client';
+import { listAdminInventoryVariants } from '../../../lib/admin/catalog';
 import { listAdminOrders } from '../../../lib/admin/orders';
 import {
   ADMIN_ROUTES,
@@ -23,6 +24,7 @@ interface AdminSession {
 
 const AdminSessionContext = React.createContext<AdminSession | null>(null);
 const PendingDispatchContext = React.createContext<(count: number) => void>(() => {});
+const RefreshLowStockContext = React.createContext<() => void>(() => {});
 
 /** Mobile header of a detail screen (A-Pedido-390): a back link and the record title. */
 export interface MobileDetailHeader {
@@ -59,6 +61,11 @@ export function useAdminSession(): AdminSession {
  */
 export function useReportPendingDispatchCount(): (count: number) => void {
   return React.useContext(PendingDispatchContext);
+}
+
+/** Lets Inventario ask the sidebar badge to read the low-stock total again after a stock write. */
+export function useRefreshLowStockCount(): () => void {
+  return React.useContext(RefreshLowStockContext);
 }
 
 export function sessionDestination(result: AdminResult<AdminUser>): string | null {
@@ -138,7 +145,7 @@ function MobileLink({ href, current, icon, children }: { href: string; current: 
   return <a href={href} aria-current={current ? 'page' : undefined} className={`flex min-h-[52px] flex-col items-center justify-center gap-0.5 rounded-sm text-xs no-underline ${current ? 'bg-brand-yellow font-extrabold text-foreground' : 'font-bold text-primary-foreground'}`}><IconFrame kind={icon} />{children}</a>;
 }
 
-function ShellFrame({ session, active, children, forbidden, desktopOnly, pendingDispatchCount, mobileDetail }: { session: AdminSession; active?: AdminNavKey; children: React.ReactNode; forbidden: boolean; desktopOnly: boolean | 'catalog'; pendingDispatchCount: number | null; mobileDetail: MobileDetailHeader | null }) {
+function ShellFrame({ session, active, children, forbidden, desktopOnly, pendingDispatchCount, lowStockCount, mobileDetail }: { session: AdminSession; active?: AdminNavKey; children: React.ReactNode; forbidden: boolean; desktopOnly: boolean | 'catalog'; pendingDispatchCount: number | null; lowStockCount: number | null; mobileDetail: MobileDetailHeader | null }) {
   const [expanded, setExpanded] = React.useState(() => typeof window !== 'undefined' && window.innerWidth >= 1440);
   const [mobile, setMobile] = React.useState(() => typeof window !== 'undefined' && window.innerWidth <= 390);
   React.useEffect(() => {
@@ -146,7 +153,7 @@ function ShellFrame({ session, active, children, forbidden, desktopOnly, pending
     window.addEventListener('resize', update);
     return () => window.removeEventListener('resize', update);
   }, []);
-  const groups = navigationFor(session.user.role, { pendingDispatchCount });
+  const groups = navigationFor(session.user.role, { pendingDispatchCount, lowStockCount });
   const items = groups.flatMap((group) => group.items);
   // The phone bar (390 px) carries only what the read-only mode allows; the catalog is not part of it.
   const sectionItems = items.filter((item) => item.key !== 'admins' && item.key !== 'products' && item.key !== 'inventory');
@@ -209,6 +216,9 @@ export function AdminShell({ children, active, requiredRole, desktopOnly = false
   const [failed, setFailed] = React.useState(false);
   const [attempt, setAttempt] = React.useState(0);
   const [pendingDispatchCount, setPendingDispatchCount] = React.useState<number | null>(null);
+  const [lowStockCount, setLowStockCount] = React.useState<number | null>(null);
+  const [lowStockReads, setLowStockReads] = React.useState(0);
+  const refreshLowStock = React.useCallback(() => setLowStockReads((value) => value + 1), []);
   const loaded = Boolean(session);
   const [mobileDetail, setMobileDetail] = React.useState<MobileDetailHeader | null>(null);
 
@@ -239,8 +249,18 @@ export function AdminShell({ children, active, requiredRole, desktopOnly = false
     return () => { live = false; };
   }, [loaded]);
 
+  // The Inventario badge is the global total of the low-or-empty list; one row page is the cheapest read the contract offers.
+  React.useEffect(() => {
+    if (!loaded) return;
+    let live = true;
+    void listAdminInventoryVariants({ stock: 'low_or_empty', status: 'active', limit: 25 }).then((result) => {
+      if (live && result.ok) setLowStockCount(result.data.total);
+    });
+    return () => { live = false; };
+  }, [loaded, lowStockReads]);
+
   if (failed) return <div className="flex min-h-screen items-center justify-center bg-background p-4"><div role="alert" className="flex max-w-md flex-col items-center gap-4 rounded-xl border border-border bg-card p-8 text-center"><p className="m-0 text-lg font-bold">No pudimos comprobar tu sesión.</p><button type="button" onClick={() => setAttempt((value) => value + 1)} className="min-h-11 rounded-sm border-0 bg-primary px-4 font-sans font-bold text-primary-foreground">Reintentar</button></div></div>;
   if (!session) return <div className="flex min-h-screen items-center justify-center bg-background"><p role="status" className="font-bold text-muted-foreground">Comprobando tu sesión…</p></div>;
 
-  return <PendingDispatchContext.Provider value={setPendingDispatchCount}><MobileDetailContext.Provider value={setMobileDetail}><ShellFrame session={session} active={active} forbidden={requiredRole !== undefined && session.user.role !== requiredRole} desktopOnly={desktopOnly} pendingDispatchCount={pendingDispatchCount} mobileDetail={mobileDetail}>{children}</ShellFrame></MobileDetailContext.Provider></PendingDispatchContext.Provider>;
+  return <PendingDispatchContext.Provider value={setPendingDispatchCount}><RefreshLowStockContext.Provider value={refreshLowStock}><MobileDetailContext.Provider value={setMobileDetail}><ShellFrame session={session} active={active} forbidden={requiredRole !== undefined && session.user.role !== requiredRole} desktopOnly={desktopOnly} pendingDispatchCount={pendingDispatchCount} lowStockCount={lowStockCount} mobileDetail={mobileDetail}>{children}</ShellFrame></MobileDetailContext.Provider></RefreshLowStockContext.Provider></PendingDispatchContext.Provider>;
 }

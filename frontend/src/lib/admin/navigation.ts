@@ -69,11 +69,14 @@ const GROUPS: { label: string; items: NavDefinition[] }[] = [
 export interface AdminNavCounts {
   /** Global paid and preparing orders awaiting dispatch (`pending_dispatch_count`). */
   pendingDispatchCount: number | null;
+  /** Active variants with low or no stock (`total` of the inventory list filtered by `stock=low_or_empty`). */
+  lowStockCount?: number | null;
 }
 
 /** Sidebar entries visible to a role; options a role cannot use are not rendered. */
 export function navigationFor(role: AdminRole, counts?: AdminNavCounts): AdminNavGroup[] {
   const pending = counts?.pendingDispatchCount ?? 0;
+  const lowStock = counts?.lowStockCount ?? 0;
   return GROUPS.map((group) => ({
     label: group.label,
     items: group.items
@@ -83,6 +86,7 @@ export function navigationFor(role: AdminRole, counts?: AdminNavCounts): AdminNa
         title,
         href,
         ...(key === 'orders' && pending > 0 ? { count: pending } : {}),
+        ...(key === 'inventory' && lowStock > 0 ? { count: lowStock } : {}),
       })),
   })).filter((group) => group.items.length > 0);
 }
