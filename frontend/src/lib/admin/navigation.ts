@@ -11,6 +11,8 @@ export const ADMIN_ROUTES = {
   forgotPassword: '/admin/recuperar-contrasena/',
   resetPassword: '/admin/restablecer-contrasena/',
   invitation: '/admin/invitacion/',
+  products: '/admin/productos/',
+  inventory: '/admin/inventario/',
   orders: '/admin/pedidos/',
   account: '/admin/cuenta/',
   admins: '/admin/administradores/',
@@ -19,7 +21,7 @@ export const ADMIN_ROUTES = {
 /** Where an authenticated administrator lands: the Inicio dashboard (admin-orders-v1 S1). */
 export const ADMIN_LANDING = ADMIN_ROUTES.home;
 
-export type AdminNavKey = 'home' | 'orders' | 'admins';
+export type AdminNavKey = 'home' | 'products' | 'inventory' | 'orders' | 'admins';
 
 export interface AdminNavItem {
   key: AdminNavKey;
@@ -45,6 +47,13 @@ const GROUPS: { label: string; items: NavDefinition[] }[] = [
   {
     label: '',
     items: [{ key: 'home', title: 'Inicio', href: ADMIN_ROUTES.home, ownerOnly: false }],
+  },
+  {
+    label: 'Catálogo',
+    items: [
+      { key: 'products', title: 'Productos', href: ADMIN_ROUTES.products, ownerOnly: false },
+      { key: 'inventory', title: 'Inventario', href: ADMIN_ROUTES.inventory, ownerOnly: false },
+    ],
   },
   {
     label: 'Ventas',
@@ -94,4 +103,9 @@ export function initialsOf(displayName: string): string {
 /** Order detail. The site is static, so the order id travels in the query string. */
 export function orderDetailHref(id: string): string {
   return `/admin/pedido/?id=${encodeURIComponent(id)}`;
+}
+
+/** Product detail. The site is static, so the product id travels in the query string. */
+export function productDetailHref(id: string): string {
+  return `/admin/producto/?id=${encodeURIComponent(id)}`;
 }
