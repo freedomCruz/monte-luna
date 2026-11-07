@@ -153,6 +153,9 @@ func run(logger *slog.Logger) error {
 	if err := module.RegisterAdminMediaRoutes(mux, admins.Access(), admins.LoadAdminSession); err != nil {
 		return err
 	}
+	if err := module.RegisterAdminReadRoutes(mux, admins.Access(), admins.LoadAdminSession, catalogInventoryOrders{checkout}, admins, time.Now); err != nil {
+		return err
+	}
 	if err := checkout.RegisterAdminReadRoutes(mux, admins.Access(), admins.LoadAdminSession); err != nil {
 		return err
 	}
