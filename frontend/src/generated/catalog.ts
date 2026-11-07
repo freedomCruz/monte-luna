@@ -158,6 +158,457 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/admin/products": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search products including drafts and archives (owner or staff)
+         * @description Case-insensitive literal substring search on title or any variant SKU.
+         *     Category and type filters use exact IDs; no implicit descendants. All
+         *     product statuses included by default. stock=low_or_empty means summed
+         *     available_quantity < 10. Counts, min/max prices and available_quantity
+         *     include active variants only; stock includes active lots only. Products
+         *     with no active variants return null prices and zero stock/count.
+         *     title sorts case-insensitively; price_amount sorts by minimum active
+         *     price with nulls last in both directions; stock sorts by available_quantity.
+         *     ID ascending breaks ties for ascending sorts, descending for descending.
+         *     Keep prior cursors client-side for Back. The quick view uses product detail.
+         */
+        get: operations["listAdminProducts"];
+        put?: never;
+        /**
+         * Create a product without an existing version
+         * @description Sole If-Match exception: no row exists yet. Create draft by default;
+         *     explicit status may publish or archive. Persist validated product-scope
+         *     attributes and category associations in one transaction. Existing slug
+         *     returns 409 slug_conflict, never a duplicate or silent overwrite on retry.
+         *     Select existing taxonomy IDs only; no embedded taxonomy writes. New
+         *     references must be active. Null optional values become null, attributes
+         *     default only as specified, category_ids defaults to []. Create variants
+         *     and upload images after creation using the returned ETag.
+         */
+        post: operations["createAdminProduct"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["AdminProductId"];
+            };
+            cookie?: never;
+        };
+        /**
+         * Read complete product including archived children (owner or staff)
+         * @description Includes current taxonomy even when archived, definitions, raw validated
+         *     attribute values, all variants and all images. Variants/images sort by
+         *     position then ID. Strong ETag quotes product.version; send it verbatim
+         *     for all updates and child creations. Stock does not change this content
+         *     version; no-store and fresh reads are required for inventory.
+         */
+        get: operations["getAdminProduct"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit product, publication, categories or image metadata
+         * @description JSON Merge Patch: absent unchanged; null clears only nullable fields.
+         *     attributes merges by key; null removes an optional key; validate the
+         *     resulting complete product-scope document. category_ids and images
+         *     replace their arrays. images accepts existing IDs of this product only,
+         *     never keys/URLs or new IDs; update alt text, position and variant binding,
+         *     and unlink omitted image records without deleting R2 objects. Reject
+         *     duplicate IDs, invalid parent/variant ownership and blank alt text with
+         *     422. New taxonomy references must be active; unchanged archived references
+         *     can be retained. product_type_id is immutable. Archiving is a status
+         *     update, never a hard product delete. Compare/increment parent and changed
+         *     image versions in the same transaction; no partial save on any error.
+         */
+        patch: operations["updateAdminProduct"];
+        trace?: never;
+    };
+    "/api/v1/admin/products/{id}/variants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["AdminProductId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Create a variant guarded by the parent product version
+         * @description Require parent product If-Match. options must conform exactly to the
+         *     product type's scope=variant AND is_variant_option=true definitions;
+         *     other variant attributes cannot be axes. Product-scope roast_level is
+         *     never a variant option. Enforce UNIQUE(product_id, options) and unique
+         *     SKU with 409 variant_options_conflict/sku_conflict. Required definitions,
+         *     data types and allowed values are validated in Go. compare_at_price_amount
+         *     must exceed price_amount when set. Currency comes from store configuration,
+         *     not client input. Create with zero inventory; receipts alone add stock.
+         *     Defaults: active, position=0, nullable barcode/dimensions/reference price=null.
+         *     Insert child and increment parent version atomically.
+         */
+        post: operations["createAdminVariant"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{id}/variants/{variant_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["AdminProductId"];
+                variant_id: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        /** Read a variant and parent product ETag */
+        get: operations["getAdminVariant"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        /**
+         * Edit variant options, pricing and logistics
+         * @description JSON Merge Patch with parent PRODUCT If-Match, not variant.version.
+         *     Absent unchanged; null clears nullable fields and removes optional keys
+         *     in attributes/options. Validate the complete merged variant with the
+         *     same definitions, unique options and compare-at rule as creation. A price
+         *     change also validates the retained reference price. No client stock,
+         *     product_id or currency. Compare/increment variant.version and parent
+         *     product.version atomically. A batch of variant edits is not atomic:
+         *     send sequential requests using each returned ETag, stop/reload on conflict.
+         */
+        patch: operations["updateAdminVariant"];
+        trace?: never;
+    };
+    "/api/v1/admin/products/{id}/images": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["AdminProductId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Upload and attach one product image to R2
+         * @description Require parent product If-Match. One multipart file, nonblank alt_text,
+         *     optional variant_id belonging to this product and position (default 0).
+         *     Omitted variant_id means product-wide. Reject unknown fields, URL imports,
+         *     client storage keys, multiple files and invalid variant ownership (422).
+         *     The server bounds the entire multipart request to 6 MiB and file bytes
+         *     to 5 MiB (5242880 inclusive), rejecting empty files (422) or excess (413
+         *     image_too_large). Verify actual content bytes as JPEG, PNG or WebP;
+         *     extension and declared Content-Type alone are never trusted. Reject
+         *     unsupported/mismatched content (415 unsupported_image_type), including
+         *     SVG/GIF/HTML. Filename never determines the object key or a local path.
+         *     Generate a unique relative key under catalog/products/{id}/ on the server;
+         *     persist only that key, never an absolute URL or a client-supplied key.
+         *     Resolve URLs only through MediaStorePort. R2 is approved; SDK installation
+         *     remains behind dependency-audit and explicit approval at G2.
+         *     Validate authorization, ownership and precondition before uploading;
+         *     recheck parent version when atomically inserting product_images and
+         *     incrementing product.version. Storage and PostgreSQL are not one
+         *     transaction: failed DB/precondition commit leaves no image record and
+         *     triggers best-effort deletion of the newly uploaded orphan object.
+         *     Never overwrite or delete a pre-existing object. Provider failure is
+         *     503 media_unavailable with no committed image/version change. Success
+         *     returns the image and the new parent ETag; JSON version is image.version.
+         */
+        post: operations["uploadAdminProductImage"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/products/{id}/images/{image_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["AdminProductId"];
+                image_id: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        /** Read attached image metadata and parent product ETag */
+        get: operations["getAdminProductImage"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/categories": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read category choices without taxonomy writes
+         * @description Flat category tree; position then ID ascending. Active by default.
+         */
+        get: operations["listAdminCatalogCategories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/origins": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search read-only origin choices
+         * @description Literal case-insensitive name/producer search; name then ID ascending. Active by default.
+         */
+        get: operations["listAdminCatalogOrigins"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/brands": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read brand choices without taxonomy writes
+         * @description Name then ID ascending; active by default.
+         */
+        get: operations["listAdminCatalogBrands"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/catalog/product-types": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Read merchant-defined types and attribute definitions
+         * @description Name then ID ascending; definitions by position then key. No status filter or field exists.
+         */
+        get: operations["listAdminCatalogProductTypes"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/variants": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /**
+         * Search variant stock for inventory and receipt selection
+         * @description Literal case-insensitive product title or SKU search; title, variant
+         *     position then variant ID ascending. All product/variant statuses included
+         *     by default, including zero-stock variants. stock=low_or_empty selects
+         *     available_quantity < 10. Available counters include active lots only.
+         *     Reserved counts are authoritative held allocations composed through the
+         *     orders public read port (including any approved payment grace), never
+         *     inferred by summing sale movements or reading orders tables.
+         *     Composition is not a cross-module snapshot; generated_at identifies the
+         *     read time, counts are informational and do not authorize a stock write.
+         */
+        get: operations["listAdminInventoryVariants"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/variants/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Variant UUID; parent product is resolved server-side. */
+                id: components["parameters"]["AdminVariantId"];
+            };
+            cookie?: never;
+        };
+        /**
+         * Read variant stock summary and parent ETag
+         * @description Same stock/reservation semantics as the selection list. active_lot_count
+         *     counts active lots with positive quantity. ETag quotes the parent product
+         *     version, not stock or variant version; use for lot receipt. Catalog admin
+         *     writes advance this version; order allocation/release does not.
+         */
+        get: operations["getAdminInventoryVariant"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/variants/{id}/lots": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Variant UUID; parent product is resolved server-side. */
+                id: components["parameters"]["AdminVariantId"];
+            };
+            cookie?: never;
+        };
+        /**
+         * Read lots and stock rows for one variant
+         * @description Include every lot linked through this variant's stock rows, even depleted
+         *     or archived and zero counters. Sort production_date then lot ID ascending.
+         *     next_to_allocate marks only the oldest active lot with positive quantity.
+         *     Reserved quantities come through the orders public port by variant/lot.
+         *     old_roast is server-computed for merchant-defined coffee (type slug coffee):
+         *     more than 30 calendar days since production_date in America/Bogota at
+         *     generated_at; exactly 30 is false. Non-coffee is false. The flag is
+         *     independent of status/quantity; the UI gives depleted/archive badges
+         *     precedence. Threshold is fixed and global, not a client comparison (L4d).
+         */
+        get: operations["listAdminVariantLots"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/variants/{id}/movements": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Variant UUID; parent product is resolved server-side. */
+                id: components["parameters"]["AdminVariantId"];
+            };
+            cookie?: never;
+        };
+        /**
+         * Read append-only stock movement history
+         * @description Newest first by created_at then ID descending. Optional lot_id restricts
+         *     to that variant's lot; an unrelated well-formed ID matches no rows.
+         *     reason is exactly the stored enum: receipt, sale, return, adjustment,
+         *     damage, release. No reservation reason is invented (L4b). For sale rows,
+         *     resolve reference_id through the orders public read port: display_kind
+         *     reservation while its allocation is held, sale when committed, allocation
+         *     if released or unresolved. Other reasons map directly to display_kind.
+         *     These labels reflect current order state, not a rewritten historical fact;
+         *     payment confirmation creates no second stock decrement or movement.
+         *     order is null when no matching order exists; never infer a paid sale from
+         *     a negative delta. Missing order context is not a fabricated order number.
+         *     actor_name is the current name resolved by batch identity public port
+         *     lookup, not a cross-schema read or new snapshot column (L4c). Null actor_id
+         *     means system; a missing identity record yields null actor_name, rendered
+         *     as an unknown admin rather than System. Dependency errors return 503,
+         *     not fabricated counts, order states or names. No ledger update/delete API.
+         */
+        get: operations["listAdminInventoryMovements"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/admin/inventory/variants/{id}/receive-lot": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Variant UUID; parent product is resolved server-side. */
+                id: components["parameters"]["AdminVariantId"];
+            };
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /**
+         * Receive units into a product lot through a selected variant
+         * @description Require the parent product ETag returned by inventory summary or product
+         *     detail. Resolve product_id from the variant; client product_id, lot_id,
+         *     actor_id, reason, stock totals and storage keys are rejected, never trusted.
+         *     In ONE catalog transaction: lock/check parent version; resolve the lot by
+         *     UNIQUE(product_id, lot_code), creating an active lot with attributes={}
+         *     if absent; upsert variant_lot_stock using the same product_id on both
+         *     composite FKs; atomically add quantity; append exactly one movement with
+         *     reason=receipt, positive quantity_delta, actor_id from the admin session,
+         *     reference_id=null and optional note; increment parent version and commit.
+         *     Existing lot dates must equal the supplied production_date/expiration_date
+         *     (omitted expiration means null); mismatch or archived lot is 409 lot_conflict,
+         *     with no changes. Never silently rewrite shared lot metadata. A depleted
+         *     lot becomes active with its own version check/increment; unchanged active
+         *     lots retain their version. Reject expiration before production and int32
+         *     counter overflow with 422 validation_failed. Concurrent order allocations
+         *     and releases retain atomic counter semantics; never set a client total.
+         *     Repeating a successful request with the old ETag returns 412, not a second
+         *     receipt. After an uncertain network outcome, inspect the ledger before
+         *     intentionally retrying with a fresh ETag. No manual adjustment in stage 3a.
+         *     Success reports only committed catalog facts, with no post-commit external
+         *     composition that could turn a successful receipt into a dependency error.
+         */
+        post: operations["receiveAdminVariantLot"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
@@ -291,6 +742,376 @@ export interface components {
             /** @description Production date of the oldest active lot with positive available stock for this variant, ordered by production_date then lot id ascending. For coffee this is the roast date. Null exactly when out_of_stock. */
             production_date: components["schemas"]["CalendarDate"] | null;
         } & unknown;
+        /** @enum {string} */
+        AdminProductStatus: "draft" | "published" | "archived";
+        AdminVersion: number;
+        /** Format: uuid */
+        AdminNullableId: string | null;
+        /** Format: int64 */
+        AdminNullableAmount: number | null;
+        /** @description Descriptive values validated against the selected type's definitions; unknown keys rejected. */
+        AdminAttributes: {
+            [key: string]: string | number | boolean | string[];
+        };
+        AdminNamedResource: {
+            id: components["schemas"]["Id"];
+            slug: components["schemas"]["Slug"];
+            name: string;
+        };
+        AdminBrand: {
+            id: components["schemas"]["Id"];
+            slug: components["schemas"]["Slug"];
+            name: string;
+            /** @enum {string} */
+            status: "active" | "archived";
+        };
+        AdminCategory: {
+            id: components["schemas"]["Id"];
+            slug: components["schemas"]["Slug"];
+            name: string;
+            parent_id: components["schemas"]["AdminNullableId"];
+            position: number;
+            /** @enum {string} */
+            status: "active" | "archived";
+        };
+        AdminOrigin: {
+            id: components["schemas"]["Id"];
+            slug: components["schemas"]["Slug"];
+            name: string;
+            producer_name: string;
+            country_code: string;
+            department: string | null;
+            municipality_code: string | null;
+            municipality_name: string | null;
+            altitude_min_masl: number | null;
+            /** @description Maximum must be at least minimum when both are known; facts are read-only here. */
+            altitude_max_masl: number | null;
+            story: string | null;
+            /** @enum {string} */
+            status: "active" | "archived";
+        };
+        /** @description Variant axes require scope=variant; option/multi_option require an ordered allowed_values array. */
+        AdminAttributeDefinition: {
+            key: string;
+            label: string;
+            /** @enum {string} */
+            data_type: "text" | "integer" | "decimal" | "boolean" | "option" | "multi_option";
+            /** @enum {string} */
+            scope: "product" | "variant";
+            is_variant_option: boolean;
+            is_required: boolean;
+            is_filterable: boolean;
+            /** @description Ordered stable key and display label choices, matching storefront option values. */
+            allowed_values: {
+                value: string;
+                label: string;
+            }[] | null;
+            unit: string | null;
+            position: number;
+        };
+        /** @description Merchant-defined; deliberately no status field (L4a). */
+        AdminProductType: {
+            id: components["schemas"]["Id"];
+            slug: components["schemas"]["Slug"];
+            name: string;
+            attribute_definitions: components["schemas"]["AdminAttributeDefinition"][];
+        };
+        AdminProductRow: {
+            id: components["schemas"]["Id"];
+            title: string;
+            slug: components["schemas"]["Slug"];
+            product_type: components["schemas"]["AdminNamedResource"];
+            categories: components["schemas"]["AdminCategory"][];
+            origin: components["schemas"]["AdminOrigin"] | null;
+            status: components["schemas"]["AdminProductStatus"];
+            variant_count: number;
+            min_price_amount: components["schemas"]["AdminNullableAmount"];
+            max_price_amount: components["schemas"]["AdminNullableAmount"];
+            /** Format: int64 */
+            available_quantity: number;
+            /** @description Fixed server flag: available_quantity < 10; zero is out of stock. */
+            low_stock: boolean;
+            /** Format: uri */
+            image_url: string | null;
+            version: components["schemas"]["AdminVersion"];
+        };
+        AdminProduct: {
+            id: components["schemas"]["Id"];
+            product_type: components["schemas"]["AdminProductType"];
+            brand: components["schemas"]["AdminBrand"] | null;
+            origin: components["schemas"]["AdminOrigin"] | null;
+            categories: components["schemas"]["AdminCategory"][];
+            title: string;
+            slug: components["schemas"]["Slug"];
+            description: string | null;
+            status: components["schemas"]["AdminProductStatus"];
+            attributes: components["schemas"]["AdminAttributes"];
+            variants: components["schemas"]["AdminVariant"][];
+            images: components["schemas"]["AdminImage"][];
+            created_at: components["schemas"]["Timestamp"];
+            updated_at: components["schemas"]["Timestamp"];
+            version: components["schemas"]["AdminVersion"];
+        };
+        /** @description Compare-at price must exceed selling price; raw options plus definitions supply editable labels. */
+        AdminVariant: {
+            id: components["schemas"]["Id"];
+            product_id: components["schemas"]["Id"];
+            sku: string;
+            barcode: string | null;
+            options: components["schemas"]["AdminAttributes"];
+            attributes: components["schemas"]["AdminAttributes"];
+            price_amount: components["schemas"]["MoneyAmount"];
+            compare_at_price_amount: components["schemas"]["AdminNullableAmount"];
+            weight_grams: number;
+            length_mm: number | null;
+            width_mm: number | null;
+            height_mm: number | null;
+            /** @enum {string} */
+            tax_category: "excluded" | "exempt" | "reduced" | "standard";
+            /** @enum {string} */
+            status: "active" | "archived";
+            position: number;
+            /** Format: int64 */
+            available_quantity: number;
+            low_stock: boolean;
+            version: components["schemas"]["AdminVersion"];
+        };
+        /** @description Resolved URL only; relative storage key is server-owned and never accepted as input. */
+        AdminImage: {
+            id: components["schemas"]["Id"];
+            product_id: components["schemas"]["Id"];
+            variant_id: components["schemas"]["AdminNullableId"];
+            /** Format: uri */
+            url: string;
+            alt_text: string;
+            position: number;
+            version: components["schemas"]["AdminVersion"];
+        };
+        AdminProductPage: {
+            items: components["schemas"]["AdminProductRow"][];
+            next_cursor: components["schemas"]["NextCursor"];
+            /** Format: int64 */
+            total: number;
+        };
+        AdminCategoryPage: {
+            items: components["schemas"]["AdminCategory"][];
+            next_cursor: components["schemas"]["NextCursor"];
+            /** Format: int64 */
+            total: number;
+        };
+        AdminOriginPage: {
+            items: components["schemas"]["AdminOrigin"][];
+            next_cursor: components["schemas"]["NextCursor"];
+            /** Format: int64 */
+            total: number;
+        };
+        AdminBrandPage: {
+            items: components["schemas"]["AdminBrand"][];
+            next_cursor: components["schemas"]["NextCursor"];
+            /** Format: int64 */
+            total: number;
+        };
+        AdminProductTypePage: {
+            items: components["schemas"]["AdminProductType"][];
+            next_cursor: components["schemas"]["NextCursor"];
+            /** Format: int64 */
+            total: number;
+        };
+        AdminInventoryVariant: {
+            product_id: components["schemas"]["Id"];
+            variant_id: components["schemas"]["Id"];
+            product_title: string;
+            product_status: components["schemas"]["AdminProductStatus"];
+            /** @enum {string} */
+            variant_status: "active" | "archived";
+            /** @description Display labels resolved from ordered variant option definitions. */
+            variant_label: string;
+            sku: string;
+            /** Format: int64 */
+            available_quantity: number;
+            /** Format: int64 */
+            reserved_quantity: number;
+            active_lot_count: number;
+            /** @description Fixed server flag: available_quantity < 10. */
+            low_stock: boolean;
+            product_version: components["schemas"]["AdminVersion"];
+            generated_at: components["schemas"]["Timestamp"];
+        };
+        AdminVariantLot: {
+            id: components["schemas"]["Id"];
+            product_id: components["schemas"]["Id"];
+            lot_code: string;
+            production_date: components["schemas"]["CalendarDate"];
+            /** Format: date */
+            expiration_date: string | null;
+            /** @enum {string} */
+            status: "active" | "depleted" | "archived";
+            /** @description Stored available counter for this variant/lot. */
+            quantity: number;
+            /** Format: int64 */
+            reserved_quantity: number;
+            /** @description Coffee roast age > 30 calendar days; exactly 30 is false. */
+            old_roast: boolean;
+            next_to_allocate: boolean;
+            version: components["schemas"]["AdminVersion"];
+        };
+        /** @description Orders-owned read-port projection; no private tracking tokens or customer data. */
+        AdminMovementOrder: {
+            id: components["schemas"]["Id"];
+            order_number: string;
+            status: string;
+            /** @enum {string} */
+            reservation_state: "held" | "committed" | "released";
+        };
+        AdminInventoryMovement: {
+            id: components["schemas"]["Id"];
+            variant_id: components["schemas"]["Id"];
+            lot_id: components["schemas"]["Id"];
+            lot_code: string;
+            quantity_delta: number;
+            /** @enum {string} */
+            reason: "receipt" | "sale" | "return" | "adjustment" | "damage" | "release";
+            /** @enum {string} */
+            display_kind: "receipt" | "reservation" | "allocation" | "sale" | "return" | "adjustment" | "damage" | "release";
+            reference_id: components["schemas"]["AdminNullableId"];
+            order: components["schemas"]["AdminMovementOrder"] | null;
+            actor_id: components["schemas"]["AdminNullableId"];
+            /** @description Current identity public-port name; null for system or missing admin. */
+            actor_name: string | null;
+            note: string | null;
+            created_at: components["schemas"]["Timestamp"];
+        };
+        AdminInventoryVariantPage: {
+            items: components["schemas"]["AdminInventoryVariant"][];
+            next_cursor: components["schemas"]["NextCursor"];
+            /** Format: int64 */
+            total: number;
+            generated_at: components["schemas"]["Timestamp"];
+        };
+        AdminVariantLotPage: {
+            items: components["schemas"]["AdminVariantLot"][];
+            next_cursor: components["schemas"]["NextCursor"];
+            /** Format: int64 */
+            total: number;
+            generated_at: components["schemas"]["Timestamp"];
+        };
+        AdminInventoryMovementPage: {
+            items: components["schemas"]["AdminInventoryMovement"][];
+            next_cursor: components["schemas"]["NextCursor"];
+            /** Format: int64 */
+            total: number;
+            generated_at: components["schemas"]["Timestamp"];
+        };
+        /** @description Merge into descriptive attributes; null removes a key, then validate the resulting document. */
+        AdminAttributePatch: {
+            [key: string]: components["schemas"]["AdminAttributeValue"] | null;
+        };
+        AdminAttributeValue: string | number | boolean | string[];
+        AdminCategoryIds: components["schemas"]["Id"][];
+        AdminCreateProduct: {
+            product_type_id: components["schemas"]["Id"];
+            title: string;
+            slug: components["schemas"]["Slug"];
+            description?: string | null;
+            /** @default draft */
+            status: components["schemas"]["AdminProductStatus"];
+            brand_id?: components["schemas"]["AdminNullableId"];
+            origin_id?: components["schemas"]["AdminNullableId"];
+            /** @default [] */
+            category_ids: components["schemas"]["AdminCategoryIds"];
+            attributes: components["schemas"]["AdminAttributes"];
+        };
+        AdminPatchProduct: {
+            title?: string;
+            slug?: components["schemas"]["Slug"];
+            description?: string | null;
+            status?: components["schemas"]["AdminProductStatus"];
+            brand_id?: components["schemas"]["AdminNullableId"];
+            origin_id?: components["schemas"]["AdminNullableId"];
+            category_ids?: components["schemas"]["AdminCategoryIds"];
+            attributes?: components["schemas"]["AdminAttributePatch"];
+            images?: components["schemas"]["AdminImageEdit"][];
+        };
+        AdminImageEdit: {
+            id: components["schemas"]["Id"];
+            alt_text: string;
+            variant_id: components["schemas"]["AdminNullableId"];
+            position: number;
+        };
+        AdminCreateVariant: {
+            sku: string;
+            barcode?: string | null;
+            options: components["schemas"]["AdminAttributes"];
+            attributes: components["schemas"]["AdminAttributes"];
+            price_amount: components["schemas"]["MoneyAmount"];
+            compare_at_price_amount?: components["schemas"]["AdminNullableAmount"];
+            weight_grams: number;
+            length_mm?: number | null;
+            width_mm?: number | null;
+            height_mm?: number | null;
+            /** @enum {string} */
+            tax_category: "excluded" | "exempt" | "reduced" | "standard";
+            /**
+             * @default active
+             * @enum {string}
+             */
+            status: "active" | "archived";
+            /** @default 0 */
+            position: number;
+        };
+        AdminPatchVariant: {
+            sku?: string;
+            barcode?: string | null;
+            options?: components["schemas"]["AdminAttributePatch"];
+            attributes?: components["schemas"]["AdminAttributePatch"];
+            price_amount?: components["schemas"]["MoneyAmount"];
+            compare_at_price_amount?: components["schemas"]["AdminNullableAmount"];
+            weight_grams?: number;
+            length_mm?: number | null;
+            width_mm?: number | null;
+            height_mm?: number | null;
+            /** @enum {string} */
+            tax_category?: "excluded" | "exempt" | "reduced" | "standard";
+            /** @enum {string} */
+            status?: "active" | "archived";
+            position?: number;
+        };
+        AdminImageUpload: {
+            /** Format: binary */
+            file: string;
+            alt_text: string;
+            /** @description Omit for all variants; otherwise must belong to the parent product. */
+            variant_id?: components["schemas"]["Id"];
+            /** @default 0 */
+            position: number;
+        };
+        AdminReceiveLot: {
+            /** @description Trim whitespace; unique per resolved parent product. */
+            lot_code: string;
+            production_date: components["schemas"]["CalendarDate"];
+            /**
+             * Format: date
+             * @description Null or omitted means no expiry; otherwise at least production_date.
+             */
+            expiration_date?: string | null;
+            quantity: number;
+            /** @description Trim whitespace; blank/omitted becomes null. */
+            note?: string | null;
+        };
+        AdminLotReceipt: {
+            product_id: components["schemas"]["Id"];
+            product_version: components["schemas"]["AdminVersion"];
+            variant_id: components["schemas"]["Id"];
+            lot_id: components["schemas"]["Id"];
+            lot_code: string;
+            lot_created: boolean;
+            movement_id: components["schemas"]["Id"];
+            /** @constant */
+            reason: "receipt";
+            quantity_received: number;
+            /** @description Resulting available counter of this variant/lot at commit. */
+            quantity_after: number;
+        };
         Slug: string;
         /**
          * Format: date-time
@@ -329,6 +1150,128 @@ export interface components {
         MoneyAmount: number;
     };
     responses: {
+        /** @description Complete product and current parent product version. */
+        AdminProduct: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                ETag: components["headers"]["AdminProductETag"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["AdminProduct"];
+            };
+        };
+        /** @description Variant with its own JSON version; ETag is the parent product version. */
+        AdminVariant: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                ETag: components["headers"]["AdminProductETag"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/json": components["schemas"]["AdminVariant"];
+            };
+        };
+        /** @description Unique slug/SKU/options conflict or incompatible existing lot (slug_conflict, sku_conflict, variant_options_conflict, lot_conflict); nothing changed. */
+        AdminConflict: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Stale parent product If-Match (version_conflict); no record, stock or ledger changes. */
+        AdminVersionConflict: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Missing parent product If-Match (precondition_required); no changes. */
+        AdminPreconditionRequired: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Malformed request (bad_request). */
+        AdminBadRequest: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Missing, revoked, expired or pending session (authentication_required). */
+        AdminUnauthorized: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Insufficient role (forbidden) or CrossOriginProtection rejection (cross_origin_rejected). */
+        AdminForbidden: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Product, variant or image not found under the requested parent (product_not_found, variant_not_found, image_not_found). */
+        AdminNotFound: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Invalid/unknown fields or attributes (validation_failed); no writes. */
+        AdminValidationFailed: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Orders or identity read-port dependency failed (dependency_unavailable); no fabricated data. */
+        AdminDependencyUnavailable: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
+        /** @description Unexpected failure (internal_error); safe details only. */
+        AdminInternalError: {
+            headers: {
+                "Cache-Control": components["headers"]["AdminNoStore"];
+                [name: string]: unknown;
+            };
+            content: {
+                "application/problem+json": components["schemas"]["Problem"];
+            };
+        };
         /** @description Malformed request. */
         BadRequest: {
             headers: {
@@ -369,6 +1312,15 @@ export interface components {
     parameters: {
         /** @description Public resource slug, never an internal identifier. */
         Slug: components["schemas"]["Slug"];
+        AdminProductId: components["schemas"]["Id"];
+        /** @description Variant UUID; parent product is resolved server-side. */
+        AdminVariantId: components["schemas"]["Id"];
+        /** @description Exact strong parent product ETag; missing is 428, stale 412; no weak/wildcard/list values. */
+        AdminProductIfMatch: string;
+        AdminLimit: 25 | 50 | 100;
+        AdminTaxonomyStatus: "active" | "archived" | "all";
+        AdminCategoryFilter: components["schemas"]["Id"][];
+        AdminProductTypeFilter: components["schemas"]["Id"][];
         /** @description Page size for cursor pagination. */
         Limit: number;
         /** @description Opaque cursor taken from a previous `next_cursor`. */
@@ -380,6 +1332,9 @@ export interface components {
         StableCacheControl: "public, max-age=60";
         /** @description Live variant data must not be stored by browser or intermediary caches. */
         LiveCacheControl: "no-store";
+        AdminNoStore: string;
+        /** @description Strong quoted parent product version; copy verbatim into If-Match. */
+        AdminProductETag: string;
     };
     pathItems: never;
 }
@@ -598,6 +1553,623 @@ export interface operations {
             400: components["responses"]["BadRequest"];
             422: components["responses"]["ValidationFailed"];
             500: components["responses"]["InternalError"];
+        };
+    };
+    listAdminProducts: {
+        parameters: {
+            query?: {
+                /** @description Trim whitespace; blank means no search. */
+                search?: string;
+                category_id?: components["parameters"]["AdminCategoryFilter"];
+                product_type_id?: components["parameters"]["AdminProductTypeFilter"];
+                status?: components["schemas"]["AdminProductStatus"][];
+                stock?: "all" | "low_or_empty";
+                sort?: "title" | "-title" | "price_amount" | "-price_amount" | "stock" | "-stock";
+                limit?: components["parameters"]["AdminLimit"];
+                /** @description Opaque cursor taken from a previous `next_cursor`. */
+                cursor?: components["parameters"]["Cursor"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Matching product rows with current prices and stock. */
+            200: {
+                headers: {
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProductPage"];
+                };
+            };
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    createAdminProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCreateProduct"];
+            };
+        };
+        responses: {
+            /** @description New product; Location is /api/v1/admin/products/{id}. */
+            201: {
+                headers: {
+                    Location?: string;
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    ETag: components["headers"]["AdminProductETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProduct"];
+                };
+            };
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            409: components["responses"]["AdminConflict"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    getAdminProduct: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["AdminProductId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["AdminProduct"];
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            404: components["responses"]["AdminNotFound"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    updateAdminProduct: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Exact strong parent product ETag; missing is 428, stale 412; no weak/wildcard/list values. */
+                "If-Match": components["parameters"]["AdminProductIfMatch"];
+            };
+            path: {
+                id: components["parameters"]["AdminProductId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["AdminPatchProduct"];
+            };
+        };
+        responses: {
+            200: components["responses"]["AdminProduct"];
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            404: components["responses"]["AdminNotFound"];
+            409: components["responses"]["AdminConflict"];
+            412: components["responses"]["AdminVersionConflict"];
+            422: components["responses"]["AdminValidationFailed"];
+            428: components["responses"]["AdminPreconditionRequired"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    createAdminVariant: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Exact strong parent product ETag; missing is 428, stale 412; no weak/wildcard/list values. */
+                "If-Match": components["parameters"]["AdminProductIfMatch"];
+            };
+            path: {
+                id: components["parameters"]["AdminProductId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminCreateVariant"];
+            };
+        };
+        responses: {
+            /** @description New variant; Location is /api/v1/admin/products/{id}/variants/{variant_id}; ETag is parent version. */
+            201: {
+                headers: {
+                    Location?: string;
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    ETag: components["headers"]["AdminProductETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminVariant"];
+                };
+            };
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            404: components["responses"]["AdminNotFound"];
+            409: components["responses"]["AdminConflict"];
+            412: components["responses"]["AdminVersionConflict"];
+            422: components["responses"]["AdminValidationFailed"];
+            428: components["responses"]["AdminPreconditionRequired"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    getAdminVariant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["AdminProductId"];
+                variant_id: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            200: components["responses"]["AdminVariant"];
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            404: components["responses"]["AdminNotFound"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    updateAdminVariant: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Exact strong parent product ETag; missing is 428, stale 412; no weak/wildcard/list values. */
+                "If-Match": components["parameters"]["AdminProductIfMatch"];
+            };
+            path: {
+                id: components["parameters"]["AdminProductId"];
+                variant_id: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/merge-patch+json": components["schemas"]["AdminPatchVariant"];
+            };
+        };
+        responses: {
+            200: components["responses"]["AdminVariant"];
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            404: components["responses"]["AdminNotFound"];
+            409: components["responses"]["AdminConflict"];
+            412: components["responses"]["AdminVersionConflict"];
+            422: components["responses"]["AdminValidationFailed"];
+            428: components["responses"]["AdminPreconditionRequired"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    uploadAdminProductImage: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Exact strong parent product ETag; missing is 428, stale 412; no weak/wildcard/list values. */
+                "If-Match": components["parameters"]["AdminProductIfMatch"];
+            };
+            path: {
+                id: components["parameters"]["AdminProductId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["AdminImageUpload"];
+            };
+        };
+        responses: {
+            /** @description Attached image; Location is /api/v1/admin/products/{id}/images/{image_id}. */
+            201: {
+                headers: {
+                    Location?: string;
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    ETag: components["headers"]["AdminProductETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminImage"];
+                };
+            };
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            404: components["responses"]["AdminNotFound"];
+            412: components["responses"]["AdminVersionConflict"];
+            /** @description File exceeds 5 MiB or multipart request exceeds 6 MiB (image_too_large); no image record. */
+            413: {
+                headers: {
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            /** @description Actual image type is unsupported or mismatches declared type (unsupported_image_type); no image record. */
+            415: {
+                headers: {
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+            422: components["responses"]["AdminValidationFailed"];
+            428: components["responses"]["AdminPreconditionRequired"];
+            500: components["responses"]["AdminInternalError"];
+            /** @description R2 unavailable (media_unavailable); no committed image or product version change. */
+            503: {
+                headers: {
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["Problem"];
+                };
+            };
+        };
+    };
+    getAdminProductImage: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: components["parameters"]["AdminProductId"];
+                image_id: components["schemas"]["Id"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Product-owned image with resolved public URL. */
+            200: {
+                headers: {
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    ETag: components["headers"]["AdminProductETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminImage"];
+                };
+            };
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            404: components["responses"]["AdminNotFound"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    listAdminCatalogCategories: {
+        parameters: {
+            query?: {
+                status?: components["parameters"]["AdminTaxonomyStatus"];
+                limit?: components["parameters"]["AdminLimit"];
+                /** @description Opaque cursor taken from a previous `next_cursor`. */
+                cursor?: components["parameters"]["Cursor"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Category choices. */
+            200: {
+                headers: {
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminCategoryPage"];
+                };
+            };
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    listAdminCatalogOrigins: {
+        parameters: {
+            query?: {
+                search?: string;
+                status?: components["parameters"]["AdminTaxonomyStatus"];
+                limit?: components["parameters"]["AdminLimit"];
+                /** @description Opaque cursor taken from a previous `next_cursor`. */
+                cursor?: components["parameters"]["Cursor"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Origin facts; no origin mutation or embedded origin creation. */
+            200: {
+                headers: {
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminOriginPage"];
+                };
+            };
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    listAdminCatalogBrands: {
+        parameters: {
+            query?: {
+                status?: components["parameters"]["AdminTaxonomyStatus"];
+                limit?: components["parameters"]["AdminLimit"];
+                /** @description Opaque cursor taken from a previous `next_cursor`. */
+                cursor?: components["parameters"]["Cursor"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Brand choices. */
+            200: {
+                headers: {
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminBrandPage"];
+                };
+            };
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    listAdminCatalogProductTypes: {
+        parameters: {
+            query?: {
+                limit?: components["parameters"]["AdminLimit"];
+                /** @description Opaque cursor taken from a previous `next_cursor`. */
+                cursor?: components["parameters"]["Cursor"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Type choices and validation metadata. */
+            200: {
+                headers: {
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminProductTypePage"];
+                };
+            };
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+        };
+    };
+    listAdminInventoryVariants: {
+        parameters: {
+            query?: {
+                search?: string;
+                product_id?: components["schemas"]["Id"];
+                status?: "active" | "archived" | "all";
+                stock?: "all" | "low_or_empty";
+                limit?: components["parameters"]["AdminLimit"];
+                /** @description Opaque cursor taken from a previous `next_cursor`. */
+                cursor?: components["parameters"]["Cursor"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Variant stock selection page. */
+            200: {
+                headers: {
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminInventoryVariantPage"];
+                };
+            };
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+            503: components["responses"]["AdminDependencyUnavailable"];
+        };
+    };
+    getAdminInventoryVariant: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                /** @description Variant UUID; parent product is resolved server-side. */
+                id: components["parameters"]["AdminVariantId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Variant summary with parent product ETag. */
+            200: {
+                headers: {
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    ETag: components["headers"]["AdminProductETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminInventoryVariant"];
+                };
+            };
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            404: components["responses"]["AdminNotFound"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+            503: components["responses"]["AdminDependencyUnavailable"];
+        };
+    };
+    listAdminVariantLots: {
+        parameters: {
+            query?: {
+                limit?: components["parameters"]["AdminLimit"];
+                /** @description Opaque cursor taken from a previous `next_cursor`. */
+                cursor?: components["parameters"]["Cursor"];
+            };
+            header?: never;
+            path: {
+                /** @description Variant UUID; parent product is resolved server-side. */
+                id: components["parameters"]["AdminVariantId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Oldest-first lot stock page. */
+            200: {
+                headers: {
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminVariantLotPage"];
+                };
+            };
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            404: components["responses"]["AdminNotFound"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+            503: components["responses"]["AdminDependencyUnavailable"];
+        };
+    };
+    listAdminInventoryMovements: {
+        parameters: {
+            query?: {
+                lot_id?: components["schemas"]["Id"];
+                limit?: components["parameters"]["AdminLimit"];
+                /** @description Opaque cursor taken from a previous `next_cursor`. */
+                cursor?: components["parameters"]["Cursor"];
+            };
+            header?: never;
+            path: {
+                /** @description Variant UUID; parent product is resolved server-side. */
+                id: components["parameters"]["AdminVariantId"];
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Movement page with composed presentation context. */
+            200: {
+                headers: {
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminInventoryMovementPage"];
+                };
+            };
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            404: components["responses"]["AdminNotFound"];
+            422: components["responses"]["AdminValidationFailed"];
+            500: components["responses"]["AdminInternalError"];
+            503: components["responses"]["AdminDependencyUnavailable"];
+        };
+    };
+    receiveAdminVariantLot: {
+        parameters: {
+            query?: never;
+            header: {
+                /** @description Exact strong parent product ETag; missing is 428, stale 412; no weak/wildcard/list values. */
+                "If-Match": components["parameters"]["AdminProductIfMatch"];
+            };
+            path: {
+                /** @description Variant UUID; parent product is resolved server-side. */
+                id: components["parameters"]["AdminVariantId"];
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["AdminReceiveLot"];
+            };
+        };
+        responses: {
+            /** @description Committed receipt and resulting stock row quantity; ETag is new parent product version. */
+            200: {
+                headers: {
+                    "Cache-Control": components["headers"]["AdminNoStore"];
+                    ETag: components["headers"]["AdminProductETag"];
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["AdminLotReceipt"];
+                };
+            };
+            400: components["responses"]["AdminBadRequest"];
+            401: components["responses"]["AdminUnauthorized"];
+            403: components["responses"]["AdminForbidden"];
+            404: components["responses"]["AdminNotFound"];
+            409: components["responses"]["AdminConflict"];
+            412: components["responses"]["AdminVersionConflict"];
+            422: components["responses"]["AdminValidationFailed"];
+            428: components["responses"]["AdminPreconditionRequired"];
+            500: components["responses"]["AdminInternalError"];
         };
     };
 }
