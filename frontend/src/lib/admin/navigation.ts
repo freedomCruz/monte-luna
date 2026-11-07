@@ -13,6 +13,7 @@ export const ADMIN_ROUTES = {
   invitation: '/admin/invitacion/',
   products: '/admin/productos/',
   inventory: '/admin/inventario/',
+  product: '/admin/producto/',
   orders: '/admin/pedidos/',
   account: '/admin/cuenta/',
   admins: '/admin/administradores/',

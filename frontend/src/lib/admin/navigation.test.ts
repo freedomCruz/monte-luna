@@ -51,6 +51,7 @@ describe('Admin navigation (T2, T8: S3, S4; F1: S1)', () => {
   it('lists only the catalog screens this stage delivers and links Producto through the query string (S1)', () => {
     expect(ADMIN_ROUTES.products).toBe('/admin/productos/');
     expect(ADMIN_ROUTES.inventory).toBe('/admin/inventario/');
+    expect(ADMIN_ROUTES.product).toBe('/admin/producto/');
     const catalog = navigationFor('staff').find((group) => group.label === 'Catálogo');
     expect(catalog?.items.map((item) => item.title)).toEqual(['Productos', 'Inventario']);
     expect(productDetailHref('01900000-0000-7000-8000-0000000000a1')).toBe('/admin/producto/?id=01900000-0000-7000-8000-0000000000a1');
