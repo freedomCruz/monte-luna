@@ -81,6 +81,7 @@ func TestImageUploadOrchestration(t *testing.T) {
 		{name: "stale_before_upload", check: &domain.Error{Status: 412, Code: "version_conflict"}},
 		{name: "reserve_failed", reserve: errors.New("database")},
 		{name: "storage_failed", put: domain.ErrMediaUnavailable, puts: 1, deletes: 1},
+		{name: "existing_object_never_deleted", put: domain.ErrMediaKeyConflict, puts: 1},
 		{name: "db_failed", attach: errors.New("database"), puts: 1, deletes: 1},
 		{name: "cleanup_failed_is_durable", attach: errors.New("database"), del: errors.New("storage"), puts: 1, deletes: 1, pending: true},
 	} {

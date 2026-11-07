@@ -50,12 +50,20 @@ func (s *ImageService) Upload(ctx context.Context, in domain.ImageUpload) (domai
 	compensate := func(cause error) error {
 		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 		defer cancel()
-		if err := s.repository.DiscardImage(cleanup, id, s.media.Delete); err != nil {
+		remove := s.media.Delete
+		if errors.Is(cause, domain.ErrMediaKeyConflict) {
+			// Conditional PUT rejected an existing object: it is not ours to delete.
+			remove = func(context.Context, string) error { return nil }
+		}
+		if err := s.repository.DiscardImage(cleanup, id, remove); err != nil {
 			return errors.Join(cause, fmt.Errorf("image cleanup remains recorded: %w", err))
 		}
 		return cause
 	}
 	if err := s.media.Put(ctx, reservation.StorageKey, in.DeclaredType, in.Data); err != nil {
+		if errors.Is(err, domain.ErrMediaKeyConflict) {
+			return zero, compensate(err)
+		}
 		return zero, compensate(domain.ErrMediaUnavailable)
 	}
 	image, err := s.repository.AttachImage(ctx, reservation, in)

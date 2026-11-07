@@ -11,6 +11,7 @@ import (
 const MaxImageBytes = 5 << 20
 
 var ErrMediaUnavailable = errors.New("media unavailable")
+var ErrMediaKeyConflict = errors.New("media key already exists")
 
 type ImageUpload struct {
 	ProductID      string
