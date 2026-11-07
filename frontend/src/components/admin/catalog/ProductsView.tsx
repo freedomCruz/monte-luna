@@ -15,6 +15,7 @@ import {
   type ProductFilters,
 } from '../../../lib/admin/products-query';
 import { ListPagination } from '../shared/ListPagination';
+import { ProductSheet } from './ProductSheet';
 import { ProductsFilters } from './ProductsFilters';
 import { ProductsTable } from './ProductsTable';
 import { ProductsEmpty, ProductsError, ProductsNoMatches, ProductsSkeleton } from './ProductsStates';
@@ -44,6 +45,7 @@ export function ProductsView() {
   const [load, setLoad] = React.useState<Load>({ status: 'loading' });
   const [taxonomy, setTaxonomy] = React.useState<Taxonomy>({ productTypes: [], categories: [] });
   const [attempt, setAttempt] = React.useState(0);
+  const [sheet, setSheet] = React.useState<{ id: string; title: string } | null>(null);
 
   const cursor = pageIndex === 0 ? undefined : cursors[pageIndex - 1];
   const queryKey = JSON.stringify(toListQuery(filters, cursor));
@@ -135,7 +137,7 @@ export function ProductsView() {
       <section aria-label="Lista de productos" className="flex flex-col rounded-md border border-border bg-card">
         {body ?? (ready && (
           <>
-            <ProductsTable rows={ready.rows} sort={filters.sort} onSort={(sort) => change({ sort })} />
+            <ProductsTable rows={ready.rows} sort={filters.sort} onSort={(sort) => change({ sort })} onOpen={(row) => setSheet({ id: row.id, title: row.title })} />
             <ListPagination
               start={pageIndex * filters.limit + 1}
               count={ready.rows.length}
@@ -151,6 +153,7 @@ export function ProductsView() {
           </>
         ))}
       </section>
+      {sheet && <ProductSheet productId={sheet.id} fallbackTitle={sheet.title} onClose={() => setSheet(null)} onSaved={() => setAttempt((value) => value + 1)} />}
     </main>
   );
 }

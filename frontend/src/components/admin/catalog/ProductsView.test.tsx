@@ -1,11 +1,13 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { mockCategories, mockProductPage, mockProductRows, mockProductTypes } from '../../../mocks/admin-products';
+import { mockCategories, mockProductDetail, mockProductPage, mockProductRows, mockProductTypes } from '../../../mocks/admin-products';
 import type { AdminProductPage } from '../../../lib/admin/catalog';
 import { ProductsView } from './ProductsView';
 
-const { listAdminProducts, listAdminCatalogProductTypes, listAdminCatalogCategories } = vi.hoisted(() => ({
+const { listAdminProducts, listAdminCatalogProductTypes, listAdminCatalogCategories, getAdminProduct, updateAdminProduct } = vi.hoisted(() => ({
   listAdminProducts: vi.fn(),
+  getAdminProduct: vi.fn(),
+  updateAdminProduct: vi.fn(),
   listAdminCatalogProductTypes: vi.fn(),
   listAdminCatalogCategories: vi.fn(),
 }));
@@ -13,6 +15,8 @@ const { listAdminProducts, listAdminCatalogProductTypes, listAdminCatalogCategor
 vi.mock('../../../lib/admin/catalog', async (importOriginal) => ({
   ...(await importOriginal<typeof import('../../../lib/admin/catalog')>()),
   listAdminProducts,
+  getAdminProduct,
+  updateAdminProduct,
   listAdminCatalogProductTypes,
   listAdminCatalogCategories,
 }));
@@ -23,6 +27,7 @@ const lastQuery = () => listAdminProducts.mock.calls.at(-1)![0];
 beforeEach(() => {
   window.history.replaceState(null, '', '/admin/productos/');
   listAdminProducts.mockResolvedValue(page());
+  getAdminProduct.mockResolvedValue({ ok: true, etag: '"3"', data: mockProductDetail });
   listAdminCatalogProductTypes.mockResolvedValue({ ok: true, etag: null, data: mockProductTypes });
   listAdminCatalogCategories.mockResolvedValue({ ok: true, etag: null, data: mockCategories });
 });
@@ -40,10 +45,10 @@ describe('ProductsView table (F2: S2)', () => {
 
     const table = await screen.findByRole('table');
     const headers = within(table).getAllByRole('columnheader').map((header) => header.textContent?.replace(/[↑↓↕]/, '').trim());
-    expect(headers).toEqual(['Producto', 'Tipo', 'Categoría', 'Estado', 'Variantes', 'Precio', 'Stock']);
+    expect(headers).toEqual(['Producto', 'Tipo', 'Categoría', 'Estado', 'Variantes', 'Precio', 'Stock', 'Acciones']);
 
     const first = within(table).getAllByRole('row')[1];
-    expect(within(first).getByRole('link', { name: 'Finca El Mirador – Geisha Lavado' }).getAttribute('href')).toBe(`/admin/producto/?id=${mockProductRows[0].id}`);
+    expect(within(first).getByRole('button', { name: 'Finca El Mirador – Geisha Lavado' })).toBeTruthy();
     expect(within(first).getByText('Café')).toBeTruthy();
     expect(within(first).getByText('Cafés de origen')).toBeTruthy();
     expect(within(first).getByText('Publicado')).toBeTruthy();
@@ -166,6 +171,43 @@ describe('ProductsView table (F2: S2)', () => {
     await waitFor(() => expect(screen.getByRole('status').textContent).toBe('26–31 de 60 productos'));
     fireEvent.click(screen.getByRole('button', { name: '‹ Anterior' }));
     await waitFor(() => expect(lastQuery().cursor).toBeUndefined());
+  });
+});
+
+describe('ProductsView quick view and row actions (F2b: S2, S3)', () => {
+  it('opens the quick view from the product name and refreshes the list after saving', async () => {
+    updateAdminProduct.mockResolvedValue({ ok: true, etag: '"4"', data: { ...mockProductDetail, status: 'draft', version: 4 } });
+    render(<ProductsView />);
+    await screen.findByRole('table');
+    const calls = listAdminProducts.mock.calls.length;
+    fireEvent.click(screen.getByRole('button', { name: 'Finca El Mirador – Geisha Lavado' }));
+    const dialog = await screen.findByRole('dialog', { name: 'Finca El Mirador – Geisha Lavado' });
+    expect(getAdminProduct).toHaveBeenCalledWith(mockProductRows[0].id);
+    fireEvent.change(await within(dialog).findByLabelText('Estado de publicación'), { target: { value: 'draft' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: 'Guardar' }));
+    await waitFor(() => expect(listAdminProducts.mock.calls.length).toBeGreaterThan(calls));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
+  });
+
+  it('offers only supported actions in the row menu: quick view, edit and, if published, the storefront', async () => {
+    render(<ProductsView />);
+    const rows = within(await screen.findByRole('table')).getAllByRole('row');
+    const trigger = (row: HTMLElement, name: string) => within(row).getByRole('button', { name: `Acciones de ${name}` });
+
+    fireEvent.pointerDown(trigger(rows[1], 'Finca El Mirador – Geisha Lavado'), { button: 0, ctrlKey: false });
+    const menu = await screen.findByRole('menu');
+    expect(within(menu).getAllByRole('menuitem').map((item) => item.textContent)).toEqual(['Vista rápida', 'Editar producto', 'Ver en la tienda']);
+    expect(within(menu).getByRole('menuitem', { name: 'Editar producto' }).getAttribute('href')).toBe(`/admin/producto/?id=${mockProductRows[0].id}`);
+    expect(within(menu).getByRole('menuitem', { name: 'Ver en la tienda' }).getAttribute('href')).toBe(`/productos/${mockProductRows[0].slug}/`);
+    expect(within(menu).queryByText(/stock|Publicar|Archivar/i)).toBeNull();
+  });
+
+  it('hides the storefront link for a draft product', async () => {
+    render(<ProductsView />);
+    const rows = within(await screen.findByRole('table')).getAllByRole('row');
+    fireEvent.pointerDown(within(rows[5]).getByRole('button', { name: /^Acciones de/ }), { button: 0, ctrlKey: false });
+    const menu = await screen.findByRole('menu');
+    expect(within(menu).queryByRole('menuitem', { name: 'Ver en la tienda' })).toBeNull();
   });
 });
 
