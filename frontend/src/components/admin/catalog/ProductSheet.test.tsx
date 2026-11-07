@@ -72,9 +72,16 @@ describe('ProductSheet (F2b: S2, S3)', () => {
     fireEvent.change(await screen.findByLabelText('Estado de publicación'), { target: { value: 'archived' } });
     fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
 
-    const confirm = await screen.findByRole('alertdialog');
+    const confirm = await screen.findByRole('alertdialog', { name: `¿Archivar ${mockProductDetail.title}?` });
+    expect.soft(within(confirm).queryByText('Deja de verse en la tienda y nadie podrá comprarlo. Los pedidos que ya lo incluyen no cambian. Puedes volver a publicarlo cuando quieras.')).not.toBeNull();
+    expect.soft(document.activeElement).toBe(within(confirm).queryByRole('button', { name: 'Cancelar', exact: true }));
+    const icon = confirm.querySelector('svg');
+    expect.soft(icon?.getAttribute('aria-hidden')).toBe('true');
+    expect.soft(icon?.getAttribute('width')).toBe('22');
+    expect.soft(icon?.getAttribute('height')).toBe('22');
+    expect.soft(icon?.querySelector('path')?.getAttribute('d')).toBe('M3 7h18M5 7v12h14V7M9 11h6M9 3h6');
     expect(updateAdminProduct).not.toHaveBeenCalled();
-    fireEvent.click(within(confirm).getByRole('button', { name: 'Volver' }));
+    fireEvent.click(within(confirm).getByRole('button', { name: 'Cancelar', exact: true }));
     expect(updateAdminProduct).not.toHaveBeenCalled();
 
     fireEvent.click(screen.getByRole('button', { name: 'Guardar' }));
