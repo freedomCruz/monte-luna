@@ -1,8 +1,8 @@
 import type { AdminProductRow } from '../../../lib/admin/catalog';
-import { productDetailHref } from '../../../lib/admin/navigation';
 import { productPriceLabel, productStatusPresentation, productTypeColor, stockBadge } from '../../../lib/admin/product-format';
 import { nextSort, type ProductSort, type SortColumn } from '../../../lib/admin/products-query';
 import { StatusBadge } from '../../ui/status-badge';
+import { ProductRowMenu } from './ProductRowMenu';
 
 // Columns per width from the A-Productos artboards: 1440 shows every column; 1024
 // hides Categoría and Variantes; 768 also hides Tipo. Visibility is CSS only, so every
@@ -36,7 +36,7 @@ function StockBadge({ tone, label }: { tone: string; label: string }) {
   return <span className={`inline-flex h-[22px] items-center whitespace-nowrap rounded-sm px-2 text-xs font-bold ${colors}`}>{label}</span>;
 }
 
-export function ProductsTable({ rows, sort, onSort }: { rows: AdminProductRow[]; sort: ProductSort; onSort: (sort: ProductSort) => void }) {
+export function ProductsTable({ rows, sort, onSort, onOpen }: { rows: AdminProductRow[]; sort: ProductSort; onSort: (sort: ProductSort) => void; onOpen: (row: AdminProductRow) => void }) {
   return (
     <div className="overflow-x-auto">
       <table className="w-full border-collapse text-[15px]">
@@ -49,6 +49,7 @@ export function ProductsTable({ rows, sort, onSort }: { rows: AdminProductRow[];
             <th className={`px-3 text-right font-bold ${FROM_1440}`}>Variantes</th>
             <SortHeader column="price_amount" label="Precio" sort={sort} onSort={onSort} align="right" />
             <SortHeader column="stock" label="Stock" sort={sort} onSort={onSort} align="right" />
+            <th className="w-[60px]"><span className="sr-only">Acciones</span></th>
           </tr>
         </thead>
         <tbody>
@@ -61,7 +62,7 @@ export function ProductsTable({ rows, sort, onSort }: { rows: AdminProductRow[];
                   <span className="flex items-center gap-3">
                     <ProductThumb url={row.image_url} />
                     <span className="flex min-w-0 flex-col">
-                      <a href={productDetailHref(row.id)} className="text-[15px] font-bold text-foreground underline decoration-dashed underline-offset-4 hover:text-accent">{row.title}</a>
+                      <button type="button" onClick={() => onOpen(row)} className="cursor-pointer border-0 bg-transparent p-0 text-left font-sans text-[15px] font-bold text-foreground underline decoration-dashed underline-offset-4 hover:text-accent">{row.title}</button>
                       {row.origin?.department && <span className="text-[13px] text-muted-foreground">{row.origin.department}</span>}
                     </span>
                   </span>
@@ -76,12 +77,13 @@ export function ProductsTable({ rows, sort, onSort }: { rows: AdminProductRow[];
                 <td className="px-3"><StatusBadge tone={status.tone} size="md">{status.label}</StatusBadge></td>
                 <td className={`px-3 text-right ${FROM_1440}`}>{row.variant_count}</td>
                 <td className="whitespace-nowrap px-3 text-right font-semibold">{productPriceLabel(row.min_price_amount, row.max_price_amount)}</td>
-                <td className="pl-3 pr-4 text-right">
+                <td className="pl-3 pr-1 text-right">
                   <span className="inline-flex flex-col items-end gap-[3px]">
                     <span className="font-bold">{row.available_quantity}</span>
                     {stock && <StockBadge tone={stock.tone} label={stock.label} />}
                   </span>
                 </td>
+                <td className="px-2"><ProductRowMenu row={row} onOpen={onOpen} /></td>
               </tr>
             );
           })}

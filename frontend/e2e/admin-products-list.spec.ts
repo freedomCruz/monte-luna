@@ -31,9 +31,9 @@ async function prepare(page: Page, overrides: Parameters<typeof mockAdminProduct
 }
 
 const COLUMNS: Record<number, string[]> = {
-  1440: ['Producto', 'Tipo', 'Categoría', 'Estado', 'Variantes', 'Precio', 'Stock'],
-  1024: ['Producto', 'Tipo', 'Estado', 'Precio', 'Stock'],
-  768: ['Producto', 'Estado', 'Precio', 'Stock'],
+  1440: ['Producto', 'Tipo', 'Categoría', 'Estado', 'Variantes', 'Precio', 'Stock', 'Acciones'],
+  1024: ['Producto', 'Tipo', 'Estado', 'Precio', 'Stock', 'Acciones'],
+  768: ['Producto', 'Estado', 'Precio', 'Stock', 'Acciones'],
 };
 
 test.describe('Admin Productos (F2: S2, S7)', () => {
@@ -49,7 +49,7 @@ test.describe('Admin Productos (F2: S2, S7)', () => {
       await prepare(page);
       await page.goto('/admin/productos/');
       await expect(page.getByRole('heading', { level: 1, name: 'Productos' })).toBeVisible();
-      await expect(page.getByRole('link', { name: 'Finca El Mirador – Geisha Lavado' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Finca El Mirador – Geisha Lavado', exact: true })).toBeVisible();
 
       const headers = await page.getByRole('columnheader').filter({ visible: true }).allInnerTexts();
       expect(headers.map((text) => text.replace(/[↑↓↕]/, '').trim().toLowerCase())).toEqual(COLUMNS[width].map((name) => name.toLowerCase()));
@@ -64,7 +64,7 @@ test.describe('Admin Productos (F2: S2, S7)', () => {
     await page.setViewportSize({ width: 1440, height: 900 });
     const mock = await prepare(page);
     await page.goto('/admin/productos/');
-    await expect(page.getByRole('link', { name: 'Finca El Mirador – Geisha Lavado' })).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Finca El Mirador – Geisha Lavado', exact: true })).toBeVisible();
     await page.getByRole('group', { name: 'Filtros' }).getByRole('button', { name: 'Stock' }).click();
     await expect(page).toHaveURL(/stock=low_or_empty/);
     await expect.poll(() => mock.requests.at(-1)?.searchParams.get('stock')).toBe('low_or_empty');
@@ -85,7 +85,7 @@ test.describe('Admin Productos (F2: S2, S7)', () => {
     for (const width of [1440, 1024, 768]) {
       await page.setViewportSize({ width, height: 900 });
       await page.goto('/admin/productos/');
-      await expect(page.getByRole('link', { name: 'Finca El Mirador – Geisha Lavado' })).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Finca El Mirador – Geisha Lavado', exact: true })).toBeVisible();
       const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
       expect(results.violations, `axe at ${width}px`).toEqual([]);
     }

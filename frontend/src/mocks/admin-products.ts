@@ -1,5 +1,6 @@
 import type {
   AdminCategoryPage,
+  AdminProduct,
   AdminProductPage,
   AdminProductRow,
   AdminProductTypePage,
@@ -89,3 +90,84 @@ export const mockProductRows: AdminProductRow[] = [
 ];
 
 export const mockProductPage: AdminProductPage = { items: mockProductRows, next_cursor: null, total: mockProductRows.length };
+
+const definition = (
+  key: string,
+  label: string,
+  values: [string, string][],
+  position: number,
+  unit: string | null = null
+) => ({
+  key,
+  label,
+  data_type: 'option' as const,
+  scope: 'variant' as const,
+  is_variant_option: true,
+  is_required: true,
+  is_filterable: true,
+  allowed_values: values.map(([value, valueLabel]) => ({ value, label: valueLabel })),
+  unit,
+  position,
+});
+
+const variant = (n: number, sku: string, size: string, grind: string, price: number, stock: number, status: 'active' | 'archived' = 'active') => ({
+  id: `01900000-0000-7000-8000-0000000003${String(n).padStart(2, '0')}`,
+  product_id: mockProductRows[0].id,
+  sku,
+  barcode: null,
+  options: { size, grind },
+  attributes: {},
+  price_amount: price,
+  compare_at_price_amount: null,
+  weight_grams: 250,
+  length_mm: null,
+  width_mm: null,
+  height_mm: null,
+  tax_category: 'standard' as const,
+  status,
+  position: n,
+  available_quantity: stock,
+  low_stock: stock < 10,
+  version: 1,
+});
+
+/** Detail of the first row, as `getAdminProduct` returns it (A-Productos Vista rápida). */
+export const mockProductDetail: AdminProduct = {
+  id: mockProductRows[0].id,
+  product_type: {
+    ...mockProductTypes.items[0],
+    attribute_definitions: [
+      definition('size', 'Presentación', [['250g', '250 g'], ['500g', '500 g']], 1),
+      definition('grind', 'Molienda', [['whole', 'Grano entero'], ['medium', 'Media'], ['fine', 'Fina']], 2),
+    ],
+  },
+  brand: { id: '01900000-0000-7000-8000-000000000d01', slug: 'monteluna', name: 'Monteluna', status: 'active' },
+  origin: mockProductRows[0].origin,
+  categories: [mockCategories.items[0]],
+  title: mockProductRows[0].title,
+  slug: mockProductRows[0].slug,
+  description: null,
+  status: 'published',
+  attributes: {},
+  variants: [
+    variant(1, 'ML-MIR-GE-250-E', '250g', 'whole', 3_800_000, 18),
+    variant(2, 'ML-MIR-GE-250-M', '250g', 'medium', 3_800_000, 12),
+    variant(3, 'ML-MIR-GE-500-E', '500g', 'whole', 7_200_000, 6),
+    variant(4, 'ML-MIR-GE-500-F', '500g', 'fine', 7_200_000, 0),
+    variant(5, 'ML-MIR-GE-OLD', '500g', 'medium', 7_200_000, 0, 'archived'),
+  ],
+  images: [
+    {
+      id: '01900000-0000-7000-8000-000000000e01',
+      product_id: mockProductRows[0].id,
+      variant_id: null,
+      url: '/images/packaging-finca-el-mirador.webp',
+      alt_text: 'Empaque Finca El Mirador',
+      position: 0,
+      version: 1,
+    },
+  ],
+  created_at: '2026-10-01T12:00:00Z',
+  updated_at: '2026-10-20T12:00:00Z',
+  version: 3,
+};
