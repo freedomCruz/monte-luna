@@ -76,6 +76,12 @@ type CatalogLot struct {
 	Version        int32
 }
 
+type CatalogMediaUpload struct {
+	ID         string
+	StorageKey string
+	CreatedAt  pgtype.Timestamptz
+}
+
 type CatalogOrigin struct {
 	ID               string
 	Name             string
