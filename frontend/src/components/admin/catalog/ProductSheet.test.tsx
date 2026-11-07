@@ -119,7 +119,42 @@ describe('ProductSheet (F2b: S2, S3)', () => {
     expect(await screen.findByText('Cafés de origen')).toBeTruthy();
   });
 
-  it('closes from Cancelar and from the close button', async () => {
+  it.each(['Cancelar', 'Cerrar', 'Escape'])('preserves dirty status until discard is confirmed via %s', async (dismiss) => {
+    const { onClose, onSaved } = open();
+    fireEvent.change(await screen.findByLabelText('Estado de publicación'), { target: { value: 'draft' } });
+    const requestClose = () => {
+      if (dismiss === 'Escape') fireEvent.keyDown(document.activeElement ?? document.body, { key: 'Escape' });
+      else fireEvent.click(screen.getByRole('button', { name: dismiss }));
+    };
+    requestClose();
+    const confirm = await screen.findByRole('alertdialog', { name: '¿Salir sin guardar?' });
+    expect(onClose).not.toHaveBeenCalled();
+    expect(within(confirm).getByText(`Perderás los cambios que hiciste en ${mockProductDetail.title}.`)).toBeTruthy();
+    expect(document.activeElement).toBe(within(confirm).getByRole('button', { name: 'Seguir editando' }));
+    fireEvent.click(within(confirm).getByRole('button', { name: 'Seguir editando' }));
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect((screen.getByLabelText('Estado de publicación') as HTMLSelectElement).value).toBe('draft');
+    expect(screen.getByRole('dialog', { name: mockProductDetail.title })).toBeTruthy();
+    expect(onClose).not.toHaveBeenCalled();
+    requestClose();
+    fireEvent.click(within(await screen.findByRole('alertdialog')).getByRole('button', { name: 'Salir sin guardar' }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(updateAdminProduct).not.toHaveBeenCalled();
+    expect(onSaved).not.toHaveBeenCalled();
+  });
+
+  it('closes immediately when the selected status returns to its saved value', async () => {
+    const { onClose } = open();
+    const select = await screen.findByLabelText('Estado de publicación');
+    fireEvent.change(select, { target: { value: 'draft' } });
+    fireEvent.change(select, { target: { value: mockProductDetail.status } });
+    fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
+    expect(onClose).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('alertdialog')).toBeNull();
+    expect(updateAdminProduct).not.toHaveBeenCalled();
+  });
+
+  it('closes a clean Sheet from Cancelar and from the close button', async () => {
     const { onClose } = open();
     await screen.findByText('Cafés de origen');
     fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));

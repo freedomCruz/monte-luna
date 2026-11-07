@@ -54,6 +54,69 @@ test.describe('Admin Productos quick view (F2b: S2, S3, S7)', () => {
     });
   }
 
+  for (const dismiss of ['Cancelar', 'Cerrar', 'Escape', 'outside'] as const) {
+    test(`confirms dirty dismissal via ${dismiss} without writing (F2c)`, async ({ page }) => {
+      const mock = await openList(page, 1440);
+      await page.getByRole('button', { name: TITLE, exact: true }).click();
+      const sheet = page.getByRole('dialog', { name: TITLE });
+      await sheet.getByLabel('Estado de publicación').selectOption('draft');
+      const requestClose = async () => {
+        if (dismiss === 'Escape') await page.keyboard.press('Escape');
+        else if (dismiss === 'outside') await page.locator('[data-state="open"][aria-hidden="true"]').click({ position: { x: 20, y: 300 } });
+        else await sheet.getByRole('button', { name: dismiss, exact: true }).click();
+      };
+      await requestClose();
+      const confirm = page.getByRole('alertdialog', { name: '¿Salir sin guardar?' });
+      await expect(confirm).toBeVisible();
+      await expect(confirm.getByText(`Perderás los cambios que hiciste en ${TITLE}.`, { exact: true })).toBeVisible();
+      await expect(confirm.getByRole('button', { name: 'Seguir editando' })).toBeFocused();
+      expect(mock.writes).toEqual([]);
+      await confirm.getByRole('button', { name: 'Seguir editando' }).click();
+      await expect(confirm).toHaveCount(0);
+      await expect(sheet.getByLabel('Estado de publicación')).toHaveValue('draft');
+      await expect(sheet.getByRole('button', { name: 'Guardar' })).toBeEnabled();
+      await requestClose();
+      await expect(confirm).toBeVisible();
+      await confirm.getByRole('button', { name: 'Salir sin guardar', exact: true }).click();
+      await expect(sheet).toHaveCount(0);
+      expect(mock.writes).toEqual([]);
+      await page.getByRole('button', { name: TITLE, exact: true }).click();
+      await expect(sheet.getByLabel('Estado de publicación')).toHaveValue('published');
+    });
+
+    test(`closes a clean Sheet immediately via ${dismiss} (F2c)`, async ({ page }) => {
+      const mock = await openList(page, 1440);
+      await page.getByRole('button', { name: TITLE, exact: true }).click();
+      const sheet = page.getByRole('dialog', { name: TITLE });
+      await expect(sheet.getByLabel('Estado de publicación')).toHaveValue('published');
+      if (dismiss === 'Escape') await page.keyboard.press('Escape');
+      else if (dismiss === 'outside') await page.locator('[data-state="open"][aria-hidden="true"]').click({ position: { x: 20, y: 300 } });
+      else await sheet.getByRole('button', { name: dismiss, exact: true }).click();
+      await expect(sheet).toHaveCount(0);
+      await expect(page.getByRole('alertdialog')).toHaveCount(0);
+      expect(mock.writes).toEqual([]);
+    });
+  }
+
+  test('matches the discard dialog reference and passes axe at every catalog width (F2c)', async ({ page }, testInfo) => {
+    for (const width of [1440, 1024, 768]) {
+      await openList(page, width);
+      await page.getByRole('button', { name: TITLE, exact: true }).click();
+      const sheet = page.getByRole('dialog', { name: TITLE });
+      await sheet.getByLabel('Estado de publicación').selectOption('draft');
+      await sheet.getByRole('button', { name: 'Cancelar', exact: true }).click();
+      const confirm = page.getByRole('alertdialog', { name: '¿Salir sin guardar?' });
+      await expect(confirm).toBeVisible();
+      await expect(confirm.getByRole('button', { name: 'Seguir editando' })).toBeFocused();
+      const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+      expect(results.violations, `axe discard dialog at ${width}px`).toEqual([]);
+      await page.screenshot({ path: testInfo.outputPath(`productos-discard-${width}.png`) });
+      await confirm.getByRole('button', { name: 'Seguir editando' }).click();
+      await expect(sheet.getByLabel('Estado de publicación')).toHaveValue('draft');
+      await page.unrouteAll();
+    }
+  });
+
   test('saves a status change with the product ETag and refreshes the list', async ({ page }) => {
     const mock = await openList(page, 1440);
     const before = mock.requests.length;
@@ -64,6 +127,25 @@ test.describe('Admin Productos quick view (F2b: S2, S3, S7)', () => {
     await expect(sheet).toHaveCount(0);
     expect(mock.writes).toEqual([{ method: 'PATCH', path: '/' + mockProductDetail.id, ifMatch: '"3"', body: { status: 'draft' } }]);
     expect(mock.requests.length).toBeGreaterThan(before);
+  });
+
+  test('keeps archive confirmation separate from discarding edits (F2c)', async ({ page }) => {
+    const mock = await openList(page, 1440);
+    await page.getByRole('button', { name: TITLE, exact: true }).click();
+    const sheet = page.getByRole('dialog', { name: TITLE });
+    await sheet.getByLabel('Estado de publicación').selectOption('archived');
+    await sheet.getByRole('button', { name: 'Guardar' }).click();
+    const archive = page.getByRole('alertdialog', { name: `¿Archivar ${TITLE}?` });
+    await expect(archive).toBeVisible();
+    await expect(archive.getByText('Deja de verse en la tienda. Puedes volver a publicarlo cuando quieras.', { exact: true })).toBeVisible();
+    await expect(archive.getByRole('button', { name: 'Volver' })).toBeFocused();
+    expect(mock.writes).toEqual([]);
+    await archive.getByRole('button', { name: 'Volver' }).click();
+    await expect(sheet.getByLabel('Estado de publicación')).toHaveValue('archived');
+    await sheet.getByRole('button', { name: 'Guardar' }).click();
+    await archive.getByRole('button', { name: 'Archivar producto' }).click();
+    await expect(sheet).toHaveCount(0);
+    expect(mock.writes).toEqual([{ method: 'PATCH', path: '/' + mockProductDetail.id, ifMatch: '"3"', body: { status: 'archived' } }]);
   });
 
   test('shows the conflict state on a stale version and recovers after reloading', async ({ page }) => {
