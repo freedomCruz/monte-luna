@@ -15,7 +15,7 @@ const adminOriginJSON = `(to_jsonb(o)-ARRAY['created_at','updated_at','version']
 const adminCategoryJSON = `(to_jsonb(c)-ARRAY['created_at','updated_at','version'])`
 const adminTypeJSON = `jsonb_build_object('id',t.id,'slug',t.slug,'name',t.name,'attribute_definitions',COALESCE((SELECT jsonb_agg(to_jsonb(d)-ARRAY['id','product_type_id','created_at','updated_at','version'] ORDER BY d.position,d.key) FROM catalog.attribute_definitions d WHERE d.product_type_id=t.id),'[]'::jsonb))`
 const adminCategoriesJSON = `COALESCE((SELECT jsonb_agg(` + adminCategoryJSON + ` ORDER BY c.position,c.id) FROM catalog.product_categories pc JOIN catalog.categories c ON c.id=pc.category_id WHERE pc.product_id=p.id),'[]'::jsonb)`
-const adminVariantJSON = `(to_jsonb(v)-ARRAY['currency','created_at','updated_at'])||jsonb_build_object('available_quantity',COALESCE((SELECT sum(s.quantity) FROM catalog.variant_lot_stock s JOIN catalog.lots l ON l.id=s.lot_id WHERE s.variant_id=v.id AND l.status='active'),0),'low_stock',false)`
+const adminVariantJSON = `(to_jsonb(v)-ARRAY['currency','created_at','updated_at'])||jsonb_build_object('attributes',jsonb_strip_nulls(v.attributes),'available_quantity',COALESCE((SELECT sum(s.quantity) FROM catalog.variant_lot_stock s JOIN catalog.lots l ON l.id=s.lot_id WHERE s.variant_id=v.id AND l.status='active'),0),'low_stock',false)`
 
 func decodeAdmin(data []byte, out any) error {
 	decoder := json.NewDecoder(bytes.NewReader(data))
@@ -34,7 +34,7 @@ type adminQuerier interface {
 func readAdminProduct(ctx context.Context, db adminQuerier, id string) (domain.AdminProduct, error) {
 	var out domain.AdminProduct
 	var data []byte
-	err := db.QueryRow(ctx, `SELECT jsonb_build_object('id',p.id,'title',p.title,'slug',p.slug,'description',p.description,'status',p.status,'attributes',p.attributes,'created_at',p.created_at,'updated_at',p.updated_at,'version',p.version,
+	err := db.QueryRow(ctx, `SELECT jsonb_build_object('id',p.id,'title',p.title,'slug',p.slug,'description',p.description,'status',p.status,'attributes',jsonb_strip_nulls(p.attributes),'created_at',p.created_at,'updated_at',p.updated_at,'version',p.version,
  'product_type',`+adminTypeJSON+`,'origin',`+adminOriginJSON+`,'brand',CASE WHEN b.id IS NULL THEN NULL ELSE jsonb_build_object('id',b.id,'slug',b.slug,'name',b.name,'status',b.status) END,
  'categories',`+adminCategoriesJSON+`,
  'variants',COALESCE((SELECT jsonb_agg(`+adminVariantJSON+` ORDER BY v.position,v.id) FROM catalog.product_variants v WHERE v.product_id=p.id),'[]'::jsonb),
