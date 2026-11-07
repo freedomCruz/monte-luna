@@ -42,17 +42,10 @@ func TestAdminCatalogWriteHTTPContract(t *testing.T) {
 			t.Fatal(err)
 		}
 		if status < 300 {
-			version := result["version"]
-			if result["product_version"] != nil {
-				version = result["product_version"]
-			}
-			if strings.Contains(path, "/variants/") && method == "PATCH" {
-				version = float64(3)
-			}
+			result["etag_header"] = rec.Header().Get("ETag")
 			if rec.Header().Get("ETag") == "" {
 				t.Fatal("missing ETag")
 			}
-			_ = version
 			if status == 201 && rec.Header().Get("Location") == "" {
 				t.Fatal("missing Location")
 			}
@@ -60,7 +53,24 @@ func TestAdminCatalogWriteHTTPContract(t *testing.T) {
 		return result
 	}
 	create := fmt.Sprintf(`{"product_type_id":%q,"title":"New","slug":"http-write-test","attributes":%s}`, typ, attributes)
-	call("POST", "/api/v1/admin/products", create, "", 201, true)
+	access.err = identity.ErrAuthenticationRequired
+	call("POST", "/api/v1/admin/products", create, "", 401, true)
+	access.err = identity.ErrForbidden
+	call("POST", "/api/v1/admin/products", create, "", 403, true)
+	access.err = nil
+	created := call("POST", "/api/v1/admin/products", create, "", 201, true)
+	if created["etag_header"] != `"1"` {
+		t.Fatal(created)
+	}
+	newBase := "/api/v1/admin/products/" + created["id"].(string)
+	newVariant := call("POST", newBase+"/variants", fmt.Sprintf(`{"sku":"HTTP-NEW","options":%s,"attributes":{},"price_amount":100,"weight_grams":250,"tax_category":"excluded"}`, options), `"1"`, 201, true)
+	if newVariant["etag_header"] != `"2"` || newVariant["version"] != float64(1) {
+		t.Fatal(newVariant)
+	}
+	updated := call("PATCH", newBase+"/variants/"+newVariant["id"].(string), `{"compare_at_price_amount":101}`, `"2"`, 200, true)
+	if updated["etag_header"] != `"3"` || updated["version"] != float64(2) {
+		t.Fatal(updated)
+	}
 	if got := call("POST", "/api/v1/admin/products", create, "", 409, true); got["code"] != "slug_conflict" {
 		t.Fatal(got)
 	}
@@ -83,4 +93,25 @@ func TestAdminCatalogWriteHTTPContract(t *testing.T) {
 		call("PATCH", base, body, `"3"`, 422, false)
 	}
 	call("PATCH", base, `{"attributes":{"unknown":"value"}}`, `"3"`, 422, true)
+	call("PATCH", base, `{"title":42}`, `"3"`, 422, false)
+	call("PATCH", base, `{`, `"3"`, 400, false)
+	for _, endpoint := range []struct{ method, path, body string }{
+		{"POST", "/api/v1/admin/products", create},
+		{"PATCH", base, `{"title":"CSRF"}`},
+		{"POST", newBase + "/variants", fmt.Sprintf(`{"sku":"CSRF","options":%s,"attributes":{},"price_amount":100,"weight_grams":1,"tax_category":"excluded"}`, options)},
+		{"PATCH", newBase + "/variants/" + newVariant["id"].(string), `{"price_amount":100}`},
+	} {
+		req := httptest.NewRequest(endpoint.method, endpoint.path, strings.NewReader(endpoint.body))
+		kind := "application/json"
+		if endpoint.method == "PATCH" {
+			kind = "application/merge-patch+json"
+		}
+		req.Header.Set("Content-Type", kind)
+		req.Header.Set("If-Match", `"3"`)
+		req.Header.Set("Sec-Fetch-Site", "cross-site")
+		rec := c.Do(t, mux, req)
+		if rec.Code != 403 || !strings.Contains(rec.Body.String(), "cross_origin_rejected") {
+			t.Fatalf("CSRF %d %s", rec.Code, rec.Body.String())
+		}
+	}
 }

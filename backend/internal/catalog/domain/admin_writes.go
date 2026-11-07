@@ -6,6 +6,7 @@ import (
 	"math"
 	"regexp"
 	"slices"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -107,19 +108,20 @@ func ValidateAdminAttributes(defs []AdminDefinition, values map[string]any, scop
 				valid = true
 			}
 			valid = valid && !math.IsNaN(n) && !math.IsInf(n, 0) && (d.DataType != "integer" || math.Trunc(n) == n)
+			if number, ok := v.(json.Number); ok && d.DataType == "integer" {
+				valid = valid && adminInteger(string(number))
+			}
 		case "option":
 			s, ok := v.(string)
 			valid = ok && option(s)
 		case "multi_option":
 			values, ok := v.([]any)
 			valid = ok
-			seen := map[string]bool{}
 			for _, item := range values {
 				s, ok := item.(string)
-				if !ok || !option(s) || seen[s] {
+				if !ok || !option(s) {
 					valid = false
 				}
-				seen[s] = true
 			}
 		}
 		if !valid {
@@ -128,6 +130,27 @@ func ValidateAdminAttributes(defs []AdminDefinition, values map[string]any, scop
 	}
 	return nil
 }
+
+// Test integrality without converting through float64 or expanding exponents.
+func adminInteger(number string) bool {
+	mantissa, exponent, hasExponent := strings.Cut(strings.ToLower(number), "e")
+	whole, fraction, _ := strings.Cut(mantissa, ".")
+	digits := strings.TrimLeft(strings.TrimPrefix(whole, "-")+fraction, "0")
+	if digits == "" {
+		return true
+	}
+	trailing := len(digits) - len(strings.TrimRight(digits, "0"))
+	required := int64(len(fraction) - trailing)
+	if !hasExponent {
+		return required <= 0
+	}
+	exp, err := strconv.ParseInt(exponent, 10, 64)
+	if err != nil {
+		return !strings.HasPrefix(exponent, "-")
+	}
+	return exp >= required
+}
+
 func ValidateAdminVariant(v AdminVariant, defs []AdminDefinition) error {
 	if strings.TrimSpace(v.SKU) == "" {
 		return AdminInvalid("sku")
@@ -259,11 +282,38 @@ func ValidateAdminWrite(in AdminWrite) error {
 			return AdminInvalid(k)
 		}
 	}
+	if raw, ok := in.Fields["images"]; ok {
+		var images []map[string]json.RawMessage
+		if err := json.Unmarshal(raw, &images); err != nil {
+			return AdminInvalid("images")
+		}
+		for _, image := range images {
+			for _, key := range []string{"id", "alt_text", "variant_id", "position"} {
+				if _, ok := image[key]; !ok {
+					return AdminInvalid("images." + key)
+				}
+			}
+			if len(image) != 4 || string(image["id"]) == "null" || string(image["alt_text"]) == "null" || string(image["position"]) == "null" {
+				return AdminInvalid("images")
+			}
+		}
+	}
 	if in.Kind != "create-product" && in.Version < 1 {
 		return &Error{Status: 428, Code: "precondition_required"}
 	}
-	if in.Kind == "receipt" && !ValidAdminID(in.ActorID) {
-		return AdminInvalid("actor_id")
+	if in.Kind == "receipt" {
+		if !ValidAdminID(in.ActorID) {
+			return AdminInvalid("actor_id")
+		}
+		data, err := json.Marshal(in.Fields)
+		if err != nil {
+			return AdminInvalid("body")
+		}
+		var receipt AdminReceiveLot
+		if err := json.Unmarshal(data, &receipt); err != nil {
+			return AdminInvalid("body")
+		}
+		return receipt.Validate()
 	}
 	return nil
 }

@@ -91,6 +91,39 @@ func TestAdminProductVariantWrites(t *testing.T) {
 	if err != nil || got.Product.Title != "New" || got.Product.Description == nil || got.Product.Version != 4 {
 		t.Fatalf("merge %+v %v", got, err)
 	}
+	// Merge patches retain omitted descriptive keys and validate required keys.
+	before = catalogSnapshot(t, db)
+	_, err = repo.WriteAdmin(t.Context(), domain.AdminWrite{Kind: "update-product", ProductID: source, Version: 1, Fields: writeFields(t, `{"attributes":{"roast_level":null}}`)})
+	if err == nil {
+		t.Fatal("required product attribute removed")
+	}
+	assertSameCatalog(t, db, before)
+	imageEdits := make([]map[string]any, 0, len(p.Images))
+	for _, image := range p.Images {
+		imageEdits = append(imageEdits, map[string]any{"id": image.ID, "alt_text": image.AltText, "variant_id": image.VariantID, "position": image.Position})
+	}
+	imageEdits[0]["alt_text"] = "Changed image"
+	patch, err := json.Marshal(map[string]any{"images": imageEdits, "attributes": map[string]any{"tasting_notes": nil, "cupping_score": 90}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	changed, err := repo.WriteAdmin(t.Context(), domain.AdminWrite{Kind: "update-product", ProductID: source, Version: 1, Fields: writeFields(t, string(patch))})
+	if err != nil || changed.Product.Version != 2 || changed.Product.Attributes["tasting_notes"] != nil || changed.Product.Attributes["species"] != "arabica" || len(changed.Product.Categories) != len(p.Categories) || changed.Product.Images[0].Version != p.Images[0].Version+1 {
+		t.Fatalf("product/image merge %+v %v", changed, err)
+	}
+	for i := 1; i < len(p.Images); i++ {
+		if changed.Product.Images[i].Version != p.Images[i].Version {
+			t.Fatal("unchanged image version bumped")
+		}
+	}
+	// An invalid image edit cannot partially update the preceding images.
+	before = catalogSnapshot(t, db)
+	imageEdits = append(imageEdits, imageEdits[0])
+	badImages, _ := json.Marshal(map[string]any{"title": "must rollback", "images": imageEdits})
+	if _, err = repo.WriteAdmin(t.Context(), domain.AdminWrite{Kind: "update-product", ProductID: source, Version: 2, Fields: writeFields(t, string(badImages))}); err == nil {
+		t.Fatal("duplicate image accepted")
+	}
+	assertSameCatalog(t, db, before)
 	// A late database error must undo categories and parent edits as well.
 	execSQL(t, db, `CREATE FUNCTION catalog.reject_test_product() RETURNS trigger LANGUAGE plpgsql AS $$ BEGIN RAISE EXCEPTION 'test update failure'; END $$; CREATE TRIGGER reject_test_product BEFORE UPDATE ON catalog.products FOR EACH ROW EXECUTE FUNCTION catalog.reject_test_product()`)
 	before = catalogSnapshot(t, db)

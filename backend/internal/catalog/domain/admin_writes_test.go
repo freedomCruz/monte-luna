@@ -19,6 +19,7 @@ func TestAdminWriteAttributes(t *testing.T) {
 		{"undefined axis", "variant", true, map[string]any{"roast": "medium", "grind": "whole"}, false},
 		{"valid axis", "variant", true, map[string]any{"grind": "whole"}, true},
 		{"wrong type", "product", false, map[string]any{"roast": "medium", "count": json.Number("1.5")}, false},
+		{"fraction beyond float precision", "product", false, map[string]any{"roast": "medium", "count": json.Number("9007199254740992.1")}, false},
 		{"wrong boolean", "product", false, map[string]any{"roast": "medium", "organic": "true"}, false},
 		{"wrong multi", "product", false, map[string]any{"roast": "medium", "varieties": []any{"robusta"}}, false},
 	} {
@@ -68,6 +69,22 @@ func TestAdminOriginFormats(t *testing.T) {
 		t.Fatal(err)
 	}
 }
+func TestAdminImageEditShape(t *testing.T) {
+	for _, body := range []string{
+		`{"images":[{"id":"id","alt_text":"text","position":0}]}`,
+		`{"images":[{"id":"id","alt_text":"text","variant_id":null}]}`,
+		`{"images":[{"id":"id","alt_text":"text","variant_id":null,"position":0,"url":"https://example.com"}]}`,
+	} {
+		var fields map[string]json.RawMessage
+		if err := json.Unmarshal([]byte(body), &fields); err != nil {
+			t.Fatal(err)
+		}
+		if err := ValidateAdminWrite(AdminWrite{Kind: "update-product", Version: 1, Fields: fields}); err == nil {
+			t.Fatalf("accepted %s", body)
+		}
+	}
+}
+
 func TestAdminMergePatch(t *testing.T) {
 	base := map[string]any{"required": "old", "optional": "old"}
 	out := MergeAdminAttributes(base, map[string]any{"optional": nil, "new": "value"})
