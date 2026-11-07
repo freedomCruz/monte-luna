@@ -46,6 +46,9 @@ func run(logger *slog.Logger) error {
 		return err
 	}
 	defer module.Close()
+	if err := module.EnableMedia(cfg.media); err != nil {
+		return err
+	}
 	ship, err := shipping.New(ctx, cfg.databaseURL)
 	if err != nil {
 		return err
@@ -147,6 +150,9 @@ func run(logger *slog.Logger) error {
 	checkout.RegisterRoutes(mux)
 	payment.RegisterRoutes(mux)
 	admins.RegisterRoutes(mux)
+	if err := module.RegisterAdminMediaRoutes(mux, admins.Access(), admins.LoadAdminSession); err != nil {
+		return err
+	}
 	if err := checkout.RegisterAdminReadRoutes(mux, admins.Access(), admins.LoadAdminSession); err != nil {
 		return err
 	}
@@ -204,6 +210,7 @@ type config struct {
 	payments                        payments.Config
 	identity                        identity.Config
 	notifications                   notifications.Config
+	media                           catalog.MediaConfig
 }
 
 func loadConfig() (config, error) {
@@ -217,6 +224,11 @@ func loadConfig() (config, error) {
 	if err := catalog.ValidateMediaBaseURL(cfg.mediaBaseURL); err != nil {
 		return cfg, err
 	}
+	media, err := catalog.LoadMediaConfig(os.Getenv)
+	if err != nil {
+		return cfg, err
+	}
+	cfg.media = media
 	secret, err := orders.DecodeTrackingSecret(os.Getenv("TRACKING_TOKEN_SECRET"))
 	if err != nil {
 		return cfg, err

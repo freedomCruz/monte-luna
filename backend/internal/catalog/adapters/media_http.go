@@ -7,6 +7,7 @@ import (
 	"io"
 	"mime"
 	"net/http"
+	"net/url"
 	"strconv"
 	"strings"
 
@@ -60,6 +61,10 @@ func (h *MediaHTTP) authorize(w http.ResponseWriter, r *http.Request) bool {
 		return false
 	}
 	if r.URL.RawQuery != "" {
+		if _, err := url.ParseQuery(r.URL.RawQuery); err != nil {
+			mediaProblem(w, &domain.Error{Status: 400, Code: "bad_request"})
+			return false
+		}
 		mediaProblem(w, &domain.Error{Status: 422, Code: "validation_failed"})
 		return false
 	}
@@ -136,6 +141,9 @@ func imageMultipart(w http.ResponseWriter, r *http.Request) (domain.ImageUpload,
 	if kind, _, err := mime.ParseMediaType(r.Header.Get("Content-Type")); err != nil || kind != "multipart/form-data" {
 		return in, bad
 	}
+	if r.ContentLength > 6<<20 {
+		return in, &domain.Error{Status: 413, Code: "image_too_large"}
+	}
 	r.Body = http.MaxBytesReader(w, r.Body, 6<<20)
 	reader, err := r.MultipartReader()
 	if err != nil {
@@ -188,6 +196,11 @@ func imageMultipart(w http.ResponseWriter, r *http.Request) (domain.ImageUpload,
 		if err := part.Close(); err != nil {
 			return in, multipartError(err)
 		}
+	}
+	// Read any multipart epilogue too: the request bound applies to all bytes,
+	// including trailing data in chunked requests with no Content-Length.
+	if _, err := io.Copy(io.Discard, r.Body); err != nil {
+		return in, multipartError(err)
 	}
 	if !seen["file"] || !seen["alt_text"] {
 		return in, invalid

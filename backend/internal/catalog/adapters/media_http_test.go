@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"mime/multipart"
 	"net/http"
 	"net/http/httptest"
@@ -129,8 +130,8 @@ func TestMediaHTTPContractAndRejectedWrites(t *testing.T) {
 		{"success", 201, ""}, {"missing_match", 428, "precondition_required"}, {"weak_match", 400, "bad_request"},
 		{"wildcard_match", 400, "bad_request"}, {"duplicate_match", 400, "bad_request"}, {"stale", 412, "version_conflict"},
 		{"unsigned", 401, "authentication_required"}, {"forbidden", 403, "forbidden"}, {"cross_origin", 403, "cross_origin_rejected"},
-		{"blank_alt", 422, "validation_failed"}, {"unknown_key", 422, "validation_failed"}, {"query", 422, "validation_failed"},
-		{"empty", 422, "validation_failed"}, {"too_large", 413, "image_too_large"}, {"request_too_large", 413, "image_too_large"},
+		{"blank_alt", 422, "validation_failed"}, {"unknown_key", 422, "validation_failed"}, {"query", 422, "validation_failed"}, {"malformed_query", 400, "bad_request"},
+		{"empty", 422, "validation_failed"}, {"too_large", 413, "image_too_large"}, {"request_too_large", 413, "image_too_large"}, {"chunked_epilogue", 413, "image_too_large"},
 		{"html", 415, "unsupported_image_type"}, {"mismatch", 415, "unsupported_image_type"}, {"disabled", 503, "media_unavailable"},
 		{"foreign_variant", 422, "validation_failed"},
 	} {
@@ -178,6 +179,15 @@ func TestMediaHTTPContractAndRejectedWrites(t *testing.T) {
 				req.Header.Add("If-Match", `"1"`)
 			case "query":
 				req.URL.RawQuery = "unknown=value"
+			case "malformed_query":
+				req.URL.RawQuery = "bad=%zz"
+			case "chunked_epilogue":
+				body, err := io.ReadAll(req.Body)
+				if err != nil {
+					t.Fatal(err)
+				}
+				req.Body = io.NopCloser(bytes.NewReader(append(body, bytes.Repeat([]byte("x"), 6<<20)...)))
+				req.ContentLength = -1
 			case "cross_origin":
 				req.Header.Set("Origin", "https://other.example")
 				req.Header.Set("Sec-Fetch-Site", "cross-site")
