@@ -1,6 +1,6 @@
 import { PAGE_SIZES, type PageSize } from '../../../lib/admin/orders-query';
 
-interface OrdersPaginationProps {
+interface ListPaginationProps {
   /** 1-based position of the first row on this page. */
   start: number;
   count: number;
@@ -11,13 +11,15 @@ interface OrdersPaginationProps {
   hasNext: boolean;
   onPrevious: () => void;
   onNext: () => void;
+  /** Singular and plural of the listed record, for the counter. Defaults to orders. */
+  noun?: { singular: string; plural: string };
 }
 
 const BUTTON = 'h-11 rounded-sm px-3.5 font-sans text-sm font-bold';
 
-/** Footer of the table: counter, rows per page and Anterior / Siguiente (cursor pagination). */
-export function OrdersPagination({ start, count, total, limit, onLimit, hasPrevious, hasNext, onPrevious, onNext }: OrdersPaginationProps) {
-  const counter = total === 1 ? '1 pedido' : `${start}–${start + count - 1} de ${total} pedidos`;
+/** Footer of an admin table: counter, rows per page and Anterior / Siguiente (cursor pagination). */
+export function ListPagination({ start, count, total, limit, onLimit, hasPrevious, hasNext, onPrevious, onNext, noun = { singular: 'pedido', plural: 'pedidos' } }: ListPaginationProps) {
+  const counter = total === 1 ? `1 ${noun.singular}` : `${start}–${start + count - 1} de ${total} ${noun.plural}`;
   return (
     <div className="flex flex-wrap items-center justify-between gap-3 border-t border-border px-4 py-2.5 text-sm">
       <span role="status" className="font-bold text-foreground">{counter}</span>

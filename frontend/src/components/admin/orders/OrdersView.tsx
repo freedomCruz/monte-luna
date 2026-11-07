@@ -12,7 +12,7 @@ import { isMobileWidth, useIsMobile } from '../../../lib/admin/use-is-mobile';
 import { useReportPendingDispatchCount } from '../shell/AdminShell';
 import { OrdersFilters } from './OrdersFilters';
 import { OrdersCards, OrdersTable } from './OrdersList';
-import { OrdersPagination } from './OrdersPagination';
+import { ListPagination } from '../shared/ListPagination';
 import { OrdersEmpty, OrdersError, OrdersNoMatches, OrdersSkeleton } from './OrdersStates';
 
 type Load =
@@ -164,7 +164,7 @@ export function OrdersView() {
         {body ?? (ready && (
           <>
             <OrdersTable rows={ready.rows} sort={filters.sort} onToggleSort={() => change({ sort: filters.sort === 'placed_at' ? '-placed_at' : 'placed_at' })} />
-            <OrdersPagination
+            <ListPagination
               start={pageIndex * filters.limit + 1}
               count={ready.rows.length}
               total={ready.total}

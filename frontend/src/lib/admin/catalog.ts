@@ -16,6 +16,7 @@ export type AdminCreateProduct = components['schemas']['AdminCreateProduct'];
 export type AdminPatchProduct = components['schemas']['AdminPatchProduct'];
 export type AdminCreateVariant = components['schemas']['AdminCreateVariant'];
 export type AdminPatchVariant = components['schemas']['AdminPatchVariant'];
+export type AdminCategory = components['schemas']['AdminCategory'];
 export type AdminCategoryPage = components['schemas']['AdminCategoryPage'];
 export type AdminOriginPage = components['schemas']['AdminOriginPage'];
 export type AdminBrandPage = components['schemas']['AdminBrandPage'];
