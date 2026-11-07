@@ -2,6 +2,7 @@ import { test, expect, type Page } from '@playwright/test';
 import AxeBuilder from '@axe-core/playwright';
 import type { AdminUser } from '../src/lib/admin/client';
 import { mockAdminOrdersRoutes } from './helpers/mock-admin-orders';
+import { mockProductDetail } from '../src/mocks/admin-products';
 import { mockAdminProductsRoutes } from './helpers/mock-admin-products';
 
 const staff: AdminUser = {
@@ -61,7 +62,7 @@ test.describe('Admin Productos quick view (F2b: S2, S3, S7)', () => {
     await sheet.getByLabel('Estado de publicación').selectOption('draft');
     await sheet.getByRole('button', { name: 'Guardar' }).click();
     await expect(sheet).toHaveCount(0);
-    expect(mock.patches).toEqual([{ ifMatch: '"3"', body: { status: 'draft' } }]);
+    expect(mock.writes).toEqual([{ method: 'PATCH', path: '/' + mockProductDetail.id, ifMatch: '"3"', body: { status: 'draft' } }]);
     expect(mock.requests.length).toBeGreaterThan(before);
   });
 
@@ -74,14 +75,14 @@ test.describe('Admin Productos quick view (F2b: S2, S3, S7)', () => {
     await sheet.getByLabel('Estado de publicación').selectOption('draft');
     await sheet.getByRole('button', { name: 'Guardar' }).click();
     await expect(sheet.getByText('Alguien más cambió este producto. Recarga para ver la versión actual.')).toBeVisible();
-    expect(mock.patches).toEqual([{ ifMatch: '"3"', body: { status: 'draft' } }]);
+    expect(mock.writes).toHaveLength(1);
 
     await sheet.getByRole('button', { name: 'Recargar' }).click();
     await expect(sheet.getByText('Alguien más cambió este producto.')).toHaveCount(0);
     await sheet.getByLabel('Estado de publicación').selectOption('draft');
     await sheet.getByRole('button', { name: 'Guardar' }).click();
     await expect(sheet).toHaveCount(0);
-    expect(mock.patches.at(-1)).toEqual({ ifMatch: '"4"', body: { status: 'draft' } });
+    expect(mock.writes.at(-1)).toMatchObject({ ifMatch: '"4"', body: { status: 'draft' } });
   });
 
   test('offers the row actions without bulk or stock actions', async ({ page }) => {
