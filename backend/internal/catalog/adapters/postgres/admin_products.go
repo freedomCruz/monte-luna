@@ -24,9 +24,17 @@ func decodeAdmin(data []byte, out any) error {
 }
 
 func (r *Repository) AdminProduct(ctx context.Context, id string) (domain.AdminProduct, error) {
+	return readAdminProduct(ctx, r.pool, id)
+}
+
+type adminQuerier interface {
+	QueryRow(context.Context, string, ...any) pgx.Row
+}
+
+func readAdminProduct(ctx context.Context, db adminQuerier, id string) (domain.AdminProduct, error) {
 	var out domain.AdminProduct
 	var data []byte
-	err := r.pool.QueryRow(ctx, `SELECT jsonb_build_object('id',p.id,'title',p.title,'slug',p.slug,'description',p.description,'status',p.status,'attributes',p.attributes,'created_at',p.created_at,'updated_at',p.updated_at,'version',p.version,
+	err := db.QueryRow(ctx, `SELECT jsonb_build_object('id',p.id,'title',p.title,'slug',p.slug,'description',p.description,'status',p.status,'attributes',p.attributes,'created_at',p.created_at,'updated_at',p.updated_at,'version',p.version,
  'product_type',`+adminTypeJSON+`,'origin',`+adminOriginJSON+`,'brand',CASE WHEN b.id IS NULL THEN NULL ELSE jsonb_build_object('id',b.id,'slug',b.slug,'name',b.name,'status',b.status) END,
  'categories',`+adminCategoriesJSON+`,
  'variants',COALESCE((SELECT jsonb_agg(`+adminVariantJSON+` ORDER BY v.position,v.id) FROM catalog.product_variants v WHERE v.product_id=p.id),'[]'::jsonb),
