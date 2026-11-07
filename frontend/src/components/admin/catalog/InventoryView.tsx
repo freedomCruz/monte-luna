@@ -141,7 +141,7 @@ export function InventoryView() {
   };
 
   return (
-    <main className="flex flex-1 flex-col gap-4 px-5 pb-12 pt-7 min-[1024px]:px-6 min-[1440px]:px-8">
+    <main className="flex flex-1 flex-col gap-4 px-5 pb-12 pt-7 leading-[normal] min-[1024px]:px-6 min-[1440px]:px-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div className="flex flex-col gap-1">
           <h1 className="m-0 text-[32px] font-extrabold leading-[1.1] tracking-[-0.01em]">Inventario y lotes</h1>
@@ -174,6 +174,7 @@ export function InventoryView() {
                 onPrevious={() => setPageIndex((index) => Math.max(0, index - 1))}
                 onNext={next}
                 noun={NOUN}
+                showLimit={false}
               />
             )}
           />

@@ -67,6 +67,7 @@ describe('InventoryView variant list (F4: S4)', () => {
     expect(rows[7].textContent).toContain('Archivada');
     expect(rows[0].getAttribute('aria-pressed')).toBe('true');
     expect(screen.getByRole('heading', { level: 1, name: 'Inventario y lotes' })).toBeTruthy();
+    expect(screen.queryByLabelText('Filas por página')).toBeNull();
   });
 
   it('asks for the defaults first and mirrors nothing in the address bar', async () => {

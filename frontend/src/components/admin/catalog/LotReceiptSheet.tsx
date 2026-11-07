@@ -70,6 +70,7 @@ export function LotReceiptSheet({ variant, etag, onClose, onReceived, onReload }
         </>
       }
     >
+      <div className="flex flex-col gap-4 leading-[normal]">
       <Field label="Código del lote" hint="Único por producto. Va impreso en la bolsa." error={errors.lotCode}>
         <input type="text" value={form.lotCode} aria-invalid={invalid('lotCode')} onChange={(event) => patch({ lotCode: event.target.value })} className={fieldClass(errors.lotCode)} />
       </Field>
@@ -100,6 +101,7 @@ export function LotReceiptSheet({ variant, etag, onClose, onReceived, onReload }
         </div>
       )}
       {problem && problem.kind !== 'conflict' && <FieldError>{problem.message}</FieldError>}
+      </div>
     </AdminSheet>
   );
 }

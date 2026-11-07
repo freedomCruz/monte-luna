@@ -137,11 +137,11 @@ function MovementRow({ movement }: { movement: AdminInventoryMovement }) {
   return (
     <tr className="h-[52px] border-t border-border">
       <td className="whitespace-nowrap pl-[18px] pr-3 text-muted-foreground">{formatMovementDateTime(movement.created_at)}</td>
-      <td className="px-2.5 font-bold">{movementLabel(movement.display_kind)}</td>
-      <td className="px-2.5">{movement.lot_code}</td>
-      <td className={`px-2.5 text-right font-extrabold ${movement.quantity_delta > 0 ? 'text-success' : ''}`}>{formatQuantityDelta(movement.quantity_delta)}</td>
+      <td className="whitespace-nowrap px-2.5 font-bold">{movementLabel(movement.display_kind)}</td>
+      <td className="whitespace-nowrap px-2.5">{movement.lot_code}</td>
+      <td className={`whitespace-nowrap px-2.5 text-right font-extrabold ${movement.quantity_delta > 0 ? 'text-success' : ''}`}>{formatQuantityDelta(movement.quantity_delta)}</td>
       <td className={`px-2.5 text-muted-foreground ${FROM_1440}`}>{movementDetail(movement)}</td>
-      <td className="pl-2.5 pr-[18px]">{movementActor(movement)}</td>
+      <td className="whitespace-nowrap pl-2.5 pr-[18px]">{movementActor(movement)}</td>
     </tr>
   );
 }
