@@ -36,6 +36,7 @@ func (h *AdminWriteHTTP) RegisterRoutes(mux *http.ServeMux, sessions func(http.H
 	for _, route := range []struct{ pattern, kind string }{
 		{"POST /api/v1/admin/products", "create-product"}, {"PATCH /api/v1/admin/products/{id}", "update-product"},
 		{"POST /api/v1/admin/products/{id}/variants", "create-variant"}, {"PATCH /api/v1/admin/products/{id}/variants/{variant_id}", "update-variant"},
+		{"POST /api/v1/admin/inventory/variants/{id}/receive-lot", "receipt"},
 	} {
 		mux.Handle(route.pattern, mediaNoStore(origin.Handler(sessions(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) { h.write(w, r, route.kind) })))))
 	}
@@ -72,6 +73,10 @@ func (h *AdminWriteHTTP) write(w http.ResponseWriter, r *http.Request, kind stri
 		return
 	}
 	in := domain.AdminWrite{Kind: kind, ProductID: id, VariantID: variant, ActorID: actor.ID}
+	if kind == "receipt" {
+		in.ProductID = ""
+		in.VariantID = id
+	}
 	if kind != "create-product" {
 		in.Version, err = productMatch(r)
 		if err != nil {

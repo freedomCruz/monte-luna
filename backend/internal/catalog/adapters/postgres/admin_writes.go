@@ -53,6 +53,15 @@ func (r *Repository) WriteAdmin(ctx context.Context, in domain.AdminWrite) (out 
 		out, err = createAdminProduct(ctx, tx, in)
 	} else {
 		q := catalogsql.New(tx)
+		if in.Kind == "receipt" {
+			err = tx.QueryRow(ctx, `SELECT product_id::text FROM catalog.product_variants WHERE id=$1`, in.VariantID).Scan(&in.ProductID)
+			if errors.Is(err, pgx.ErrNoRows) {
+				return out, &domain.Error{Status: 404, Code: "variant_not_found"}
+			}
+			if err != nil {
+				return out, err
+			}
+		}
 		var version int32
 		version, err = q.LockImageProduct(ctx, in.ProductID)
 		if err = imageVersion(version, err, in.Version); err != nil {
@@ -63,6 +72,8 @@ func (r *Repository) WriteAdmin(ctx context.Context, in domain.AdminWrite) (out 
 			out, err = updateAdminProduct(ctx, tx, in)
 		case "create-variant", "update-variant":
 			out, err = writeAdminVariant(ctx, tx, in)
+		case "receipt":
+			out, err = receiveAdminLot(ctx, tx, in)
 		default:
 			err = domain.AdminInvalid("operation")
 		}
