@@ -101,6 +101,24 @@ function ArchiveDialog({ title, busy, onClose, onConfirm }: { title: string; bus
   );
 }
 
+function DiscardDialog({ title, onContinue, onDiscard }: { title: string; onContinue: () => void; onDiscard: () => void }) {
+  return (
+    <AlertDialog.Root open onOpenChange={(open) => { if (!open) onContinue(); }}>
+      <AlertDialog.Portal>
+        <AlertDialog.Overlay className="fixed inset-0 z-[60] bg-foreground/50" />
+        <AlertDialog.Content className="fixed left-1/2 top-[20vh] z-[60] flex w-[calc(100%-32px)] max-w-[500px] -translate-x-1/2 flex-col gap-3 rounded-xl border border-border bg-card p-6">
+          <AlertDialog.Title className="m-0 text-xl font-extrabold">¿Salir sin guardar?</AlertDialog.Title>
+          <AlertDialog.Description className="m-0 text-[15px] leading-[1.5] text-muted-foreground">Perderás los cambios que hiciste en {title}.</AlertDialog.Description>
+          <div className="flex flex-wrap justify-end gap-2 pt-1">
+            <AlertDialog.Cancel asChild><button type="button" className={OUTLINE_BUTTON}>Seguir editando</button></AlertDialog.Cancel>
+            <AlertDialog.Action asChild><button type="button" onClick={onDiscard} className={RED_BUTTON}>Salir sin guardar</button></AlertDialog.Action>
+          </div>
+        </AlertDialog.Content>
+      </AlertDialog.Portal>
+    </AlertDialog.Root>
+  );
+}
+
 /** Productos "Vista rápida" (A-Productos): facts, publication status and active variants. */
 export function ProductSheet({ productId, fallbackTitle, onClose, onSaved }: ProductSheetProps) {
   const [load, setLoad] = React.useState<Load>({ status: 'loading' });
@@ -108,6 +126,7 @@ export function ProductSheet({ productId, fallbackTitle, onClose, onSaved }: Pro
   const [failure, setFailure] = React.useState<Failure>(null);
   const [saving, setSaving] = React.useState(false);
   const [confirmArchive, setConfirmArchive] = React.useState(false);
+  const [confirmDiscard, setConfirmDiscard] = React.useState(false);
   const [attempt, setAttempt] = React.useState(0);
 
   React.useEffect(() => {
@@ -128,6 +147,11 @@ export function ProductSheet({ productId, fallbackTitle, onClose, onSaved }: Pro
 
   const ready = load.status === 'ready' ? load : null;
   const changed = ready !== null && status !== ready.product.status;
+
+  const requestClose = () => {
+    if (changed) setConfirmDiscard(true);
+    else onClose();
+  };
 
   const save = async () => {
     if (!ready || !changed || saving) return;
@@ -195,17 +219,18 @@ export function ProductSheet({ productId, fallbackTitle, onClose, onSaved }: Pro
       <AdminSheet
         kicker="Vista rápida"
         title={ready?.product.title ?? fallbackTitle}
-        onClose={onClose}
+        onClose={requestClose}
         bodyGap="gap-[18px]"
         footer={
           <>
-            <button type="button" onClick={onClose} className={OUTLINE_BUTTON}>Cancelar</button>
+            <button type="button" onClick={requestClose} className={OUTLINE_BUTTON}>Cancelar</button>
             <button type="button" disabled={!changed || saving} onClick={onGuardar} className={RED_BUTTON}>Guardar</button>
           </>
         }
       >
         {body}
       </AdminSheet>
+      {confirmDiscard && ready && <DiscardDialog title={ready.product.title} onContinue={() => setConfirmDiscard(false)} onDiscard={onClose} />}
       {confirmArchive && ready && <ArchiveDialog title={ready.product.title} busy={saving} onClose={() => setConfirmArchive(false)} onConfirm={() => void save()} />}
     </>
   );
