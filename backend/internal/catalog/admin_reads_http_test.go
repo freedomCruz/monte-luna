@@ -27,7 +27,7 @@ type catalogReadAccess struct {
 }
 
 func (a *catalogReadAccess) Require(context.Context, string) (identity.Principal, error) {
-	return identity.Principal{Role: a.role}, a.err
+	return identity.Principal{ID: "01946894-3d9a-7c98-b807-6c84c1762c30", Role: a.role}, a.err
 }
 
 type catalogReadOrders struct {
@@ -98,6 +98,9 @@ func adminCatalog(t *testing.T) (*sql.DB, *http.ServeMux, *contracttest.Contract
 		t.Fatal(err)
 	}
 	if err := m.RegisterAdminMediaRoutes(mux, access, func(h http.Handler) http.Handler { return h }); err != nil {
+		t.Fatal(err)
+	}
+	if err := m.RegisterAdminWriteRoutes(mux, access, func(h http.Handler) http.Handler { return h }); err != nil {
 		t.Fatal(err)
 	}
 	return db, mux, contracttest.Load(t, "catalog.yaml"), access, orders, names
