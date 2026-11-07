@@ -88,12 +88,16 @@ function ArchiveDialog({ title, busy, onClose, onConfirm }: { title: string; bus
     <AlertDialog.Root open onOpenChange={(open) => { if (!open) onClose(); }}>
       <AlertDialog.Portal>
         <AlertDialog.Overlay className="fixed inset-0 z-[60] bg-foreground/50" />
-        <AlertDialog.Content className="fixed left-1/2 top-[20vh] z-[60] flex w-[calc(100%-32px)] max-w-[500px] -translate-x-1/2 flex-col gap-3 rounded-xl bg-card p-6">
-          <AlertDialog.Title className="m-0 text-xl font-extrabold">¿Archivar {title}?</AlertDialog.Title>
-          <AlertDialog.Description className="m-0 text-[15px] leading-6 text-muted-foreground">Deja de verse en la tienda. Puedes volver a publicarlo cuando quieras.</AlertDialog.Description>
-          <div className="flex flex-wrap justify-end gap-2">
-            <AlertDialog.Cancel asChild><button type="button" className={OUTLINE_BUTTON}>Volver</button></AlertDialog.Cancel>
-            <button type="button" disabled={busy} onClick={onConfirm} className={RED_BUTTON}>Archivar producto</button>
+        <AlertDialog.Content className="fixed left-1/2 top-[20vh] z-[60] flex w-[calc(100%-32px)] max-w-[500px] -translate-x-1/2 flex-col gap-3 rounded-xl border border-border bg-card p-6 leading-[normal]">
+          <span className="inline-flex size-12 items-center justify-center rounded-[50%] bg-secondary">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true" focusable="false" className="text-destructive"><path d="M3 7h18M5 7v12h14V7M9 11h6M9 3h6" /></svg>
+          </span>
+          <AlertDialog.Title className="m-0 text-[20px] font-extrabold">¿Archivar {title}?</AlertDialog.Title>
+          <AlertDialog.Description className="m-0 text-[15px] leading-[1.5] text-muted-foreground">Deja de verse en la tienda y nadie podrá comprarlo. Los pedidos que ya lo incluyen no cambian. Puedes volver a publicarlo cuando quieras.</AlertDialog.Description>
+          <div className="flex flex-wrap justify-end gap-2 pt-1">
+            {/* A-Sistema's outlined control is 44 px of content plus its border. */}
+            <AlertDialog.Cancel asChild><button type="button" className="box-content h-11 cursor-pointer rounded-sm border border-muted-foreground bg-card px-3.5 font-sans text-[15px] font-bold text-foreground">Cancelar</button></AlertDialog.Cancel>
+            <button type="button" disabled={busy} onClick={onConfirm} className="h-11 cursor-pointer rounded-sm border-0 bg-accent px-3.5 font-sans text-[15px] font-bold text-white disabled:cursor-not-allowed disabled:opacity-60">Archivar producto</button>
           </div>
         </AlertDialog.Content>
       </AlertDialog.Portal>

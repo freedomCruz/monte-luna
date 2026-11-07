@@ -129,24 +129,46 @@ test.describe('Admin Productos quick view (F2b: S2, S3, S7)', () => {
     expect(mock.requests.length).toBeGreaterThan(before);
   });
 
-  test('keeps archive confirmation separate from discarding edits (F2c)', async ({ page }) => {
-    const mock = await openList(page, 1440);
-    await page.getByRole('button', { name: TITLE, exact: true }).click();
-    const sheet = page.getByRole('dialog', { name: TITLE });
-    await sheet.getByLabel('Estado de publicación').selectOption('archived');
-    await sheet.getByRole('button', { name: 'Guardar' }).click();
-    const archive = page.getByRole('alertdialog', { name: `¿Archivar ${TITLE}?` });
-    await expect(archive).toBeVisible();
-    await expect(archive.getByText('Deja de verse en la tienda. Puedes volver a publicarlo cuando quieras.', { exact: true })).toBeVisible();
-    await expect(archive.getByRole('button', { name: 'Volver' })).toBeFocused();
-    expect(mock.writes).toEqual([]);
-    await archive.getByRole('button', { name: 'Volver' }).click();
-    await expect(sheet.getByLabel('Estado de publicación')).toHaveValue('archived');
-    await sheet.getByRole('button', { name: 'Guardar' }).click();
-    await archive.getByRole('button', { name: 'Archivar producto' }).click();
-    await expect(sheet).toHaveCount(0);
-    expect(mock.writes).toEqual([{ method: 'PATCH', path: '/' + mockProductDetail.id, ifMatch: '"3"', body: { status: 'archived' } }]);
-  });
+  for (const width of [1440, 1024, 768]) {
+    test(`matches the archive confirmation at ${width}px without changing its behavior (F2d)`, async ({ page }, testInfo) => {
+      const mock = await openList(page, width);
+      await page.getByRole('button', { name: TITLE, exact: true }).click();
+      const sheet = page.getByRole('dialog', { name: TITLE });
+      await sheet.getByLabel('Estado de publicación').selectOption('archived');
+      await sheet.getByRole('button', { name: 'Guardar' }).click();
+      const archive = page.getByRole('alertdialog', { name: `¿Archivar ${TITLE}?` });
+      await expect(archive).toBeVisible();
+      await expect(archive.getByText('Deja de verse en la tienda y nadie podrá comprarlo. Los pedidos que ya lo incluyen no cambian. Puedes volver a publicarlo cuando quieras.', { exact: true })).toBeVisible();
+      await expect.soft(archive.getByRole('button', { name: 'Cancelar', exact: true })).toBeFocused();
+      const cancel = archive.getByRole('button', { name: 'Cancelar', exact: true });
+      await expect(cancel).toHaveCSS('box-sizing', 'content-box');
+      expect((await cancel.boundingBox())?.height).toBe(46);
+      const icon = archive.locator('svg');
+      await expect.soft(icon).toHaveAttribute('aria-hidden', 'true');
+      await expect.soft(icon).toHaveAttribute('width', '22');
+      await expect.soft(icon).toHaveAttribute('height', '22');
+      await expect.soft(icon.locator('path')).toHaveAttribute('d', 'M3 7h18M5 7v12h14V7M9 11h6M9 3h6');
+      await expect.soft(icon).toHaveCSS('stroke', 'rgb(155, 28, 28)');
+      const circle = icon.locator('..');
+      await expect.soft(circle).toHaveCSS('width', '48px');
+      await expect.soft(circle).toHaveCSS('height', '48px');
+      await expect.soft(circle).toHaveCSS('border-radius', '50%');
+      await expect.soft(circle).toHaveCSS('background-color', 'rgb(243, 230, 196)');
+      await expect.soft(archive).toHaveCSS('border', '1px solid rgb(230, 217, 188)');
+      await expect.soft(archive).toHaveCSS('border-radius', '20px');
+      await expect.soft(archive).toHaveCSS('padding', '24px');
+      const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+      expect(results.violations, `axe archive dialog at ${width}px`).toEqual([]);
+      await archive.screenshot({ path: testInfo.outputPath(`productos-archive-${width}.png`) });
+      expect(mock.writes).toEqual([]);
+      await archive.getByRole('button', { name: 'Cancelar', exact: true }).click();
+      await expect(sheet.getByLabel('Estado de publicación')).toHaveValue('archived');
+      await sheet.getByRole('button', { name: 'Guardar' }).click();
+      await archive.getByRole('button', { name: 'Archivar producto' }).click();
+      await expect(sheet).toHaveCount(0);
+      expect(mock.writes).toEqual([{ method: 'PATCH', path: '/' + mockProductDetail.id, ifMatch: '"3"', body: { status: 'archived' } }]);
+    });
+  }
 
   test('shows the conflict state on a stale version and recovers after reloading', async ({ page }) => {
     const mock = await openList(page, 1440);
