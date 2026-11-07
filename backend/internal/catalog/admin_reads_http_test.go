@@ -261,6 +261,58 @@ func TestAdminCatalogReadHTTPContract(t *testing.T) {
 	}
 }
 
+func TestAdminCatalogNullAttributesHTTPContract(t *testing.T) {
+	db, mux, c, _, _, _ := adminCatalog(t)
+	product := adminScalar(t, db, `SELECT id FROM catalog.products WHERE slug='chocolate-85'`)
+	base := "/api/v1/admin/products/" + product
+	// The deployed seed contains optional product attributes set to JSON null.
+	// Validate the unmodified seed through the public contract before any write.
+	detail := read(t, mux, c, base, 200, "no-store")
+	attributes := detail["attributes"].(map[string]any)
+	for _, key := range []string{"drying", "fermentation", "genetic_group"} {
+		if _, exists := attributes[key]; exists {
+			t.Fatalf("unset product attribute %s must be absent: %v", key, attributes)
+		}
+	}
+	if attributes["cacao_percentage"] != float64(85) {
+		t.Fatalf("non-null product attributes lost: %v", attributes)
+	}
+	variant := detail["variants"].([]any)[0].(map[string]any)["id"].(string)
+	// Exercise the same legacy representation for variant attributes without
+	// changing the seed or write validation rules.
+	if _, err := db.ExecContext(t.Context(), `UPDATE catalog.product_variants SET attributes='{"unset":null,"text":"kept","number":0,"boolean":false,"array":["kept"]}' WHERE id=$1`, variant); err != nil {
+		t.Fatal(err)
+	}
+	assertVariant := func(v map[string]any) {
+		t.Helper()
+		attrs := v["attributes"].(map[string]any)
+		if _, exists := attrs["unset"]; exists || len(attrs) != 4 || attrs["text"] != "kept" || attrs["number"] != float64(0) || attrs["boolean"] != false || attrs["array"].([]any)[0] != "kept" {
+			t.Fatalf("variant attribute projection: %v", attrs)
+		}
+	}
+	detail = read(t, mux, c, base, 200, "no-store")
+	for _, value := range detail["variants"].([]any) {
+		v := value.(map[string]any)
+		if v["id"] == variant {
+			assertVariant(v)
+		}
+	}
+	assertVariant(read(t, mux, c, base+"/variants/"+variant, 200, "no-store"))
+	read(t, mux, c, "/api/v1/admin/products?search=chocolate-85", 200, "no-store")
+	req := httptest.NewRequest("PATCH", base, strings.NewReader(`{"title":"Chocolate 85 edited"}`))
+	req.Header.Set("Content-Type", "application/merge-patch+json")
+	req.Header.Set("If-Match", `"1"`)
+	rec := c.Do(t, mux, req)
+	if rec.Code != 200 || rec.Header().Get("ETag") != `"2"` {
+		t.Fatalf("seed product must remain editable: %d %s", rec.Code, rec.Body.String())
+	}
+	detail = read(t, mux, c, base, 200, "no-store")
+	if detail["title"] != "Chocolate 85 edited" || detail["version"] != float64(2) || detail["attributes"].(map[string]any)["cacao_percentage"] != float64(85) {
+		t.Fatalf("edited product read: %v", detail)
+	}
+	assertVariant(read(t, mux, c, base+"/variants/"+variant, 200, "no-store"))
+}
+
 func TestAdminProductsHTTPPaginationAndFilters(t *testing.T) {
 	db, mux, c, _, _, _ := adminCatalog(t)
 	typeID := adminScalar(t, db, `SELECT id FROM catalog.product_types WHERE slug='coffee'`)
