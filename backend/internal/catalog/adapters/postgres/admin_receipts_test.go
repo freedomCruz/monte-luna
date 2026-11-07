@@ -9,6 +9,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"sync"
 	"testing"
+	"time"
 )
 
 func TestAdminReceiptTransaction(t *testing.T) {
@@ -103,11 +104,12 @@ func TestAdminReceiptTransaction(t *testing.T) {
 		t.Helper()
 		start := make(chan struct{})
 		results := make(chan error, 2)
+		fields := writeFields(t, body)
 		var wg sync.WaitGroup
 		for range 2 {
 			wg.Go(func() {
 				<-start
-				_, err := repo.WriteAdmin(context.Background(), domain.AdminWrite{Kind: kind, ProductID: product, VariantID: variant, Version: version, ActorID: actor, Fields: writeFields(t, body)})
+				_, err := repo.WriteAdmin(t.Context(), domain.AdminWrite{Kind: kind, ProductID: product, VariantID: variant, Version: version, ActorID: actor, Fields: fields})
 				results <- err
 			})
 		}
@@ -141,5 +143,35 @@ func TestAdminReceiptTransaction(t *testing.T) {
 	race("update-product", `{"title":"Race winner"}`, 6)
 	if v := scalar[int](t, db, `SELECT version FROM catalog.products WHERE id=$1`, product); v != 7 {
 		t.Fatalf("version %d", v)
+	}
+	// Checkout and variant edits take compatible locks in parent-first order.
+	// Both operations must succeed; neither may deadlock or overwrite a counter.
+	for i := range 10 {
+		ctx, cancel := context.WithTimeout(t.Context(), 10*time.Second)
+		start := make(chan struct{})
+		results := make(chan error, 2)
+		ref := fmt.Sprintf("01946894-3d9a-7c98-b807-%012d", i)
+		fields := writeFields(t, `{"price_amount":100}`)
+		go func() {
+			<-start
+			_, err := repo.WriteAdmin(ctx, domain.AdminWrite{Kind: "update-variant", ProductID: product, VariantID: variant, Version: int32(7 + i), Fields: fields})
+			results <- err
+		}()
+		go func() {
+			<-start
+			_, err := repo.Allocate(ctx, ref, []domain.StockRequest{{VariantID: variant, Quantity: 1}})
+			results <- err
+		}()
+		close(start)
+		for range 2 {
+			if err := <-results; err != nil {
+				cancel()
+				t.Fatal(err)
+			}
+		}
+		cancel()
+		if err := repo.Release(t.Context(), ref); err != nil {
+			t.Fatal(err)
+		}
 	}
 }

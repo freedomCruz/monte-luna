@@ -1,6 +1,11 @@
 -- name: LockAllocationReference :exec
 SELECT pg_advisory_xact_lock(hashtextextended('catalog:allocation:' || sqlc.arg(reference)::text,0));
 
+-- name: LockAllocationProduct :exec
+-- Acquire the parent before any variant row, matching admin content writes.
+SELECT p.id FROM catalog.products p JOIN catalog.product_variants v ON v.product_id=p.id
+WHERE v.id=$1 FOR SHARE OF p;
+
 -- name: LockStockVariant :one
 SELECT v.id,v.status,p.status AS product_status FROM catalog.product_variants v
 JOIN catalog.products p ON p.id=v.product_id WHERE v.id=$1 FOR UPDATE OF v FOR SHARE OF p;

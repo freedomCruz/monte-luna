@@ -72,6 +72,17 @@ func (q *Queries) InsertStockMovement(ctx context.Context, arg InsertStockMoveme
 	return err
 }
 
+const lockAllocationProduct = `-- name: LockAllocationProduct :exec
+SELECT p.id FROM catalog.products p JOIN catalog.product_variants v ON v.product_id=p.id
+WHERE v.id=$1 FOR SHARE OF p
+`
+
+// Acquire the parent before any variant row, matching admin content writes.
+func (q *Queries) LockAllocationProduct(ctx context.Context, id string) error {
+	_, err := q.db.Exec(ctx, lockAllocationProduct, id)
+	return err
+}
+
 const lockAllocationReference = `-- name: LockAllocationReference :exec
 SELECT pg_advisory_xact_lock(hashtextextended('catalog:allocation:' || $1::text,0))
 `
