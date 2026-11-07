@@ -1,5 +1,7 @@
 import type {
+  AdminBrandPage,
   AdminCategoryPage,
+  AdminOriginPage,
   AdminProduct,
   AdminProductPage,
   AdminProductRow,
@@ -110,6 +112,27 @@ const definition = (
   position,
 });
 
+const productDefinition = (key: string, label: string, dataType: 'option' | 'multi_option' | 'decimal', required: boolean, position: number, values: [string, string][] = []) => ({
+  key,
+  label,
+  data_type: dataType,
+  scope: 'product' as const,
+  is_variant_option: false,
+  is_required: required,
+  is_filterable: false,
+  allowed_values: values.length > 0 ? values.map(([value, valueLabel]) => ({ value, label: valueLabel })) : null,
+  unit: null,
+  position,
+});
+
+const coffeeDefinitions = [
+  definition('size', 'Presentación', [['250g', '250 g'], ['500g', '500 g']], 1),
+  definition('grind', 'Molienda', [['whole', 'Grano entero'], ['medium', 'Media'], ['fine', 'Fina']], 2),
+  productDefinition('species', 'Especie', 'option', true, 1, [['arabica', 'Arábica'], ['robusta', 'Robusta']]),
+  productDefinition('notes', 'Notas de cata', 'multi_option', false, 2, [['jasmine', 'jazmín'], ['peach', 'durazno'], ['panela', 'panela']]),
+  productDefinition('score', 'Puntaje de cata', 'decimal', false, 3),
+];
+
 const variant = (n: number, sku: string, size: string, grind: string, price: number, stock: number, status: 'active' | 'archived' = 'active') => ({
   id: `01900000-0000-7000-8000-0000000003${String(n).padStart(2, '0')}`,
   product_id: mockProductRows[0].id,
@@ -136,10 +159,7 @@ export const mockProductDetail: AdminProduct = {
   id: mockProductRows[0].id,
   product_type: {
     ...mockProductTypes.items[0],
-    attribute_definitions: [
-      definition('size', 'Presentación', [['250g', '250 g'], ['500g', '500 g']], 1),
-      definition('grind', 'Molienda', [['whole', 'Grano entero'], ['medium', 'Media'], ['fine', 'Fina']], 2),
-    ],
+    attribute_definitions: coffeeDefinitions,
   },
   brand: { id: '01900000-0000-7000-8000-000000000d01', slug: 'monteluna', name: 'Monteluna', status: 'active' },
   origin: mockProductRows[0].origin,
@@ -148,7 +168,7 @@ export const mockProductDetail: AdminProduct = {
   slug: mockProductRows[0].slug,
   description: null,
   status: 'published',
-  attributes: {},
+  attributes: { species: 'arabica', notes: ['jasmine'], score: 87 },
   variants: [
     variant(1, 'ML-MIR-GE-250-E', '250g', 'whole', 3_800_000, 18),
     variant(2, 'ML-MIR-GE-250-M', '250g', 'medium', 3_800_000, 12),
@@ -171,3 +191,13 @@ export const mockProductDetail: AdminProduct = {
   updated_at: '2026-10-20T12:00:00Z',
   version: 3,
 };
+
+mockProductTypes.items[0].attribute_definitions = coffeeDefinitions;
+
+export const mockBrands: AdminBrandPage = {
+  items: [mockProductDetail.brand!, { id: '01900000-0000-7000-8000-000000000d02', slug: 'aliados', name: 'Aliados', status: 'active' }],
+  next_cursor: null,
+  total: 2,
+};
+
+export const mockOrigins: AdminOriginPage = { items: [mockProductDetail.origin!], next_cursor: null, total: 1 };

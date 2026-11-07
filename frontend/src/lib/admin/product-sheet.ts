@@ -5,9 +5,9 @@ import type { AdminProduct, AdminProductStatus, AdminVariant } from './catalog';
 
 type Definitions = AdminProduct['product_type']['attribute_definitions'];
 
-/** "250 g · Grano entero": the variant's option values in definition order. */
-export function variantPresentation(variant: Pick<AdminVariant, 'options' | 'sku'>, definitions: Definitions): string {
-  const parts = definitions
+/** Option labels of a variant in definition order ("250 g", "Grano entero"); empty without options. */
+export function variantParts(variant: Pick<AdminVariant, 'options'>, definitions: Definitions): string[] {
+  return definitions
     .filter((definition) => definition.scope === 'variant' && definition.is_variant_option)
     .sort((a, b) => a.position - b.position)
     .flatMap((definition) => {
@@ -17,6 +17,11 @@ export function variantPresentation(variant: Pick<AdminVariant, 'options' | 'sku
       const label = definition.allowed_values?.find((allowed) => allowed.value === value)?.label;
       return [label ?? (definition.unit ? `${value} ${definition.unit}` : value)];
     });
+}
+
+/** "250 g · Grano entero": the variant's option values in definition order. */
+export function variantPresentation(variant: Pick<AdminVariant, 'options' | 'sku'>, definitions: Definitions): string {
+  const parts = variantParts(variant, definitions);
   return parts.length > 0 ? parts.join(' · ') : variant.sku;
 }
 
