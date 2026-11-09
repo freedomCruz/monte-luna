@@ -17,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   - Product image upload (JPEG, PNG, or WebP, up to 5 MiB) with alternative text, ordering, and storage in Cloudflare R2.
   - Inventario screen with stock by variant and lot, lot receipts (new stock arrivals), the movement ledger with who made each change, and the "Poco stock" (fewer than 10 units) and "Tueste antiguo" (more than 30 days since roasting) flags.
   - Every change to a product is checked against overlapping edits: if someone else changed it first, the save is rejected and asks to reload.
-- The release script refuses to build the storefront from mock data or from local, placeholder, or non-HTTPS addresses, and checks that the live catalog serves its images from the configured media bucket.
+- The release script refuses to build the storefront without a catalog API (mock data), unless explicitly allowed for the first bootstrap release of an environment, and refuses local, placeholder, non-HTTPS, or path-carrying base addresses. Before building it checks every page of the live catalog and stops if any image is not served from the configured media bucket.
 
 ### Changed
 
