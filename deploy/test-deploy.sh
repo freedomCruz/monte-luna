@@ -503,15 +503,33 @@ test_catalog_media_preflight() {
     fi
   done
 
-  # Always-new cursors must stop at the page cap instead of walking forever.
-  PAGE_COUNTER=0
+  # Always-new cursors must stop at the page cap instead of walking forever. The
+  # stub runs in a command substitution (a subshell), so the next cursor derives
+  # from its argument and every read is counted in a file, never in a variable.
+  PAGE_LOG="$(mktemp)"
   fetch_catalog_sample() {
-    PAGE_COUNTER=$((PAGE_COUNTER + 1))
-    printf '%s' '{"items":[{"slug":"a","images":[{"url":"https://media-staging.montelunaco.com/images/a.webp"}]}],"next_cursor":"c'"$PAGE_COUNTER"'"}'
+    echo read >> "$PAGE_LOG"
+    local n="${2#c}"
+    printf '%s' '{"items":[{"slug":"a","images":[{"url":"https://media-staging.montelunaco.com/images/a.webp"}]}],"next_cursor":"c'"$(( ${n:-0} + 1 ))"'"}'
   }
+  local reads
   if CATALOG_PREFLIGHT_MAX_PAGES=3 catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
     fail "a catalog longer than the page cap must fail the preflight"
   fi
+  reads="$(wc -l < "$PAGE_LOG")"
+  [ "$reads" -eq 3 ] || fail "the page cap of 3 must stop after exactly 3 reads, got ${reads}"
+
+  # The override may only lower the cap: anything else fails before any page is read.
+  local override
+  for override in abc 0 -2 1001 5000 "3 " 2x 007; do
+    : > "$PAGE_LOG"
+    if CATALOG_PREFLIGHT_MAX_PAGES="$override" catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
+      fail "CATALOG_PREFLIGHT_MAX_PAGES='${override}' must be refused"
+    fi
+    reads="$(wc -l < "$PAGE_LOG")"
+    [ "$reads" -eq 0 ] || fail "CATALOG_PREFLIGHT_MAX_PAGES='${override}' must be refused before reading any page, read ${reads}"
+  done
+  rm -f "$PAGE_LOG"
 
   pass "Preflight proves the live API resolves images under PUBLIC_MEDIA_BASE_URL"
 }

@@ -197,7 +197,13 @@ fetch_catalog_sample() {
 catalog_media_preflight() {
   local catalog_api_url="$1" media_base_url="$2" body result cursor="" seen=" "
   local pages=0 products=0 images=0 page_products page_images
+  # The override exists only to lower the cap in tests; it can never raise or
+  # disable it, so anything but an integer from 1 to 1000 is refused up front.
   local max_pages="${CATALOG_PREFLIGHT_MAX_PAGES:-1000}"
+  if ! [[ "$max_pages" =~ ^[1-9][0-9]{0,3}$ ]] || [ "$max_pages" -gt 1000 ]; then
+    echo "Error: CATALOG_PREFLIGHT_MAX_PAGES must be an integer from 1 to 1000." >&2
+    return 1
+  fi
   while :; do
     pages=$((pages + 1))
     if [ "$pages" -gt "$max_pages" ]; then
