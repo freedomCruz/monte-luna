@@ -26,11 +26,11 @@ These photos come from a stock image bank. They are not licensed under MIT and r
 
 | File | Source |
 |---|---|
-| `frontend/public/images/photo-cacao-pods-colourful.jpg` | Stock image bank (attribution pending) |
-| `frontend/public/images/photo-cacao-pods-trunk.jpg` | Stock image bank (attribution pending) |
-| `frontend/public/images/photo-coffee-cherries.jpg` | Stock image bank (attribution pending) |
-| `frontend/public/images/photo-roasted-beans-concrete.jpg` | Stock image bank (attribution pending) |
-| `frontend/public/images/photo-roasted-beans-pile.jpg` | Stock image bank (attribution pending) |
+| `frontend/public/images/photo-cacao-pods-colourful.webp` | Stock image bank (attribution pending) |
+| `frontend/public/images/photo-cacao-pods-trunk.webp` | Stock image bank (attribution pending) |
+| `frontend/public/images/photo-coffee-cherries.webp` | Stock image bank (attribution pending) |
+| `frontend/public/images/photo-roasted-beans-concrete.webp` | Stock image bank (attribution pending) |
+| `frontend/public/images/photo-roasted-beans-pile.webp` | Stock image bank (attribution pending) |
 
 If you are the author of one of these photos, please open an issue so we can credit you correctly or remove the photo.
 

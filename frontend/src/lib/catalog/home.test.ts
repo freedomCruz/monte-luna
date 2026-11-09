@@ -31,7 +31,7 @@ describe('buildOriginBand', () => {
       eyebrow: 'Finca El Mirador · Huila',
       story: mockOriginCoffee.story,
       chips: ['Productora: Productor de café demo', 'Variedad Geisha, Bourbon', 'Puntaje SCA 88.5'],
-      photo: { url: '/images/photo-coffee-cherries.jpg', alt: 'Paisaje de finca cafetera demo' },
+      photo: { url: '/images/photo-coffee-cherries.webp', alt: 'Paisaje de finca cafetera demo' },
       packageImage: { url: mockCoffeeProduct.images[0].url, alt: '' },
       ctaLabel: 'Conocer Finca El Mirador',
       href: '/origenes/finca-el-mirador',

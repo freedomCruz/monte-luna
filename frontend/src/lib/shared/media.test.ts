@@ -15,13 +15,13 @@ describe('mediaUrl', () => {
 
   it('accepts a base without trailing slash and a key with leading slash', () => {
     vi.stubEnv('PUBLIC_MEDIA_BASE_URL', 'https://media.example.test');
-    expect(mediaUrl('/images/photo-coffee-cherries.jpg')).toBe(
-      'https://media.example.test/images/photo-coffee-cherries.jpg',
+    expect(mediaUrl('/images/photo-coffee-cherries.webp')).toBe(
+      'https://media.example.test/images/photo-coffee-cherries.webp',
     );
   });
 
   it('falls back to same-origin paths when no base is configured', () => {
     vi.stubEnv('PUBLIC_MEDIA_BASE_URL', '');
-    expect(mediaUrl('images/photo-coffee-cherries.jpg')).toBe('/images/photo-coffee-cherries.jpg');
+    expect(mediaUrl('images/photo-coffee-cherries.webp')).toBe('/images/photo-coffee-cherries.webp');
   });
 });

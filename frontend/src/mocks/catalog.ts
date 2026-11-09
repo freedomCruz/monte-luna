@@ -18,11 +18,11 @@ export const mockOriginCoffee: Origin = {
   story: '[Historia demo] Finca cafetera ficticia utilizada para demostrar datos de origen reutilizables.',
   images: [
     {
-      url: '/images/photo-coffee-cherries.jpg',
+      url: '/images/photo-coffee-cherries.webp',
       alt_text: 'Paisaje de finca cafetera demo',
     },
     {
-      url: '/images/photo-roasted-beans-concrete.jpg',
+      url: '/images/photo-roasted-beans-concrete.webp',
       alt_text: 'Granos de café reposando tras el secado al sol',
     },
   ],
@@ -41,11 +41,11 @@ export const mockOriginCacao: Origin = {
   story: '[Historia demo] Unidad productora de cacao ficticia; el comerciante debe reemplazar estos datos.',
   images: [
     {
-      url: '/images/photo-cacao-pods-trunk.jpg',
+      url: '/images/photo-cacao-pods-trunk.webp',
       alt_text: 'Paisaje de finca cacaotera demo',
     },
     {
-      url: '/images/photo-cacao-pods-colourful.jpg',
+      url: '/images/photo-cacao-pods-colourful.webp',
       alt_text: 'Cosecha de mazorcas multicolores de cacao fino de aroma',
     },
   ],
@@ -107,7 +107,7 @@ export const mockCoffeeProduct: Product = {
       variant_id: null,
     },
     {
-      url: '/images/photo-coffee-cherries.jpg',
+      url: '/images/photo-coffee-cherries.webp',
       alt_text: 'Cerezas de café cosechadas a mano',
       variant_id: null,
     },
@@ -378,7 +378,7 @@ export const mockCoffeeProductMaria: Product = {
       variant_id: null,
     },
     {
-      url: '/images/photo-roasted-beans-pile.jpg',
+      url: '/images/photo-roasted-beans-pile.webp',
       alt_text: 'Granos tostados de Finca La María',
       variant_id: null,
     },
@@ -473,7 +473,7 @@ export const mockCacaoProduct: Product = {
       variant_id: null,
     },
     {
-      url: '/images/photo-cacao-pods-trunk.jpg',
+      url: '/images/photo-cacao-pods-trunk.webp',
       alt_text: 'Cacao fino de aroma en árbol',
       variant_id: null,
     },
