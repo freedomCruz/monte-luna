@@ -146,7 +146,13 @@ Before building, the script reads `/api/v1/products` and fails unless **every** 
 **Order for the first media-enabled release of an environment:**
 1. Create the environment's own R2 bucket and public origin, and upload `frontend/public/images/` under `images/`, which the demo seed references.
 2. On the VPS, add `MEDIA_STORAGE`, `R2_*` and `MEDIA_BASE_URL` to `/srv/monteluna/.env` (mode `0600`), typing the secrets there and never in chat or git.
-3. Deploy so the API restarts with those values, then check that `/api/v1/products` returns image URLs under the bucket origin.
+3. Recreate only the API container so it reads the new values. A normal release cannot do this first, because its preflight reads the live API before building the storefront. On the VPS, as root:
+   ```bash
+   cd /srv/monteluna
+   export MONTELUNA_RELEASE="$(cat current)"
+   docker compose -p monteluna -f "releases/$MONTELUNA_RELEASE/compose.yaml" up -d --no-deps --force-recreate api
+   ```
+   Then check that `/api/v1/products` returns image URLs under the bucket origin. A database seeded before the WebP demo photos also needs its two origin photo keys renamed from `.jpg` to `.webp` (loading the demo data again does it).
 4. Build and deploy the storefront with both variables:
    ```bash
    CATALOG_API_URL=https://staging.montelunaco.com \
