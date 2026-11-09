@@ -409,7 +409,12 @@ test_build_inputs_guard() {
       fail "PUBLIC_MEDIA_BASE_URL '${bad}' must be refused for an API-backed build"
     fi
   done
-  for bad in "https://10.1.2.3" "https://192.168.0.9" "https://[::1]" "https://media-staging.montelunaco.com." "https://cdn"; do
+  # A base is an origin: anything but an empty path or a single slash is refused.
+  if validate_build_inputs "https://staging.montelunaco.com/api" "$media" 0 >/dev/null 2>&1; then
+    fail "CATALOG_API_URL with a path must be refused"
+  fi
+  for bad in "https://10.1.2.3" "https://192.168.0.9" "https://[::1]" "https://media-staging.montelunaco.com." "https://cdn" \
+    "https://media-staging.montelunaco.com/images" "https://media-staging.montelunaco.com//"; do
     if validate_build_inputs "$api" "$bad" 0 >/dev/null 2>&1; then
       fail "PUBLIC_MEDIA_BASE_URL '${bad}' must be refused for an API-backed build"
     fi
@@ -456,6 +461,34 @@ test_catalog_media_preflight() {
   fetch_catalog_sample() { return 22; }
   if catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
     fail "an unreachable API must fail the preflight"
+  fi
+
+  # The storefront pages through next_cursor, so the preflight must check every page.
+  fetch_catalog_sample() {
+    case "${2:-}" in
+      "") printf '%s' '{"items":[{"slug":"a","images":[{"url":"https://media-staging.montelunaco.com/images/a.webp"}]}],"next_cursor":"c1"}' ;;
+      c1) printf '%s' '{"items":[{"slug":"b","images":[{"url":"https://media.example.com/images/b.webp"}]}],"next_cursor":null}' ;;
+      *) return 22 ;;
+    esac
+  }
+  if catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
+    fail "a foreign image URL on a later page must fail the preflight"
+  fi
+
+  fetch_catalog_sample() {
+    case "${2:-}" in
+      "") printf '%s' '{"items":[{"slug":"a","images":[{"url":"https://media-staging.montelunaco.com/images/a.webp"}]}],"next_cursor":"c1"}' ;;
+      c1) printf '%s' '{"items":[{"slug":"b","images":[{"url":"https://media-staging.montelunaco.com/images/b.webp"}]}],"next_cursor":null}' ;;
+      *) return 22 ;;
+    esac
+  }
+  catalog_media_preflight "$api" "$media" >/dev/null 2>&1 || fail "two valid pages must pass the preflight"
+
+  fetch_catalog_sample() {
+    printf '%s' '{"items":[{"slug":"a","images":[{"url":"https://media-staging.montelunaco.com/images/a.webp"}]}],"next_cursor":"loop"}'
+  }
+  if catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
+    fail "a repeated cursor must fail the preflight instead of looping"
   fi
 
   pass "Preflight proves the live API resolves images under PUBLIC_MEDIA_BASE_URL"

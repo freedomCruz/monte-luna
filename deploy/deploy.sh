@@ -140,13 +140,16 @@ is_unusable_host() {
   return 1
 }
 
-# An https origin with a usable host, no credentials, query or fragment.
+# An https origin with a usable host: no path beyond a single slash, and no
+# credentials, query or fragment.
 valid_public_https_url() {
-  local url="$1" rest authority host
+  local url="$1" rest authority host path
   [[ "$url" == https://* ]] || return 1
   [[ "$url" == *\?* || "$url" == *\#* || "$url" == *[[:space:]]* ]] && return 1
   rest="${url#https://}"
   authority="${rest%%/*}"
+  path="${rest#"$authority"}"
+  [[ -z "$path" || "$path" == "/" ]] || return 1
   [[ "$authority" == *@* ]] && return 1
   host="$authority"
   [ -n "$host" ] || return 1
@@ -178,34 +181,68 @@ validate_build_inputs() {
   return 0
 }
 
+# Reads one page of the public product list; the second argument is the cursor.
 fetch_catalog_sample() {
-  curl -fsS --max-time 20 -H 'Accept: application/json' "${1%/}/api/v1/products?limit=100"
+  local url="${1%/}/api/v1/products?limit=100"
+  if [ -n "${2:-}" ]; then
+    url+="&cursor=$(node -e 'process.stdout.write(encodeURIComponent(process.argv[1]))' "$2")"
+  fi
+  curl -fsS --max-time 20 -H 'Accept: application/json' "$url"
 }
 
 # The static pages bake whatever image URLs the live API returns during the build.
 # Prove they sit under the media base before building, so a stale or placeholder
-# MEDIA_BASE_URL on the API host is caught here and not after the release.
+# MEDIA_BASE_URL on the API host is caught here and not after the release. The
+# storefront follows next_cursor, so every page is checked, not only the first.
 catalog_media_preflight() {
-  local catalog_api_url="$1" media_base_url="$2" body
-  if ! body="$(fetch_catalog_sample "$catalog_api_url")"; then
-    echo "Error: could not read the product catalog from ${catalog_api_url}." >&2
-    return 1
-  fi
-  printf '%s' "$body" | node -e '
+  local catalog_api_url="$1" media_base_url="$2" body result cursor="" seen=" "
+  local pages=0 products=0 images=0 page_products page_images
+  while :; do
+    pages=$((pages + 1))
+    if [ "$pages" -gt 1000 ]; then
+      echo "Error: the catalog has more than 1000 pages; refusing to continue." >&2
+      return 1
+    fi
+    if ! body="$(fetch_catalog_sample "$catalog_api_url" "$cursor")"; then
+      echo "Error: could not read the product catalog from ${catalog_api_url}." >&2
+      return 1
+    fi
+    if ! result="$(printf '%s' "$body" | node -e '
 let raw = "";
 process.stdin.on("data", (c) => (raw += c)).on("end", () => {
   const base = process.argv[1].replace(/\/+$/, "") + "/";
   let page;
   try { page = JSON.parse(raw); } catch { console.error("Error: the catalog response is not JSON."); process.exit(1); }
-  const items = Array.isArray(page.items) ? page.items : [];
-  if (items.length === 0) { console.error("Error: the catalog API returned no products; refusing to build a storefront from it."); process.exit(1); }
-  const urls = items.flatMap((p) => (Array.isArray(p.images) ? p.images : []).map((i) => i.url));
-  if (urls.length === 0) { console.error("Error: no product image to confirm the media base against."); process.exit(1); }
+  if (page === null || typeof page !== "object" || !Array.isArray(page.items)) { console.error("Error: the catalog response has no items array."); process.exit(1); }
+  const next = page.next_cursor;
+  if (next !== null && next !== undefined && (typeof next !== "string" || next === "" || /\s/.test(next))) { console.error("Error: the catalog response has an invalid next_cursor."); process.exit(1); }
+  const urls = page.items.flatMap((p) => (p && Array.isArray(p.images) ? p.images : []).map((i) => i && i.url));
   const bad = urls.filter((u) => typeof u !== "string" || !u.startsWith(base));
-  if (bad.length > 0) { console.error(`Error: ${bad.length} of ${urls.length} product image URLs are not under ${base} (first: ${bad[0]}). The API host MEDIA_BASE_URL does not match PUBLIC_MEDIA_BASE_URL.`); process.exit(1); }
-  console.log(`Catalog preflight: ${items.length} products, ${urls.length} image URLs, all under ${base}`);
+  if (bad.length > 0) { console.error(`Error: ${bad.length} of ${urls.length} product image URLs on this page are not under ${base} (first: ${bad[0]}). The API host MEDIA_BASE_URL does not match PUBLIC_MEDIA_BASE_URL.`); process.exit(1); }
+  process.stdout.write(`${page.items.length} ${urls.length} ${next ?? ""}`);
 });
-' "$media_base_url"
+' "$media_base_url")"; then
+      return 1
+    fi
+    read -r page_products page_images cursor <<<"$result"
+    products=$((products + page_products))
+    images=$((images + page_images))
+    [ -z "$cursor" ] && break
+    if [[ "$seen" == *" $cursor "* ]]; then
+      echo "Error: the catalog API repeated a pagination cursor; refusing to loop." >&2
+      return 1
+    fi
+    seen+="$cursor "
+  done
+  if [ "$products" -eq 0 ]; then
+    echo "Error: the catalog API returned no products; refusing to build a storefront from it." >&2
+    return 1
+  fi
+  if [ "$images" -eq 0 ]; then
+    echo "Error: no product image to confirm the media base against." >&2
+    return 1
+  fi
+  echo "Catalog preflight: ${pages} pages, ${products} products, ${images} image URLs, all under ${media_base_url%/}/"
 }
 
 # Runs before the slow local gates so a wrong input fails in seconds.
