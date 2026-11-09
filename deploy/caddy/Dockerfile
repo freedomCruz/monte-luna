@@ -20,6 +20,10 @@ FROM node:24.22.2-trixie-slim@sha256:0820eaa85e07d0490446dd01d14707e17e6108a3698
 ARG CATALOG_API_URL=""
 ENV CATALOG_API_URL=${CATALOG_API_URL}
 
+# Public origin of the media bucket, for static images that are not catalog data.
+ARG PUBLIC_MEDIA_BASE_URL=""
+ENV PUBLIC_MEDIA_BASE_URL=${PUBLIC_MEDIA_BASE_URL}
+
 # Enforce npm 12.2.0 as specified by devEngines
 RUN npm install -g npm@12.2.0
 

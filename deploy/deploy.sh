@@ -119,12 +119,112 @@ run_local_ci_gates() {
   echo "Local verification gates passed."
 }
 
+# A host that cannot serve a real public staging or production catalog or media:
+# IP literals (private, loopback or otherwise), single-label and local names,
+# reserved example, invalid and test names, and a trailing dot.
+is_unusable_host() {
+  local host="${1,,}"
+  # IPv6 literals are never a public staging host.
+  [[ "$host" == \[* ]] && return 0
+  host="${host%%:*}"
+  [ -n "$host" ] || return 0
+  [[ "$host" == *. ]] && return 0
+  # IPv4 literals, including short forms such as 127.1.
+  [[ "$host" =~ ^[0-9]+(\.[0-9]+)*$ ]] && return 0
+  # A public name always has a dot.
+  [[ "$host" == *.* ]] || return 0
+  case "$host" in
+    localhost|*.localhost|*.local|*.internal|*.lan|*.home.arpa) return 0 ;;
+    example.*|*.example|*.example.com|*.example.org|*.example.net|*.invalid|*.test) return 0 ;;
+  esac
+  return 1
+}
+
+# An https origin with a usable host, no credentials, query or fragment.
+valid_public_https_url() {
+  local url="$1" rest authority host
+  [[ "$url" == https://* ]] || return 1
+  [[ "$url" == *\?* || "$url" == *\#* || "$url" == *[[:space:]]* ]] && return 1
+  rest="${url#https://}"
+  authority="${rest%%/*}"
+  [[ "$authority" == *@* ]] && return 1
+  host="$authority"
+  [ -n "$host" ] || return 1
+  ! is_unusable_host "$host"
+}
+
+# The static storefront is baked at build time. With no catalog API the build
+# silently falls back to mock fixtures (frontend/src/lib/catalog/catalog.ts), so
+# that mode must be an explicit choice (ALLOW_FIXTURE_CATALOG=1, bootstrap only).
+validate_build_inputs() {
+  local catalog_api_url="$1" media_base_url="$2" allow_fixtures="$3"
+
+  if [ -z "$catalog_api_url" ]; then
+    if [ "$allow_fixtures" = "1" ]; then
+      echo "Warning: ALLOW_FIXTURE_CATALOG=1 set. The storefront will be built from mock fixtures, not from a database-backed API." >&2
+      return 0
+    fi
+    echo "Error: CATALOG_API_URL is empty, so the static storefront would be built from mock fixtures. Set CATALOG_API_URL to the staging API, or ALLOW_FIXTURE_CATALOG=1 for the bootstrap release only." >&2
+    return 1
+  fi
+  if ! valid_public_https_url "$catalog_api_url"; then
+    echo "Error: CATALOG_API_URL must be an https URL with a real public host (no localhost, example or credentials)." >&2
+    return 1
+  fi
+  if [ -z "$media_base_url" ] || ! valid_public_https_url "$media_base_url"; then
+    echo "Error: PUBLIC_MEDIA_BASE_URL must be the https public origin of the media bucket (no localhost, example, credentials, query or fragment)." >&2
+    return 1
+  fi
+  return 0
+}
+
+fetch_catalog_sample() {
+  curl -fsS --max-time 20 -H 'Accept: application/json' "${1%/}/api/v1/products?limit=100"
+}
+
+# The static pages bake whatever image URLs the live API returns during the build.
+# Prove they sit under the media base before building, so a stale or placeholder
+# MEDIA_BASE_URL on the API host is caught here and not after the release.
+catalog_media_preflight() {
+  local catalog_api_url="$1" media_base_url="$2" body
+  if ! body="$(fetch_catalog_sample "$catalog_api_url")"; then
+    echo "Error: could not read the product catalog from ${catalog_api_url}." >&2
+    return 1
+  fi
+  printf '%s' "$body" | node -e '
+let raw = "";
+process.stdin.on("data", (c) => (raw += c)).on("end", () => {
+  const base = process.argv[1].replace(/\/+$/, "") + "/";
+  let page;
+  try { page = JSON.parse(raw); } catch { console.error("Error: the catalog response is not JSON."); process.exit(1); }
+  const items = Array.isArray(page.items) ? page.items : [];
+  if (items.length === 0) { console.error("Error: the catalog API returned no products; refusing to build a storefront from it."); process.exit(1); }
+  const urls = items.flatMap((p) => (Array.isArray(p.images) ? p.images : []).map((i) => i.url));
+  if (urls.length === 0) { console.error("Error: no product image to confirm the media base against."); process.exit(1); }
+  const bad = urls.filter((u) => typeof u !== "string" || !u.startsWith(base));
+  if (bad.length > 0) { console.error(`Error: ${bad.length} of ${urls.length} product image URLs are not under ${base} (first: ${bad[0]}). The API host MEDIA_BASE_URL does not match PUBLIC_MEDIA_BASE_URL.`); process.exit(1); }
+  console.log(`Catalog preflight: ${items.length} products, ${urls.length} image URLs, all under ${base}`);
+});
+' "$media_base_url"
+}
+
+# Runs before the slow local gates so a wrong input fails in seconds.
+preflight_build_inputs() {
+  local catalog_api_url="${CATALOG_API_URL:-}" media_base_url="${PUBLIC_MEDIA_BASE_URL:-}"
+  validate_build_inputs "$catalog_api_url" "$media_base_url" "${ALLOW_FIXTURE_CATALOG:-0}" || return 1
+  if [ -n "$catalog_api_url" ]; then
+    catalog_media_preflight "$catalog_api_url" "$media_base_url" || return 1
+  fi
+}
+
 build_and_package_images() {
   local repo_root="$1"
   local release_id="$2"
   local output_tar_gz="$3"
 
   local catalog_api_url="${CATALOG_API_URL:-}"
+  local media_base_url="${PUBLIC_MEDIA_BASE_URL:-}"
+  validate_build_inputs "$catalog_api_url" "$media_base_url" "${ALLOW_FIXTURE_CATALOG:-0}"
 
   echo "==> Building monteluna-api:${release_id}..."
   docker build --platform linux/amd64 \
@@ -135,6 +235,7 @@ build_and_package_images() {
   docker build --platform linux/amd64 \
     -f "${repo_root}/deploy/caddy/Dockerfile" \
     --build-arg CATALOG_API_URL="${catalog_api_url}" \
+    --build-arg PUBLIC_MEDIA_BASE_URL="${media_base_url}" \
     -t "monteluna-caddy:${release_id}" \
     "${repo_root}"
 
@@ -372,6 +473,9 @@ main() {
   release_id="$(compute_release_id "$tag" "$commit_sha")"
 
   echo "Target release: ${release_id} (commit ${commit_sha})"
+
+  echo "==> Checking build inputs (catalog API and media base)..."
+  preflight_build_inputs
 
   run_local_ci_gates "$repo_root"
 
