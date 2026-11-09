@@ -194,10 +194,28 @@ describe('InventoryView selected variant (F4: S4)', () => {
     expect(await screen.findByRole('heading', { level: 2, name: 'Finca El Mirador · 250 g · Fina' })).toBeTruthy();
   });
 
+  // The section heading renders at once with a loading skeleton; the table only
+  // exists once the lots request resolves. A test that awaits the heading and then
+  // reads the table synchronously is therefore a race, so this pins the window.
+  it('shows the lots skeleton under the heading until the lots arrive, then the table', async () => {
+    let resolveLots!: (value: ReturnType<typeof ok<AdminVariantLotPage>>) => void;
+    listAdminVariantLots.mockReturnValue(new Promise((resolve) => { resolveLots = resolve; }));
+    render(<InventoryView />);
+    const section = (await screen.findByRole('heading', { name: 'Lotes' })).closest('section')!;
+    expect(within(section).getByLabelText('Cargando lotes')).toBeTruthy();
+    expect(within(section).queryAllByRole('columnheader')).toHaveLength(0);
+    expect(() => within(section).getAllByRole('columnheader')).toThrow();
+
+    await act(async () => { resolveLots(ok(mockVariantLotPage)); });
+    const headers = await within(section).findAllByRole('columnheader');
+    expect(headers.map((header) => header.textContent)).toEqual(['Lote', 'Tueste', 'Vence', 'Disponible', 'Reservado', 'Estado']);
+    expect(within(section).queryByLabelText('Cargando lotes')).toBeNull();
+  });
+
   it('renders the lots oldest first with the server flags and dates', async () => {
     render(<InventoryView />);
     const table = (await screen.findByRole('heading', { name: 'Lotes' })).closest('section')!;
-    const headers = within(table).getAllByRole('columnheader').map((header) => header.textContent);
+    const headers = (await within(table).findAllByRole('columnheader')).map((header) => header.textContent);
     expect(headers).toEqual(['Lote', 'Tueste', 'Vence', 'Disponible', 'Reservado', 'Estado']);
     const rows = await within(table).findAllByRole('row');
     const text = rows.slice(1).map((row) => row.textContent);
