@@ -1,4 +1,15 @@
 ---
+import type { HomeImage } from '../../lib/catalog/home';
+
+interface Props {
+  /** Package shots of the first coffees, from the catalog API. */
+  coffee: HomeImage[];
+  /** Package shot of the first cacao product, from the catalog API. */
+  cacao?: HomeImage;
+}
+
+const { coffee, cacao } = Astro.props;
+const [frontCoffee, backCoffee] = coffee;
 // Home hero (M-Inicio / M-Inicio-390): fixed canvas copy and packaging assets.
 const ctaClass =
   'flex lg:inline-flex items-center justify-center min-h-14 px-[26px] rounded-md text-base font-bold tracking-[0.02em] uppercase no-underline';
@@ -47,13 +58,13 @@ const dropShadow = 'drop-shadow-[0_22px_20px_rgba(27,21,16,0.28)]';
 
     <div class="relative h-[400px] lg:h-[640px] mt-5 lg:mt-0 lg:flex-[1_1_520px] min-w-0 lg:self-end">
       <div class="flota-b absolute -right-11 -bottom-[34px] h-[330px] lg:right-[-3%] lg:bottom-[-7%] lg:h-[86%]">
-        <img src="/images/packaging-finca-la-maria.webp" alt="Bolsa de café Finca La María, 500 g" class={`h-full max-w-none rotate-[8deg] lg:rotate-[7deg] ${dropShadow}`} />
+        {backCoffee && <img src={backCoffee.url} alt={backCoffee.alt} class={`h-full max-w-none rotate-[8deg] lg:rotate-[7deg] ${dropShadow}`} />}
       </div>
       <div class="absolute left-1/2 -ml-[168px] -bottom-6 h-[400px] lg:left-auto lg:ml-0 lg:right-[20%] lg:bottom-[-5%] lg:h-[102%]">
-        <img src="/images/packaging-finca-el-mirador.webp" alt="Bolsa de café Finca El Mirador, 500 g" class="h-full max-w-none drop-shadow-[0_26px_22px_rgba(27,21,16,0.32)]" />
+        {frontCoffee && <img src={frontCoffee.url} alt={frontCoffee.alt} class="h-full max-w-none drop-shadow-[0_26px_22px_rgba(27,21,16,0.32)]" />}
       </div>
       <div class="flota absolute -left-[26px] -bottom-3.5 h-[250px] lg:left-[-4%] lg:bottom-[-3%] lg:h-[64%]">
-        <img src="/images/packaging-chocolate-65.webp" alt="Barra de chocolate oscuro Monteluna 65 % cacao, 80 g" class="h-full max-w-none -rotate-[10deg] lg:-rotate-[9deg] drop-shadow-[0_20px_18px_rgba(27,21,16,0.3)]" />
+        {cacao && <img src={cacao.url} alt={cacao.alt} class="h-full max-w-none -rotate-[10deg] lg:-rotate-[9deg] drop-shadow-[0_20px_18px_rgba(27,21,16,0.3)]" />}
       </div>
       <div class="absolute right-3 top-0 lg:right-[2%] lg:top-[4%] flex flex-col items-center justify-center size-24 lg:size-[124px] rounded-full bg-brand-green text-primary-foreground outline-2 outline-dashed outline-brand-yellow -outline-offset-[7px] lg:-outline-offset-[9px] rotate-[10deg] text-center">
         <span class="font-condensed text-xs lg:text-sm font-bold tracking-widest uppercase">Tostión</span>

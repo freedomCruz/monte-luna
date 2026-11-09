@@ -1,16 +1,20 @@
 ---
+import type { HomeImage } from '../../lib/catalog/home';
 // Purple cacao panel (M-Inicio "cacao split"); mobile shows the image after the CTA.
 const percentages = ['65 %', '75 %', '100 %'];
-const image = {
-  src: '/images/packaging-chocolate-75-100.webp',
-  alt: 'Barras de chocolate oscuro Monteluna 75 % y 100 % cacao',
-};
+
+interface Props {
+  /** Package shot of a cacao product, from the catalog API. */
+  image?: HomeImage;
+}
+
+const { image } = Astro.props;
 ---
 
 <section aria-labelledby="cacao-inicio" class="surface-dark bg-brand-purple text-primary-foreground overflow-hidden">
   <div class="max-w-[1320px] mx-auto px-5 pt-16 lg:pt-0 lg:px-12 flex flex-col lg:flex-row lg:flex-wrap lg:items-center gap-[18px] lg:gap-x-16 lg:gap-y-6">
     <div class="hidden lg:flex lg:flex-[1_1_440px] min-w-0 justify-center pt-12">
-      <img src={image.src} alt={image.alt} class="flota h-[560px] max-w-none -mb-6 drop-shadow-[0_24px_22px_rgba(0,0,0,0.4)]" />
+      {image && <img src={image.url} alt={image.alt} class="flota h-[560px] max-w-none -mb-6 drop-shadow-[0_24px_22px_rgba(0,0,0,0.4)]" />}
     </div>
     <div class="flex flex-col items-start gap-[18px] lg:gap-[22px] lg:flex-[1_1_440px] min-w-0 lg:py-[88px]">
       <span class="font-condensed text-[17px] lg:text-lg font-bold tracking-widest uppercase text-brand-yellow">
@@ -34,6 +38,6 @@ const image = {
         Ver el cacao
       </a>
     </div>
-    <img src={image.src} alt={image.alt} class="lg:hidden self-center h-[400px] max-w-none mt-2 -mb-9 drop-shadow-[0_20px_18px_rgba(0,0,0,0.4)]" />
+    {image && <img src={image.url} alt={image.alt} class="lg:hidden self-center h-[400px] max-w-none mt-2 -mb-9 drop-shadow-[0_20px_18px_rgba(0,0,0,0.4)]" />}
   </div>
 </section>

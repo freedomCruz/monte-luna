@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { selectHomeProducts, buildOriginBand } from './home';
+import { selectHomeProducts, buildOriginBand, selectPackshots } from './home';
 import { mockCatalogData, mockOriginCoffee, mockCoffeeProduct } from '../../mocks/catalog';
 import type { Product } from './catalog';
 
@@ -50,5 +50,23 @@ describe('buildOriginBand', () => {
       packageImage: null,
     });
     expect(buildOriginBand(bare, [withoutAttributes])?.chips).toEqual(['Productora: Productor de café demo']);
+  });
+});
+
+describe('selectPackshots', () => {
+  const products = mockCatalogData.products;
+
+  it('takes the first image of the first products of one product type, in catalog order', () => {
+    const coffee = products.filter((p) => p.product_type.slug === 'coffee' && p.images.length > 0);
+    const shots = selectPackshots(products, 'coffee', 1);
+
+    expect(shots).toEqual([{ url: coffee[0].images[0].url, alt: coffee[0].images[0].alt_text ?? coffee[0].title }]);
+  });
+
+  it('skips products without images and returns nothing for an unknown type', () => {
+    const withoutImages = products.map((p) => ({ ...p, images: [] }));
+
+    expect(selectPackshots(withoutImages, 'coffee', 2)).toEqual([]);
+    expect(selectPackshots(products, 'unknown', 2)).toEqual([]);
   });
 });
