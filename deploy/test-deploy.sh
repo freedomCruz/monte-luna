@@ -491,6 +491,28 @@ test_catalog_media_preflight() {
     fail "a repeated cursor must fail the preflight instead of looping"
   fi
 
+  # The contract requires next_cursor on every page: null ends, a non-empty string continues.
+  local malformed
+  for malformed in '' ',"next_cursor":7' ',"next_cursor":""' ',"next_cursor":"a b"'; do
+    MALFORMED="$malformed"
+    fetch_catalog_sample() {
+      printf '%s' '{"items":[{"slug":"a","images":[{"url":"https://media-staging.montelunaco.com/images/a.webp"}]}]'"$MALFORMED"'}'
+    }
+    if catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
+      fail "a page with next_cursor '${malformed:-<missing>}' must fail the preflight"
+    fi
+  done
+
+  # Always-new cursors must stop at the page cap instead of walking forever.
+  PAGE_COUNTER=0
+  fetch_catalog_sample() {
+    PAGE_COUNTER=$((PAGE_COUNTER + 1))
+    printf '%s' '{"items":[{"slug":"a","images":[{"url":"https://media-staging.montelunaco.com/images/a.webp"}]}],"next_cursor":"c'"$PAGE_COUNTER"'"}'
+  }
+  if CATALOG_PREFLIGHT_MAX_PAGES=3 catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
+    fail "a catalog longer than the page cap must fail the preflight"
+  fi
+
   pass "Preflight proves the live API resolves images under PUBLIC_MEDIA_BASE_URL"
 }
 

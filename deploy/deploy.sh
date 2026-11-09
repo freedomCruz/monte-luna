@@ -197,10 +197,11 @@ fetch_catalog_sample() {
 catalog_media_preflight() {
   local catalog_api_url="$1" media_base_url="$2" body result cursor="" seen=" "
   local pages=0 products=0 images=0 page_products page_images
+  local max_pages="${CATALOG_PREFLIGHT_MAX_PAGES:-1000}"
   while :; do
     pages=$((pages + 1))
-    if [ "$pages" -gt 1000 ]; then
-      echo "Error: the catalog has more than 1000 pages; refusing to continue." >&2
+    if [ "$pages" -gt "$max_pages" ]; then
+      echo "Error: the catalog has more than ${max_pages} pages; refusing to continue." >&2
       return 1
     fi
     if ! body="$(fetch_catalog_sample "$catalog_api_url" "$cursor")"; then
@@ -214,8 +215,10 @@ process.stdin.on("data", (c) => (raw += c)).on("end", () => {
   let page;
   try { page = JSON.parse(raw); } catch { console.error("Error: the catalog response is not JSON."); process.exit(1); }
   if (page === null || typeof page !== "object" || !Array.isArray(page.items)) { console.error("Error: the catalog response has no items array."); process.exit(1); }
+  // The contract requires next_cursor on every page: null ends the walk.
+  if (!Object.prototype.hasOwnProperty.call(page, "next_cursor")) { console.error("Error: the catalog response has no next_cursor."); process.exit(1); }
   const next = page.next_cursor;
-  if (next !== null && next !== undefined && (typeof next !== "string" || next === "" || /\s/.test(next))) { console.error("Error: the catalog response has an invalid next_cursor."); process.exit(1); }
+  if (next !== null && (typeof next !== "string" || next === "" || /\s/.test(next))) { console.error("Error: the catalog response has an invalid next_cursor."); process.exit(1); }
   const urls = page.items.flatMap((p) => (p && Array.isArray(p.images) ? p.images : []).map((i) => i && i.url));
   const bad = urls.filter((u) => typeof u !== "string" || !u.startsWith(base));
   if (bad.length > 0) { console.error(`Error: ${bad.length} of ${urls.length} product image URLs on this page are not under ${base} (first: ${bad[0]}). The API host MEDIA_BASE_URL does not match PUBLIC_MEDIA_BASE_URL.`); process.exit(1); }
