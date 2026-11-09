@@ -8,9 +8,12 @@ import HomeBenefits from '../components/home/HomeBenefits.astro';
 import HomeCacaoSplit from '../components/home/HomeCacaoSplit.astro';
 import HomeOriginBand from '../components/home/HomeOriginBand.astro';
 import { getCatalogOrigins, getCatalogProducts, getCatalogProductsByOrigin } from '../lib/catalog/catalog';
-import { buildOriginBand, selectHomeProducts } from '../lib/catalog/home';
+import { buildOriginBand, selectHomeProducts, selectPackshots } from '../lib/catalog/home';
 
-const products = selectHomeProducts((await getCatalogProducts()).items);
+const catalog = (await getCatalogProducts()).items;
+const products = selectHomeProducts(catalog);
+const coffeeShots = selectPackshots(catalog, 'coffee', 2);
+const cacaoShots = selectPackshots(catalog, 'cacao', 2);
 const firstOrigin = (await getCatalogOrigins()).items[0];
 const originBand = buildOriginBand(
   firstOrigin,
@@ -25,11 +28,11 @@ const originBand = buildOriginBand(
 >
   <HomePromoBar />
   <main>
-    <HomeHero />
+    <HomeHero coffee={coffeeShots} cacao={cacaoShots[0]} />
     <HomeMarquee />
     <HomeProducts products={products} />
     <HomeBenefits />
-    <HomeCacaoSplit />
+    <HomeCacaoSplit image={cacaoShots[cacaoShots.length - 1]} />
     {originBand && <HomeOriginBand band={originBand} />}
   </main>
 </Layout>

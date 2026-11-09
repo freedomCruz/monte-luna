@@ -11,6 +11,9 @@ export const ADMIN_ROUTES = {
   forgotPassword: '/admin/recuperar-contrasena/',
   resetPassword: '/admin/restablecer-contrasena/',
   invitation: '/admin/invitacion/',
+  products: '/admin/productos/',
+  inventory: '/admin/inventario/',
+  product: '/admin/producto/',
   orders: '/admin/pedidos/',
   account: '/admin/cuenta/',
   admins: '/admin/administradores/',
@@ -19,7 +22,7 @@ export const ADMIN_ROUTES = {
 /** Where an authenticated administrator lands: the Inicio dashboard (admin-orders-v1 S1). */
 export const ADMIN_LANDING = ADMIN_ROUTES.home;
 
-export type AdminNavKey = 'home' | 'orders' | 'admins';
+export type AdminNavKey = 'home' | 'products' | 'inventory' | 'orders' | 'admins';
 
 export interface AdminNavItem {
   key: AdminNavKey;
@@ -47,6 +50,13 @@ const GROUPS: { label: string; items: NavDefinition[] }[] = [
     items: [{ key: 'home', title: 'Inicio', href: ADMIN_ROUTES.home, ownerOnly: false }],
   },
   {
+    label: 'Catálogo',
+    items: [
+      { key: 'products', title: 'Productos', href: ADMIN_ROUTES.products, ownerOnly: false },
+      { key: 'inventory', title: 'Inventario', href: ADMIN_ROUTES.inventory, ownerOnly: false },
+    ],
+  },
+  {
     label: 'Ventas',
     items: [{ key: 'orders', title: 'Pedidos', href: ADMIN_ROUTES.orders, ownerOnly: false }],
   },
@@ -59,11 +69,14 @@ const GROUPS: { label: string; items: NavDefinition[] }[] = [
 export interface AdminNavCounts {
   /** Global paid and preparing orders awaiting dispatch (`pending_dispatch_count`). */
   pendingDispatchCount: number | null;
+  /** Active variants with low or no stock (`total` of the inventory list filtered by `stock=low_or_empty`). */
+  lowStockCount?: number | null;
 }
 
 /** Sidebar entries visible to a role; options a role cannot use are not rendered. */
 export function navigationFor(role: AdminRole, counts?: AdminNavCounts): AdminNavGroup[] {
   const pending = counts?.pendingDispatchCount ?? 0;
+  const lowStock = counts?.lowStockCount ?? 0;
   return GROUPS.map((group) => ({
     label: group.label,
     items: group.items
@@ -73,6 +86,7 @@ export function navigationFor(role: AdminRole, counts?: AdminNavCounts): AdminNa
         title,
         href,
         ...(key === 'orders' && pending > 0 ? { count: pending } : {}),
+        ...(key === 'inventory' && lowStock > 0 ? { count: lowStock } : {}),
       })),
   })).filter((group) => group.items.length > 0);
 }
@@ -94,4 +108,9 @@ export function initialsOf(displayName: string): string {
 /** Order detail. The site is static, so the order id travels in the query string. */
 export function orderDetailHref(id: string): string {
   return `/admin/pedido/?id=${encodeURIComponent(id)}`;
+}
+
+/** Product detail. The site is static, so the product id travels in the query string. */
+export function productDetailHref(id: string): string {
+  return `/admin/producto/?id=${encodeURIComponent(id)}`;
 }

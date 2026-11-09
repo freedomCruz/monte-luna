@@ -61,6 +61,39 @@ func TestDemoSeedIsIdempotent(t *testing.T) {
 	assertSameCatalog(t, db, before)
 }
 
+// A database seeded before the demo origin photos became WebP keeps legacy .jpg
+// keys. Re-seeding must rename those rows in place: no duplicate image per
+// origin and no key left pointing at an object that no longer exists.
+func TestDemoSeedMigratesLegacyJPEGOriginImages(t *testing.T) {
+	db, _ := database(t)
+	if err := postgres.Migrate(t.Context(), db); err != nil {
+		t.Fatal(err)
+	}
+	if err := postgres.Seed(t.Context(), db); err != nil {
+		t.Fatalf("first seed: %v", err)
+	}
+	execSQL(t, db, `UPDATE catalog.origin_images SET storage_key=replace(storage_key,'.webp','.jpg')
+		WHERE storage_key IN ('images/photo-coffee-cherries.webp','images/photo-cacao-pods-trunk.webp')`)
+	if got := scalar[int](t, db, `SELECT count(*) FROM catalog.origin_images WHERE storage_key LIKE '%.jpg'`); got != 2 {
+		t.Fatalf("legacy fixture rows = %d, want 2", got)
+	}
+	if err := postgres.Seed(t.Context(), db); err != nil {
+		t.Fatalf("re-seed over legacy keys: %v", err)
+	}
+	for _, tc := range []struct {
+		query string
+		want  int
+	}{
+		{`SELECT count(*) FROM catalog.origin_images`, 2},
+		{`SELECT count(*) FROM catalog.origin_images WHERE storage_key LIKE '%.jpg'`, 0},
+		{`SELECT count(*) FROM catalog.origin_images WHERE storage_key IN ('images/photo-coffee-cherries.webp','images/photo-cacao-pods-trunk.webp')`, 2},
+	} {
+		if got := scalar[int](t, db, tc.query); got != tc.want {
+			t.Errorf("%s = %d, want %d", tc.query, got, tc.want)
+		}
+	}
+}
+
 func assertDemo(t *testing.T, db *sql.DB) {
 	t.Helper()
 	for _, tc := range []struct {
@@ -85,6 +118,8 @@ func assertDemo(t *testing.T, db *sql.DB) {
 		{`SELECT count(*) FROM catalog.product_images WHERE storage_key LIKE 'images/%' AND alt_text<>''`, 4},
 		{`SELECT count(*) FROM catalog.product_images WHERE storage_key ~ '^(/|https?://)'`, 0},
 		{`SELECT count(*) FROM catalog.origin_images WHERE storage_key ~ '^(/|https?://)'`, 0},
+		{`SELECT count(*) FROM catalog.origin_images WHERE storage_key LIKE 'images/%.webp'`, 2},
+		{`SELECT count(*) FROM catalog.origin_images WHERE storage_key LIKE '%.jpg'`, 0},
 		{`SELECT count(*) FROM catalog.brands WHERE slug='monteluna' AND logo_storage_key IS NULL`, 1},
 		{`SELECT count(*) FROM catalog.product_categories`, 6},
 		{`SELECT count(*) FROM catalog.product_types WHERE slug='coffee' AND name='Café'`, 1},

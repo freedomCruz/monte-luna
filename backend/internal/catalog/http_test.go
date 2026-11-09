@@ -164,8 +164,8 @@ func TestEveryCatalogEndpointAndFilters(t *testing.T) {
 		}
 	}
 	originImages := origin["images"].([]any)
-	if len(originImages) == 0 || originImages[0].(map[string]any)["url"] != "https://media.example/store/images/photo-coffee-cherries.jpg" {
-		t.Errorf("origin image URL = %v, want https://media.example/store/images/photo-coffee-cherries.jpg", originImages)
+	if len(originImages) == 0 || originImages[0].(map[string]any)["url"] != "https://media.example/store/images/photo-coffee-cherries.webp" {
+		t.Errorf("origin image URL = %v, want https://media.example/store/images/photo-coffee-cherries.webp", originImages)
 	}
 	if origin["producer_name"] != "Productor de café demo" {
 		t.Errorf("origin producer_name=%v, want Productor de café demo", origin["producer_name"])

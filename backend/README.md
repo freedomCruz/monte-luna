@@ -19,12 +19,13 @@ endpoint or credential-bearing URL. It may include a path prefix, but no user in
 query, or fragment. For example, `http://127.0.0.1:4321/` resolves
 `images/packaging-finca-el-mirador.webp` to
 `http://127.0.0.1:4321/images/packaging-finca-el-mirador.webp`.
-The backend only resolves URLs: it does not download, upload, or serve images.
+The storefront resolves URLs without downloading or serving images. Authenticated
+product-image uploads can write to Cloudflare R2 when explicitly enabled below.
 In local development, demo media reuses the design asset images in `frontend/public/images/`
 served directly by Astro, with `MEDIA_BASE_URL` pointing to the frontend server
 (e.g., `http://127.0.0.1:<FRONTEND_PORT>/`). Storage keys in demo fixtures are relative
 paths matching those static assets (such as `images/packaging-finca-el-mirador.webp` and
-`images/photo-coffee-cherries.jpg`). Brand logo is set to `NULL` (`logo_storage_key` is
+`images/photo-coffee-cherries.webp`). Brand logo is set to `NULL` (`logo_storage_key` is
 nullable and no logo file exists in demo assets). The coordinator wires `MEDIA_BASE_URL`
 into the root environment example/Taskfile; this backend-only task deliberately leaves
 those files unchanged.
@@ -55,6 +56,46 @@ prices, summed active-lot stock and earliest positive active-lot production date
 in a page share one snapshot. Missing/unpublished batch slugs are omitted, not
 misrepresented as sold-out variants; active products with no active variants have
 an empty variants array. No HTTP read allocates or mutates stock.
+
+## Admin product images
+
+`POST /api/v1/admin/products/{id}/images` accepts one multipart `file`, required
+`alt_text`, optional `variant_id` (omit for a product-wide image), and optional
+integer `position` (default 0). Owner/staff sessions and cross-origin protection
+are required. Send the parent product's strong `ETag` in `If-Match`: missing is
+428, stale is 412, malformed/weak/wildcard/list values are 400. Uploads accept
+server-sniffed JPEG, PNG or WebP matching the declared part type, at most 5 MiB
+per file and 6 MiB for the entire request. Client filenames never determine keys;
+client keys and URLs are rejected. Success returns 201, a readable image `Location`
+and the incremented **parent product** ETag; the JSON `version` is the image version.
+`GET /api/v1/admin/products/{id}/images/{image_id}` reads that metadata. All admin
+responses, including errors, send `Cache-Control: no-store`.
+
+| Variable | Default / requirement |
+| --- | --- |
+| `MEDIA_STORAGE` | `disabled`; only `disabled` or `r2` |
+| `R2_ENDPOINT` | Required for `r2`; HTTPS account endpoint such as `https://<account>.r2.cloudflarestorage.com` |
+| `R2_BUCKET` | Required for `r2`; use a dedicated development bucket locally |
+| `R2_ACCESS_KEY_ID` | Required for `r2`; secret, never logged |
+| `R2_SECRET_ACCESS_KEY` | Required for `r2`; secret, never logged |
+| `MEDIA_BASE_URL` | Existing required public media base; must resolve the selected bucket's keys |
+
+Disabled mode preserves existing storefront reads and rejects uploads with 503
+`media_unavailable`; it has no local-disk upload fallback. Interactive local uploads
+require explicit development R2 credentials. Tests use fake ports and a local
+`httptest` S3 server, never a real R2 bucket. Startup errors name missing variables
+without printing their values. The S3 client uses region `auto`, the account
+`BaseEndpoint`, static credentials and conditional PUT to avoid overwriting objects.
+
+Before PUT, a durable `catalog.media_uploads` ticket records the server-generated
+relative key. Attaching the image, bumping the product version, and removing that
+ticket commit in one PostgreSQL transaction. Failure triggers bounded deletion
+independent of request cancellation; failed deletion leaves the ticket for cleanup.
+Compensation locks the ticket and does nothing if attachment already committed,
+protecting the object after an ambiguous database commit. Outstanding tickets can
+also represent interrupted/in-flight uploads; they are **not** a blindly deletable
+object list. This stage records failed cleanup durably; it does not run a background
+orphan sweeper. No provider credentials or image bytes are stored in the tickets.
 
 ## Read-only checkout quotes
 
@@ -407,7 +448,7 @@ are explicitly fictional demo content. The placeholder prices/names follow the d
 system. The explicit `excluded` tax category is demo Scenario A, not a production tax
 classification or a schema default. Media paths are relative storage keys matching the
 local design assets in `frontend/public/images/` (e.g. `images/packaging-finca-el-mirador.webp`,
-`images/photo-coffee-cherries.jpg`), resolved against `MEDIA_BASE_URL`: no external image
+`images/photo-coffee-cherries.webp`), resolved against `MEDIA_BASE_URL`: no external image
 files are added or uploaded, and the brand logo storage key is `NULL`.
 
 ## Verify persistence

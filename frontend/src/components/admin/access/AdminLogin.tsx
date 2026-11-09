@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { login } from '../../../lib/admin/client';
 import { ADMIN_ROUTES } from '../../../lib/admin/navigation';
+import { mediaUrl } from '../../../lib/shared/media';
 
 function formatCountdown(totalSeconds: number): string {
   const m = Math.floor(totalSeconds / 60);
@@ -86,7 +87,7 @@ export function AdminLogin() {
 
         <div className="relative my-8 hidden h-[420px] w-full lg:block">
           <img
-            src="/images/packaging-finca-la-maria.webp"
+            src={mediaUrl('images/packaging-finca-la-maria.webp')}
             alt=""
             className="absolute left-1/2 top-0 h-[420px] -translate-x-1/2 -rotate-6 drop-shadow-[0_22px_16px_rgba(27,21,16,0.28)]"
           />

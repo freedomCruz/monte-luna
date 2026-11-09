@@ -70,7 +70,7 @@ func TestMigrationsRoundTrip(t *testing.T) {
 		for _, table := range []string{
 			"brands", "origins", "origin_images", "product_types", "attribute_definitions",
 			"products", "product_variants", "product_images", "lots", "categories",
-			"product_categories", "variant_lot_stock", "inventory_movements", "goose_db_version",
+			"product_categories", "variant_lot_stock", "inventory_movements", "media_uploads", "goose_db_version",
 		} {
 			if !scalar[bool](t, db, `SELECT to_regclass($1) IS NOT NULL`, "catalog."+table) {
 				t.Errorf("missing catalog.%s", table)

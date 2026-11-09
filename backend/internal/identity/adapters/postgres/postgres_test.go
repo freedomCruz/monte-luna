@@ -82,6 +82,24 @@ func TestIdentityPersistence(t *testing.T) {
 		}
 		return users
 	}
+	t.Run("batch historical display names", func(t *testing.T) {
+		fresh(t)
+		user := create(t, "names@example.com", domain.Owner)
+		if _, err := db.ExecContext(t.Context(), `UPDATE identity.admin_users SET status='disabled',display_name='Historical Admin' WHERE id=$1`, user.ID); err != nil {
+			t.Fatal(err)
+		}
+		got, err := repo.AdminNames(t.Context(), []string{user.ID, user.ID, "01946894-3d9a-7c98-b807-6c84c1762c39"})
+		if err != nil || len(got) != 1 || got[user.ID] != "Historical Admin" {
+			t.Fatalf("names %+v %v", got, err)
+		}
+		if _, err := repo.AdminNames(t.Context(), make([]string, 101)); err == nil {
+			t.Fatal("unbounded batch")
+		}
+		empty, err := repo.AdminNames(t.Context(), nil)
+		if err != nil || len(empty) != 0 {
+			t.Fatalf("empty %+v %v", empty, err)
+		}
+	})
 	t.Run("migration round trip and schema", func(t *testing.T) {
 		fresh(t)
 		if err := postgres.Migrate(t.Context(), db); err != nil {

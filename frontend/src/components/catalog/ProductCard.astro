@@ -18,7 +18,7 @@ const {
 } = Astro.props;
 
 // Packaging images mapping based on product slug or product image
-const coverImage = product.images[0]?.url || '/images/photo-roasted-beans-pile.jpg';
+const coverImage = product.images[0]?.url;
 const coverAlt = product.images[0]?.alt_text || product.title;
 
 // Derive attributes
@@ -109,12 +109,14 @@ if (cacaoAttr) {
     tabindex="-1"
     aria-hidden="true"
   >
-    <img
-      src={coverImage}
-      alt={coverAlt}
-      loading="lazy"
-      class="h-[300px] sm:h-[340px] w-auto max-w-none -mt-[120px] sm:-mt-[130px] drop-shadow-[0_18px_14px_rgba(27,21,16,0.24)] object-contain transition-transform duration-300 hover:scale-[1.02]"
-    />
+    {coverImage && (
+      <img
+        src={coverImage}
+        alt={coverAlt}
+        loading="lazy"
+        class="h-[300px] sm:h-[340px] w-auto max-w-none -mt-[120px] sm:-mt-[130px] drop-shadow-[0_18px_14px_rgba(27,21,16,0.24)] object-contain transition-transform duration-300 hover:scale-[1.02]"
+      />
+    )}
   </a>
 
   <!-- Live Savings Pill Slot (Positioned top-right per canvas specs) -->

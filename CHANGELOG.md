@@ -7,6 +7,24 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-rc.12] - 2026-11-09
+
+### Added
+
+- Catalog management in `/admin` for tablets and computers (phones show a message asking for a larger screen), under a new "Catálogo" group in the navigation:
+  - Productos list with search by name or SKU, filters by type, category, status, and stock, sortable columns, paginated results, a quick view to change a product's publication status, and a per-row actions menu.
+  - Producto screen to create and edit a product: general data, attributes, variants (SKU, options, price, compare-at price, tax category, status), and images.
+  - Product image upload (JPEG, PNG, or WebP, up to 5 MiB) with alternative text, ordering, and storage in Cloudflare R2.
+  - Inventario screen with stock by variant and lot, lot receipts (new stock arrivals), the movement ledger with who made each change, and the "Poco stock" (fewer than 10 units) and "Tueste antiguo" (more than 30 days since roasting) flags.
+  - Every change to a product is checked against overlapping edits: if someone else changed it first, the save is rejected and asks to reload.
+- The release script refuses to build the storefront without a catalog API (mock data), unless explicitly allowed for the first bootstrap release of an environment, and refuses local, placeholder, non-HTTPS, or path-carrying base addresses. Before building it checks every page of the live catalog and stops if any image is not served from the configured media bucket.
+
+### Changed
+
+- Every product and origin image on the storefront now comes from the catalog data and the media bucket. The home hero and cacao panel use the real packaging images, an origin gallery shows only that origin's own photos, and an item without an image shows none instead of a stand-in.
+- The demo photos are now WebP. Databases seeded earlier have their two origin photos renamed in place when the demo data is loaded again.
+- Node.js 24.22.2, which includes the 24.22.1 security release, for development and the build image.
+
 ## [0.1.0-rc.11] - 2026-11-04
 
 ### Fixed
@@ -139,7 +157,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the backend toolchain to Go 1.27.3 to resolve reachable standard-library vulnerabilities.
 - Rebuilt Caddy 2.11.7 with Go 1.27.3 and `golang.org/x/net` 0.60.0 instead of deploying the vulnerable upstream binary.
 
-[Unreleased]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.11...HEAD
+[Unreleased]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.12...HEAD
+[0.1.0-rc.12]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.11...v0.1.0-rc.12
 [0.1.0-rc.11]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.10...v0.1.0-rc.11
 [0.1.0-rc.10]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.9...v0.1.0-rc.10
 [0.1.0-rc.9]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.8...v0.1.0-rc.9

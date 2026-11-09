@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { mockAvailabilitiesRoute } from './helpers/mock-route';
+import { mockOriginCoffee } from '../src/mocks/catalog';
 
 test.describe('Origin Detail (/origenes/[slug])', () => {
   test.beforeEach(async ({ page }) => {
@@ -60,7 +61,8 @@ test.describe('Origin Detail (/origenes/[slug])', () => {
     const gallerySection = page.locator('section[aria-label="Fotos del origen"]');
     await expect(gallerySection).toBeVisible();
     const galleryImages = gallerySection.locator('img');
-    await expect(galleryImages).toHaveCount(3);
+    // The gallery shows exactly the origin's own images; no fixed filler photos.
+    await expect(galleryImages).toHaveCount(mockOriginCoffee.images.length);
 
     // 11. Associated Products Section ("Llévate la montaña a casa.")
     const productsHeading = page.getByRole('heading', { level: 2, name: 'Llévate la montaña a casa.' });

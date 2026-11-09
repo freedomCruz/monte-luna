@@ -130,6 +130,40 @@ For subsequent releases:
 
 ---
 
+### 5.1 Catalog and media inputs of the build
+
+The Caddy image bakes the static storefront at build time by reading the **live API**. Two inputs decide what ends up in the pages, and `deploy/deploy.sh` refuses to build when they are wrong:
+
+| Variable | Meaning | Refused when |
+|---|---|---|
+| `CATALOG_API_URL` | The staging API the static pages are generated from | Empty (the build would silently use mock fixtures), not `https`, or a local or example host |
+| `PUBLIC_MEDIA_BASE_URL` | Public https origin of the media bucket | Empty, not `https`, local or example host, credentials, query or fragment |
+
+Before building, the script reads `/api/v1/products` and fails unless **every** image URL it returns starts with `PUBLIC_MEDIA_BASE_URL`. This catches an API host whose `MEDIA_BASE_URL` is still a placeholder, which would otherwise be baked into the pages.
+
+`ALLOW_FIXTURE_CATALOG=1` permits the empty `CATALOG_API_URL` for the bootstrap release only (D1 in `odd/tasks/deploy-v1.md`); it is never accepted silently.
+
+**Order for the first media-enabled release of an environment:**
+1. Create the environment's own R2 bucket and public origin, and upload `frontend/public/images/` under `images/`, which the demo seed references.
+2. On the VPS, add `MEDIA_STORAGE`, `R2_*` and `MEDIA_BASE_URL` to `/srv/monteluna/.env` (mode `0600`), typing the secrets there and never in chat or git.
+3. Recreate only the API container so it reads the new values. A normal release cannot do this first, because its preflight reads the live API before building the storefront. On the VPS, as root:
+   ```bash
+   cd /srv/monteluna
+   export MONTELUNA_RELEASE="$(cat current)"
+   docker compose -p monteluna -f "releases/$MONTELUNA_RELEASE/compose.yaml" up -d --no-deps --force-recreate api
+   ```
+   Then check that `/api/v1/products` returns image URLs under the bucket origin. A database seeded before the WebP demo photos also needs its two origin photo keys renamed from `.jpg` to `.webp` (loading the demo data again does it).
+4. Build and deploy the storefront with both variables:
+   ```bash
+   CATALOG_API_URL=https://staging.montelunaco.com \
+   PUBLIC_MEDIA_BASE_URL=https://<media origin> \
+   deploy/deploy.sh <ssh-alias> vX.Y.Z
+   ```
+
+Product and origin images are part of the static pages, so a new image uploaded in the admin shows on the storefront after the next release build.
+
+---
+
 ## 6. Automatic and Manual Rollback
 
 ### Automatic Rollback

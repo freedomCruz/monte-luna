@@ -26,7 +26,7 @@ Do not use for Go application logic inside `backend/` (load `backend-go-modules`
   - Root files: `AGENTS.md`, `CHANGELOG.md`, `Taskfile.yml`, `.node-version`, `compose.yaml` (local dev PostgreSQL), `.env.example`, `.gitattributes`, `.editorconfig`.
   - Deferred files: create area-specific files only when scaffolding that area.
 - Node.js runtime:
-  - Node 24 LTS (v24.21.0, Krypton; approved on 2026-10-13).
+  - Node 24 LTS (v24.22.2, Krypton; approved on 2026-10-13 as v24.21.0, upgraded on 2026-11-07).
   - Pinned in root `.node-version`, consumed by fnm (`fnm env --use-on-cd --version-file-strategy=recursive`).
   - Production build containers use the same version. Exact patch chosen under `dependency-audit` when `frontend/` is scaffolded.
 - npm package manager:

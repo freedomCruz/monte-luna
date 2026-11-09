@@ -117,6 +117,7 @@ Both tables are ✎ (reordered and edited from the admin panel).
 - `origin_images`: `origin_id` (FK, indexed), `storage_key text NOT NULL`, `alt_text text NOT NULL`, `position integer`.
 - `product_images`: `product_id` (FK, indexed), optional `variant_id` with FK `(variant_id, product_id)` → `product_variants (id, product_id)` and an index on `(variant_id, product_id)`, `storage_key text NOT NULL`, `alt_text text NOT NULL`, `position integer`.
 - `storage_key` identifies the object in the Cloudflare R2 bucket (S3-compatible object storage). URLs are resolved through a `MediaStorePort` in Go and served via CDN with zero egress fees. Relative keys only are stored in the database.
+- Uploads (admin catalog, stage 3a): JPEG, PNG or WebP verified by content sniffing, at most 5 MiB per file and 6 MiB per request; the server generates the key and never accepts one from the client; the object is written with a conditional, non-overwriting PUT. Upload is enabled only with `MEDIA_STORAGE=r2`; the default `disabled` answers `503 media_unavailable`.
 
 ### 3.4 `product_types` ✎
 
@@ -228,6 +229,8 @@ Inserted in the same transaction as every change to `variant_lot_stock`. An inde
 - `orders` stores those allocations in its own order-line snapshot. The catalog ledger references the order only through `inventory_movements.reference_id`.
 
 ### 3.13 Module infrastructure
+
+`media_uploads` (migration `00004`): `id uuid PRIMARY KEY`, `storage_key text NOT NULL UNIQUE`, `created_at timestamptz NOT NULL DEFAULT now()`. A durable compensation ticket inserted before the object PUT and deleted in the same transaction that attaches the image and bumps the product version. If attachment fails, the object is deleted while the ticket still exists, and a failed deletion keeps the ticket for later cleanup, so a committed image is never deleted. No automatic sweeper exists yet.
 
 `catalog.outbox` and `catalog.processed_events` follow [data-modeling.md](../architecture/data-modeling.md) section 11 and are created when the first catalog event or consumer exists.
 

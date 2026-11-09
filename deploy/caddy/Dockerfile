@@ -14,11 +14,15 @@ RUN CGO_ENABLED=0 go build -mod=readonly -trimpath -o /usr/bin/caddy .
 # Prepare data and config directories owned by nonroot (65532:65532)
 RUN mkdir -p /data /config && chown -R 65532:65532 /data /config
 
-# Stage 2: Build frontend static assets using Node 24.21.0 and npm 12.2.0
-FROM node:24.21.0-trixie-slim@sha256:173f125896c3b47ddf056734c7ea789d04595a6a08769a8f78e0df642781fb66 AS frontend-builder
+# Stage 2: Build frontend static assets using Node 24.22.2 and npm 12.2.0
+FROM node:24.22.2-trixie-slim@sha256:0820eaa85e07d0490446dd01d14707e17e6108a36988cf374899cd057eb3812d AS frontend-builder
 
 ARG CATALOG_API_URL=""
 ENV CATALOG_API_URL=${CATALOG_API_URL}
+
+# Public origin of the media bucket, for static images that are not catalog data.
+ARG PUBLIC_MEDIA_BASE_URL=""
+ENV PUBLIC_MEDIA_BASE_URL=${PUBLIC_MEDIA_BASE_URL}
 
 # Enforce npm 12.2.0 as specified by devEngines
 RUN npm install -g npm@12.2.0

@@ -151,7 +151,9 @@ type Repository interface {
 	OriginExists(context.Context, string) (bool, error)
 }
 type MediaStorePort interface {
-	Resolve(context.Context, string) (string, error)
+	MediaResolverPort
+	Put(context.Context, string, string, []byte) error
+	Delete(context.Context, string) error
 }
 
 func Availability(stock int64, date *string) (string, *string) {

@@ -150,6 +150,11 @@ const requiredVars = [
   "API_ADDR",
   "DATABASE_URL",
   "MEDIA_BASE_URL",
+  "MEDIA_STORAGE",
+  "R2_ENDPOINT",
+  "R2_BUCKET",
+  "R2_ACCESS_KEY_ID",
+  "R2_SECRET_ACCESS_KEY",
   "TRACKING_TOKEN_SECRET",
   "ORDER_MAINTENANCE_INTERVAL",
   "WOMPI_PUBLIC_KEY",
@@ -190,6 +195,13 @@ for (const req of requiredVars) {
   assert(!val.includes("prod_"), `deploy/env.example variable ${req} contains a production-looking secret: ${val}`);
   assert(!val.includes("ghp_"), `deploy/env.example variable ${req} contains a token: ${val}`);
 }
+
+// Staging uploads images to R2, and the template must never carry real credentials.
+assert(envVars.get("MEDIA_STORAGE") === "r2", "deploy/env.example must set MEDIA_STORAGE=r2");
+assert(envVars.get("R2_ENDPOINT").startsWith("https://") && envVars.get("R2_ENDPOINT").endsWith(".r2.cloudflarestorage.com"), "deploy/env.example R2_ENDPOINT must be an R2 account endpoint placeholder");
+assert(envVars.get("R2_ACCESS_KEY_ID").startsWith("replace_with"), "deploy/env.example R2_ACCESS_KEY_ID must be a placeholder");
+assert(envVars.get("R2_SECRET_ACCESS_KEY").startsWith("replace_with"), "deploy/env.example R2_SECRET_ACCESS_KEY must be a placeholder");
+assert(!/localhost|127\.0\.0\.1/.test(envVars.get("MEDIA_BASE_URL")), "deploy/env.example MEDIA_BASE_URL must not point to a local host");
 
 // Staging must not send real email until a sending domain is verified in Resend.
 assert(envVars.get("NOTIFICATIONS_EMAIL_SENDER") === "capture", "deploy/env.example must default NOTIFICATIONS_EMAIL_SENDER to capture");

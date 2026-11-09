@@ -343,7 +343,7 @@ monte-luna/
 
 ### Prerequisites
 - **Go** (the backend's `go.mod` pins toolchain `go1.27.3`)
-- **Node.js 24.21.0** (pinned in `.node-version`; for example with `fnm`)
+- **Node.js 24.22.2** (pinned in `.node-version`; for example with `fnm`)
 - **Docker** with Docker Compose
 - **[Task](https://taskfile.dev/)**
 - `openssl` to generate local secrets

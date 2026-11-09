@@ -18,10 +18,6 @@ env:
   # LOCAL_STOREFRONT_HOST in .env (for example monteluna.test) for Wompi sandbox
   # tests, because Wompi rejects redirect URLs to localhost or 127.0.0.1.
   STOREFRONT_HOST: '{{.LOCAL_STOREFRONT_HOST | default "127.0.0.1"}}'
-  # Local development only: demo media keys (images/...) resolve to files that the
-  # Astro server serves from frontend/public. Production uses Cloudflare R2.
-  # Same host as the storefront so images stay same-origin for the browser.
-  MEDIA_BASE_URL: 'http://{{.LOCAL_STOREFRONT_HOST | default "127.0.0.1"}}:{{.FRONTEND_PORT}}/'
   # Local development only: Wompi redirects back to this worktree's storefront.
   STOREFRONT_BASE_URL: 'http://{{.LOCAL_STOREFRONT_HOST | default "127.0.0.1"}}:{{.FRONTEND_PORT}}'
 
@@ -45,7 +41,9 @@ tasks:
       - sh: test -n "$API_ADDR"
         msg: "API_ADDR is derived by Taskfile; unset any shell override"
     cmds:
-      - go run ./cmd/api
+      # Respect MEDIA_BASE_URL from .env; otherwise serve local demo images.
+      # With an R2 base, demo images must also exist in that bucket.
+      - MEDIA_BASE_URL="${MEDIA_BASE_URL:-http://$STOREFRONT_HOST:$FRONTEND_PORT/}" go run ./cmd/api
 
   frontend:dev:
     desc: Run Astro on this worktree's FRONTEND_PORT (localhost only)
@@ -57,7 +55,8 @@ tasks:
       - sh: test -n "$FRONTEND_PORT"
         msg: "FRONTEND_PORT is derived by Taskfile; unset any shell override"
     cmds:
-      - npm run dev -- --host 127.0.0.1 --port "$FRONTEND_PORT" --allowed-hosts "$STOREFRONT_HOST"
+      # Static design images come from the configured media base (R2) when set in .env.
+      - PUBLIC_MEDIA_BASE_URL="${MEDIA_BASE_URL:-}" npm run dev -- --host 127.0.0.1 --port "$FRONTEND_PORT" --allowed-hosts "$STOREFRONT_HOST"
 
   frontend:build:api:
     desc: Build the static storefront from this worktree's running API (start task backend:dev first)
@@ -65,7 +64,7 @@ tasks:
     env:
       CATALOG_API_URL: "http://{{.API_ADDR}}"
     cmds:
-      - npm run build
+      - PUBLIC_MEDIA_BASE_URL="${MEDIA_BASE_URL:-}" npm run build
 
   backend:migrate:
     desc: Apply embedded database migrations (catalog, shipping, orders, payments, then identity) to this worktree's database

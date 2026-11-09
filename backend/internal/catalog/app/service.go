@@ -18,10 +18,10 @@ import (
 
 type Service struct {
 	repository domain.Repository
-	media      domain.MediaStorePort
+	media      domain.MediaResolverPort
 }
 
-func NewService(repository domain.Repository, media domain.MediaStorePort) *Service {
+func NewService(repository domain.Repository, media domain.MediaResolverPort) *Service {
 	return &Service{repository: repository, media: media}
 }
 func validation(field string) *domain.Error {

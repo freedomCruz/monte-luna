@@ -60,12 +60,10 @@ const originRegionLabel = origin.department ? `${origin.department}, Colombia` :
 const eyebrowText = `${originCategoryLabel} · ${originRegionLabel}`;
 
 // Hero photo and floating product asset
-const defaultHeroPhoto = isCoffee ? '/images/photo-coffee-cherries.jpg' : '/images/photo-cacao-pods-trunk.jpg';
-const heroPhoto = origin.images[0]?.url || defaultHeroPhoto;
+const heroPhoto = origin.images[0]?.url;
 const heroPhotoAlt = origin.images[0]?.alt_text || `Paisaje y cultivo de ${origin.name}`;
 
-const defaultProductPackaging = isCoffee ? '/images/packaging-finca-el-mirador.webp' : '/images/packaging-chocolate-65.webp';
-const floatingProductImg = products[0]?.images[0]?.url || defaultProductPackaging;
+const floatingProductImg = products[0]?.images[0]?.url;
 
 // Process steps ("Del árbol a tu bolsa" / "Del árbol a tu barra")
 const pasosCafe = [
@@ -88,21 +86,8 @@ const procesoSub = isCoffee
   : 'Así llega un cacao de origen hasta una barra de chocolate.';
 const procesoPasos = isCoffee ? pasosCafe : pasosCacao;
 
-// Gallery photos
-const defaultGalleryCoffee = [
-  { src: '/images/photo-coffee-cherries.jpg', alt: 'Cerezas de café rojas y verdes en la rama' },
-  { src: '/images/photo-roasted-beans-concrete.jpg', alt: 'Granos de café tostados sobre una superficie clara' },
-  { src: '/images/photo-roasted-beans-pile.jpg', alt: 'Montón de granos de café tostado enteros' }
-];
-
-const defaultGalleryCacao = [
-  { src: '/images/photo-cacao-pods-colourful.jpg', alt: 'Mazorcas de cacao rojas y amarillas' },
-  { src: '/images/photo-cacao-pods-trunk.jpg', alt: 'Mazorcas de cacao verdes y amarillas en el tronco del árbol' }
-];
-
-const galeriaFotos = origin.images && origin.images.length >= 3
-  ? origin.images.map((img) => ({ src: img.url, alt: img.alt_text }))
-  : (isCoffee ? defaultGalleryCoffee : defaultGalleryCacao);
+// Gallery photos come from the origin's images stored in the database.
+const galeriaFotos = (origin.images ?? []).map((img) => ({ src: img.url, alt: img.alt_text }));
 
 // Lead text for story section
 const storyLead = `${origin.name} está en ${origin.department || 'Colombia'}${origin.altitude_min_masl ? `, entre ${origin.altitude_min_masl} y ${origin.altitude_max_masl || origin.altitude_min_masl} metros sobre el nivel del mar` : ''}. ${isCoffee ? 'La' : 'Lo'} cultiva ${origin.producer_name}.`;
@@ -121,6 +106,12 @@ const cintaItems = [...cintaBatch, ...cintaBatch, ...cintaBatch];
 
 // Other origins for the footer section
 const otherOrigins = allOrigins.filter((o) => o.slug !== origin.slug);
+// Package shot of each other origin's first product, from the catalog API.
+const otherPackshots = new Map(
+  await Promise.all(
+    otherOrigins.map(async (o) => [o.slug, (await getCatalogProductsByOrigin(o.slug))[0]?.images[0]?.url] as const)
+  )
+);
 ---
 
 <Layout title={`${origin.name} · Origen Monteluna`} description={origin.story || `Origen ${origin.name}, cultivado por ${origin.producer_name}.`}>
@@ -174,20 +165,24 @@ const otherOrigins = allOrigins.filter((o) => o.slug !== origin.slug);
         <div class="lg:col-span-5 relative flex justify-center items-end self-end pt-4 pb-12 sm:pb-16 pl-6 sm:pl-12 lg:pl-16">
           <!-- Background photo of farm/crop -->
           <div class="relative w-full max-w-[480px] aspect-[5/5.4] rounded-[20px] overflow-hidden shadow-2xl">
-            <img
-              src={heroPhoto}
-              alt={heroPhotoAlt}
-              class="w-full h-full object-cover"
-            />
+            {heroPhoto && (
+              <img
+                src={heroPhoto}
+                alt={heroPhotoAlt}
+                class="w-full h-full object-cover"
+              />
+            )}
           </div>
 
           <!-- Floating product packaging overlay on bottom-left with levitation animation -->
           <div class="flota absolute -left-2 sm:-left-4 lg:-left-2 bottom-6 sm:bottom-10 h-[260px] sm:h-[340px] md:h-[400px] pointer-events-none z-10">
-            <img
-              src={floatingProductImg}
-              alt=""
-              class="h-full object-contain -rotate-7 drop-shadow-[0_24px_20px_rgba(0,0,0,0.5)]"
-            />
+            {floatingProductImg && (
+              <img
+                src={floatingProductImg}
+                alt=""
+                class="h-full object-contain -rotate-7 drop-shadow-[0_24px_20px_rgba(0,0,0,0.5)]"
+              />
+            )}
           </div>
 
           <!-- Altitude badge top-right with dashed outline and rotation -->
@@ -453,7 +448,7 @@ const otherOrigins = allOrigins.filter((o) => o.slug !== origin.slug);
           {otherOrigins.map((other) => {
             const isOtherCoffee = !other.slug.includes('cacao');
             const otherBgClass = isOtherCoffee ? 'bg-brand-green' : 'bg-brand-purple';
-            const otherImg = isOtherCoffee ? '/images/packaging-finca-la-maria.webp' : '/images/packaging-chocolate-65.webp';
+            const otherImg = otherPackshots.get(other.slug);
             const otherEtiqueta = isOtherCoffee
               ? `Origen de café · ${other.department ? `${other.department}, ` : ''}Colombia`
               : `Origen de cacao · ${other.department ? `${other.department}, ` : ''}Colombia`;
@@ -478,11 +473,13 @@ const otherOrigins = allOrigins.filter((o) => o.slug !== origin.slug);
                 >
                   Conocer el origen
                 </a>
-                <img
-                  src={otherImg}
-                  alt=""
-                  class="absolute -right-2 -bottom-2 h-56 md:h-64 rotate-6 drop-shadow-[0_20px_18px_rgba(0,0,0,0.45)] pointer-events-none"
-                />
+                {otherImg && (
+                  <img
+                    src={otherImg}
+                    alt=""
+                    class="absolute -right-2 -bottom-2 h-56 md:h-64 rotate-6 drop-shadow-[0_20px_18px_rgba(0,0,0,0.45)] pointer-events-none"
+                  />
+                )}
               </div>
             );
           })}

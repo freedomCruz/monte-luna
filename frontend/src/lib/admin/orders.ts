@@ -1,6 +1,6 @@
 import type { components as OrdersComponents, operations as OrdersOperations } from '../../generated/orders';
 import type { components as ShippingComponents } from '../../generated/shipping';
-import { request, type AdminResult } from './client';
+import { queryString, request, type AdminResult } from './client';
 
 // Typed client for the admin orders and dispatch API (contracts/openapi/orders.yaml
 // and shipping.yaml). Every write sends the record version as a strong If-Match
@@ -25,17 +25,6 @@ export type AdminOrderMetricsQuery = NonNullable<OrdersOperations['getAdminOrder
 
 const ordersPath = '/api/v1/admin/orders';
 const orderPath = (id: string) => `${ordersPath}/${encodeURIComponent(id)}`;
-
-function queryString(params: Record<string, unknown>): string {
-  const query = new URLSearchParams();
-  for (const [key, value] of Object.entries(params)) {
-    if (value === undefined || value === null) continue;
-    if (Array.isArray(value)) value.forEach((item) => query.append(key, String(item)));
-    else query.set(key, String(value));
-  }
-  const suffix = query.toString();
-  return suffix ? `?${suffix}` : '';
-}
 
 /** Searches and paginates orders; `pending_dispatch_count` is global, unaffected by filters. */
 export function listAdminOrders(params: ListAdminOrdersQuery = {}) {

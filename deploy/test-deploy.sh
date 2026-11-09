@@ -388,6 +388,170 @@ test_ci_gate_determinism() {
   pass "Local CI gates run fresh package-serial Go tests"
 }
 
+test_build_inputs_guard() {
+  local api="https://staging.montelunaco.com" media="https://media-staging.montelunaco.com"
+
+  # Mock-fixture builds must be an explicit choice, never an accident.
+  if validate_build_inputs "" "" 0 >/dev/null 2>&1; then
+    fail "an empty CATALOG_API_URL must be refused unless fixtures are explicitly allowed"
+  fi
+  validate_build_inputs "" "" 1 >/dev/null 2>&1 || fail "explicit fixture bootstrap must be accepted"
+
+  local bad
+  for bad in "http://staging.montelunaco.com" "https://localhost" "https://127.0.0.1:8080" "https://api.example.com" \
+    "https://10.0.0.5" "https://192.168.1.10:8443" "https://127.1" "https://localhost." "https://LOCALHOST" "https://[::1]:443" "https://intranet" "https://staging.montelunaco.com." "https://api.local"; do
+    if validate_build_inputs "$bad" "$media" 0 >/dev/null 2>&1; then
+      fail "CATALOG_API_URL '${bad}' must be refused"
+    fi
+  done
+  for bad in "" "http://media-staging.montelunaco.com" "https://media.example.com" "https://localhost:9000" "https://user:pw@media-staging.montelunaco.com" "https://media-staging.montelunaco.com?x=1"; do
+    if validate_build_inputs "$api" "$bad" 0 >/dev/null 2>&1; then
+      fail "PUBLIC_MEDIA_BASE_URL '${bad}' must be refused for an API-backed build"
+    fi
+  done
+  # A base is an origin: anything but an empty path or a single slash is refused.
+  if validate_build_inputs "https://staging.montelunaco.com/api" "$media" 0 >/dev/null 2>&1; then
+    fail "CATALOG_API_URL with a path must be refused"
+  fi
+  for bad in "https://10.1.2.3" "https://192.168.0.9" "https://[::1]" "https://media-staging.montelunaco.com." "https://cdn" \
+    "https://media-staging.montelunaco.com/images" "https://media-staging.montelunaco.com//"; do
+    if validate_build_inputs "$api" "$bad" 0 >/dev/null 2>&1; then
+      fail "PUBLIC_MEDIA_BASE_URL '${bad}' must be refused for an API-backed build"
+    fi
+  done
+  validate_build_inputs "$api" "$media" 0 >/dev/null 2>&1 || fail "valid staging inputs must be accepted"
+  validate_build_inputs "https://staging.montelunaco.com:8443" "https://pub-1a2b3c.r2.dev" 0 >/dev/null 2>&1 || fail "a public host with a port and an r2.dev origin must be accepted"
+  validate_build_inputs "$api/" "$media/" 0 >/dev/null 2>&1 || fail "trailing slashes must be accepted"
+
+  pass "Build inputs guard refuses mock mode and placeholder or local base URLs"
+}
+
+test_catalog_media_preflight() {
+  local api="https://staging.montelunaco.com" media="https://media-staging.montelunaco.com"
+
+  fetch_catalog_sample() {
+    printf '%s' '{"items":[{"slug":"a","images":[{"url":"https://media-staging.montelunaco.com/images/a.webp","alt_text":"A"}]},{"slug":"b","images":[{"url":"https://media-staging.montelunaco.com/catalog/products/x/y.webp"}]}],"next_cursor":null}'
+  }
+  catalog_media_preflight "$api" "$media" >/dev/null 2>&1 || fail "images under the expected media base must pass"
+
+  fetch_catalog_sample() {
+    printf '%s' '{"items":[{"slug":"a","images":[{"url":"https://media.example.com/images/a.webp"}]}],"next_cursor":null}'
+  }
+  if catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
+    fail "an API that resolves images to another media base must fail the preflight"
+  fi
+
+  fetch_catalog_sample() {
+    printf '%s' '{"items":[{"slug":"a","images":[{"url":"https://media-staging.montelunaco.com/images/a.webp"},{"url":"/images/b.webp"}]}],"next_cursor":null}'
+  }
+  if catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
+    fail "one local or foreign image URL among valid ones must fail the preflight"
+  fi
+
+  fetch_catalog_sample() { printf '%s' '{"items":[],"next_cursor":null}'; }
+  if catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
+    fail "an empty catalog must fail the preflight"
+  fi
+
+  fetch_catalog_sample() { printf '%s' '{"items":[{"slug":"a","images":[]}],"next_cursor":null}'; }
+  if catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
+    fail "a catalog with no images must fail because the media base cannot be confirmed"
+  fi
+
+  fetch_catalog_sample() { return 22; }
+  if catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
+    fail "an unreachable API must fail the preflight"
+  fi
+
+  # The storefront pages through next_cursor, so the preflight must check every page.
+  fetch_catalog_sample() {
+    case "${2:-}" in
+      "") printf '%s' '{"items":[{"slug":"a","images":[{"url":"https://media-staging.montelunaco.com/images/a.webp"}]}],"next_cursor":"c1"}' ;;
+      c1) printf '%s' '{"items":[{"slug":"b","images":[{"url":"https://media.example.com/images/b.webp"}]}],"next_cursor":null}' ;;
+      *) return 22 ;;
+    esac
+  }
+  if catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
+    fail "a foreign image URL on a later page must fail the preflight"
+  fi
+
+  fetch_catalog_sample() {
+    case "${2:-}" in
+      "") printf '%s' '{"items":[{"slug":"a","images":[{"url":"https://media-staging.montelunaco.com/images/a.webp"}]}],"next_cursor":"c1"}' ;;
+      c1) printf '%s' '{"items":[{"slug":"b","images":[{"url":"https://media-staging.montelunaco.com/images/b.webp"}]}],"next_cursor":null}' ;;
+      *) return 22 ;;
+    esac
+  }
+  catalog_media_preflight "$api" "$media" >/dev/null 2>&1 || fail "two valid pages must pass the preflight"
+
+  fetch_catalog_sample() {
+    printf '%s' '{"items":[{"slug":"a","images":[{"url":"https://media-staging.montelunaco.com/images/a.webp"}]}],"next_cursor":"loop"}'
+  }
+  if catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
+    fail "a repeated cursor must fail the preflight instead of looping"
+  fi
+
+  # The contract requires next_cursor on every page: null ends, a non-empty string continues.
+  local malformed
+  for malformed in '' ',"next_cursor":7' ',"next_cursor":""' ',"next_cursor":"a b"'; do
+    MALFORMED="$malformed"
+    fetch_catalog_sample() {
+      printf '%s' '{"items":[{"slug":"a","images":[{"url":"https://media-staging.montelunaco.com/images/a.webp"}]}]'"$MALFORMED"'}'
+    }
+    if catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
+      fail "a page with next_cursor '${malformed:-<missing>}' must fail the preflight"
+    fi
+  done
+
+  # Always-new cursors must stop at the page cap instead of walking forever. The
+  # stub runs in a command substitution (a subshell), so the next cursor derives
+  # from its argument and every read is counted in a file, never in a variable.
+  PAGE_LOG="$(mktemp)"
+  fetch_catalog_sample() {
+    echo read >> "$PAGE_LOG"
+    local n="${2#c}"
+    printf '%s' '{"items":[{"slug":"a","images":[{"url":"https://media-staging.montelunaco.com/images/a.webp"}]}],"next_cursor":"c'"$(( ${n:-0} + 1 ))"'"}'
+  }
+  local reads
+  if CATALOG_PREFLIGHT_MAX_PAGES=3 catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
+    fail "a catalog longer than the page cap must fail the preflight"
+  fi
+  reads="$(wc -l < "$PAGE_LOG")"
+  [ "$reads" -eq 3 ] || fail "the page cap of 3 must stop after exactly 3 reads, got ${reads}"
+
+  # The override may only lower the cap: anything else fails before any page is read.
+  local override
+  for override in abc 0 -2 1001 5000 "3 " 2x 007; do
+    : > "$PAGE_LOG"
+    if CATALOG_PREFLIGHT_MAX_PAGES="$override" catalog_media_preflight "$api" "$media" >/dev/null 2>&1; then
+      fail "CATALOG_PREFLIGHT_MAX_PAGES='${override}' must be refused"
+    fi
+    reads="$(wc -l < "$PAGE_LOG")"
+    [ "$reads" -eq 0 ] || fail "CATALOG_PREFLIGHT_MAX_PAGES='${override}' must be refused before reading any page, read ${reads}"
+  done
+  rm -f "$PAGE_LOG"
+
+  pass "Preflight proves the live API resolves images under PUBLIC_MEDIA_BASE_URL"
+}
+
+test_build_passes_api_and_media_args() {
+  local repo_root
+  repo_root="$(cd "$SCRIPT_DIR/.." && pwd)"
+
+  grep -Eq '^ARG PUBLIC_MEDIA_BASE_URL' "$repo_root/deploy/caddy/Dockerfile" || fail "Dockerfile must declare ARG PUBLIC_MEDIA_BASE_URL"
+  grep -Eq '^ENV PUBLIC_MEDIA_BASE_URL=' "$repo_root/deploy/caddy/Dockerfile" || fail "Dockerfile must export PUBLIC_MEDIA_BASE_URL to the frontend build"
+  grep -Fq -- '--build-arg PUBLIC_MEDIA_BASE_URL=' "$DEPLOY_SCRIPT" || fail "deploy.sh must pass --build-arg PUBLIC_MEDIA_BASE_URL"
+  grep -Fq -- '--build-arg CATALOG_API_URL=' "$DEPLOY_SCRIPT" || fail "deploy.sh must keep passing --build-arg CATALOG_API_URL"
+  grep -Fq 'validate_build_inputs' "$DEPLOY_SCRIPT" || fail "deploy.sh must validate build inputs"
+  # The guard must run before any image is built.
+  local guard_line build_line
+  guard_line="$(grep -n 'validate_build_inputs "' "$DEPLOY_SCRIPT" | head -n 1 | cut -d: -f1)"
+  build_line="$(grep -n 'docker build' "$DEPLOY_SCRIPT" | head -n 1 | cut -d: -f1)"
+  [ -n "$guard_line" ] && [ -n "$build_line" ] && [ "$guard_line" -lt "$build_line" ] || fail "build inputs must be validated before docker build"
+
+  pass "Docker build receives CATALOG_API_URL and PUBLIC_MEDIA_BASE_URL after validation"
+}
+
 # ==============================================================================
 # Runner
 # ==============================================================================
@@ -404,6 +568,9 @@ main() {
   run_test test_review_regressions
   run_test test_release_env_and_cleanup_isolation
   run_test test_ci_gate_determinism
+  run_test test_build_inputs_guard
+  run_test test_catalog_media_preflight
+  run_test test_build_passes_api_and_media_args
 
   echo "=== All $TESTS_PASSED/$TESTS_RUN tests passed ==="
 }

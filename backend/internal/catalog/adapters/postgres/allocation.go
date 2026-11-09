@@ -88,6 +88,11 @@ func (r *Repository) allocate(ctx context.Context, reference string, items []dom
 		if item.Quantity <= 0 || (i > 0 && item.VariantID == ordered[i-1].VariantID) {
 			return nil, errors.New("invalid allocation items")
 		}
+		// Admin writes lock product then variant. Take the compatible parent
+		// share lock first too, so allocation cannot invert that lock order.
+		if err := q.LockAllocationProduct(ctx, item.VariantID); err != nil {
+			return nil, fmt.Errorf("lock allocation product: %w", err)
+		}
 		variant, err := q.LockStockVariant(ctx, item.VariantID)
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, &domain.VariantUnavailableError{VariantID: item.VariantID}

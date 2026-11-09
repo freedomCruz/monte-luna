@@ -12,6 +12,21 @@ export interface HomeImage {
   alt: string;
 }
 
+/**
+ * First image of the first products of one product type, in catalog order.
+ * Products without images are skipped; nothing is invented when none qualify.
+ */
+export function selectPackshots(products: Product[], productTypeSlug: string, limit: number): HomeImage[] {
+  const shots: HomeImage[] = [];
+  for (const product of products) {
+    const image = product.images[0];
+    if (product.product_type.slug !== productTypeSlug || !image) continue;
+    shots.push({ url: image.url, alt: image.alt_text ?? product.title });
+    if (shots.length === limit) break;
+  }
+  return shots;
+}
+
 export interface OriginBand {
   slug: string;
   name: string;

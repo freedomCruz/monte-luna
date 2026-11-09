@@ -1,12 +1,13 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AdminUser } from '../../../lib/admin/client';
-import { AdminShell, sessionDestination, useAdminSession, useMobileDetailHeader, useReportPendingDispatchCount } from './AdminShell';
+import { AdminShell, sessionDestination, useAdminSession, useMobileDetailHeader, useRefreshLowStockCount, useReportPendingDispatchCount } from './AdminShell';
 
-const { getCurrentAdmin, logout, listAdminOrders } = vi.hoisted(() => ({
+const { getCurrentAdmin, logout, listAdminOrders, listAdminInventoryVariants } = vi.hoisted(() => ({
   getCurrentAdmin: vi.fn(),
   logout: vi.fn(),
   listAdminOrders: vi.fn(),
+  listAdminInventoryVariants: vi.fn(),
 }));
 
 vi.mock('../../../lib/admin/client', async (importOriginal) => {
@@ -17,6 +18,11 @@ vi.mock('../../../lib/admin/client', async (importOriginal) => {
 vi.mock('../../../lib/admin/orders', async (importOriginal) => {
   const original = await importOriginal<typeof import('../../../lib/admin/orders')>();
   return { ...original, listAdminOrders };
+});
+
+vi.mock('../../../lib/admin/catalog', async (importOriginal) => {
+  const original = await importOriginal<typeof import('../../../lib/admin/catalog')>();
+  return { ...original, listAdminInventoryVariants };
 });
 
 const owner: AdminUser = {
@@ -46,8 +52,18 @@ function PendingReporter({ count }: { count: number }) {
   return <button type="button" onClick={() => report(count)}>Reportar</button>;
 }
 
+function lowStockTotal(total: number) {
+  return { ok: true, etag: null, data: { items: [], next_cursor: null, total, generated_at: '2026-10-20T14:30:00Z' } };
+}
+
+function LowStockRefresher() {
+  const refresh = useRefreshLowStockCount();
+  return <button type="button" onClick={refresh}>Refrescar</button>;
+}
+
 beforeEach(() => {
   listAdminOrders.mockResolvedValue({ ok: false, status: 0, code: 'network_error' });
+  listAdminInventoryVariants.mockResolvedValue({ ok: false, status: 0, code: 'network_error' });
 });
 
 afterEach(() => {
@@ -107,6 +123,42 @@ describe('AdminShell session guard (T2/T8: S3, S4)', () => {
     Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth });
   });
 
+  describe('catalog tablet-and-up gate (F1: S7)', () => {
+    const originalWidth = window.innerWidth;
+    afterEach(() => Object.defineProperty(window, 'innerWidth', { configurable: true, value: originalWidth }));
+
+    it('shows the use-a-computer-or-tablet message instead of any catalog layout at 390 px', async () => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: 390 });
+      getCurrentAdmin.mockResolvedValue({ ok: true, data: owner, etag: '"1"' });
+
+      render(<AdminShell active="products" desktopOnly="catalog"><SessionProbe /></AdminShell>);
+      expect(await screen.findByText('Revísalo desde un computador o una tablet')).toBeTruthy();
+      expect(screen.getByText(/El catálogo se administra en una pantalla más grande/)).toBeTruthy();
+      expect(screen.queryByText(/Contenido privado/)).toBeNull();
+    });
+
+    it.each([768, 1024, 1440])('renders the catalog page normally at %i px', async (width) => {
+      Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
+      getCurrentAdmin.mockResolvedValue({ ok: true, data: owner, etag: '"1"' });
+
+      render(<AdminShell active="products" desktopOnly="catalog"><SessionProbe /></AdminShell>);
+      expect(await screen.findByText('Contenido privado de Laura Ríos')).toBeTruthy();
+      expect(screen.queryByText('Revísalo desde un computador o una tablet')).toBeNull();
+    });
+
+    it('keeps the catalog out of the phone bottom bar and lists it in the sidebar', async () => {
+      getCurrentAdmin.mockResolvedValue({ ok: true, data: owner, etag: '"1"' });
+      render(<AdminShell active="products"><SessionProbe /></AdminShell>);
+      await screen.findByText('Contenido privado de Laura Ríos');
+      const sidebar = screen.getByRole('navigation', { name: 'Secciones del panel' });
+      expect(within(sidebar).getByRole('link', { name: 'Productos' }).getAttribute('aria-current')).toBe('page');
+      expect(within(sidebar).getByRole('link', { name: 'Inventario' })).toBeTruthy();
+      const phoneBar = screen.getByRole('navigation', { name: 'Secciones' });
+      expect(within(phoneBar).queryByRole('link', { name: 'Productos' })).toBeNull();
+      expect(within(phoneBar).queryByRole('link', { name: 'Inventario' })).toBeNull();
+    });
+  });
+
   it('offers retry without leaking content when the session check cannot reach the API', async () => {
     getCurrentAdmin
       .mockResolvedValueOnce({ ok: false, status: 0, code: 'network_error' })
@@ -152,6 +204,35 @@ describe('AdminShell session guard (T2/T8: S3, S4)', () => {
     expect(screen.queryByText(/pendientes/)).toBeNull();
     expect(screen.queryByText(/Pedidos · /)).toBeNull();
     expect(screen.getAllByRole('link', { name: 'Pedidos' }).length).toBeGreaterThan(0);
+  });
+
+  it('shows the active low or empty stock total on Inventario from one cheap list read (F4: L11)', async () => {
+    getCurrentAdmin.mockResolvedValue({ ok: true, data: owner, etag: '"1"' });
+    listAdminInventoryVariants.mockResolvedValue(lowStockTotal(4));
+    render(<AdminShell><SessionProbe /></AdminShell>);
+
+    expect(await screen.findByRole('link', { name: 'Inventario, 4 pendientes' })).toBeTruthy();
+    expect(listAdminInventoryVariants).toHaveBeenCalledTimes(1);
+    expect(listAdminInventoryVariants).toHaveBeenCalledWith({ stock: 'low_or_empty', status: 'active', limit: 25 });
+  });
+
+  it('renders no Inventario count at zero or when the read fails', async () => {
+    getCurrentAdmin.mockResolvedValue({ ok: true, data: owner, etag: '"1"' });
+    listAdminInventoryVariants.mockResolvedValue(lowStockTotal(0));
+    render(<AdminShell><SessionProbe /></AdminShell>);
+    await screen.findByText('Contenido privado de Laura Ríos');
+    await waitFor(() => expect(listAdminInventoryVariants).toHaveBeenCalled());
+    expect(screen.queryByRole('link', { name: /Inventario, / })).toBeNull();
+  });
+
+  it('lets a screen ask for the Inventario count to be read again after a stock write', async () => {
+    getCurrentAdmin.mockResolvedValue({ ok: true, data: owner, etag: '"1"' });
+    listAdminInventoryVariants.mockResolvedValueOnce(lowStockTotal(4)).mockResolvedValueOnce(lowStockTotal(3));
+    render(<AdminShell><LowStockRefresher /></AdminShell>);
+
+    await screen.findByRole('link', { name: 'Inventario, 4 pendientes' });
+    fireEvent.click(screen.getByRole('button', { name: 'Refrescar' }));
+    expect(await screen.findByRole('link', { name: 'Inventario, 3 pendientes' })).toBeTruthy();
   });
 
   it('lets a screen report a fresher count after loading its own data', async () => {

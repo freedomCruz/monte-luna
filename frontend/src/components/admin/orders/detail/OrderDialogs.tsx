@@ -1,5 +1,6 @@
 import * as React from 'react';
-import { AlertDialog, Dialog } from 'radix-ui';
+import { AlertDialog } from 'radix-ui';
+import { AdminSheet } from '../../shared/AdminSheet';
 import { firstName, unitsLabel } from '../../../../lib/admin/order-detail';
 import type { AdminOrder, DispatchAdminOrder } from '../../../../lib/admin/orders';
 import { formatOrderDestination } from '../../../../lib/admin/order-format';
@@ -108,20 +109,10 @@ export function DispatchSheet({ order, busy, onSubmit, onClose }: DispatchSheetP
   };
 
   return (
-    <Dialog.Root open onOpenChange={(open) => { if (!open) onClose(); }}>
-      <Dialog.Portal>
-        <Dialog.Overlay className={SCRIM} />
-        <Dialog.Content aria-describedby={undefined} className="fixed inset-y-0 right-0 z-50 flex w-full flex-col bg-card min-[1024px]:w-[520px] min-[1024px]:rounded-l-xl">
-          <div className="flex items-start justify-between gap-3 px-6 py-5">
-            <div className="flex flex-col gap-1">
-              <span className="font-condensed text-[13px] font-bold uppercase tracking-[0.08em] text-muted-foreground">{order.order_number} · {formatOrderDestination(order.shipping_address.municipality_name, order.shipping_address.department_name)}</span>
-              <Dialog.Title className="m-0 text-2xl font-extrabold">Registrar despacho</Dialog.Title>
-            </div>
-            <Dialog.Close asChild>
-              <button type="button" aria-label="Cerrar" className="inline-flex size-11 flex-none cursor-pointer items-center justify-center rounded-sm border-0 bg-secondary"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18" /></svg></button>
-            </Dialog.Close>
-          </div>
-          <div className="flex flex-1 flex-col gap-4 overflow-y-auto px-6 pb-5">
+    <AdminSheet kicker={order.order_number + ' · ' + formatOrderDestination(order.shipping_address.municipality_name, order.shipping_address.department_name)} title="Registrar despacho" onClose={onClose} footer={<>
+            <button type="button" onClick={onClose} className={OUTLINE_BUTTON}>Cancelar</button>
+            <button type="button" disabled={busy || sending} onClick={() => void submit()} className={RED_BUTTON}>Registrar despacho</button>
+          </>}>
             <div className="flex flex-col gap-1.5">
               <label className="flex flex-col gap-1.5">
                 <span className="text-sm font-bold">Transportadora</span>
@@ -145,13 +136,6 @@ export function DispatchSheet({ order, busy, onSubmit, onClose }: DispatchSheetP
               <span>Al registrar, el pedido pasa a <span className="font-extrabold">Enviado</span> y {customer} recibe un correo con la transportadora y la guía.</span>
             </div>
             {errors.form && <span role="alert" className="text-sm font-bold text-destructive">{errors.form}</span>}
-          </div>
-          <div className="flex justify-end gap-2 border-t border-border px-6 py-3.5">
-            <Dialog.Close asChild><button type="button" className={OUTLINE_BUTTON}>Cancelar</button></Dialog.Close>
-            <button type="button" disabled={busy || sending} onClick={() => void submit()} className={RED_BUTTON}>Registrar despacho</button>
-          </div>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+          </AdminSheet>
   );
 }

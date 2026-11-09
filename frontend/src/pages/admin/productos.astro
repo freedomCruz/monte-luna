@@ -1,0 +1,8 @@
+---
+import AdminLayout from '../../layouts/AdminLayout.astro';
+import { AdminProductsPage } from '../../components/admin/catalog/AdminProductsPage';
+---
+
+<AdminLayout title="Productos · Admin Monteluna">
+  <AdminProductsPage client:load />
+</AdminLayout>

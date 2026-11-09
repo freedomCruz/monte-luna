@@ -6,6 +6,8 @@ import (
 	"errors"
 	"net/url"
 	"strings"
+
+	"github.com/freedomCruz/monte-luna/backend/internal/catalog/domain"
 )
 
 type Media struct{ base string }
@@ -20,6 +22,11 @@ func NewMedia(base string) (*Media, error) {
 	}
 	return &Media{base: strings.TrimRight(parsed.String(), "/")}, nil
 }
+
+// The resolver-only default preserves storefront startup when uploads are disabled.
+func (m *Media) Put(context.Context, string, string, []byte) error { return domain.ErrMediaUnavailable }
+func (m *Media) Delete(context.Context, string) error              { return nil }
+
 func (m *Media) Resolve(_ context.Context, key string) (string, error) {
 	if key == "" || strings.HasPrefix(key, "/") || strings.ContainsAny(key, "\\:?#\r\n\x00") {
 		return "", errors.New("media storage key must be relative")
