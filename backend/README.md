@@ -25,7 +25,7 @@ In local development, demo media reuses the design asset images in `frontend/pub
 served directly by Astro, with `MEDIA_BASE_URL` pointing to the frontend server
 (e.g., `http://127.0.0.1:<FRONTEND_PORT>/`). Storage keys in demo fixtures are relative
 paths matching those static assets (such as `images/packaging-finca-el-mirador.webp` and
-`images/photo-coffee-cherries.jpg`). Brand logo is set to `NULL` (`logo_storage_key` is
+`images/photo-coffee-cherries.webp`). Brand logo is set to `NULL` (`logo_storage_key` is
 nullable and no logo file exists in demo assets). The coordinator wires `MEDIA_BASE_URL`
 into the root environment example/Taskfile; this backend-only task deliberately leaves
 those files unchanged.
@@ -448,7 +448,7 @@ are explicitly fictional demo content. The placeholder prices/names follow the d
 system. The explicit `excluded` tax category is demo Scenario A, not a production tax
 classification or a schema default. Media paths are relative storage keys matching the
 local design assets in `frontend/public/images/` (e.g. `images/packaging-finca-el-mirador.webp`,
-`images/photo-coffee-cherries.jpg`), resolved against `MEDIA_BASE_URL`: no external image
+`images/photo-coffee-cherries.webp`), resolved against `MEDIA_BASE_URL`: no external image
 files are added or uploaded, and the brand logo storage key is `NULL`.
 
 ## Verify persistence
