@@ -23,5 +23,11 @@ export const ADMIN_VIEWS = Object.fromEntries(
 
 /** Starts fetching a section's code ahead of rendering it (the lazy component reuses the request). */
 export function preloadAdminView(view: AdminViewKey): void {
-  void VIEW_LOADERS[view]();
+  // A failed prefetch is not an error: rendering the section requests its code again.
+  VIEW_LOADERS[view]().catch(() => {});
+}
+
+/** Starts fetching every section's code, so a first visit to another section finds it loaded. */
+export function preloadAdminViews(): void {
+  for (const view of Object.keys(VIEW_LOADERS) as AdminViewKey[]) preloadAdminView(view);
 }

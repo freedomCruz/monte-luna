@@ -4,8 +4,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AdminUser } from '../../../lib/admin/client';
 import { AdminApp } from './AdminApp';
 
-const { getCurrentAdmin, listAdminOrders, listAdminInventoryVariants, assign, probe } = vi.hoisted(() => ({
+const { getCurrentAdmin, listAdminOrders, listAdminInventoryVariants, assign, preloadAdminViews, probe } = vi.hoisted(() => ({
   getCurrentAdmin: vi.fn(),
+  preloadAdminViews: vi.fn(),
   listAdminOrders: vi.fn(),
   listAdminInventoryVariants: vi.fn(),
   assign: vi.fn(),
@@ -16,6 +17,9 @@ const { getCurrentAdmin, listAdminOrders, listAdminInventoryVariants, assign, pr
 vi.mock('../../../lib/admin/client', async (importOriginal) => ({ ...(await importOriginal<typeof import('../../../lib/admin/client')>()), getCurrentAdmin }));
 vi.mock('../../../lib/admin/orders', async (importOriginal) => ({ ...(await importOriginal<typeof import('../../../lib/admin/orders')>()), listAdminOrders }));
 vi.mock('../../../lib/admin/catalog', async (importOriginal) => ({ ...(await importOriginal<typeof import('../../../lib/admin/catalog')>()), listAdminInventoryVariants }));
+
+// The real lazy loaders stay; only the background prefetch of every section is observed.
+vi.mock('./admin-views', async (importOriginal) => ({ ...(await importOriginal<typeof import('./admin-views')>()), preloadAdminViews: () => preloadAdminViews() }));
 
 vi.mock('../home/InicioView', () => ({
   InicioView: () => (
@@ -586,5 +590,75 @@ describe('AdminApp client navigation (admin-navigation-v1 T3: S2)', () => {
       await openInicio();
       expect(document.querySelector('[aria-live="polite"]')?.getAttribute('role')).toBeNull();
     });
+  });
+});
+
+// Controls idle time by hand so a test decides when the browser "becomes idle".
+function stubIdleCallbacks() {
+  const queue = new Map<number, () => void>();
+  let next = 0;
+  const cancel = vi.fn((id: number) => { queue.delete(id); });
+  vi.stubGlobal('requestIdleCallback', (callback: () => void) => { queue.set(++next, callback); return next; });
+  vi.stubGlobal('cancelIdleCallback', cancel);
+  return { queue, cancel, flush: () => { for (const [id, callback] of [...queue]) { queue.delete(id); callback(); } } };
+}
+
+describe('AdminApp section prefetch (admin-navigation-v1 F2: S2)', () => {
+  it('prefetches nothing while the session is pending and every section once it is confirmed', async () => {
+    const idle = stubIdleCallbacks();
+    let resolveSession!: (value: ReturnType<typeof session>) => void;
+    getCurrentAdmin.mockReturnValue(new Promise((resolve) => { resolveSession = resolve; }));
+    openAt('/admin/pedidos/');
+    render(<AdminApp />);
+
+    expect(screen.getByRole('status', { name: 'Comprobando tu sesión' })).toBeTruthy();
+    idle.flush();
+    expect(idle.queue.size).toBe(0);
+    expect(preloadAdminViews).not.toHaveBeenCalled();
+
+    resolveSession(session(owner));
+    expect(await screen.findByText('Vista Pedidos')).toBeTruthy();
+    // Idle work, not render work: the sections are not requested until the browser is idle.
+    expect(preloadAdminViews).not.toHaveBeenCalled();
+    idle.flush();
+    expect(preloadAdminViews).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not prefetch again after a client navigation', async () => {
+    const idle = stubIdleCallbacks();
+    await openInicio();
+    idle.flush();
+    expect(preloadAdminViews).toHaveBeenCalledTimes(1);
+
+    fireEvent.click(sidebarLink(/^Pedidos/));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Vista Pedidos' })).toBeTruthy();
+    fireEvent.click(sidebarLink(/^Inicio/));
+    expect(await screen.findByRole('heading', { level: 1, name: 'Vista Inicio' })).toBeTruthy();
+
+    expect(idle.queue.size).toBe(0);
+    idle.flush();
+    expect(preloadAdminViews).toHaveBeenCalledTimes(1);
+  });
+
+  it('cancels a pending prefetch when the app unmounts', async () => {
+    const idle = stubIdleCallbacks();
+    openAt('/admin/pedidos/');
+    const { unmount } = render(<AdminApp />);
+    await screen.findByText('Vista Pedidos');
+    expect(idle.queue.size).toBe(1);
+
+    unmount();
+    expect(idle.cancel).toHaveBeenCalledTimes(1);
+    idle.flush();
+    expect(preloadAdminViews).not.toHaveBeenCalled();
+  });
+
+  it('falls back to a timer where the browser has no idle callbacks', async () => {
+    vi.stubGlobal('requestIdleCallback', undefined);
+    openAt('/admin/pedidos/');
+    render(<AdminApp />);
+    await screen.findByText('Vista Pedidos');
+
+    await waitFor(() => expect(preloadAdminViews).toHaveBeenCalledTimes(1));
   });
 });
