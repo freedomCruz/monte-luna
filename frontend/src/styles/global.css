@@ -25,6 +25,8 @@
 }
 
 @theme inline {
+  /* A-Sistema skeleton shimmer (`brillo`): opacity 1 to 0.45 over 1.4 s. */
+  --animate-brillo: brillo 1.4s ease-in-out infinite;
   --color-background: var(--background);
   --color-card: var(--card);
   --color-popover: var(--popover);
@@ -71,6 +73,11 @@ body {
 /* Dark brand surfaces switch the focus outline to brand-yellow (design system section 4). */
 .surface-dark :focus-visible {
   outline-color: var(--brand-yellow);
+}
+
+@keyframes brillo {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.45; }
 }
 
 @keyframes flota {

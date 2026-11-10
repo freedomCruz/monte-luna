@@ -8,6 +8,8 @@ import { PRODUCT_STATUSES } from '../../../lib/admin/products-query';
 import { activeVariants, publicationHelp, variantPresentation } from '../../../lib/admin/product-sheet';
 import { formatMoneyCop } from '../../../lib/shared/formatters';
 import { AdminSheet } from '../shared/AdminSheet';
+import { DiscardChangesDialog } from '../shared/DiscardChangesDialog';
+import { useUnsavedChangesGuard } from '../shared/unsaved-changes';
 
 interface ProductSheetProps {
   productId: string;
@@ -105,24 +107,6 @@ function ArchiveDialog({ title, busy, onClose, onConfirm }: { title: string; bus
   );
 }
 
-function DiscardDialog({ title, onContinue, onDiscard }: { title: string; onContinue: () => void; onDiscard: () => void }) {
-  return (
-    <AlertDialog.Root open onOpenChange={(open) => { if (!open) onContinue(); }}>
-      <AlertDialog.Portal>
-        <AlertDialog.Overlay className="fixed inset-0 z-[60] bg-foreground/50" />
-        <AlertDialog.Content className="fixed left-1/2 top-[20vh] z-[60] flex w-[calc(100%-32px)] max-w-[500px] -translate-x-1/2 flex-col gap-3 rounded-xl border border-border bg-card p-6">
-          <AlertDialog.Title className="m-0 text-xl font-extrabold">¿Salir sin guardar?</AlertDialog.Title>
-          <AlertDialog.Description className="m-0 text-[15px] leading-[1.5] text-muted-foreground">Perderás los cambios que hiciste en {title}.</AlertDialog.Description>
-          <div className="flex flex-wrap justify-end gap-2 pt-1">
-            <AlertDialog.Cancel asChild><button type="button" className={OUTLINE_BUTTON}>Seguir editando</button></AlertDialog.Cancel>
-            <AlertDialog.Action asChild><button type="button" onClick={onDiscard} className={RED_BUTTON}>Salir sin guardar</button></AlertDialog.Action>
-          </div>
-        </AlertDialog.Content>
-      </AlertDialog.Portal>
-    </AlertDialog.Root>
-  );
-}
-
 /** Productos "Vista rápida" (A-Productos): facts, publication status and active variants. */
 export function ProductSheet({ productId, fallbackTitle, onClose, onSaved }: ProductSheetProps) {
   const [load, setLoad] = React.useState<Load>({ status: 'loading' });
@@ -151,6 +135,8 @@ export function ProductSheet({ productId, fallbackTitle, onClose, onSaved }: Pro
 
   const ready = load.status === 'ready' ? load : null;
   const changed = ready !== null && status !== ready.product.status;
+  // Leaving through "Editar el producto completo", the menu or back asks like closing the Sheet.
+  useUnsavedChangesGuard(changed, ready?.product.title ?? fallbackTitle);
 
   const requestClose = () => {
     if (changed) setConfirmDiscard(true);
@@ -234,7 +220,7 @@ export function ProductSheet({ productId, fallbackTitle, onClose, onSaved }: Pro
       >
         {body}
       </AdminSheet>
-      {confirmDiscard && ready && <DiscardDialog title={ready.product.title} onContinue={() => setConfirmDiscard(false)} onDiscard={onClose} />}
+      {confirmDiscard && ready && <DiscardChangesDialog title={ready.product.title} onContinue={() => setConfirmDiscard(false)} onDiscard={onClose} />}
       {confirmArchive && ready && <ArchiveDialog title={ready.product.title} busy={saving} onClose={() => setConfirmArchive(false)} onConfirm={() => void save()} />}
     </>
   );

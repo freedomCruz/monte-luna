@@ -33,6 +33,11 @@ function Section({ id, title, note, children }: { id: string; title: string; not
   );
 }
 
+// The table scrolls sideways on narrow widths: a focusable, named region lets keyboard users scroll it.
+function ScrollRegion({ label, children }: { label: string; children: React.ReactNode }) {
+  return <div role="region" aria-label={label} tabIndex={0} className="overflow-x-auto focus-visible:outline-offset-[-3px]">{children}</div>;
+}
+
 function SectionSkeleton({ label }: { label: string }) {
   return (
     <div aria-busy="true" aria-label={label} className="flex flex-col">
@@ -109,7 +114,7 @@ export function LotsSection({ variantId, reload }: { variantId: string; reload: 
           {lots.items.length === 0 ? (
             <p className="m-0 border-t border-border px-[18px] py-5 text-[15px] text-muted-foreground">Esta variante todavía no tiene lotes. Registra una entrada para crear el primero.</p>
           ) : (
-            <div className="overflow-x-auto">
+            <ScrollRegion label="Tabla de lotes">
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className={HEAD_ROW}>
@@ -123,7 +128,7 @@ export function LotsSection({ variantId, reload }: { variantId: string; reload: 
                 </thead>
                 <tbody>{lots.items.map((lot) => <LotRow key={lot.id} lot={lot} generatedAt={lots.generatedAt} />)}</tbody>
               </table>
-            </div>
+            </ScrollRegion>
           )}
           <LoadMore pages={lots} label="Ver más lotes" />
           <p className="m-0 border-t border-border px-[18px] py-3 text-[13px] text-muted-foreground">«Tueste antiguo» marca lotes tostados hace más de 30 días.</p>
@@ -158,7 +163,7 @@ export function MovementsSection({ variantId, reload }: { variantId: string; rel
           {movements.items.length === 0 ? (
             <p className="m-0 border-t border-border px-[18px] py-5 text-[15px] text-muted-foreground">Todavía no hay movimientos para esta variante.</p>
           ) : (
-            <div className="overflow-x-auto">
+            <ScrollRegion label="Tabla del historial de movimientos">
               <table className="w-full border-collapse text-sm">
                 <thead>
                   <tr className={HEAD_ROW}>
@@ -172,7 +177,7 @@ export function MovementsSection({ variantId, reload }: { variantId: string; rel
                 </thead>
                 <tbody>{movements.items.map((movement) => <MovementRow key={movement.id} movement={movement} />)}</tbody>
               </table>
-            </div>
+            </ScrollRegion>
           )}
           <LoadMore pages={movements} label="Ver más movimientos" />
         </>

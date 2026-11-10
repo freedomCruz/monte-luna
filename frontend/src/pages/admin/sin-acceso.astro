@@ -1,8 +1,9 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { AdminNoAccess } from '../../components/admin/shell/AdminNoAccess';
+import { AdminApp } from '../../components/admin/shell/AdminApp';
+import { adminPageTitle } from '../../lib/admin/routes';
 ---
 
-<AdminLayout title="Sin acceso · Admin Monteluna">
-  <AdminNoAccess client:load />
+<AdminLayout title={adminPageTitle('noAccess')}>
+  <AdminApp client:load />
 </AdminLayout>

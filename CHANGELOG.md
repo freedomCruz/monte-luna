@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Moving between sections of `/admin` no longer reloads the page: the menu, the top bar, the session and the badge counts stay in place and only the section content changes, with its own loading placeholders. The session is still checked with the server on every section change, in the background, and an expired session still goes to sign-in. Back and forward work as before, and the code of the other sections is fetched in the background once the session is confirmed.
+- While `/admin` checks the session it shows placeholders shaped like the panel (menu, top bar and content) instead of a lone "Comprobando tu sesión…" screen.
+- Hashed scripts, styles and fonts are cached by the browser for a year, and pages are revalidated on every visit, so repeat visits load faster without serving stale pages. Administration and private API responses are still never cached.
+
+### Fixed
+
+- Leaving a product with unsaved changes through a link or the browser back button now asks "¿Salir sin guardar?", including a new product that has not been saved yet.
+- The lots and movements tables in Inventario can be scrolled with the keyboard.
+
 ## [0.1.0-rc.12] - 2026-11-09
 
 ### Added

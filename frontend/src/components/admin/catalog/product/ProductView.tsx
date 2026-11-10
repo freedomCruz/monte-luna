@@ -35,6 +35,8 @@ import {
 import { productStatusPresentation } from '../../../../lib/admin/product-format';
 import { activeVariants, storefrontHref, variantPresentation } from '../../../../lib/admin/product-sheet';
 import { StatusBadge } from '../../../ui/status-badge';
+import { useUnsavedChangesGuard } from '../../shared/unsaved-changes';
+import { useAdminNavigate } from '../../shell/admin-router';
 import { AttributesTab } from './AttributesTab';
 import { GeneralTab, type Taxonomy } from './GeneralTab';
 import { ImagesTab, type UploadOutcome } from './ImagesTab';
@@ -98,6 +100,7 @@ export function ProductView() {
   const [notice, setNotice] = React.useState<Notice>(null);
   const [saving, setSaving] = React.useState(false);
   const slugTouched = React.useRef(false);
+  const navigate = useAdminNavigate();
 
   const adopt = React.useCallback((next: AdminProduct, nextEtag: string | null) => {
     setProduct(next);
@@ -157,14 +160,12 @@ export function ProductView() {
   const productDirty = Object.keys(productPatch).length > 0;
   const dirtyVariantIds = React.useMemo(() => (product ? product.variants.filter((variant) => Object.keys(diffVariant(variant, drafts[variant.id] ?? variantToForm(variant))).length > 0).map((variant) => variant.id) : []), [product, drafts]);
   const dirty = productDirty || dirtyVariantIds.length > 0;
+  // A new product has no original to diff against: it is dirty once anything was typed or chosen.
+  const createDirty = creating && (typeId !== '' || JSON.stringify(form) !== JSON.stringify(emptyProductForm()));
+  const title = product?.title ?? (form.title.trim() || 'Nuevo producto');
 
-  // Leaving with unsaved edits asks the browser to confirm.
-  React.useEffect(() => {
-    if (!dirty) return;
-    const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); };
-    window.addEventListener('beforeunload', warn);
-    return () => window.removeEventListener('beforeunload', warn);
-  }, [dirty]);
+  // Leaving with unsaved edits asks first: the admin router in-app, the browser on a real unload.
+  useUnsavedChangesGuard(dirty || createDirty, title);
 
   React.useEffect(() => {
     if (notice !== 'saved') return;
@@ -211,7 +212,8 @@ export function ProductView() {
     const result = await createAdminProduct(buildCreateProduct(form, typeId, definitions));
     setSaving(false);
     if (result.ok) {
-      window.location.assign(productDetailHref(result.data.id));
+      // The saved form is still on screen: leaving to the new product must not ask about it.
+      navigate(productDetailHref(result.data.id), { discardChanges: true });
       return;
     }
     if (result.status === 409 || result.code === 'slug_conflict') {
@@ -339,7 +341,6 @@ export function ProductView() {
     ] : []),
   ];
   const status = productStatusPresentation(product?.status ?? form.status);
-  const title = product?.title ?? (form.title.trim() || 'Nuevo producto');
   const cover = product ? [...product.images].sort((a, b) => a.position - b.position)[0] : undefined;
   const dirtyParts = [productDirty ? 'el producto' : null, dirtyVariantIds.length > 0 ? `${dirtyVariantIds.length} ${dirtyVariantIds.length === 1 ? 'variante' : 'variantes'}` : null].filter(Boolean).join(' y ');
 

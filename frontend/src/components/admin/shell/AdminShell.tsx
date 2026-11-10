@@ -17,6 +17,8 @@ import {
   type AdminNavKey,
 } from '../../../lib/admin/navigation';
 
+import { AdminSessionSkeleton } from './AdminSessionSkeleton';
+
 interface AdminSession {
   user: AdminUser;
   etag: string | null;
@@ -71,7 +73,7 @@ export function useRefreshLowStockCount(): () => void {
 export function sessionDestination(result: AdminResult<AdminUser>): string | null {
   if (result.ok) return null;
   if (result.status === 401) return ADMIN_ROUTES.signIn;
-  if (result.status === 403) return '/admin/sin-acceso/';
+  if (result.status === 403) return ADMIN_ROUTES.noAccess;
   return null;
 }
 
@@ -84,6 +86,11 @@ interface AdminShellProps {
    * screen shows a message instead. `true` is settings, `'catalog'` is the catalog.
    */
   desktopOnly?: boolean | 'catalog';
+  /**
+   * Changes on every client-side section change. Each change revalidates the session with the
+   * server in the background, beside the section's own data, without blocking or blanking the screen.
+   */
+  revalidateKey?: number;
 }
 
 function AdminIcon({ kind }: { kind: AdminNavKey | 'account' }) {
@@ -211,7 +218,7 @@ function ShellFrame({ session, active, children, forbidden, desktopOnly, pending
   );
 }
 
-export function AdminShell({ children, active, requiredRole, desktopOnly = false }: AdminShellProps) {
+export function AdminShell({ children, active, requiredRole, desktopOnly = false, revalidateKey = 0 }: AdminShellProps) {
   const [session, setSession] = React.useState<AdminSession | null>(null);
   const [failed, setFailed] = React.useState(false);
   const [attempt, setAttempt] = React.useState(0);
@@ -238,6 +245,27 @@ export function AdminShell({ children, active, requiredRole, desktopOnly = false
     return () => { live = false; };
   }, [attempt]);
 
+  // A section change keeps this shell, so the session is checked again instead of trusted for the whole visit:
+  // an expired or revoked session ends at sign-in, and a changed role changes what the shell lets through.
+  const checkedKey = React.useRef(revalidateKey);
+  const latestCheck = React.useRef(0);
+  React.useEffect(() => {
+    if (!loaded || revalidateKey === checkedKey.current) return;
+    checkedKey.current = revalidateKey;
+    const check = ++latestCheck.current;
+    void getCurrentAdmin().then((result) => {
+      const destination = sessionDestination(result);
+      if (destination) {
+        if (destination !== window.location.pathname) window.location.assign(destination);
+        return;
+      }
+      // A network failure keeps the last confirmed session; the backend still checks every request.
+      if (!result.ok || check !== latestCheck.current) return;
+      const refreshed = { user: result.data, etag: result.etag };
+      setSession((current) => (current && current.etag === refreshed.etag && JSON.stringify(current.user) === JSON.stringify(refreshed.user) ? current : refreshed));
+    });
+  }, [revalidateKey, loaded]);
+
   // The sidebar badge comes from the list endpoint's global count; a screen that has
   // already read it reports it through useReportPendingDispatchCount instead.
   React.useEffect(() => {
@@ -260,7 +288,7 @@ export function AdminShell({ children, active, requiredRole, desktopOnly = false
   }, [loaded, lowStockReads]);
 
   if (failed) return <div className="flex min-h-screen items-center justify-center bg-background p-4"><div role="alert" className="flex max-w-md flex-col items-center gap-4 rounded-xl border border-border bg-card p-8 text-center"><p className="m-0 text-lg font-bold">No pudimos comprobar tu sesión.</p><button type="button" onClick={() => setAttempt((value) => value + 1)} className="min-h-11 rounded-sm border-0 bg-primary px-4 font-sans font-bold text-primary-foreground">Reintentar</button></div></div>;
-  if (!session) return <div className="flex min-h-screen items-center justify-center bg-background"><p role="status" className="font-bold text-muted-foreground">Comprobando tu sesión…</p></div>;
+  if (!session) return <AdminSessionSkeleton />;
 
   return <PendingDispatchContext.Provider value={setPendingDispatchCount}><RefreshLowStockContext.Provider value={refreshLowStock}><MobileDetailContext.Provider value={setMobileDetail}><ShellFrame session={session} active={active} forbidden={requiredRole !== undefined && session.user.role !== requiredRole} desktopOnly={desktopOnly} pendingDispatchCount={pendingDispatchCount} lowStockCount={lowStockCount} mobileDetail={mobileDetail}>{children}</ShellFrame></MobileDetailContext.Provider></RefreshLowStockContext.Provider></PendingDispatchContext.Provider>;
 }
