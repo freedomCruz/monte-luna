@@ -13,6 +13,7 @@ import {
   type InventoryFilters,
 } from '../../../lib/admin/inventory-query';
 import { useMinWidth } from '../../../lib/admin/use-min-width';
+import { replaceAddressSearch } from '../../../lib/admin/history';
 import { ListPagination } from '../shared/ListPagination';
 import { useRefreshLowStockCount } from '../shell/AdminShell';
 import { LotsSection, MovementsSection } from './InventoryLedger';
@@ -75,7 +76,7 @@ export function InventoryView() {
 
   // Keep the address bar in step so reloads and shared links restore the view.
   React.useEffect(() => {
-    window.history.replaceState(null, '', `${window.location.pathname}${filtersToSearch(filters)}`);
+    replaceAddressSearch(filtersToSearch(filters));
   }, [filters]);
 
   const resetPaging = () => { setPageIndex(0); setCursors([]); };

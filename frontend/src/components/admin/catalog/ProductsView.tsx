@@ -6,6 +6,7 @@ import {
   type AdminCategory,
   type AdminProductRow,
 } from '../../../lib/admin/catalog';
+import { replaceAddressSearch } from '../../../lib/admin/history';
 import { ADMIN_ROUTES } from '../../../lib/admin/navigation';
 import {
   DEFAULT_PRODUCT_FILTERS,
@@ -79,7 +80,7 @@ export function ProductsView() {
 
   // Keep the address bar in step so reloads and shared links restore the view.
   React.useEffect(() => {
-    window.history.replaceState(null, '', `${window.location.pathname}${filtersToSearch(filters)}`);
+    replaceAddressSearch(filtersToSearch(filters));
   }, [filters]);
 
   const resetPaging = () => { setPageIndex(0); setCursors([]); };

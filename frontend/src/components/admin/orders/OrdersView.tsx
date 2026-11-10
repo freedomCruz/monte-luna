@@ -9,6 +9,7 @@ import {
   type OrderFilters,
 } from '../../../lib/admin/orders-query';
 import { isMobileWidth, useIsMobile } from '../../../lib/admin/use-is-mobile';
+import { replaceAddressSearch } from '../../../lib/admin/history';
 import { useReportPendingDispatchCount } from '../shell/AdminShell';
 import { OrdersFilters } from './OrdersFilters';
 import { OrdersCards, OrdersTable } from './OrdersList';
@@ -73,7 +74,7 @@ export function OrdersView() {
 
   // Keep the address bar in step so reloads and shared links restore the view.
   React.useEffect(() => {
-    window.history.replaceState(null, '', `${window.location.pathname}${filtersToSearch(filters)}`);
+    replaceAddressSearch(filtersToSearch(filters));
   }, [filters]);
 
   const resetPaging = () => { setPageIndex(0); setCursors([]); };
