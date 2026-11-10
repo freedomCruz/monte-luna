@@ -106,7 +106,9 @@ describe('AdminShell session guard (T2/T8: S3, S4)', () => {
       expect(skeleton.getAttribute('aria-busy')).toBe('true');
       // Sidebar, top bar and content rows are drawn, all decorative.
       expect(skeleton.querySelectorAll('[data-skeleton][aria-hidden="true"]')).toHaveLength(4);
-      expect(skeleton.querySelectorAll('.motion-safe\\:animate-pulse').length).toBeGreaterThan(0);
+      // A-Sistema `brillo` shimmer, only when the user allows motion.
+      expect(skeleton.querySelectorAll('.motion-safe\\:animate-brillo').length).toBeGreaterThan(0);
+      expect(skeleton.querySelectorAll('.motion-safe\\:animate-pulse')).toHaveLength(0);
       expect(skeleton.querySelector('[data-skeleton="sidebar"]')).not.toBeNull();
       expect(skeleton.querySelector('[data-skeleton="topbar"]')).not.toBeNull();
       expect(skeleton.querySelector('[data-skeleton="content"]')).not.toBeNull();
