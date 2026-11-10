@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockBrands, mockCategories, mockOrigins, mockProductDetail, mockProductTypes } from '../../../../mocks/admin-products';
+import { AdminNavigationContext } from '../../shell/admin-router';
 import { UnsavedChangesContext } from '../../shared/unsaved-changes';
 import { ProductView } from './ProductView';
 
@@ -440,6 +441,21 @@ describe('ProductView unsaved-changes blocker (admin-navigation-v1 T3: S2/L4)', 
       await screen.findByRole('heading', { level: 1, name: 'Nuevo producto' });
       fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Geisha' } });
       expect(register).toHaveBeenCalledWith({ title: 'Geisha' });
+    });
+
+    it('opens the created product through the admin router without asking about the form it just saved', async () => {
+      api.createAdminProduct.mockResolvedValue(ok({ ...product, id: 'created-1' }, '"1"'));
+      const navigate = vi.fn();
+      render(<AdminNavigationContext.Provider value={navigate}><UnsavedChangesContext.Provider value={register}><ProductView /></UnsavedChangesContext.Provider></AdminNavigationContext.Provider>);
+      await screen.findByRole('heading', { level: 1, name: 'Nuevo producto' });
+      fireEvent.change(await screen.findByLabelText('Tipo de producto'), { target: { value: mockProductTypes.items[0].id } });
+      fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Geisha' } });
+      fireEvent.click(screen.getByRole('tab', { name: 'Atributos' }));
+      fireEvent.change(screen.getByLabelText('Especie'), { target: { value: 'arabica' } });
+      fireEvent.click(screen.getByRole('button', { name: 'Crear producto' }));
+
+      await waitFor(() => expect(navigate).toHaveBeenCalledWith('/admin/producto/?id=created-1', { discardChanges: true }));
+      expect(assign).not.toHaveBeenCalled();
     });
 
     it('registers a blocker when only the product type is chosen', async () => {

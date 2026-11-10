@@ -36,6 +36,7 @@ import { productStatusPresentation } from '../../../../lib/admin/product-format'
 import { activeVariants, storefrontHref, variantPresentation } from '../../../../lib/admin/product-sheet';
 import { StatusBadge } from '../../../ui/status-badge';
 import { useUnsavedChangesGuard } from '../../shared/unsaved-changes';
+import { useAdminNavigate } from '../../shell/admin-router';
 import { AttributesTab } from './AttributesTab';
 import { GeneralTab, type Taxonomy } from './GeneralTab';
 import { ImagesTab, type UploadOutcome } from './ImagesTab';
@@ -99,6 +100,7 @@ export function ProductView() {
   const [notice, setNotice] = React.useState<Notice>(null);
   const [saving, setSaving] = React.useState(false);
   const slugTouched = React.useRef(false);
+  const navigate = useAdminNavigate();
 
   const adopt = React.useCallback((next: AdminProduct, nextEtag: string | null) => {
     setProduct(next);
@@ -210,7 +212,8 @@ export function ProductView() {
     const result = await createAdminProduct(buildCreateProduct(form, typeId, definitions));
     setSaving(false);
     if (result.ok) {
-      window.location.assign(productDetailHref(result.data.id));
+      // The saved form is still on screen: leaving to the new product must not ask about it.
+      navigate(productDetailHref(result.data.id), { discardChanges: true });
       return;
     }
     if (result.status === 409 || result.code === 'slug_conflict') {

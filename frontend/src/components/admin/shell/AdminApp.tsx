@@ -1,7 +1,11 @@
 import * as React from 'react';
-import { resolveAdminRoute } from '../../../lib/admin/routes';
 import { ADMIN_ROUTES } from '../../../lib/admin/navigation';
+import { focusRouteHeading } from '../../../lib/admin/route-focus';
+import { adminDocumentTitle, resolveAdminRoute } from '../../../lib/admin/routes';
+import { DiscardChangesDialog } from '../shared/DiscardChangesDialog';
+import { UnsavedChangesContext } from '../shared/unsaved-changes';
 import { ADMIN_VIEWS, preloadAdminView } from './admin-views';
+import { AdminNavigationContext, useAdminRouter } from './admin-router';
 import { AdminShell } from './AdminShell';
 import { AdminContentSkeleton } from './AdminSessionSkeleton';
 
@@ -17,23 +21,41 @@ function SectionFallback() {
 
 /**
  * The protected admin app: every private page mounts it with `client:load`. It reads the address
- * once, owns the one AdminShell and renders the section the address names inside it. Nothing
- * private is prerendered: the shell shows the session skeleton until the backend confirms the
- * session.
+ * on a document load, owns the one AdminShell and renders the section the address names inside
+ * it. Links between admin sections then navigate on the History API: the shell, its session and
+ * its badge counts stay mounted and only the section swaps. Nothing private is prerendered: the
+ * shell shows the session skeleton until the backend confirms the session.
  */
 export function AdminApp() {
-  const [path] = React.useState(() => (typeof window === 'undefined' ? null : window.location.pathname));
-  const route = path === null ? null : resolveAdminRoute(path);
+  const router = useAdminRouter();
+  const { location } = router;
+  const route = resolveAdminRoute(location.path);
+  const [announcement, setAnnouncement] = React.useState('');
 
   React.useEffect(() => {
     if (route) preloadAdminView(route.view);
-    else if (path !== null) window.location.replace(ADMIN_ROUTES.home);
-  }, [route, path]);
+    else if (location.path !== '') window.location.replace(ADMIN_ROUTES.home);
+  }, [route, location.path]);
+
+  // A client navigation has to do by hand what a document load does: title, announcement, focus.
+  React.useEffect(() => {
+    if (location.via === 'load' || !route) return;
+    const title = adminDocumentTitle(route);
+    document.title = title;
+    setAnnouncement(title);
+    return focusRouteHeading();
+  }, [location, route]);
 
   const View = route ? ADMIN_VIEWS[route.view] : null;
   return (
-    <AdminShell active={route?.active} requiredRole={route?.requiredRole} desktopOnly={route?.desktopOnly}>
-      {View && <React.Suspense fallback={<SectionFallback />}><View /></React.Suspense>}
-    </AdminShell>
+    <AdminNavigationContext.Provider value={router.navigate}>
+      <UnsavedChangesContext.Provider value={router.registerBlocker}>
+        <AdminShell active={route?.active} requiredRole={route?.requiredRole} desktopOnly={route?.desktopOnly} revalidateKey={location.key}>
+          {View && <React.Suspense fallback={<SectionFallback />}><View key={location.key} /></React.Suspense>}
+        </AdminShell>
+        {router.confirmation && <DiscardChangesDialog title={router.confirmation.title} onContinue={router.confirmation.stay} onDiscard={router.confirmation.leave} />}
+        <div aria-live="polite" aria-atomic="true" className="sr-only">{announcement}</div>
+      </UnsavedChangesContext.Provider>
+    </AdminNavigationContext.Provider>
   );
 }
