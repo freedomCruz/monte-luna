@@ -9,6 +9,7 @@ import { activeVariants, publicationHelp, variantPresentation } from '../../../l
 import { formatMoneyCop } from '../../../lib/shared/formatters';
 import { AdminSheet } from '../shared/AdminSheet';
 import { DiscardChangesDialog } from '../shared/DiscardChangesDialog';
+import { useUnsavedChangesGuard } from '../shared/unsaved-changes';
 
 interface ProductSheetProps {
   productId: string;
@@ -134,6 +135,8 @@ export function ProductSheet({ productId, fallbackTitle, onClose, onSaved }: Pro
 
   const ready = load.status === 'ready' ? load : null;
   const changed = ready !== null && status !== ready.product.status;
+  // Leaving through "Editar el producto completo", the menu or back asks like closing the Sheet.
+  useUnsavedChangesGuard(changed, ready?.product.title ?? fallbackTitle);
 
   const requestClose = () => {
     if (changed) setConfirmDiscard(true);

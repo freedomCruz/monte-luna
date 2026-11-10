@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockProductDetail } from '../../../mocks/admin-products';
+import { UnsavedChangesContext } from '../shared/unsaved-changes';
 import { ProductSheet } from './ProductSheet';
 
 const { getAdminProduct, updateAdminProduct } = vi.hoisted(() => ({ getAdminProduct: vi.fn(), updateAdminProduct: vi.fn() }));
@@ -167,5 +168,24 @@ describe('ProductSheet (F2b: S2, S3)', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Cancelar' }));
     fireEvent.click(screen.getByRole('button', { name: 'Cerrar' }));
     expect(onClose).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('ProductSheet unsaved status and the admin router (admin-navigation-v1 V1: S2)', () => {
+  it('registers a blocker while the status differs from the saved one and releases it when it returns', async () => {
+    const release = vi.fn();
+    const register = vi.fn(() => release);
+    render(
+      <UnsavedChangesContext.Provider value={register}>
+        <ProductSheet productId={mockProductDetail.id} fallbackTitle={mockProductDetail.title} onClose={vi.fn()} onSaved={vi.fn()} />
+      </UnsavedChangesContext.Provider>,
+    );
+    const select = await screen.findByLabelText('Estado de publicación');
+    expect(register).not.toHaveBeenCalled();
+    fireEvent.change(select, { target: { value: 'draft' } });
+    expect(register).toHaveBeenCalledTimes(1);
+    expect(register).toHaveBeenCalledWith({ title: mockProductDetail.title });
+    fireEvent.change(select, { target: { value: mockProductDetail.status } });
+    expect(release).toHaveBeenCalledTimes(1);
   });
 });
