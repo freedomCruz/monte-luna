@@ -17,6 +17,8 @@ import {
   type AdminNavKey,
 } from '../../../lib/admin/navigation';
 
+import { AdminSessionSkeleton } from './AdminSessionSkeleton';
+
 interface AdminSession {
   user: AdminUser;
   etag: string | null;
@@ -260,7 +262,7 @@ export function AdminShell({ children, active, requiredRole, desktopOnly = false
   }, [loaded, lowStockReads]);
 
   if (failed) return <div className="flex min-h-screen items-center justify-center bg-background p-4"><div role="alert" className="flex max-w-md flex-col items-center gap-4 rounded-xl border border-border bg-card p-8 text-center"><p className="m-0 text-lg font-bold">No pudimos comprobar tu sesión.</p><button type="button" onClick={() => setAttempt((value) => value + 1)} className="min-h-11 rounded-sm border-0 bg-primary px-4 font-sans font-bold text-primary-foreground">Reintentar</button></div></div>;
-  if (!session) return <div className="flex min-h-screen items-center justify-center bg-background"><p role="status" className="font-bold text-muted-foreground">Comprobando tu sesión…</p></div>;
+  if (!session) return <AdminSessionSkeleton />;
 
   return <PendingDispatchContext.Provider value={setPendingDispatchCount}><RefreshLowStockContext.Provider value={refreshLowStock}><MobileDetailContext.Provider value={setMobileDetail}><ShellFrame session={session} active={active} forbidden={requiredRole !== undefined && session.user.role !== requiredRole} desktopOnly={desktopOnly} pendingDispatchCount={pendingDispatchCount} lowStockCount={lowStockCount} mobileDetail={mobileDetail}>{children}</ShellFrame></MobileDetailContext.Provider></RefreshLowStockContext.Provider></PendingDispatchContext.Provider>;
 }

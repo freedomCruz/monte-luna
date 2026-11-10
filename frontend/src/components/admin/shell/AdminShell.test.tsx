@@ -84,11 +84,79 @@ describe('AdminShell session guard (T2/T8: S3, S4)', () => {
 
     render(<AdminShell active="admins"><SessionProbe /></AdminShell>);
     expect(screen.queryByText(/Contenido privado/)).toBeNull();
-    expect(screen.getByRole('status').textContent).toContain('Comprobando tu sesión');
+    expect(screen.getByRole('status', { name: 'Comprobando tu sesión' })).toBeTruthy();
 
     resolveSession({ ok: true, data: owner, etag: '"1"' });
     expect(await screen.findByText('Contenido privado de Laura Ríos')).toBeTruthy();
     expect(screen.getAllByRole('link', { name: 'Administradores' }).every((link) => link.getAttribute('aria-current') === 'page')).toBe(true);
+  });
+
+  describe('admin-shaped skeleton while the session is checked (admin-navigation-v1 T1: S1)', () => {
+    function pendingSession() {
+      let resolveSession!: (value: Awaited<ReturnType<typeof getCurrentAdmin>>) => void;
+      getCurrentAdmin.mockReturnValue(new Promise((resolve) => { resolveSession = resolve; }));
+      return (value: Awaited<ReturnType<typeof getCurrentAdmin>>) => resolveSession(value);
+    }
+
+    it('shows a busy, labelled skeleton instead of a lone message', () => {
+      pendingSession();
+      render(<AdminShell active="orders"><SessionProbe /></AdminShell>);
+
+      const skeleton = screen.getByRole('status', { name: 'Comprobando tu sesión' });
+      expect(skeleton.getAttribute('aria-busy')).toBe('true');
+      // Sidebar, top bar and content rows are drawn, all decorative.
+      expect(skeleton.querySelectorAll('[data-skeleton][aria-hidden="true"]')).toHaveLength(4);
+      expect(skeleton.querySelectorAll('.motion-safe\\:animate-pulse').length).toBeGreaterThan(0);
+      expect(skeleton.querySelector('[data-skeleton="sidebar"]')).not.toBeNull();
+      expect(skeleton.querySelector('[data-skeleton="topbar"]')).not.toBeNull();
+      expect(skeleton.querySelector('[data-skeleton="content"]')).not.toBeNull();
+      // No visible copy beyond the one hidden label: the lone message is gone.
+      expect(skeleton.textContent?.trim()).toBe('Comprobando tu sesión…');
+      expect(skeleton.querySelector('.sr-only')?.textContent).toBe('Comprobando tu sesión…');
+    });
+
+    it('renders no navigation, menu label, user name or children before the session is confirmed', () => {
+      pendingSession();
+      render(<AdminShell active="orders"><SessionProbe /></AdminShell>);
+
+      expect(screen.queryAllByRole('link')).toHaveLength(0);
+      expect(screen.queryAllByRole('navigation')).toHaveLength(0);
+      expect(screen.queryAllByRole('button')).toHaveLength(0);
+      expect(screen.queryAllByRole('heading')).toHaveLength(0);
+      for (const label of ['Inicio', 'Pedidos', 'Productos', 'Inventario', 'Administradores', 'Cuenta', 'Monteluna', 'Laura Ríos', 'Colapsar menú']) {
+        expect(screen.queryByText(label)).toBeNull();
+      }
+      expect(screen.queryByText(/Contenido privado/)).toBeNull();
+      expect(listAdminOrders).not.toHaveBeenCalled();
+      expect(listAdminInventoryVariants).not.toHaveBeenCalled();
+    });
+
+    it('replaces the skeleton with the real shell and children once the session resolves', async () => {
+      const resolveSession = pendingSession();
+      render(<AdminShell active="orders"><SessionProbe /></AdminShell>);
+      expect(screen.getByRole('status', { name: 'Comprobando tu sesión' })).toBeTruthy();
+
+      resolveSession({ ok: true, data: owner, etag: '"1"' });
+      expect(await screen.findByText('Contenido privado de Laura Ríos')).toBeTruthy();
+      expect(screen.queryByRole('status', { name: 'Comprobando tu sesión' })).toBeNull();
+      expect(screen.getByRole('navigation', { name: 'Secciones del panel' })).toBeTruthy();
+    });
+
+    it('drops the skeleton for the retry alert when the check fails and returns to it while retrying', async () => {
+      let resolveRetry!: (value: Awaited<ReturnType<typeof getCurrentAdmin>>) => void;
+      getCurrentAdmin
+        .mockResolvedValueOnce({ ok: false, status: 0, code: 'network_error' })
+        .mockReturnValueOnce(new Promise((resolve) => { resolveRetry = resolve; }));
+      render(<AdminShell><SessionProbe /></AdminShell>);
+
+      expect(await screen.findByRole('alert')).toBeTruthy();
+      expect(screen.queryByRole('status', { name: 'Comprobando tu sesión' })).toBeNull();
+      fireEvent.click(screen.getByRole('button', { name: 'Reintentar' }));
+      expect(await screen.findByRole('status', { name: 'Comprobando tu sesión' })).toBeTruthy();
+      expect(screen.queryByText(/Contenido privado/)).toBeNull();
+      resolveRetry({ ok: true, data: owner, etag: '"1"' });
+      expect(await screen.findByText('Contenido privado de Laura Ríos')).toBeTruthy();
+    });
   });
 
   it('does not render an owner-only page to staff', async () => {
