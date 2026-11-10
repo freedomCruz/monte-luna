@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-rc.13] - 2026-11-10
+
 ### Changed
 
 - Moving between sections of `/admin` no longer reloads the page: the menu, the top bar, the session and the badge counts stay in place and only the section content changes, with its own loading placeholders. The session is still checked with the server on every section change, in the background, and an expired session still goes to sign-in. Back and forward work as before, and the code of the other sections is fetched in the background once the session is confirmed.
@@ -168,7 +170,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the backend toolchain to Go 1.27.3 to resolve reachable standard-library vulnerabilities.
 - Rebuilt Caddy 2.11.7 with Go 1.27.3 and `golang.org/x/net` 0.60.0 instead of deploying the vulnerable upstream binary.
 
-[Unreleased]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.12...HEAD
+[Unreleased]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.13...HEAD
+[0.1.0-rc.13]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.12...v0.1.0-rc.13
 [0.1.0-rc.12]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.11...v0.1.0-rc.12
 [0.1.0-rc.11]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.10...v0.1.0-rc.11
 [0.1.0-rc.10]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.9...v0.1.0-rc.10
