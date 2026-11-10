@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0-rc.14] - 2026-11-10
+
+### Fixed
+
+- A release to an environment where an administrator renamed a product no longer stops in its pre-build checks: the storefront check now expects a page for every product the catalog publishes instead of the demo product names.
+
 ## [0.1.0-rc.13] - 2026-11-10
 
 ### Changed
@@ -170,7 +176,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Updated the backend toolchain to Go 1.27.3 to resolve reachable standard-library vulnerabilities.
 - Rebuilt Caddy 2.11.7 with Go 1.27.3 and `golang.org/x/net` 0.60.0 instead of deploying the vulnerable upstream binary.
 
-[Unreleased]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.13...HEAD
+[Unreleased]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.14...HEAD
+[0.1.0-rc.14]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.13...v0.1.0-rc.14
 [0.1.0-rc.13]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.12...v0.1.0-rc.13
 [0.1.0-rc.12]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.11...v0.1.0-rc.12
 [0.1.0-rc.11]: https://github.com/freedomCruz/monte-luna/compare/v0.1.0-rc.10...v0.1.0-rc.11

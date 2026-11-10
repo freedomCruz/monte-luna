@@ -11,6 +11,9 @@ describe('Pre-rendered HTML output invariants', () => {
     'chocolate-70',
     'chocolate-85',
   ];
+  // Every product gets its own page; an API-backed build follows the slugs the API publishes,
+  // which administrators can rename after the demo data is loaded.
+  let expectedProductSlugs = [...expectedHomeProductSlugs];
 
   beforeAll(async () => {
     // When verifying an API-backed build, assert the exact order supplied by
@@ -23,6 +26,7 @@ describe('Pre-rendered HTML output invariants', () => {
       }
       const page = (await response.json()) as { items: Array<{ slug: string }> };
       expectedHomeProductSlugs = page.items.slice(0, 4).map((product) => product.slug);
+      expectedProductSlugs = page.items.map((product) => product.slug);
     }
 
     // Perform an isolated build to a private cache fixture so tests never depend on stale pre-existing dist
@@ -43,10 +47,10 @@ describe('Pre-rendered HTML output invariants', () => {
 
   it('generates all expected static pages in the build output matching demo fixtures', () => {
     expect(fs.existsSync(path.join(fixtureDir, 'tienda/index.html'))).toBe(true);
-    expect(fs.existsSync(path.join(fixtureDir, 'productos/finca-el-mirador/index.html'))).toBe(true);
-    expect(fs.existsSync(path.join(fixtureDir, 'productos/finca-la-maria/index.html'))).toBe(true);
-    expect(fs.existsSync(path.join(fixtureDir, 'productos/chocolate-70/index.html'))).toBe(true);
-    expect(fs.existsSync(path.join(fixtureDir, 'productos/chocolate-85/index.html'))).toBe(true);
+    expect(expectedProductSlugs.length).toBeGreaterThan(0);
+    for (const slug of expectedProductSlugs) {
+      expect(fs.existsSync(path.join(fixtureDir, `productos/${slug}/index.html`)), slug).toBe(true);
+    }
     expect(fs.existsSync(path.join(fixtureDir, 'origenes/finca-el-mirador/index.html'))).toBe(true);
     expect(fs.existsSync(path.join(fixtureDir, 'origenes/demo-cacao-origin/index.html'))).toBe(true);
   });
