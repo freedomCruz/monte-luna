@@ -1,6 +1,7 @@
 import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { mockBrands, mockCategories, mockOrigins, mockProductDetail, mockProductTypes } from '../../../../mocks/admin-products';
+import { UnsavedChangesContext } from '../../shared/unsaved-changes';
 import { ProductView } from './ProductView';
 
 const api = vi.hoisted(() => ({
@@ -396,5 +397,56 @@ describe('ProductView loading states (F3: S3)', () => {
     const alert = await screen.findByRole('alert');
     fireEvent.click(within(alert).getByRole('button', { name: 'Reintentar' }));
     expect(await screen.findByRole('heading', { level: 1, name: product.title })).toBeTruthy();
+  });
+});
+
+describe('ProductView unsaved-changes blocker (admin-navigation-v1 T3: S2/L4)', () => {
+  const release = vi.fn();
+  const register = vi.fn(() => release);
+  const renderGuarded = () => render(<UnsavedChangesContext.Provider value={register}><ProductView /></UnsavedChangesContext.Provider>);
+
+  it('registers no blocker for a clean product and one named after it once a field changes', async () => {
+    renderGuarded();
+    await screen.findByRole('heading', { level: 1, name: product.title });
+    expect(register).not.toHaveBeenCalled();
+
+    fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Nuevo nombre' } });
+    expect(register).toHaveBeenCalledWith({ title: product.title });
+  });
+
+  it('releases the blocker after the edits are discarded', async () => {
+    renderGuarded();
+    await screen.findByRole('heading', { level: 1, name: product.title });
+    fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Nuevo nombre' } });
+    fireEvent.click(screen.getByRole('button', { name: 'Descartar' }));
+    await waitFor(() => expect(release).toHaveBeenCalledOnce());
+  });
+
+  describe('create', () => {
+    beforeEach(() => {
+      openAddress('');
+      vi.stubGlobal('location', { ...window.location, search: '', assign });
+    });
+
+    it('treats an untouched new product as clean even though its save bar shows', async () => {
+      renderGuarded();
+      await screen.findByRole('heading', { level: 1, name: 'Nuevo producto' });
+      expect(screen.getByText('Producto nuevo sin guardar')).toBeTruthy();
+      expect(register).not.toHaveBeenCalled();
+    });
+
+    it('registers a blocker as soon as the new product has a name, a type or any other value', async () => {
+      renderGuarded();
+      await screen.findByRole('heading', { level: 1, name: 'Nuevo producto' });
+      fireEvent.change(screen.getByLabelText('Nombre'), { target: { value: 'Geisha' } });
+      expect(register).toHaveBeenCalledWith({ title: 'Geisha' });
+    });
+
+    it('registers a blocker when only the product type is chosen', async () => {
+      renderGuarded();
+      await screen.findByRole('heading', { level: 1, name: 'Nuevo producto' });
+      fireEvent.change(await screen.findByLabelText('Tipo de producto'), { target: { value: mockProductTypes.items[0].id } });
+      expect(register).toHaveBeenCalledWith({ title: 'Nuevo producto' });
+    });
   });
 });
