@@ -4,6 +4,8 @@ const SIDEBAR_ITEMS = 5;
 const PHONE_BAR_ITEMS = 3;
 
 const ON_DARK = 'bg-primary-foreground/15';
+// The rail is the darkest surface, so its placeholders need more weight than the phone header and bar to read.
+const ON_DARK_SIDEBAR = 'bg-primary-foreground/25';
 
 /** Content rows of the A-Sistema "Cargando" skeleton, also shown while a section's code loads. */
 export function AdminContentSkeleton() {
@@ -40,12 +42,12 @@ export function AdminSessionSkeleton() {
       <div data-skeleton="sidebar" aria-hidden="true" className="surface-dark hidden w-[72px] shrink-0 flex-col bg-primary px-3.5 py-4 min-[391px]:flex min-[1440px]:w-[248px] min-[1440px]:px-3">
         <div className="flex flex-col gap-0.5 motion-safe:animate-pulse">
           <div className="flex min-h-11 items-center justify-center px-1.5 pb-2.5 min-[1440px]:justify-start">
-            <span className={`h-[26px] w-7 rounded-[4px] min-[1440px]:w-[132px] ${ON_DARK}`} />
+            <span className={`h-[26px] w-7 rounded-[4px] min-[1440px]:w-[132px] ${ON_DARK_SIDEBAR}`} />
           </div>
           {Array.from({ length: SIDEBAR_ITEMS }, (_, index) => (
             <div key={index} className="flex min-h-10 items-center justify-center gap-3 px-2.5 min-[1440px]:justify-start">
-              <span className={`size-5 shrink-0 rounded-[4px] ${ON_DARK}`} />
-              <span className={`hidden h-[11px] flex-1 rounded-[4px] min-[1440px]:block ${ON_DARK}`} style={{ maxWidth: ROW_WIDTHS[index % ROW_WIDTHS.length] }} />
+              <span className={`size-5 shrink-0 rounded-[4px] ${ON_DARK_SIDEBAR}`} />
+              <span className={`hidden h-[11px] flex-1 rounded-[4px] min-[1440px]:block ${ON_DARK_SIDEBAR}`} style={{ maxWidth: ROW_WIDTHS[index % ROW_WIDTHS.length] }} />
             </div>
           ))}
         </div>

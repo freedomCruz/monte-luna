@@ -115,6 +115,15 @@ describe('AdminShell session guard (T2/T8: S3, S4)', () => {
       expect(skeleton.querySelector('.sr-only')?.textContent).toBe('Comprobando tu sesión…');
     });
 
+    it('draws the sidebar placeholders at 25 % of the on-dark foreground so they read against the dark rail', () => {
+      pendingSession();
+      render(<AdminShell active="orders"><SessionProbe /></AdminShell>);
+
+      const sidebar = screen.getByRole('status', { name: 'Comprobando tu sesión' }).querySelector('[data-skeleton="sidebar"]')!;
+      expect(sidebar.querySelectorAll('[class~="bg-primary-foreground/25"]').length).toBeGreaterThan(0);
+      expect(sidebar.querySelectorAll('[class~="bg-primary-foreground/15"]')).toHaveLength(0);
+    });
+
     it('renders no navigation, menu label, user name or children before the session is confirmed', () => {
       pendingSession();
       render(<AdminShell active="orders"><SessionProbe /></AdminShell>);
