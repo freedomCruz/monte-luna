@@ -1,8 +1,9 @@
 ---
 import AdminLayout from '../../layouts/AdminLayout.astro';
-import { AdminOrdersPage } from '../../components/admin/orders/AdminOrdersPage';
+import { AdminApp } from '../../components/admin/shell/AdminApp';
+import { adminPageTitle } from '../../lib/admin/routes';
 ---
 
-<AdminLayout title="Pedidos · Admin Monteluna">
-  <AdminOrdersPage client:load />
+<AdminLayout title={adminPageTitle('orders')}>
+  <AdminApp client:load />
 </AdminLayout>

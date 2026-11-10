@@ -73,7 +73,7 @@ export function useRefreshLowStockCount(): () => void {
 export function sessionDestination(result: AdminResult<AdminUser>): string | null {
   if (result.ok) return null;
   if (result.status === 401) return ADMIN_ROUTES.signIn;
-  if (result.status === 403) return '/admin/sin-acceso/';
+  if (result.status === 403) return ADMIN_ROUTES.noAccess;
   return null;
 }
 

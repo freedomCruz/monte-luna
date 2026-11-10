@@ -16,6 +16,7 @@ export const ADMIN_ROUTES = {
   product: '/admin/producto/',
   orders: '/admin/pedidos/',
   account: '/admin/cuenta/',
+  noAccess: '/admin/sin-acceso/',
   admins: '/admin/administradores/',
 } as const;
 
