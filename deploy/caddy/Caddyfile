@@ -21,16 +21,22 @@
 		X-Frame-Options "DENY"
 	}
 
-	# Pending infrastructure improvement: configure granular Cache-Control policies
-	# to avoid stale asset references across deployments:
-	# - HTML documents (root, /tienda, /admin/*): Cache-Control "no-cache, must-revalidate"
-	# - Hashed build assets (/_astro/*, /fonts/*): Cache-Control "public, max-age=31536000, immutable"
-
 	handle /api/* {
 		reverse_proxy api:8080
 	}
 
+	# Cache-Control is set only in this static handle. The /api/* proxy above must
+	# not gain one: admin and private responses keep the backend's no-store.
 	handle {
+		# Content-hashed build assets never change under the same URL.
+		@hashed path /_astro/* /fonts/*
+		header @hashed Cache-Control "public, max-age=31536000, immutable"
+
+		# Everything else (HTML documents) is revalidated so a new release's
+		# document points at the new asset hashes instead of a stale cached copy.
+		@revalidated not path /_astro/* /fonts/*
+		header @revalidated Cache-Control "no-cache, must-revalidate"
+
 		file_server {
 			precompressed zstd gzip
 		}
